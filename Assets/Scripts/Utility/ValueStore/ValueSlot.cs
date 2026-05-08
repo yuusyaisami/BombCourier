@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace BC.Base
 {
@@ -14,6 +15,100 @@ namespace BC.Base
         {
             KeyId = keyId;
             ValueType = valueType;
+        }
+    }
+
+    internal sealed class BoolCompositeValueSlot : ValueSlot
+    {
+        private bool baseValue;
+        private readonly ValueCompositionMode mode;
+        private readonly Dictionary<ValueModifierTagId, bool> modifiers = new();
+
+        public BoolCompositeValueSlot(ValueKey<bool> key)
+            : base(key.Id, typeof(bool))
+        {
+            if (key.CompositionMode != ValueCompositionMode.BoolAnd &&
+                key.CompositionMode != ValueCompositionMode.BoolOr)
+            {
+                throw new InvalidOperationException(
+                    $"Invalid bool composition mode. Path={key.Path}, Mode={key.CompositionMode}");
+            }
+
+            baseValue = key.DefaultValue;
+            mode = key.CompositionMode;
+        }
+
+        public bool Get()
+        {
+            if (mode == ValueCompositionMode.BoolAnd)
+            {
+                bool result = baseValue;
+
+                foreach (bool value in modifiers.Values)
+                {
+                    result &= value;
+
+                    if (!result)
+                        return false;
+                }
+
+                return result;
+            }
+
+            if (mode == ValueCompositionMode.BoolOr)
+            {
+                bool result = baseValue;
+
+                foreach (bool value in modifiers.Values)
+                {
+                    result |= value;
+
+                    if (result)
+                        return true;
+                }
+
+                return result;
+            }
+
+            throw new InvalidOperationException($"Unsupported bool composition mode: {mode}");
+        }
+
+        public bool SetBase(bool value)
+        {
+            if (baseValue == value)
+                return false;
+
+            baseValue = value;
+            Revision++;
+            return true;
+        }
+
+        public bool SetModifier(ValueModifierTagId tag, bool value)
+        {
+            if (modifiers.TryGetValue(tag, out bool current) && current == value)
+                return false;
+
+            modifiers[tag] = value;
+            Revision++;
+            return true;
+        }
+
+        public bool RemoveModifier(ValueModifierTagId tag)
+        {
+            if (!modifiers.Remove(tag))
+                return false;
+
+            Revision++;
+            return true;
+        }
+
+        public void ClearModifiers()
+        {
+            if (modifiers.Count == 0)
+                return;
+
+            modifiers.Clear();
+            Revision++;
         }
     }
     internal sealed class RawValueSlot<T> : ValueSlot

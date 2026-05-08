@@ -30,6 +30,13 @@ namespace BC.Base
                 return (T)result;
             }
 
+            if (typeof(T) == typeof(bool))
+            {
+                var slot = GetOrCreateBoolSlot(UnsafeCastKey<bool, T>(key));
+                object result = slot.Get();
+                return (T)result;
+            }
+
             var raw = GetOrCreateRawSlot(key);
             return raw.Get();
         }
@@ -50,6 +57,15 @@ namespace BC.Base
 
             var raw = GetOrCreateRawSlot(key);
             return raw.Set(value);
+        }
+        public bool SetBoolModifier(ValueKey<bool> key, ValueModifierTagId tag, bool value)
+        {
+            return GetOrCreateBoolSlot(key).SetModifier(tag, value);
+        }
+
+        public bool RemoveBoolModifier(ValueKey<bool> key, ValueModifierTagId tag)
+        {
+            return GetOrCreateBoolSlot(key).RemoveModifier(tag);
         }
 
         public bool SetAdd(ValueKey<float> key, ValueModifierTagId tag, float value)
@@ -96,12 +112,15 @@ namespace BC.Base
         {
             if (slotsByKey.TryGetValue(key.Id, out ValueSlot slot))
             {
+                if (key.CompositionMode != ValueCompositionMode.Raw)
+                    throw new InvalidOperationException($"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw}, Actual={key.CompositionMode}");
                 if (slot is RawValueSlot<T> typed)
                     return typed;
 
                 throw CreateSlotTypeMismatch(key, slot);
             }
-
+            if (key.CompositionMode != ValueCompositionMode.Raw)
+                throw new InvalidOperationException($"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw}, Actual={key.CompositionMode}");
             var created = new RawValueSlot<T>(key);
             slotsByKey.Add(key.Id, created);
             return created;
@@ -111,12 +130,14 @@ namespace BC.Base
         {
             if (slotsByKey.TryGetValue(key.Id, out ValueSlot slot))
             {
+                if (key.CompositionMode != ValueCompositionMode.NumericAddMul)
+                    throw new InvalidOperationException($"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
                 if (slot is FloatNumericValueSlot typed)
                     return typed;
-
                 throw CreateSlotTypeMismatch(key, slot);
             }
-
+            if (key.CompositionMode != ValueCompositionMode.NumericAddMul)
+                throw new InvalidOperationException($"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
             var created = new FloatNumericValueSlot(key);
             slotsByKey.Add(key.Id, created);
             return created;
@@ -126,13 +147,37 @@ namespace BC.Base
         {
             if (slotsByKey.TryGetValue(key.Id, out ValueSlot slot))
             {
+                if (key.CompositionMode != ValueCompositionMode.NumericAddMul)
+                    throw new InvalidOperationException($"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
                 if (slot is IntNumericValueSlot typed)
                     return typed;
 
                 throw CreateSlotTypeMismatch(key, slot);
             }
 
+            if (key.CompositionMode != ValueCompositionMode.NumericAddMul)
+                throw new InvalidOperationException($"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
             var created = new IntNumericValueSlot(key);
+            slotsByKey.Add(key.Id, created);
+            return created;
+        }
+
+        private BoolCompositeValueSlot GetOrCreateBoolSlot(ValueKey<bool> key)
+        {
+            if (slotsByKey.TryGetValue(key.Id, out ValueSlot slot))
+            {
+                if (key.CompositionMode != ValueCompositionMode.BoolAnd &&
+                    key.CompositionMode != ValueCompositionMode.BoolOr)
+                    throw new InvalidOperationException($"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.BoolAnd} or {ValueCompositionMode.BoolOr}, Actual={key.CompositionMode}");
+                if (slot is BoolCompositeValueSlot typed)
+                    return typed;
+
+                throw CreateSlotTypeMismatch(key, slot);
+            }
+            if (key.CompositionMode != ValueCompositionMode.BoolAnd &&
+                key.CompositionMode != ValueCompositionMode.BoolOr)
+                throw new InvalidOperationException($"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.BoolAnd} or {ValueCompositionMode.BoolOr}, Actual={key.CompositionMode}");
+            var created = new BoolCompositeValueSlot(key);
             slotsByKey.Add(key.Id, created);
             return created;
         }
