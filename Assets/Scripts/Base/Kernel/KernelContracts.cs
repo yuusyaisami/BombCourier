@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 namespace BC.Base
 {
     // ライフタイムインターフェース
@@ -16,16 +17,13 @@ namespace BC.Base
     public sealed class KernelBuilder
     {
         private readonly List<IKernelInstaller> installers = new();
-
-        public KernelBuilder AddInstaller(IKernelInstaller installer)
-        {
-            installers.Add(installer);
-            return this;
-        }
-
-        public TKernel Build<TKernel>() where TKernel : BaseKernel, new()
+        public TKernel Build<TKernel>(GameObject[] obj) where TKernel : BaseKernel, new()
         {
             var kernel = new TKernel();
+            foreach (var go in obj)
+            {
+                installers.AddRange(go.GetComponents<IKernelInstaller>());
+            }
             // orderでソート
             installers.Sort((a, b) => a.Order.CompareTo(b.Order));
             foreach (var installer in installers)

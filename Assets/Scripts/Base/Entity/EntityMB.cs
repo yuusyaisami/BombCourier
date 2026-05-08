@@ -1,40 +1,44 @@
 using UnityEngine;
+
 namespace BC.Base
 {
-    public interface IEntitySetupEvent
-    {
-
-    }
-    public struct EntitySetupEvent : IEntitySetupEvent
-    {
-        public EntityRef EntityRef { get; private set; }
-        public EntityData EntityData { get; private set; }
-
-        public EntitySetupEvent(EntityRef entityRef, EntityData entityData)
-        {
-            EntityRef = entityRef;
-            EntityData = entityData;
-        }
-    }
     public sealed class EntityMB : MonoBehaviour
     {
-
         [SerializeField] private EntityTagId tag;
         [SerializeField] private EntityFlags flags;
 
         public EntityRef Entity { get; private set; }
-        private SceneKernel kernel;
+        public EntityTagId Tag => tag;
+        public EntityFlags Flags => flags;
 
-        private void Awake()
+        public bool HasEntity => Entity.IsValid;
+
+        public void Bind(EntityRef entity)
         {
-            kernel = GetComponentInParent<SceneKernelMB>()?.Kernel;
-            Entity = kernel.EntityLifecycle.Register(new EntityRegistryRequest(gameObject, transform, tag, flags));
+            if (Entity.IsValid)
+            {
+                Debug.LogError($"EntityMB is already bound. Current={Entity}, New={entity}", this);
+                return;
+            }
+
+            Entity = entity;
+        }
+
+        public void Unbind(EntityRef entity)
+        {
+            if (!Entity.Equals(entity))
+            {
+                Debug.LogError($"EntityMB unbind mismatch. Current={Entity}, Target={entity}", this);
+                return;
+            }
+
+            Entity = default;
         }
 
         private void OnDestroy()
         {
-            if (!Entity.IsValid)
-                return;
+            // 原則、Spawner / Lifecycle からDespawnされる前提。
+            // ただし外部Destroy対策を入れるなら、ここでLifecycleへ通知する。
         }
     }
 }
