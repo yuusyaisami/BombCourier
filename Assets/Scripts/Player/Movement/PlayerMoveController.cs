@@ -10,6 +10,9 @@ public class PlayerMoveController : EntityMoveController
     public SceneKernel SceneKernel { get; private set; }
     public EntityRef Entity { get; private set; }
 
+
+    private Vector2 targetVelocity;
+
     private CharacterController _characterController;
     private ICameraController _cameraController;
 
@@ -34,8 +37,6 @@ public class PlayerMoveController : EntityMoveController
         _cameraController = GetComponentInChildren<ThirdPersonCameraController>();
     }
 
-    private void Update()
-
     public void Move(Vector3 direction, bool isSprinting)
     {
         if (!IsActive) return;
@@ -49,7 +50,10 @@ public class PlayerMoveController : EntityMoveController
         }
 
         Vector3 velocity = direction.normalized * speed * Time.deltaTime;
-        _characterController.Move(velocity);
+
+        // 移動速度をなめらかにするための補間
+        targetVelocity = Vector3.Lerp(targetVelocity, velocity, 0.1f);
+        _characterController.Move(targetVelocity);
 
         // 状態遷移
         if (direction.magnitude > 0.1f)
