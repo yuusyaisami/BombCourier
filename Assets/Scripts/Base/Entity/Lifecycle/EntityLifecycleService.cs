@@ -9,7 +9,7 @@ namespace BC.Base
 
         public int Order => 0;
 
-        public void Setup(SceneKernel kernel)
+        public EntityLifecycleService(SceneKernel kernel)
         {
             SceneRegistry = kernel.EntitiesRegistry;
             ApplicationRegistry = ApplicationKernelMB.Instance.Kernel.ApplicationEntityRegistry;

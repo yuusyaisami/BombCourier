@@ -18,7 +18,7 @@ namespace BC.Base
     public sealed class EntityMB : MonoBehaviour
     {
         [SerializeField] private EntityTagId tag;
-        [SerializeField] private EntityFlags flags;
+        [SerializeField] private EntityFlags flags = EntityFlags.None;
         [SerializeField] private EntityRegistrationMode registrationMode = EntityRegistrationMode.ScenePlaced;
         public StateMachine<EntityState> EntityStateMachine = new StateMachine<EntityState>();
 
