@@ -6,6 +6,7 @@ namespace BC.Base
         public EventService Events { get; set; }
         // public ValueStoreService Values { get; }
         public EntityLifecycleService EntityLifecycle { get; set; }
+        public ValueStoreService ValueStore { get; set; }
 
 
         public IGameEventBus GameEvents => Events;
