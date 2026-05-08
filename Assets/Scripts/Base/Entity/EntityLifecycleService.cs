@@ -19,6 +19,7 @@ namespace BC.Base
 
         public EntityRef Register(EntityRegistryRequest request)
         {
+            // Entityの登録
             EntityRef entity;
             if (request.Flags.HasFlag(EntityFlags.DontDestroyOnLoad))
             {
@@ -28,6 +29,9 @@ namespace BC.Base
             {
                 entity = SceneRegistry.Register(request);
             }
+
+            // エンティティのイベント
+            events.Publish(entity, new EntityRegisterEvent(entity, request.Tag, request.Flags));
 
 
             return entity;

@@ -4,7 +4,7 @@ namespace BC.Base
     {
         public ScopedEntityRegistry ApplicationEntityRegistry { get; set; }
 
-        public EventService EntityEvents { get; }
+        public EventService Events { get; set; }
 
         public ApplicationKernel()
         {
