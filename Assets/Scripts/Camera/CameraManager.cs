@@ -22,13 +22,13 @@ namespace BC.Camera
             switch (_stateMachine.CurrentState)
             {
                 case CameraState.Follow:
-                    HandleFollowCamera();
+                    //HandleFollowCamera();
                     break;
                 case CameraState.Free:
-                    HandleFreeCamera();
+                    //HandleFreeCamera();
                     break;
                 case CameraState.Cinematic:
-                    HandleCinematicCamera();
+                    //HandleCinematicCamera();
                     break;
             }
         }

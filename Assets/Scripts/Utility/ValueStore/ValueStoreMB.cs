@@ -12,7 +12,7 @@ namespace BC.Base
         {
             if (kernel is SceneKernel sceneKernel)
             {
-                valueStore = new ValueStoreService(sceneKernel.Events);
+                valueStore = new ValueStoreService();
                 sceneKernel.ValueStore = valueStore;
             }
             else
