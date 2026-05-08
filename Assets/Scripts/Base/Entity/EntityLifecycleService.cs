@@ -1,15 +1,14 @@
 namespace BC.Base
 {
-
-    // エンティティの登録はこれが担当します。
     public class EntityLifecycleService
     {
         private ScopedEntityRegistry SceneRegistry;
         private ScopedEntityRegistry ApplicationRegistry;
         private EventService events;
-        //private readonly ValueStoreService valueStore; 
+        // private ValueStoreService valueStore;
 
         public int Order => 0;
+
         public void Setup(SceneKernel kernel)
         {
             SceneRegistry = kernel.EntitiesRegistry;
@@ -19,8 +18,8 @@ namespace BC.Base
 
         public EntityRef Register(EntityRegistryRequest request)
         {
-            // Entityの登録
             EntityRef entity;
+
             if (request.Flags.HasFlag(EntityFlags.DontDestroyOnLoad))
             {
                 entity = ApplicationRegistry.Register(request);
@@ -30,12 +29,30 @@ namespace BC.Base
                 entity = SceneRegistry.Register(request);
             }
 
-            // エンティティのイベント
-            events.Publish(entity, new EntityRegisterEvent(entity, request.Tag, request.Flags));
-
+            events.Publish(new EntityRegisterEvent(entity, request.Tag, request.Flags));
 
             return entity;
         }
 
+        public bool Unregister(EntityRef entity)
+        {
+            if (!entity.IsValid)
+                return false;
+
+            bool removed = SceneRegistry.Unregister(entity);
+
+            if (!removed)
+            {
+                removed = ApplicationRegistry.Unregister(entity);
+            }
+
+            if (!removed)
+                return false;
+
+            events.ClearEntity(entity);
+            events.Publish(new EntityUnregisteredGameEvent(entity));
+
+            return true;
+        }
     }
 }

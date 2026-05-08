@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 namespace BC.Base
 {
@@ -5,6 +6,7 @@ namespace BC.Base
     {
         public static ApplicationKernelMB Instance { get; private set; }
         private ApplicationKernel kernel;
+        public List<GameObject> targetObjects; // Authoring対象者のObjectたち基本は自分だけ
         public ApplicationKernel Kernel => kernel;
 
         private void Awake()
@@ -18,7 +20,7 @@ namespace BC.Base
             DontDestroyOnLoad(gameObject);
 
             KernelBuilder kernelBuilder = new KernelBuilder();
-            kernel = kernelBuilder.Build<ApplicationKernel>();
+            kernel = kernelBuilder.Build<ApplicationKernel>(targetObjects.ToArray());
         }
 
         private void Update()
