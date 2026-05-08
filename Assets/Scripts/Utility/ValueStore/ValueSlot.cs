@@ -2,113 +2,180 @@ using System;
 
 namespace BC.Base
 {
-    internal sealed class ValueSlot
+
+    internal abstract class ValueSlot
     {
         public ValueKeyId KeyId { get; }
         public Type ValueType { get; }
-        public object Value { get; private set; }
-        public int Revision { get; private set; }
+        public int Revision { get; protected set; } = 1;
 
-        public ValueSlot(ValueKeyId keyId, Type valueType, object initialValue)
+
+        protected ValueSlot(ValueKeyId keyId, Type valueType)
         {
             KeyId = keyId;
-            ValueType = valueType ?? throw new ArgumentNullException(nameof(valueType));
-            Value = initialValue;
-            Revision = 1;
+            ValueType = valueType;
+        }
+    }
+    internal sealed class RawValueSlot<T> : ValueSlot
+    {
+        private T value;
+
+        public RawValueSlot(ValueKey<T> key)
+            : base(key.Id, typeof(T))
+        {
+            value = key.DefaultValue;
         }
 
-        public bool Set<T>(T value)
+        public T Get()
         {
-            // 型の安全性を確保するため、ValueTypeとTが一致するか確認する
-            if (ValueType != typeof(T))
-            {
-                // cast を試みる
-                if (TryCast(out T castedValue))
-                {
-                    value = castedValue;
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        $"Value type mismatch. Key={KeyId}, Expected={ValueType.Name}, Actual={typeof(T).Name}");
-                }
-            }
+            return value;
+        }
 
-            if (Equals(Value, value))
+        public bool Set(T next)
+        {
+            if (Equals(value, next))
                 return false;
 
-            Value = value;
+            value = next;
+            Revision++;
+            return true;
+        }
+    }
+    internal sealed class FloatNumericValueSlot : ValueSlot
+    {
+        private float baseValue;
+        private readonly NumericModifierSet modifiers = new();
+
+        public FloatNumericValueSlot(ValueKey<float> key)
+            : base(key.Id, typeof(float))
+        {
+            baseValue = key.DefaultValue;
+        }
+
+        public float Get()
+        {
+            return modifiers.Evaluate(baseValue);
+        }
+
+        public float GetBase()
+        {
+            return baseValue;
+        }
+
+        public bool SetBase(float value)
+        {
+            if (baseValue.Equals(value))
+                return false;
+
+            baseValue = value;
             Revision++;
             return true;
         }
 
-        public T Get<T>()
+        public bool SetAdd(ValueModifierTagId tag, float value)
         {
-            // 型の安全性を確保するため、ValueTypeとTが一致するか確認する
-            if (ValueType != typeof(T))
-            {
-                // cast を試みる
-                if (TryCast(out T castedValue))
-                {
-                    return castedValue;
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        $"Value type mismatch. Key={KeyId}, Expected={ValueType.Name}, Actual={typeof(T).Name}");
-                }
-            }
+            if (!modifiers.SetAdd(tag, value))
+                return false;
 
-            return (T)Value;
+            Revision++;
+            return true;
         }
 
-        // 一部の型間での変換を許可するためのキャスト試行メソッド
-        public bool TryCast<T>(out T result)
+        public bool SetMul(ValueModifierTagId tag, float value)
         {
-            // 一応 int <-> float などの変換は許可する
-            if (ValueType == typeof(T))
-            {
-                result = (T)Value;
-                return true;
-            }
-            // int と float の相互変換を許可
-            else if (typeof(T) == typeof(float) && ValueType == typeof(int))
-            {
-                result = (T)(object)(float)(int)Value;
-                return true;
-            }
-            else if (typeof(T) == typeof(int) && ValueType == typeof(float))
-            {
-                result = (T)(object)(int)(float)Value;
-                return true;
-            }
-            // bool と int の相互変換を許可 (0 = false, 0以外 = true)
-            else if (typeof(T) == typeof(bool) && ValueType == typeof(int))
-            {
-                result = (T)(object)((int)Value != 0);
-                return true;
-            }
-            else if (typeof(T) == typeof(int) && ValueType == typeof(bool))
-            {
-                result = (T)(object)((bool)Value ? 1 : 0);
-                return true;
-            }
-            // bool と float の相互変換を許可 (0.0f = false, 0.0f以外 = true)
-            else if (typeof(T) == typeof(bool) && ValueType == typeof(float))
-            {
-                result = (T)(object)((float)Value != 0.0f);
-                return true;
-            }
-            else if (typeof(T) == typeof(float) && ValueType == typeof(bool))
-            {
-                result = (T)(object)((bool)Value ? 1.0f : 0.0f);
-                return true;
-            }
-            else
-            {
-                result = default;
+            if (!modifiers.SetMul(tag, value))
                 return false;
-            }
+
+            Revision++;
+            return true;
+        }
+
+        public bool RemoveAdd(ValueModifierTagId tag)
+        {
+            if (!modifiers.RemoveAdd(tag))
+                return false;
+
+            Revision++;
+            return true;
+        }
+
+        public bool RemoveMul(ValueModifierTagId tag)
+        {
+            if (!modifiers.RemoveMul(tag))
+                return false;
+
+            Revision++;
+            return true;
         }
     }
+
+    internal sealed class IntNumericValueSlot : ValueSlot
+    {
+        private int baseValue;
+        private readonly NumericModifierSet modifiers = new();
+
+        public IntNumericValueSlot(ValueKey<int> key)
+            : base(key.Id, typeof(int))
+        {
+            baseValue = key.DefaultValue;
+        }
+
+        public int Get()
+        {
+            float evaluated = modifiers.Evaluate(baseValue);
+            return (int)Math.Round(evaluated, MidpointRounding.AwayFromZero);
+        }
+
+        public int GetBase()
+        {
+            return baseValue;
+        }
+
+        public bool SetBase(int value)
+        {
+            if (baseValue == value)
+                return false;
+
+            baseValue = value;
+            Revision++;
+            return true;
+        }
+
+        public bool SetAdd(ValueModifierTagId tag, float value)
+        {
+            if (!modifiers.SetAdd(tag, value))
+                return false;
+
+            Revision++;
+            return true;
+        }
+
+        public bool SetMul(ValueModifierTagId tag, float value)
+        {
+            if (!modifiers.SetMul(tag, value))
+                return false;
+
+            Revision++;
+            return true;
+        }
+
+        public bool RemoveAdd(ValueModifierTagId tag)
+        {
+            if (!modifiers.RemoveAdd(tag))
+                return false;
+
+            Revision++;
+            return true;
+        }
+
+        public bool RemoveMul(ValueModifierTagId tag)
+        {
+            if (!modifiers.RemoveMul(tag))
+                return false;
+
+            Revision++;
+            return true;
+        }
+    }
+
 }

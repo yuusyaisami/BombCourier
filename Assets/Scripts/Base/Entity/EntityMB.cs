@@ -1,14 +1,31 @@
+using BC.Utility;
 using UnityEngine;
 
 namespace BC.Base
 {
+    public enum EntityState
+    {
+        None,
+        Dead
+        // 他のタグを追加
+    }
+    public enum EntityRegistrationMode
+    {
+        ScenePlaced,
+        Spawned,
+        Manual,
+    }
     public sealed class EntityMB : MonoBehaviour
     {
         [SerializeField] private EntityTagId tag;
         [SerializeField] private EntityFlags flags;
+        [SerializeField] private EntityRegistrationMode registrationMode = EntityRegistrationMode.ScenePlaced;
+        public StateMachine<EntityState> EntityStateMachine = new StateMachine<EntityState>();
+
 
         public EntityRef Entity { get; private set; }
         public EntityTagId Tag => tag;
+        public EntityRegistrationMode RegistrationMode => registrationMode;
         public EntityFlags Flags => flags;
 
         public bool HasEntity => Entity.IsValid;

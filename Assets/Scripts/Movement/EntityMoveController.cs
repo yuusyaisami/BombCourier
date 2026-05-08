@@ -1,16 +1,20 @@
+using BC.Utility;
 using UnityEngine;
-
-public class EntityMoveController : MonoBehaviour
+namespace BC.Base
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public enum EntityMoveState
     {
-        
+        Idle,
+        Moving,
+        Jumping,
+        Falling
     }
-
-    // Update is called once per frame
-    void Update()
+    public abstract class EntityMoveController : MonoBehaviour
     {
-        
+        StateMachine<EntityMoveState> stateMachine { get; }
+        SceneKernel SceneKernel { get; }
+        EntityRef Entity { get; } // 自分
+        EntityMoveState State => stateMachine.CurrentState;
+        public bool IsActive => SceneKernel.ValueStore.Get<bool>(Entity, ValueKeys.Move.CanMove);
     }
 }

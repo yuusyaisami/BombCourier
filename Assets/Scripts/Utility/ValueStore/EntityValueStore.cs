@@ -14,57 +14,142 @@ namespace BC.Base
             Entity = entity;
         }
 
-        public bool Contains<T>(ValueKey<T> key)
-        {
-            return slotsByKey.ContainsKey(key.Id);
-        }
-
         public T Get<T>(ValueKey<T> key)
         {
-            ValueSlot slot = GetOrCreateSlot(key);
-            return slot.Get<T>();
-        }
-
-        public bool TryGet<T>(ValueKey<T> key, out T value)
-        {
-            if (!slotsByKey.TryGetValue(key.Id, out ValueSlot slot))
+            if (typeof(T) == typeof(float))
             {
-                value = key.DefaultValue;
-                return false;
+                var slot = GetOrCreateFloatSlot(UnsafeCastKey<float, T>(key));
+                object result = slot.Get();
+                return (T)result;
             }
 
-            value = slot.Get<T>();
-            return true;
+            if (typeof(T) == typeof(int))
+            {
+                var slot = GetOrCreateIntSlot(UnsafeCastKey<int, T>(key));
+                object result = slot.Get();
+                return (T)result;
+            }
+
+            var raw = GetOrCreateRawSlot(key);
+            return raw.Get();
         }
 
         public bool Set<T>(ValueKey<T> key, T value)
         {
-            ValueSlot slot = GetOrCreateSlot(key);
-            return slot.Set(value);
+            if (typeof(T) == typeof(float))
+            {
+                var slot = GetOrCreateFloatSlot(UnsafeCastKey<float, T>(key));
+                return slot.SetBase((float)(object)value);
+            }
+
+            if (typeof(T) == typeof(int))
+            {
+                var slot = GetOrCreateIntSlot(UnsafeCastKey<int, T>(key));
+                return slot.SetBase((int)(object)value);
+            }
+
+            var raw = GetOrCreateRawSlot(key);
+            return raw.Set(value);
         }
 
-        public int GetRevision<T>(ValueKey<T> key)
+        public bool SetAdd(ValueKey<float> key, ValueModifierTagId tag, float value)
         {
-            ValueSlot slot = GetOrCreateSlot(key);
-            return slot.Revision;
+            return GetOrCreateFloatSlot(key).SetAdd(tag, value);
         }
 
-        private ValueSlot GetOrCreateSlot<T>(ValueKey<T> key)
+        public bool SetMul(ValueKey<float> key, ValueModifierTagId tag, float value)
+        {
+            return GetOrCreateFloatSlot(key).SetMul(tag, value);
+        }
+
+        public bool RemoveAdd(ValueKey<float> key, ValueModifierTagId tag)
+        {
+            return GetOrCreateFloatSlot(key).RemoveAdd(tag);
+        }
+
+        public bool RemoveMul(ValueKey<float> key, ValueModifierTagId tag)
+        {
+            return GetOrCreateFloatSlot(key).RemoveMul(tag);
+        }
+
+        public bool SetAdd(ValueKey<int> key, ValueModifierTagId tag, float value)
+        {
+            return GetOrCreateIntSlot(key).SetAdd(tag, value);
+        }
+
+        public bool SetMul(ValueKey<int> key, ValueModifierTagId tag, float value)
+        {
+            return GetOrCreateIntSlot(key).SetMul(tag, value);
+        }
+
+        public bool RemoveAdd(ValueKey<int> key, ValueModifierTagId tag)
+        {
+            return GetOrCreateIntSlot(key).RemoveAdd(tag);
+        }
+
+        public bool RemoveMul(ValueKey<int> key, ValueModifierTagId tag)
+        {
+            return GetOrCreateIntSlot(key).RemoveMul(tag);
+        }
+
+        private RawValueSlot<T> GetOrCreateRawSlot<T>(ValueKey<T> key)
         {
             if (slotsByKey.TryGetValue(key.Id, out ValueSlot slot))
             {
-                if (slot.ValueType != typeof(T))
-                {
-                    throw new InvalidOperationException(
-                        $"ValueKey type conflict. Path={key.Path}, Key={key.Id}, SlotType={slot.ValueType.Name}, RequestedType={typeof(T).Name}");
-                }
+                if (slot is RawValueSlot<T> typed)
+                    return typed;
 
-                return slot;
+                throw CreateSlotTypeMismatch(key, slot);
             }
 
-            slot = new ValueSlot(key.Id, typeof(T), key.DefaultValue);
-            slotsByKey.Add(key.Id, slot);
-            return slot;
+            var created = new RawValueSlot<T>(key);
+            slotsByKey.Add(key.Id, created);
+            return created;
+        }
+
+        private FloatNumericValueSlot GetOrCreateFloatSlot(ValueKey<float> key)
+        {
+            if (slotsByKey.TryGetValue(key.Id, out ValueSlot slot))
+            {
+                if (slot is FloatNumericValueSlot typed)
+                    return typed;
+
+                throw CreateSlotTypeMismatch(key, slot);
+            }
+
+            var created = new FloatNumericValueSlot(key);
+            slotsByKey.Add(key.Id, created);
+            return created;
+        }
+
+        private IntNumericValueSlot GetOrCreateIntSlot(ValueKey<int> key)
+        {
+            if (slotsByKey.TryGetValue(key.Id, out ValueSlot slot))
+            {
+                if (slot is IntNumericValueSlot typed)
+                    return typed;
+
+                throw CreateSlotTypeMismatch(key, slot);
+            }
+
+            var created = new IntNumericValueSlot(key);
+            slotsByKey.Add(key.Id, created);
+            return created;
+        }
+
+        private static InvalidOperationException CreateSlotTypeMismatch<T>(ValueKey<T> key, ValueSlot slot)
+        {
+            return new InvalidOperationException(
+                $"Value slot type mismatch. Path={key.Path}, Key={key.Id}, Expected={typeof(T).Name}, ActualSlot={slot.GetType().Name}");
+        }
+
+        private static ValueKey<TTarget> UnsafeCastKey<TTarget, TSource>(ValueKey<TSource> key)
+        {
+            return new ValueKey<TTarget>(
+                key.Id,
+                key.Path,
+                (TTarget)(object)key.DefaultValue
+            );
         }
     }
 }

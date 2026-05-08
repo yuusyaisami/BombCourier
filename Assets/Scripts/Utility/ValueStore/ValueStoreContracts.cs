@@ -31,6 +31,27 @@ namespace BC.Base
         }
     }
 
+    public readonly struct ValueModifierTagId : IEquatable<ValueModifierTagId>
+    {
+        public readonly int Value;
+
+        public ValueModifierTagId(int value)
+        {
+            Value = value;
+        }
+
+        public bool Equals(ValueModifierTagId other) => Value == other.Value;
+
+        public override bool Equals(object obj)
+        {
+            return obj is ValueModifierTagId other && Equals(other);
+        }
+
+        public override int GetHashCode() => Value;
+
+        public override string ToString() => Value.ToString();
+    }
+
     public readonly struct ValueKey<T> : IEquatable<ValueKey<T>>
     {
         public readonly ValueKeyId Id;

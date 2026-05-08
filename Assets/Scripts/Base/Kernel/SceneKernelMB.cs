@@ -12,6 +12,10 @@ namespace BC.Base
         {
             KernelBuilder kernelBuilder = new KernelBuilder();
             kernel = kernelBuilder.Build<SceneKernel>(targetObjects.ToArray());
+
+            // 最初からシーン内に存在するEntityを登録するためのブートストラッパーを作成して実行
+            var bootstrapper = new SceneEntityBootstrapper(kernel, transform);
+            bootstrapper.RegisterSceneEntities();
         }
 
         private void Update()

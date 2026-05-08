@@ -13,8 +13,12 @@ namespace BC.Base
 
         public static class Move
         {
-            public static readonly ValueKey<float> Speed =
-                new ValueKey<float>(new ValueKeyId(2001), "Move.Speed", 5.0f);
+            public static readonly ValueKey<bool> CanMove =
+                new ValueKey<bool>(new ValueKeyId(2001), "Move.CanMove", true);
+            public static readonly ValueKey<float> BaseSpeed =
+                new ValueKey<float>(new ValueKeyId(2002), "Move.BaseSpeed", 5.0f);
+            public static readonly ValueKey<float> SprintMul =
+                new ValueKey<float>(new ValueKeyId(2003), "Move.SprintMul", 1.5f);
         }
 
         public static class Bomb
