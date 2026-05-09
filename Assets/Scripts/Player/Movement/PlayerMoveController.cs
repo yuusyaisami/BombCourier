@@ -1,6 +1,7 @@
 using BC.Base;
 using BC.Bomb;
 using BC.Camera;
+using BC.Manager;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace BC.Base
@@ -88,6 +89,7 @@ namespace BC.Base
         [SerializeField] private float minModelTurnSpeed = 0.1f;
 
         private ICameraController cameraController;
+        private IPlayerRagdollController ragdollController;
 
         private Vector3 planarVelocity;
         private float verticalVelocity;
@@ -136,6 +138,8 @@ namespace BC.Base
                 cameraControllerSource = GetComponentInChildren<ThirdPersonCameraController>(true);
 
             cameraController = cameraControllerSource as ICameraController;
+
+            ragdollController = GetComponent<IPlayerRagdollController>();
 
             if (cameraController == null)
             {
@@ -462,10 +466,14 @@ namespace BC.Base
             AddImpulse(direction * forceMagnitude);
 
             IsReceiveBombImpact = true;
-            StateMachine.ChangeState(EntityMoveState.Disabled);
+            StateMachine.ChangeState(EntityMoveState.Dead);
 
             if (IsRuntimeReady && SceneKernel.ValueStore != null)
             {
+                if (ragdollController != null)
+                {
+                    ragdollController.EnterRagdoll(direction * forceMagnitude);
+                }
                 SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsDead, true);
                 SceneKernel.ValueStore.SetBoolModifier(Entity, ValueKeys.Move.CanMove, DeadMoveLockTag, false);
             }
@@ -474,7 +482,8 @@ namespace BC.Base
         {
             if (motionLocked)
             {
-                StateMachine.ChangeState(EntityMoveState.Disabled);
+                if (MoveState != EntityMoveState.Disabled && MoveState != EntityMoveState.Dead)
+                    StateMachine.ChangeState(EntityMoveState.Disabled);
                 return;
             }
 

@@ -3,7 +3,12 @@ using UnityEngine;
 
 namespace BC.Manager
 {
-    public sealed class PlayerRagdollControllerMB : MonoBehaviour
+    public interface IPlayerRagdollController
+    {
+        void EnterRagdoll(Vector3 impulse);
+        void ExitRagdoll();
+    }
+    public sealed class PlayerRagdollControllerMB : MonoBehaviour, IPlayerRagdollController
     {
         [SerializeField] private Animator animator;
         [SerializeField] private CharacterController characterController;
