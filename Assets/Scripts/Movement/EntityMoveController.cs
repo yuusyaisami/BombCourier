@@ -11,6 +11,7 @@ namespace BC.Base
         Falling,
         LedgeHang,
         WallMove,
+        Dead,
         Disabled
     }
 
