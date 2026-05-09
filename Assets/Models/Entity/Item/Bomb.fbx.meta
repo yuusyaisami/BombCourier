@@ -1,9 +1,14 @@
 fileFormatVersion: 2
-guid: f43c839e8fd0e1040a8342c7cdb2ddff
+guid: ffac559502a01a347943fe162e30a806
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BombBody
+    second: {fileID: 2100000, guid: ee280cd8f64939d4aacd30b968abd40a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -100,7 +105,7 @@ ModelImporter:
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 1
+  avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
