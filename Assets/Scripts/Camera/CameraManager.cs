@@ -16,6 +16,9 @@ namespace BC.Camera
         private void Start()
         {
             _stateMachine.ChangeState(CameraState.Follow);
+
+            // Lock cursor for testing
+            Cursor.lockState = CursorLockMode.Locked;
         }
         private void Update()
         {

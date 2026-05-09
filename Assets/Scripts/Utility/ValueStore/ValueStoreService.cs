@@ -56,6 +56,15 @@ namespace BC.Base
         {
             return GetRequiredStore(entity).RemoveMul(key, tag);
         }
+        public bool SetBoolModifier(EntityRef entity, ValueKey<bool> key, ValueModifierTagId tag, bool value)
+        {
+            return GetRequiredStore(entity).SetBoolModifier(key, tag, value);
+        }
+
+        public bool RemoveBoolModifier(EntityRef entity, ValueKey<bool> key, ValueModifierTagId tag)
+        {
+            return GetRequiredStore(entity).RemoveBoolModifier(key, tag);
+        }
 
         private EntityValueStore GetRequiredStore(EntityRef entity)
         {
