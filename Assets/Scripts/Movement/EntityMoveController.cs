@@ -21,7 +21,7 @@ namespace BC.Base
         protected SceneKernel SceneKernel { get; private set; }
         protected EntityRef Entity { get; private set; }
 
-        public EntityMoveState State => StateMachine.CurrentState;
+        public EntityMoveState MoveState => StateMachine.CurrentState;
         public bool IsRuntimeReady { get; private set; }
 
         protected virtual void Start()
@@ -35,14 +35,7 @@ namespace BC.Base
 
             if (kernelMB == null)
             {
-                Debug.LogError($"{nameof(EntityMoveController)}: SceneKernelMB was not found in parent hierarchy.", this);
-                enabled = false;
-                return;
-            }
-
-            if (kernelMB.Kernel == null)
-            {
-                Debug.LogError($"{nameof(EntityMoveController)}: SceneKernelMB.Kernel is null. Check kernel build order.", this);
+                Debug.LogError($"{nameof(EntityMoveController)}: SceneKernelMB was not found.", this);
                 enabled = false;
                 return;
             }
@@ -51,14 +44,14 @@ namespace BC.Base
 
             if (entityMB == null)
             {
-                Debug.LogError($"{nameof(EntityMoveController)}: EntityMB was not found in parent hierarchy.", this);
+                Debug.LogError($"{nameof(EntityMoveController)}: EntityMB was not found.", this);
                 enabled = false;
                 return;
             }
 
             if (!entityMB.HasEntity)
             {
-                Debug.LogError($"{nameof(EntityMoveController)}: EntityMB is not bound yet. Check SceneEntityBootstrapper order.", this);
+                Debug.LogError($"{nameof(EntityMoveController)}: EntityMB is not bound yet.", this);
                 enabled = false;
                 return;
             }

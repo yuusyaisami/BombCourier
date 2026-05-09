@@ -2,15 +2,14 @@ using BC.Utility;
 using UnityEngine;
 namespace BC.Base
 {
-    public enum PlayerState
+
+    public interface IEntityHandleItemAnimationSource
     {
-        Idle,
-        Moving,
-        Jumping,
-        Attacking
+        bool IsHandlingItem { get; }
     }
+
     public class PlayerMB : MonoBehaviour
     {
-        StateMachine<PlayerState> stateMachine = new StateMachine<PlayerState>();
+
     }
 }
