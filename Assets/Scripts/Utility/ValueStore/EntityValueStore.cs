@@ -55,6 +55,12 @@ namespace BC.Base
                 return slot.SetBase((int)(object)value);
             }
 
+            if (typeof(T) == typeof(bool))
+            {
+                var slot = GetOrCreateBoolSlot(UnsafeCastKey<bool, T>(key));
+                return slot.SetBase((bool)(object)value);
+            }
+
             var raw = GetOrCreateRawSlot(key);
             return raw.Set(value);
         }
@@ -193,7 +199,8 @@ namespace BC.Base
             return new ValueKey<TTarget>(
                 key.Id,
                 key.Path,
-                (TTarget)(object)key.DefaultValue
+                (TTarget)(object)key.DefaultValue,
+                key.CompositionMode
             );
         }
     }
