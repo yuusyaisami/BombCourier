@@ -1,128 +1,186 @@
-using BC.Base;
+using System;
 using UnityEngine;
+using BC.Base;
+
 namespace BC.Bomb
 {
-    [System.Serializable]
+    [Serializable]
     public struct BombExplosionThresholdData
     {
-        public string UnityTag { get; }
-        public float ExplosionThresholdMul { get; }
+        public string unityTag;
+        public float explosionThresholdMultiplier;
     }
-    [System.Serializable]
+
+    [Serializable]
     public struct BombExplosionThresholdDataset
     {
-        public BombExplosionThresholdData[] Thresholds { get; }
+        public BombExplosionThresholdData[] thresholds;
     }
-    // 爆弾の衝撃を検出するインターフェース
+
     public interface IBombImpactDetector
     {
-        void OnBombImpact(Vector2 direction, float impactForce);
+        void OnBombImpact(Vector3 direction, float impactForce);
     }
-    // rigidbodyを持っていないが爆弾の衝撃を検出したいオブジェクトはこのインターフェースを実装する
+
     public interface IBombImpactReceiver
     {
-        void OnBombImpactReceived(Vector2 direction, float impactForce);
+        void OnBombImpactReceived(Vector3 direction, float impactForce);
     }
-    public class BombMB : UnityEngine.MonoBehaviour
+
+    public sealed class BombMB : MonoBehaviour
     {
-        // 特定の衝撃で爆発するための閾値
+        public event Action<BombMB> Exploded;
+
+        [Header("Fuse")]
+        [SerializeField] private float fuseTime = 8.0f;
+
+        [Header("Explosion")]
         [SerializeField] private float explosionThreshold = 10f;
         [SerializeField] private float explosionRadius = 5f;
         [SerializeField] private float explosionForce = 1000f;
-        [SerializeField] private GameObject explosionEffectPrefab; // 爆発エフェクトのプレハブ
-        [SerializeField]
-        private BombExplosionThresholdDataset thresholdDataset;
+        [SerializeField] private GameObject explosionEffectPrefab;
+        [SerializeField] private BombExplosionThresholdDataset thresholdDataset;
 
         private Rigidbody rb;
         private Collider bombCollider;
         private SceneKernelMB kernelMB;
         private EntityRef entityRef;
-        private float lastImpactForce;
 
-        private void Start()
+        private bool fuseStarted;
+        private bool exploded;
+        private float remainingFuseTime;
+
+        public bool FuseStarted => fuseStarted;
+        public float RemainingFuseTime => remainingFuseTime;
+
+        private void Awake()
         {
             rb = GetComponent<Rigidbody>();
             bombCollider = GetComponent<Collider>();
             kernelMB = GetComponentInParent<SceneKernelMB>();
-            entityRef = GetComponentInParent<EntityMB>().Entity;
 
-            if (rb == null)
-            {
-                Debug.LogError("BombMB: Rigidbody component is missing.", this);
-            }
+            EntityMB entityMB = GetComponentInParent<EntityMB>();
+            if (entityMB != null)
+                entityRef = entityMB.Entity;
 
-            if (bombCollider == null)
-            {
-                Debug.LogError("BombMB: Collider component is missing.", this);
-            }
+            remainingFuseTime = fuseTime;
         }
 
-        private void OnCollisionEnter(Collision collision)
+        private void Update()
         {
-            if (rb == null || bombCollider == null) return;
-            // タグに基づいて閾値を取得
-            float explosionThreshold = this.explosionThreshold; // デフォルトの閾値
-            foreach (var thresholdData in thresholdDataset.Thresholds)
-            {
-                if (collision.gameObject.CompareTag(thresholdData.UnityTag))
-                {
-                    explosionThreshold *= thresholdData.ExplosionThresholdMul;
-                    break;
-                }
-            }
+            if (!fuseStarted || exploded)
+                return;
 
-            // 衝撃の強さを計算
-            float impactForce = collision.impulse.magnitude / Time.fixedDeltaTime;
-            lastImpactForce = impactForce;
+            remainingFuseTime -= Time.deltaTime;
 
-            // 周りにRigidbodyがある場合は、衝撃を与える
-            foreach (var hit in Physics.OverlapSphere(transform.position, explosionRadius))
-            {
-                Rigidbody hitRb = hit.GetComponent<Rigidbody>();
-                if (hitRb != null && hitRb != rb)
-                {
-                    Vector3 direction = (hit.transform.position - transform.position).normalized;
-                    float distance = Vector3.Distance(transform.position, hit.transform.position);
-                    float forceMagnitude = Mathf.Clamp(explosionForce / (distance * distance), 0, explosionForce);
-                    if (hitRb.TryGetComponent<IBombImpactDetector>(out var impactDetector))
-                    {
-                        impactDetector.OnBombImpact(direction, forceMagnitude);
-                    }
-                    hitRb.AddForce(direction * forceMagnitude);
-                }
-                else if (hit.TryGetComponent<IBombImpactReceiver>(out var impactReceiver))
-                {
-                    Vector3 direction = (hit.transform.position - transform.position).normalized;
-                    float distance = Vector3.Distance(transform.position, hit.transform.position);
-                    float forceMagnitude = Mathf.Clamp(explosionForce / (distance * distance), 0, explosionForce);
-                    impactReceiver.OnBombImpactReceived(direction, forceMagnitude);
-                }
-            }
-
-            // 閾値を超える衝撃があった場合に爆発
-            if (impactForce >= explosionThreshold)
+            if (remainingFuseTime <= 0f)
             {
                 Explode();
             }
         }
-        private void Update()
+
+        public void BeginFuse()
         {
-            // lastImpactForceの数値を落とす(時間経過で衝撃の強さが減少するようにする)
-            if (lastImpactForce > 0) lastImpactForce = Mathf.Lerp(lastImpactForce, 0, Time.deltaTime * 5f);
+            if (exploded)
+                return;
+
+            if (fuseStarted)
+                return;
+
+            fuseStarted = true;
+            remainingFuseTime = fuseTime;
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (exploded || rb == null || bombCollider == null)
+                return;
+
+            float threshold = explosionThreshold;
+
+            if (thresholdDataset.thresholds != null)
+            {
+                for (int i = 0; i < thresholdDataset.thresholds.Length; i++)
+                {
+                    var data = thresholdDataset.thresholds[i];
+
+                    if (!string.IsNullOrEmpty(data.unityTag) &&
+                        collision.gameObject.CompareTag(data.unityTag))
+                    {
+                        threshold *= Mathf.Max(0.01f, data.explosionThresholdMultiplier);
+                        break;
+                    }
+                }
+            }
+
+            float impactForce = collision.impulse.magnitude / Time.fixedDeltaTime;
+
+            if (impactForce >= threshold)
+            {
+                Explode();
+            }
         }
 
         private void Explode()
         {
-            // 爆発エフェクトを生成
+            if (exploded)
+                return;
+
+            exploded = true;
+
             if (explosionEffectPrefab != null)
-            {
                 Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+
+            ApplyExplosionImpact();
+
+            Exploded?.Invoke(this);
+
+            if (kernelMB != null &&
+                kernelMB.Kernel != null &&
+                kernelMB.Kernel.Spawner != null &&
+                entityRef.IsValid &&
+                kernelMB.Kernel.Spawner.Despawn(entityRef))
+            {
+                return;
             }
 
-            // ここで爆発のダメージ処理などを行うことができます
+            Destroy(gameObject);
+        }
 
-            // ボムオブジェクトを破壊
-            kernelMB.Kernel.Spawner.Despawn(entityRef);
+        private void ApplyExplosionImpact()
+        {
+            Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
+
+            for (int i = 0; i < hits.Length; i++)
+            {
+                Collider hit = hits[i];
+
+                if (hit == null)
+                    continue;
+
+                Vector3 direction = hit.transform.position - transform.position;
+                float distance = Mathf.Max(0.1f, direction.magnitude);
+                direction /= distance;
+
+                float forceMagnitude = Mathf.Clamp(
+                    explosionForce / (distance * distance),
+                    0f,
+                    explosionForce
+                );
+
+                if (hit.TryGetComponent(out Rigidbody hitRb) && hitRb != rb)
+                {
+                    if (hitRb.TryGetComponent(out IBombImpactDetector detector))
+                        detector.OnBombImpact(direction, forceMagnitude);
+
+                    hitRb.AddForce(direction * forceMagnitude, ForceMode.Impulse);
+                }
+
+                if (hit.TryGetComponent(out IBombImpactReceiver receiver))
+                {
+                    receiver.OnBombImpactReceived(direction, forceMagnitude);
+                }
+            }
         }
     }
 }

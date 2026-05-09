@@ -65,6 +65,56 @@ namespace BC.Base
                     ValueCompositionMode.NumericAddMul
                 );
         }
+        public static class Runtime
+        {
+            public static readonly ValueKey<EntityMoveState> MoveState =
+                new ValueKey<EntityMoveState>(
+                    new ValueKeyId(4001),
+                    "Runtime.MoveState",
+                    EntityMoveState.Idle,
+                    ValueCompositionMode.Raw
+                );
+
+            public static readonly ValueKey<float> CurrentPlanarSpeed =
+                new ValueKey<float>(
+                    new ValueKeyId(4002),
+                    "Runtime.CurrentPlanarSpeed",
+                    0f,
+                    ValueCompositionMode.NumericAddMul
+                );
+
+            public static readonly ValueKey<float> VerticalVelocity =
+                new ValueKey<float>(
+                    new ValueKeyId(4003),
+                    "Runtime.VerticalVelocity",
+                    0f,
+                    ValueCompositionMode.NumericAddMul
+                );
+
+            public static readonly ValueKey<bool> IsGrounded =
+                new ValueKey<bool>(
+                    new ValueKeyId(4004),
+                    "Runtime.IsGrounded",
+                    false,
+                    ValueCompositionMode.BoolOr
+                );
+
+            public static readonly ValueKey<bool> IsSprinting =
+                new ValueKey<bool>(
+                    new ValueKeyId(4005),
+                    "Runtime.IsSprinting",
+                    false,
+                    ValueCompositionMode.BoolOr
+                );
+
+            public static readonly ValueKey<bool> IsDead =
+                new ValueKey<bool>(
+                    new ValueKeyId(4006),
+                    "Runtime.IsDead",
+                    false,
+                    ValueCompositionMode.BoolOr
+                );
+        }
 
         public static class Identity
         {
