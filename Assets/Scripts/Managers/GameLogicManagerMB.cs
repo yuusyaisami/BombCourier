@@ -17,7 +17,6 @@ namespace BC.Manager
         }
 
         // 爆弾Prefab
-        [SerializeField] private ScriptableObject stageData; // ステージデータのScriptableObject
 
 
 

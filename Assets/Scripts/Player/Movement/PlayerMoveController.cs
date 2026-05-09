@@ -35,6 +35,7 @@ namespace BC.Base
     [RequireComponent(typeof(CharacterController))]
     public sealed class PlayerMoveController : EntityMoveController, IEntityMoveAnimationSource, IBombImpactReceiver // Rigidbodyがないので
     {
+        private static readonly ValueModifierTagId DeadMoveLockTag = new ValueModifierTagId(10001);
         [Header("References")]
         [SerializeField] private CharacterController characterController;
         [SerializeField] private Transform modelRoot;
@@ -180,6 +181,7 @@ namespace BC.Base
             }
 
             TickMotor(dt);
+            PublishRuntimeValues();
         }
 
         private void ReadInput(float dt)
@@ -458,12 +460,16 @@ namespace BC.Base
         public void OnBombImpactReceived(Vector3 direction, float forceMagnitude)
         {
             AddImpulse(direction * forceMagnitude);
-            // 死亡
+
             IsReceiveBombImpact = true;
             StateMachine.ChangeState(EntityMoveState.Disabled);
 
+            if (IsRuntimeReady && SceneKernel.ValueStore != null)
+            {
+                SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsDead, true);
+                SceneKernel.ValueStore.SetBoolModifier(Entity, ValueKeys.Move.CanMove, DeadMoveLockTag, false);
+            }
         }
-
         private void UpdateMoveState()
         {
             if (motionLocked)
@@ -568,6 +574,26 @@ namespace BC.Base
 
             preservedVelocityWhenLocked = Vector3.zero;
         }
+        public void ReviveFromCheckpoint()
+        {
+            IsReceiveBombImpact = false;
+            motionLocked = false;
+            preservedVelocityWhenLocked = Vector3.zero;
+
+            planarVelocity = Vector3.zero;
+            verticalVelocity = groundedStickVelocity;
+            externalVelocity = Vector3.zero;
+
+            StateMachine.ChangeState(EntityMoveState.Idle);
+
+            if (IsRuntimeReady && SceneKernel.ValueStore != null)
+            {
+                SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsDead, false);
+                SceneKernel.ValueStore.RemoveBoolModifier(Entity, ValueKeys.Move.CanMove, DeadMoveLockTag);
+            }
+
+            PublishRuntimeValues();
+        }
         public bool IsGrounded => ground.IsValid || characterController != null && characterController.isGrounded;
 
         public bool IsSprinting =>
@@ -601,6 +627,18 @@ namespace BC.Base
                 return Mathf.Clamp01(CurrentPlanarSpeed / maxSpeed);
             }
         }
+        private void PublishRuntimeValues()
+        {
+            if (!IsRuntimeReady || SceneKernel.ValueStore == null)
+                return;
+
+            SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.MoveState, MoveState);
+            SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.CurrentPlanarSpeed, CurrentPlanarSpeed);
+            SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.VerticalVelocity, verticalVelocity);
+            SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsGrounded, IsGrounded);
+            SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsSprinting, IsSprinting);
+            SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsDead, IsDead);
+        }
 
         private readonly struct GroundInfo
         {
@@ -621,5 +659,6 @@ namespace BC.Base
                 Transform = transform;
             }
         }
+
     }
 }

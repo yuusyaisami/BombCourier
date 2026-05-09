@@ -25,6 +25,7 @@ namespace BC.Manager
         }
 
         [SerializeField] private List<StageDataSO> stageData; // ステージデータのScriptableObject
+        [SerializeField] private StageCheckpointServiceMB checkpointService; // チェックポイントサービス
         [SerializeField] private Transform stageRoot; // ステージの親オブジェクト
 
         public StageLoadResult LoadStage(int stageIndex)
@@ -56,6 +57,14 @@ namespace BC.Manager
                 spawnPoints = spawnPoints
             };
         }
+        public void CaptureStageCheckpoint()
+        {
+            checkpointService.Capture();
+        }
         // ステージをリロードする (注意: これはStageSaveが入った後に呼び出すこと, またReloadはSaveの一番最新の状態で呼ぶこと)
+        public void ReloadStage()
+        {
+            checkpointService.Restore();
+        }
     }
 }
