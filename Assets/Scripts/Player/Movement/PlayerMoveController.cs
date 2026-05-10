@@ -58,6 +58,9 @@ namespace BC.Base
         [SerializeField] private float airAcceleration = 12.0f;
         [SerializeField] private float airDeceleration = 4.0f;
         [SerializeField] private float maxAirHorizontalSpeed = 8.0f;
+        [Header("Impulse")] // ラグドールが吹き飛びすぎないようにするための制限
+        [SerializeField] private float maxRagdollImpulse = 12.0f;
+        [SerializeField] private float maxBombExternalVelocity = 8.0f;
 
         [Header("Jump / Gravity")]
         [SerializeField] private float jumpHeight = 1.4f;
@@ -463,7 +466,13 @@ namespace BC.Base
         // 爆弾
         public void OnBombImpactReceived(Vector3 direction, float forceMagnitude)
         {
-            AddImpulse(direction * forceMagnitude);
+            if (IsReceiveBombImpact)
+                return;
+
+            Vector3 externalImpulse = direction * Mathf.Min(forceMagnitude, maxBombExternalVelocity);
+            Vector3 ragdollImpulse = direction * Mathf.Min(forceMagnitude, maxRagdollImpulse);
+
+            AddImpulse(externalImpulse);
 
             IsReceiveBombImpact = true;
             StateMachine.ChangeState(EntityMoveState.Dead);
@@ -472,8 +481,9 @@ namespace BC.Base
             {
                 if (ragdollController != null)
                 {
-                    ragdollController.EnterRagdoll(direction * forceMagnitude);
+                    ragdollController.EnterRagdoll(ragdollImpulse);
                 }
+
                 SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsDead, true);
                 SceneKernel.ValueStore.SetBoolModifier(Entity, ValueKeys.Move.CanMove, DeadMoveLockTag, false);
             }

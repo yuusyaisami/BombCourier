@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using BC.Rendering;
+
 namespace BC.Player
 {
     [DisallowMultipleComponent]
@@ -27,13 +28,17 @@ namespace BC.Player
         [Header("Runtime Debug")]
         [SerializeField] private bool isHandlingItem;
 
+
         private const int MaxItemHits = 32;
+
         private readonly Collider[] itemHits = new Collider[MaxItemHits];
+        private readonly List<IItemObject> pickupCandidates = new(16);
         private readonly HashSet<PickupOutlineTargetMB> outlinedTargets = new();
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
         private IItemObject currentlyHandledItem;
+        private IItemObject currentBestItem;
         private float throwForceChargeTimer;
 
         public bool IsHandlingItem => isHandlingItem;
@@ -41,25 +46,17 @@ namespace BC.Player
         private void Awake()
         {
             if (handleItemPoint == null)
-            {
                 Debug.LogError($"{nameof(PlayerItemHandleStateMB)}: handleItemPoint is not assigned.", this);
-            }
 
             if (playerModel == null)
-            {
                 Debug.LogError($"{nameof(PlayerItemHandleStateMB)}: playerModel is not assigned.", this);
-            }
 
             if (handleItemAction == null || handleItemAction.action == null)
-            {
                 Debug.LogError($"{nameof(PlayerItemHandleStateMB)}: handleItemAction is not assigned.", this);
-            }
 
             SceneKernelMB kernelMB = GetComponentInParent<SceneKernelMB>();
             if (kernelMB != null && kernelMB.Kernel != null)
-            {
                 valueStore = kernelMB.Kernel.ValueStore;
-            }
 
             EntityMB entityMB = GetComponentInParent<EntityMB>();
             if (entityMB != null && entityMB.HasEntity)
@@ -80,6 +77,7 @@ namespace BC.Player
         private void OnDisable()
         {
             handleItemAction?.action?.Disable();
+            ClearPickupOutlines();
         }
 
         private void Update()
@@ -92,14 +90,87 @@ namespace BC.Player
 
             if (!isHandlingItem)
             {
+                RefreshPickupCandidates();
                 TickPickup();
             }
             else
             {
+                ClearPickupOutlines();
                 TickThrow();
             }
 
             PublishRuntimeValues();
+        }
+
+        private void RefreshPickupCandidates()
+        {
+            pickupCandidates.Clear();
+            currentBestItem = null;
+
+            int hitCount = Physics.OverlapSphereNonAlloc(
+                handleItemPoint.position,
+                handleItemDistance,
+                itemHits,
+                itemLayerMask,
+                QueryTriggerInteraction.Collide
+            );
+
+            float bestScore = float.MaxValue;
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider hit = itemHits[i];
+
+                if (hit == null)
+                    continue;
+
+                IItemObject item = hit.GetComponentInParent<IItemObject>();
+
+                if (item == null)
+                    continue;
+
+                if (item.IsHandled)
+                    continue;
+
+                Transform itemTransform = item.ItemTransform;
+
+                if (itemTransform == null)
+                    continue;
+
+                Vector3 toItem = itemTransform.position - playerModel.transform.position;
+                toItem.y = 0f;
+
+                float sqrDistance = toItem.sqrMagnitude;
+
+                if (sqrDistance <= 0.0001f)
+                    continue;
+
+                Vector3 playerForward = playerModel.transform.forward;
+                playerForward.y = 0f;
+
+                if (playerForward.sqrMagnitude <= 0.0001f)
+                    continue;
+
+                playerForward.Normalize();
+
+                Vector3 directionToItem = toItem.normalized;
+                float angle = Vector3.Angle(playerForward, directionToItem);
+
+                if (angle > handleItemAngleThreshold)
+                    continue;
+
+                pickupCandidates.Add(item);
+
+                float score = sqrDistance + angle * 0.05f;
+
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    currentBestItem = item;
+                }
+            }
+
+            UpdatePickupOutlines(pickupCandidates, currentBestItem);
         }
 
         private void TickPickup()
@@ -107,10 +178,10 @@ namespace BC.Player
             if (!handleItemAction.action.WasPressedThisFrame())
                 return;
 
-            if (!TryFindBestItem(out IItemObject item))
+            if (currentBestItem == null)
                 return;
 
-            HandleItem(item);
+            HandleItem(currentBestItem);
         }
 
         private void TickThrow()
@@ -138,7 +209,12 @@ namespace BC.Player
             if (item == null)
                 return;
 
+            ClearPickupOutlines();
+
             currentlyHandledItem = item;
+            currentBestItem = null;
+            pickupCandidates.Clear();
+
             isHandlingItem = true;
             throwForceChargeTimer = 0f;
 
@@ -177,87 +253,21 @@ namespace BC.Player
         private void ClearHeldState()
         {
             currentlyHandledItem = null;
+            currentBestItem = null;
+            pickupCandidates.Clear();
+
             isHandlingItem = false;
             throwForceChargeTimer = 0f;
 
             PublishRuntimeValues();
         }
 
-        private bool TryFindBestItem(out IItemObject bestItem)
-        {
-            bestItem = null;
-
-            int hitCount = Physics.OverlapSphereNonAlloc(
-                handleItemPoint.position,
-                handleItemDistance,
-                itemHits,
-                itemLayerMask,
-                QueryTriggerInteraction.Collide
-            );
-
-            float bestScore = float.MaxValue;
-            List<IItemObject> canHandleItems = new();
-
-            for (int i = 0; i < hitCount; i++)
-            {
-                Collider hit = itemHits[i];
-                if (hit == null)
-                    continue;
-
-                IItemObject item = hit.GetComponentInParent<IItemObject>();
-                if (item == null)
-                    continue;
-
-                if (item.IsHandled)
-                    continue;
-
-                Transform itemTransform = item.ItemTransform;
-                if (itemTransform == null)
-                    continue;
-
-                Vector3 toItem = itemTransform.position - playerModel.transform.position;
-                toItem.y = 0f;
-
-                float sqrDistance = toItem.sqrMagnitude;
-                if (sqrDistance <= 0.0001f)
-                    continue;
-
-                Vector3 directionToItem = toItem.normalized;
-                Vector3 playerForward = playerModel.transform.forward;
-                playerForward.y = 0f;
-
-                if (playerForward.sqrMagnitude <= 0.0001f)
-                    continue;
-
-                playerForward.Normalize();
-
-                float angle = Vector3.Angle(playerForward, directionToItem);
-                if (angle > handleItemAngleThreshold)
-                    continue;
-
-                // 正面に近く、距離が近いものを優先する。
-                float score = sqrDistance + angle * 0.05f;
-
-                if (score < bestScore)
-                {
-                    bestScore = score;
-                    bestItem = item;
-                }
-                canHandleItems.Add(item);
-            }
-            UpdatePickupOutlines(canHandleItems, bestItem);
-
-
-            return bestItem != null;
-        }
         private void UpdatePickupOutlines(IReadOnlyList<IItemObject> candidates, IItemObject bestItem)
         {
             foreach (PickupOutlineTargetMB target in outlinedTargets)
             {
                 if (target != null)
-                {
                     target.ClearOutline();
-                }
             }
 
             outlinedTargets.Clear();
@@ -291,14 +301,11 @@ namespace BC.Player
             foreach (PickupOutlineTargetMB target in outlinedTargets)
             {
                 if (target != null)
-                {
                     target.ClearOutline();
-                }
             }
 
             outlinedTargets.Clear();
         }
-
 
         private void PublishRuntimeValues()
         {
