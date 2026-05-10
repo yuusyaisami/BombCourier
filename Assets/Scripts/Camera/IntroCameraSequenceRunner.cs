@@ -1,5 +1,6 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -39,28 +40,24 @@ namespace BombCourier.CameraIntro
         [SerializeField]
         private UnityEvent introCompleted;
 
-        private Coroutine playingCoroutine;
+        private CancellationTokenSource activePlayCancellationTokenSource;
         private bool skipRequested;
 
-        public void Play(IntroCameraPathAuthoring path)
+        public async UniTask Play(IntroCameraPathAuthoring path)
         {
-            if (playingCoroutine != null)
-            {
-                StopCoroutine(playingCoroutine);
-            }
+            CancellationTokenSource playCancellationTokenSource = BeginNewPlay();
 
-            skipRequested = false;
-            PlayRoutine(path).Forget();
-        }
-        public async UniTask PlayAsync(IntroCameraPathAuthoring path)
-        {
-            if (playingCoroutine != null)
+            try
             {
-                StopCoroutine(playingCoroutine);
+                await PlayRoutine(path, playCancellationTokenSource.Token);
             }
-
-            skipRequested = false;
-            await PlayRoutine(path);
+            catch (OperationCanceledException) when (playCancellationTokenSource.IsCancellationRequested)
+            {
+            }
+            finally
+            {
+                CompletePlay(playCancellationTokenSource);
+            }
         }
 
         public void Skip()
@@ -68,7 +65,30 @@ namespace BombCourier.CameraIntro
             skipRequested = true;
         }
 
-        private async UniTask PlayRoutine(IntroCameraPathAuthoring path)
+        private CancellationTokenSource BeginNewPlay()
+        {
+            skipRequested = false;
+
+            if (activePlayCancellationTokenSource != null)
+            {
+                activePlayCancellationTokenSource.Cancel();
+            }
+
+            activePlayCancellationTokenSource = new CancellationTokenSource();
+            return activePlayCancellationTokenSource;
+        }
+
+        private void CompletePlay(CancellationTokenSource playCancellationTokenSource)
+        {
+            if (ReferenceEquals(activePlayCancellationTokenSource, playCancellationTokenSource))
+            {
+                activePlayCancellationTokenSource = null;
+            }
+
+            playCancellationTokenSource.Dispose();
+        }
+
+        private async UniTask PlayRoutine(IntroCameraPathAuthoring path, CancellationToken cancellationToken)
         {
             if (path == null)
             {
@@ -114,7 +134,7 @@ namespace BombCourier.CameraIntro
                 EvaluateRotation(points, 0, 0f, first.transform.position, first.transform.rotation)
             );
 
-            await UniTask.Yield();
+            await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
 
             for (int segmentIndex = 0; segmentIndex < points.Count - 1; segmentIndex++)
             {
@@ -150,7 +170,7 @@ namespace BombCourier.CameraIntro
                     cameraTransform.SetPositionAndRotation(position, rotation);
 
                     elapsed += DeltaTime();
-                    await UniTask.Yield();
+                    await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
                 }
 
                 cameraTransform.SetPositionAndRotation(
@@ -170,7 +190,7 @@ namespace BombCourier.CameraIntro
                         }
 
                         hold += DeltaTime();
-                        await UniTask.Yield();
+                        await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
                     }
                 }
             }
@@ -181,8 +201,6 @@ namespace BombCourier.CameraIntro
 
             inputLockChanged?.Invoke(false);
             introCompleted?.Invoke();
-
-            playingCoroutine = null;
 
             return;
         }
@@ -202,7 +220,6 @@ namespace BombCourier.CameraIntro
 
             inputLockChanged?.Invoke(false);
             introCompleted?.Invoke();
-            playingCoroutine = null;
         }
 
         private float DeltaTime()
