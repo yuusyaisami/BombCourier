@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using BC.Base;
 using BC.Bomb;
 using BombCourier.CameraIntro;
@@ -25,14 +26,21 @@ namespace BC.Manager
         [SerializeField]
         private IntroCameraSequenceRunner introCameraSequenceRunner; // イントロカメラのシーケンスランナー。ステージごとに異なるシーケンスを再生するために使用する。
         [SerializeField] private EntityMB playerPrefab; // プレイヤーのプレハブ
+        [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用のステージインスタンス。エディタで直接割り当てることができます。
         // 爆弾Ref
         private BombMB currentBomb;
-        private PlayerMB player;
+        private GameObject stageInstance; // 現在のステージのインスタンス。ステージをリセットするときに使用する。
+        private PlayerMB playerInstance; // プレイヤーのインスタンス。プレイヤーをスポーンさせるときに使用する。
+        private EntityRef playerRef; // プレイヤーのEntityRef。プレイヤーの状態を管理するために使用する。
         private Action<PlayerMB> onPlayerSpawned; // プレイヤーがスポーンしたときに呼び出されるイベント
         public Action<BombMB> OnCurrentBombChanged; // 現在の爆弾が変わったときに呼び出されるイベント
+        public Action ReloadState; // ステージをリロードする必要があるときに呼び出されるイベント
+        public Action ExplodedState; // 爆弾が爆発したときに呼び出されるイベント
         private SceneKernel sceneKernel; // シーンカーネルの参照。シーン全体の状態を管理するために使用する。
 
         private float currentGameStage;
+
+        public BombMB CurrentBomb => currentBomb;
 
         private void Start()
         {
@@ -51,11 +59,24 @@ namespace BC.Manager
             }
             else if (newState == GameState.Intro)
             {
-                // イントロが始まったときの処理
+                PlayIntroCameraSequence().Forget(); // イントロカメラのシーケンスを再生する
             }
-            else if (newState == GameState.Playing)
+            else if (newState == GameState.SetupPlaying)
             {
-                // プレイが始まったときの処理
+                sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMove, PlayerMoveController.GameLogicTag, true);
+            }
+            else if (newState == GameState.FusePlaying)
+            {
+                StageManagerMB.Instance.CaptureStageCheckpoint(); // チェックポイントを保存する
+            }
+            else if (newState == GameState.Exploded)
+            {
+                // 爆弾が爆発したときの処理
+            }
+            else if (newState == GameState.Reload)
+            {
+                ReloadStageAsync().Forget(); // ステージをリロードする
+
             }
             else if (newState == GameState.StageClear)
             {
@@ -72,7 +93,7 @@ namespace BC.Manager
 
             await UniTask.CompletedTask;
         }
-        private async UniTask PlayIntroCameraSequence(IntroCameraPathAuthoring path)
+        private async UniTask PlayIntroCameraSequence()
         {
             if (introCameraSequenceRunner == null)
             {
@@ -80,29 +101,81 @@ namespace BC.Manager
                 return;
             }
 
-            await introCameraSequenceRunner.Play(path);
+            await introCameraSequenceRunner.Play(stageInstance.GetComponentInChildren<IntroCameraPathAuthoring>());
+            playerInstance.PlayRespawnEffect(); // プレイヤーのスポーンエフェクトを再生する
+            GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
+        }
+        private async UniTask ReloadStageAsync()
+        {
+            // 現在のステージをリロードする処理
+            if (stageInstance != null)
+            {
+                Destroy(stageInstance);
+            }
+            StageManagerMB.Instance.ReloadStage();
+            playerInstance.ResetPlayer();
+            ReloadState?.Invoke();
+
+
+
+            await UniTask.CompletedTask;
         }
 
         public void SetCurrentBomb(BombMB bomb)
         {
+            if (currentBomb != null)
+            {
+                currentBomb.StartedFuse -= HandleCurrentBombStartedFuse; // 既にcurrentBombに登録されている爆弾があれば、イベントハンドラを解除する
+                currentBomb.Exploded -= HandleCurrentBombExploded; // 爆発イベントのハンドラも解除する
+            }
             currentBomb = bomb;
+            if (currentBomb != null)
+            {
+                currentBomb.StartedFuse += HandleCurrentBombStartedFuse;
+                currentBomb.Exploded += HandleCurrentBombExploded;
+            }
             OnCurrentBombChanged?.Invoke(currentBomb);
+        }
+        private void HandleCurrentBombStartedFuse(BombMB bomb)
+        {
+            if (bomb != currentBomb) return; // currentBomb以外の爆弾が起爆した場合は無視する
+            GameStateManagerMB.Instance.ChangeState(GameState.FusePlaying);
+        }
+        private void HandleCurrentBombExploded(BombMB bomb)
+        {
+            if (bomb != currentBomb) return; // currentBomb以外の爆弾が爆発した場合は無視する
+            GameStateManagerMB.Instance.ChangeState(GameState.Exploded);
+            ExplodedState?.Invoke();
         }
 
         public void LoadGameStage()
         {
-            StageLoadResult result = StageManagerMB.Instance.LoadStage((int)currentGameStage);
-            if (result.bombs.Count > 0)
+            if (debugStageInstance == null)
             {
-                SetCurrentBomb(result.bombs[0]);
+                StageLoadResult result = StageManagerMB.Instance.LoadStage((int)currentGameStage);
+                if (result.bombs.Count > 0)
+                {
+                    SetCurrentBomb(result.bombs[0]);
+                }
+                // playerをテレポートさせる
+                if (result.spawnPoints.Count > 0)
+                {
+                    // とりあえず最初のスポーンポイントにテレポートさせる
+                    PlayerSpawnPointMB spawnPoint = result.spawnPoints[0];
+                    SpawnAndTeleportPlayer(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
+                }
+                // instanceを保存
+                stageInstance = result.stageInstance;
             }
-            // playerをテレポートさせる
-            if (result.spawnPoints.Count > 0)
+            else
             {
-                // とりあえず最初のスポーンポイントにテレポートさせる
-                PlayerSpawnPointMB spawnPoint = result.spawnPoints[0];
-                SpawnAndTeleportPlayer(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
+                SetCurrentBomb(transform.GetComponentInChildren<BombMB>());
+                playerInstance = transform.GetComponentInChildren<PlayerMB>();
+                playerRef = playerInstance.GetComponent<EntityMB>().Entity;
+                stageInstance = debugStageInstance.gameObject;
             }
+
+
             GameStateManagerMB.Instance.ChangeState(GameState.Intro);
         }
         // ゲーム内にプレイヤーがいた場合はTeleportのみ、いない場合はSpawnしてからTeleportする
@@ -112,13 +185,24 @@ namespace BC.Manager
             if (existingPlayer != null)
             {
                 existingPlayer.TeleportToSpawnPoint(position, rotation);
+                playerInstance = existingPlayer;
+                playerRef = existingPlayer.GetComponent<EntityMB>().Entity;
             }
             else
             {
-                EntitySpawnResult result = sceneKernel.Spawner.Spawn(new EntitySpawnRequest(player.gameObject, transform, position, rotation));
-                PlayerMB newPlayer = result.GameObject.GetComponent<PlayerMB>();
-                newPlayer.TeleportToSpawnPoint(position, rotation);
+                EntitySpawnResult result = SpawnPlayer(player, position, rotation);
+                playerInstance = result.GameObject.GetComponent<PlayerMB>();
+                playerRef = result.Entity;
             }
+            // 一時的にPlayerの動きを止める
+            sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMove, PlayerMoveController.GameLogicTag, false);
+        }
+        public EntitySpawnResult SpawnPlayer(EntityMB player, Vector3 position, Quaternion rotation)
+        {
+            EntitySpawnResult result = sceneKernel.Spawner.Spawn(new EntitySpawnRequest(player.gameObject, transform, position, rotation));
+            PlayerMB newPlayer = result.GameObject.GetComponent<PlayerMB>();
+            newPlayer.TeleportToSpawnPoint(position, rotation);
+            return result;
         }
 
 

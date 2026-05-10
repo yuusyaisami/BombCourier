@@ -37,6 +37,7 @@ namespace BC.Base
     public sealed class PlayerMoveController : EntityMoveController, IEntityMoveAnimationSource, IBombImpactReceiver // Rigidbodyがないので
     {
         private static readonly ValueModifierTagId DeadMoveLockTag = new ValueModifierTagId(10001);
+        public static readonly ValueModifierTagId GameLogicTag = new ValueModifierTagId(10002);
         [Header("References")]
         [SerializeField] private CharacterController characterController;
         [SerializeField] private Transform modelRoot;

@@ -10,7 +10,8 @@ namespace BC.Manager
     {
         public List<BombMB> bombs; // ステージ内の爆弾のリスト
         public List<PlayerSpawnPointMB> spawnPoints; // ステージ内のプレイヤースポーンポイントのリスト
-        public IntroCameraPathAuthoring introCameraPath; // イントロカメラのパス (nullの場合はイントロなし)
+        public IntroCameraPathAuthoring introCameraPath; // イントロカメラのパス 
+        public GameObject stageInstance; // ステージのインスタンス
     }
     public class StageManagerMB : MonoBehaviour
     {
@@ -60,17 +61,31 @@ namespace BC.Manager
             {
                 bombs = bombs,
                 spawnPoints = spawnPoints,
-                introCameraPath = introCameraPath
+                introCameraPath = introCameraPath,
+                stageInstance = stageInstance
             };
         }
         public void CaptureStageCheckpoint()
         {
+            if (checkpointService == null)
+            {
+                Debug.LogError($"{nameof(StageManagerMB)}: checkpointService is not assigned.", this);
+                return;
+            }
+
             checkpointService.Capture();
         }
         // ステージをリロードする (注意: これはStageSaveが入った後に呼び出すこと, またReloadはSaveの一番最新の状態で呼ぶこと)
         public void ReloadStage()
         {
+            if (checkpointService == null)
+            {
+                Debug.LogError($"{nameof(StageManagerMB)}: checkpointService is not assigned.", this);
+                return;
+            }
+
             checkpointService.Restore();
+
         }
     }
 }
