@@ -43,6 +43,9 @@ namespace BC.Animation
 
         private bool initialized;
 
+        private FaceExpressionId lastDebugExpression;
+        private bool hasLastDebugExpression;
+
         private void Reset()
         {
             animator = GetComponentInChildren<Animator>();
@@ -209,18 +212,37 @@ namespace BC.Animation
 
         public void ApplyFaceStateParameters()
         {
-            if (moveSource == null)
+            if (moveSource == null || valueStoreService == null || !entityRef.IsValid)
                 return;
 
             bool isHandlingItem = handleItemSource != null && handleItemSource.IsHandlingItem;
-
             EntityMoveState state = moveSource.MoveState;
-            if (state == EntityMoveState.Jumping || state == EntityMoveState.Falling)
-                valueStoreService.Set<FaceExpressionId>(entityRef, ValueKeys.Runtime.FaceExpression, FaceExpressionId.Falling);
+
+            FaceExpressionId expression;
+
+            if (state == EntityMoveState.Dead)
+                expression = FaceExpressionId.Dead;
             else if (isHandlingItem)
-                valueStoreService.Set<FaceExpressionId>(entityRef, ValueKeys.Runtime.FaceExpression, FaceExpressionId.CarryingItem);
-            else if (state == EntityMoveState.Dead)
-                valueStoreService.Set<FaceExpressionId>(entityRef, ValueKeys.Runtime.FaceExpression, FaceExpressionId.Dead);
+                expression = FaceExpressionId.CarryingItem;
+            else if (state == EntityMoveState.Jumping || state == EntityMoveState.Falling)
+                expression = FaceExpressionId.Falling;
+            else if (moveSource.IsSprinting)
+                expression = FaceExpressionId.Running;
+            else
+                expression = FaceExpressionId.Neutral;
+
+            SetFaceExpression(expression);
+        }
+        private void SetFaceExpression(FaceExpressionId expression)
+        {
+            if (!hasLastDebugExpression || lastDebugExpression != expression)
+            {
+                Debug.Log($"FaceExpression changed: {expression}", this);
+                hasLastDebugExpression = true;
+                lastDebugExpression = expression;
+            }
+
+            valueStoreService.Set(entityRef, ValueKeys.Runtime.FaceExpression, expression);
         }
 
         private void ApplyHandleItemParameters()
