@@ -30,7 +30,7 @@ namespace BC.Character
             meshFilter = GetComponent<MeshFilter>();
         }
 
-        private void Awake()
+        private void Start()
         {
             if (skinnedMeshRenderer == null)
                 skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
