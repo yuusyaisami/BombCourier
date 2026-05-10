@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Events;
@@ -24,9 +25,6 @@ namespace BombCourier.CameraIntro
         [SerializeField] private int gameplayPriority = 10;
         [SerializeField] private int inactivePriority = 0;
 
-        [Header("Path")]
-        [SerializeField] private IntroCameraPathAuthoring path;
-
         [Header("Motion")]
         [SerializeField]
         private AnimationCurve defaultEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -41,22 +39,10 @@ namespace BombCourier.CameraIntro
         [SerializeField]
         private UnityEvent introCompleted;
 
-        [Header("Debug")]
-        [SerializeField]
-        private bool playOnStart = true;
-
         private Coroutine playingCoroutine;
         private bool skipRequested;
 
-        private void Start()
-        {
-            if (playOnStart)
-            {
-                Play();
-            }
-        }
-
-        public void Play()
+        public void Play(IntroCameraPathAuthoring path)
         {
             if (playingCoroutine != null)
             {
@@ -64,7 +50,17 @@ namespace BombCourier.CameraIntro
             }
 
             skipRequested = false;
-            playingCoroutine = StartCoroutine(PlayRoutine());
+            PlayRoutine(path).Forget();
+        }
+        public async UniTask PlayAsync(IntroCameraPathAuthoring path)
+        {
+            if (playingCoroutine != null)
+            {
+                StopCoroutine(playingCoroutine);
+            }
+
+            skipRequested = false;
+            await PlayRoutine(path);
         }
 
         public void Skip()
@@ -72,27 +68,27 @@ namespace BombCourier.CameraIntro
             skipRequested = true;
         }
 
-        private IEnumerator PlayRoutine()
+        private async UniTask PlayRoutine(IntroCameraPathAuthoring path)
         {
             if (path == null)
             {
                 Debug.LogError($"{nameof(IntroCameraSequenceRunner)}: path is null.", this);
                 CompleteImmediately();
-                yield break;
+                return;
             }
 
             if (introCamera == null)
             {
                 Debug.LogError($"{nameof(IntroCameraSequenceRunner)}: introCamera is null.", this);
                 CompleteImmediately();
-                yield break;
+                return;
             }
 
             if (gameplayCamera == null)
             {
                 Debug.LogError($"{nameof(IntroCameraSequenceRunner)}: gameplayCamera is null.", this);
                 CompleteImmediately();
-                yield break;
+                return;
             }
 
             List<IntroCameraPoint> points = path.BuildOrderedPoints();
@@ -101,7 +97,7 @@ namespace BombCourier.CameraIntro
             {
                 Debug.LogWarning($"{nameof(IntroCameraSequenceRunner)}: Intro path requires at least 2 points. Skipping intro.", this);
                 CompleteImmediately();
-                yield break;
+                return;
             }
 
             inputLockChanged?.Invoke(true);
@@ -118,7 +114,7 @@ namespace BombCourier.CameraIntro
                 EvaluateRotation(points, 0, 0f, first.transform.position, first.transform.rotation)
             );
 
-            yield return null;
+            await UniTask.Yield();
 
             for (int segmentIndex = 0; segmentIndex < points.Count - 1; segmentIndex++)
             {
@@ -154,7 +150,7 @@ namespace BombCourier.CameraIntro
                     cameraTransform.SetPositionAndRotation(position, rotation);
 
                     elapsed += DeltaTime();
-                    yield return null;
+                    await UniTask.Yield();
                 }
 
                 cameraTransform.SetPositionAndRotation(
@@ -174,7 +170,7 @@ namespace BombCourier.CameraIntro
                         }
 
                         hold += DeltaTime();
-                        yield return null;
+                        await UniTask.Yield();
                     }
                 }
             }
@@ -187,6 +183,8 @@ namespace BombCourier.CameraIntro
             introCompleted?.Invoke();
 
             playingCoroutine = null;
+
+            return;
         }
 
         private void CompleteImmediately()

@@ -11,5 +11,9 @@ namespace BC.Base
     public class PlayerMB : MonoBehaviour
     {
 
+        public void TeleportToSpawnPoint(Vector3 position = default, Quaternion rotation = default)
+        {
+
+        }
     }
 }
