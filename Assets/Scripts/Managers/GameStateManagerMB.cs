@@ -12,11 +12,24 @@ namespace BC.Manager
     }
     public class GameStateManagerMB : MonoBehaviour
     {
+        public static GameStateManagerMB Instance { get; private set; }
         private StateMachine<GameState> _stateMachine = new StateMachine<GameState>();
-
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+        }
         private void Start()
         {
             _stateMachine.ChangeState(GameState.Starting);
+        }
+        public void ChangeState(GameState newState)
+        {
+            _stateMachine.ChangeState(newState);
         }
         private void Update()
         {
