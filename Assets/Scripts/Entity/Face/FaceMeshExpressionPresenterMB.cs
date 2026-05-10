@@ -142,8 +142,15 @@ namespace BC.Character
         {
             if (!uvSet.TryGetExpressionUvRect(expression, out Rect targetUvRect))
             {
-                Debug.LogWarning($"{nameof(FaceMeshExpressionPresenterMB)}: UV rect is not registered. Expression={expression}", this);
-                return;
+                Debug.LogWarning(
+                    $"{nameof(FaceMeshExpressionPresenterMB)}: UV rect is not registered. Expression={expression}. Fallback to Neutral.",
+                    this);
+
+                if (!uvSet.TryGetExpressionUvRect(FaceExpressionId.Neutral, out targetUvRect))
+                {
+                    Debug.LogError($"{nameof(FaceMeshExpressionPresenterMB)}: Neutral UV rect is not registered.", this);
+                    return;
+                }
             }
 
             RemapUvs(sourceUvRect, targetUvRect);
