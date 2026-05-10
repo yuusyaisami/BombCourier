@@ -26,17 +26,26 @@ namespace BC.Bomb
     {
         void OnBombImpactReceived(Vector3 direction, float impactForce);
     }
+
     public interface IItemObject
     {
-        void OnHandle();
+        Transform ItemTransform { get; }
+        bool IsHandled { get; }
+
+        void OnHandle(Transform handlePoint);
+        void OnRelease(Vector3 throwVelocity);
     }
 
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(Collider))]
     public sealed class BombMB : MonoBehaviour, IItemObject
     {
         public event Action<BombMB> Exploded;
 
         [Header("Fuse")]
         [SerializeField] private float fuseTime = 8.0f;
+        [SerializeField] private bool startFuseOnHandle = true;
 
         [Header("Explosion")]
         [SerializeField] private float explosionThreshold = 10f;
@@ -53,8 +62,11 @@ namespace BC.Bomb
 
         private bool fuseStarted;
         private bool exploded;
+        private bool isHandled;
         private float remainingFuseTime;
 
+        public Transform ItemTransform => transform;
+        public bool IsHandled => isHandled;
         public bool FuseStarted => fuseStarted;
         public float RemainingFuseTime => remainingFuseTime;
 
@@ -65,8 +77,10 @@ namespace BC.Bomb
             kernelMB = GetComponentInParent<SceneKernelMB>();
 
             EntityMB entityMB = GetComponentInParent<EntityMB>();
-            if (entityMB != null)
+            if (entityMB != null && entityMB.HasEntity)
+            {
                 entityRef = entityMB.Entity;
+            }
 
             remainingFuseTime = fuseTime;
         }
@@ -84,23 +98,68 @@ namespace BC.Bomb
             }
         }
 
-        public void BeginFuse()
+        public void OnHandle(Transform handlePoint)
+        {
+            if (handlePoint == null)
+            {
+                Debug.LogError($"{nameof(BombMB)}: Handle point is null.", this);
+                return;
+            }
+
+            if (exploded)
+                return;
+
+            isHandled = true;
+
+            // 持っている間は物理で暴れないようにする。
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+            rb.detectCollisions = false;
+
+            transform.SetParent(handlePoint, false);
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+
+            if (startFuseOnHandle)
+            {
+                BeginFuse();
+            }
+        }
+
+        public void OnRelease(Vector3 throwVelocity)
         {
             if (exploded)
                 return;
 
-            if (fuseStarted)
+            isHandled = false;
+
+            transform.SetParent(null, true);
+
+            rb.isKinematic = false;
+            rb.detectCollisions = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.AddForce(throwVelocity, ForceMode.VelocityChange);
+        }
+
+        public void BeginFuse()
+        {
+            if (exploded || fuseStarted)
                 return;
 
             fuseStarted = true;
             remainingFuseTime = fuseTime;
+
             if (startFuseEffect != null)
+            {
                 startFuseEffect.Play();
+            }
         }
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (exploded || rb == null || bombCollider == null)
+            if (exploded || rb == null || bombCollider == null || isHandled)
                 return;
 
             float threshold = explosionThreshold;
@@ -136,7 +195,9 @@ namespace BC.Bomb
             exploded = true;
 
             if (explosionEffectPrefab != null)
+            {
                 Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity).Play();
+            }
 
             ApplyExplosionImpact();
 
@@ -152,12 +213,6 @@ namespace BC.Bomb
             }
 
             Destroy(gameObject);
-        }
-
-        // OnHandle
-        public void OnHandle()
-        {
-            // ここでは特に何もしない。アイテムを扱う処理は、アイテムを扱う側（PlayerItemHandleStateMBなど）で行う想定。
         }
 
         private void ApplyExplosionImpact()
@@ -184,7 +239,9 @@ namespace BC.Bomb
                 if (hit.TryGetComponent(out Rigidbody hitRb) && hitRb != rb)
                 {
                     if (hitRb.TryGetComponent(out IBombImpactDetector detector))
+                    {
                         detector.OnBombImpact(direction, forceMagnitude);
+                    }
 
                     hitRb.AddForce(direction * forceMagnitude, ForceMode.Impulse);
                 }
