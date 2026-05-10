@@ -3,7 +3,7 @@ Shader "BC/PickupOutlineInvertedHull"
     Properties
     {
         _OutlineColor ("Outline Color", Color) = (1, 1, 0, 1)
-        _OutlineWidth ("Outline Width", Float) = 0.035
+        _OutlineWidth ("Outline Width", Float) = 0.018
     }
 
     SubShader
@@ -21,7 +21,10 @@ Shader "BC/PickupOutlineInvertedHull"
 
             Cull Front
             ZWrite Off
-            ZTest Greater
+
+
+            ZTest LEqual
+
             Blend SrcAlpha OneMinusSrcAlpha
 
             HLSLPROGRAM

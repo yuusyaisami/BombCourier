@@ -1,5 +1,6 @@
 using BC.Base;
 using UnityEngine;
+using UnityEngine.ProBuilder;
 
 namespace BC.Animation
 {
@@ -31,6 +32,8 @@ namespace BC.Animation
 
         private IEntityMoveAnimationSource moveSource;
         private IEntityHandleItemAnimationSource handleItemSource;
+        private ValueStoreService valueStoreService;
+        private EntityRef entityRef;
 
         private int isHandleItemHash;
         private int isSprintHash;
@@ -50,6 +53,12 @@ namespace BC.Animation
         {
             Initialize();
         }
+        private void Start()
+        {
+            valueStoreService = GetComponentInParent<SceneKernelMB>().Kernel.ValueStore;
+            entityRef = GetComponentInParent<EntityMB>().Entity;
+
+        }
 
         private void LateUpdate()
         {
@@ -57,6 +66,7 @@ namespace BC.Animation
                 return;
 
             ApplyMoveParameters();
+            ApplyFaceStateParameters();
             ApplyHandleItemParameters();
         }
 
@@ -195,6 +205,22 @@ namespace BC.Animation
                 speed,
                 speedDampTime,
                 Time.deltaTime);
+        }
+
+        public void ApplyFaceStateParameters()
+        {
+            if (moveSource == null)
+                return;
+
+            bool isHandlingItem = handleItemSource != null && handleItemSource.IsHandlingItem;
+
+            EntityMoveState state = moveSource.MoveState;
+            if (state == EntityMoveState.Jumping || state == EntityMoveState.Falling)
+                valueStoreService.Set<FaceExpressionId>(entityRef, ValueKeys.Runtime.FaceExpression, FaceExpressionId.Falling);
+            else if (isHandlingItem)
+                valueStoreService.Set<FaceExpressionId>(entityRef, ValueKeys.Runtime.FaceExpression, FaceExpressionId.CarryingItem);
+            else if (state == EntityMoveState.Dead)
+                valueStoreService.Set<FaceExpressionId>(entityRef, ValueKeys.Runtime.FaceExpression, FaceExpressionId.Dead);
         }
 
         private void ApplyHandleItemParameters()

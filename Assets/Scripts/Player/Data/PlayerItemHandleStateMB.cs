@@ -30,6 +30,9 @@ namespace BC.Player
 
 
         private const int MaxItemHits = 32;
+        // アイテムを拾った後、プレイヤーが入力を離すまで次のアイテムを拾えないようにするためのフラグ。これがないと、例えば爆弾を投げた瞬間にもう一度掴んでしまう。
+        private bool waitForPickupInputRelease;
+        private bool isThrowCharging;
 
         private readonly Collider[] itemHits = new Collider[MaxItemHits];
         private readonly List<IItemObject> pickupCandidates = new(16);
@@ -192,18 +195,41 @@ namespace BC.Player
                 return;
             }
 
+            // 拾った時の入力がまだ押されている間は、投げ処理を一切しない。
+            if (waitForPickupInputRelease)
+            {
+                if (handleItemAction.action.IsPressed())
+                {
+                    return;
+                }
+
+                waitForPickupInputRelease = false;
+                return;
+            }
+
+            // まだ投げチャージしていない。
+            // 2回目の押下で初めてチャージ開始。
+            if (!isThrowCharging)
+            {
+                if (handleItemAction.action.WasPressedThisFrame())
+                {
+                    isThrowCharging = true;
+                    throwForceChargeTimer = 0f;
+                }
+
+                return;
+            }
+
+            // チャージ中。
             if (handleItemAction.action.IsPressed())
             {
                 throwForceChargeTimer += Time.deltaTime;
                 return;
             }
 
-            if (throwForceChargeTimer <= 0f)
-                return;
-
+            // チャージ後に離したら投げる。
             ReleaseCurrentItem();
         }
-
         private void HandleItem(IItemObject item)
         {
             if (item == null)
@@ -217,6 +243,10 @@ namespace BC.Player
 
             isHandlingItem = true;
             throwForceChargeTimer = 0f;
+
+            // 拾った時の押下を、投げチャージに流用させない。
+            waitForPickupInputRelease = true;
+            isThrowCharging = false;
 
             item.OnHandle(handleItemPoint);
 
@@ -258,6 +288,8 @@ namespace BC.Player
 
             isHandlingItem = false;
             throwForceChargeTimer = 0f;
+            waitForPickupInputRelease = false;
+            isThrowCharging = false;
 
             PublishRuntimeValues();
         }

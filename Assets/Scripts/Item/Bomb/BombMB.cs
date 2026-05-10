@@ -120,6 +120,9 @@ namespace BC.Bomb
             rb.isKinematic = true;
             rb.detectCollisions = false;
 
+            // 落下しないようにする
+            rb.useGravity = false;
+
             transform.SetParent(handlePoint, true);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
@@ -142,6 +145,7 @@ namespace BC.Bomb
 
             rb.isKinematic = false;
             rb.detectCollisions = true;
+            rb.useGravity = true;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.AddForce(throwVelocity, ForceMode.VelocityChange);
