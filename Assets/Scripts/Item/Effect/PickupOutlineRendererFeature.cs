@@ -55,6 +55,7 @@ namespace BC.Rendering
             private sealed class PassData
             {
                 internal TextureHandle activeColorTexture;
+                internal TextureHandle activeDepthTexture;
                 internal PickupOutlineEntry[] entries;
                 internal Material candidateMaterial;
                 internal Material bestMaterial;
@@ -77,11 +78,17 @@ namespace BC.Rendering
                     out PassData passData))
                 {
                     passData.activeColorTexture = resourceData.activeColorTexture;
+                    passData.activeDepthTexture = resourceData.activeDepthTexture;
                     passData.entries = entries;
                     passData.candidateMaterial = candidateMaterial;
                     passData.bestMaterial = bestMaterial;
 
                     builder.UseTexture(passData.activeColorTexture, AccessFlags.Write);
+
+                    // これが重要。
+                    // Outline描画時に既存のDepthを参照しないと、裏面メッシュ全体が前面に描かれる。
+                    builder.UseTexture(passData.activeDepthTexture, AccessFlags.Read);
+
                     builder.AllowPassCulling(false);
 
                     builder.SetRenderFunc(static (PassData data, UnsafeGraphContext context) =>
@@ -93,14 +100,14 @@ namespace BC.Rendering
 
             private static void ExecutePass(PassData data, UnsafeGraphContext context)
             {
-                context.cmd.SetRenderTarget(data.activeColorTexture);
+                // ColorだけではなくDepthもRenderTargetに指定する。
+                context.cmd.SetRenderTarget(data.activeColorTexture, data.activeDepthTexture);
 
                 CommandBuffer cmd = CommandBufferHelpers.GetNativeCommandBuffer(context.cmd);
 
                 for (int i = 0; i < data.entries.Length; i++)
                 {
                     PickupOutlineEntry entry = data.entries[i];
-
                     Renderer renderer = entry.Renderer;
 
                     if (renderer == null ||
@@ -118,6 +125,7 @@ namespace BC.Rendering
                         continue;
 
                     Material[] sharedMaterials = renderer.sharedMaterials;
+
                     int subMeshCount = sharedMaterials != null && sharedMaterials.Length > 0
                         ? sharedMaterials.Length
                         : 1;
