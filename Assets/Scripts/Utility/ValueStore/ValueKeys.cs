@@ -1,5 +1,17 @@
 namespace BC.Base
 {
+    public enum FaceExpressionId
+    {
+        Neutral = 0,
+        Happy = 1,
+        Angry = 2,
+        Hurt = 3,
+        Dead = 4,
+        CarryingItem = 5,
+        CannotMove = 6,
+        Falling = 7,
+        Running = 8
+    }
     public static class ValueKeys
     {
         public static class Health
@@ -130,6 +142,13 @@ namespace BC.Base
                     "Runtime.IsHandlingItem",
                     false,
                     ValueCompositionMode.BoolOr
+                );
+            public static readonly ValueKey<FaceExpressionId> FaceExpression =
+                new ValueKey<FaceExpressionId>(
+                    new ValueKeyId(8010),
+                    "Runtime.FaceExpression",
+                    FaceExpressionId.Neutral,
+                    ValueCompositionMode.Raw
                 );
         }
 
