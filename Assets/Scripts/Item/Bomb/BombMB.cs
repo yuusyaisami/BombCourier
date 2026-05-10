@@ -71,7 +71,10 @@ namespace BC.Bomb
         public Transform ItemTransform => transform;
         public bool IsHandled => isHandled;
         public bool FuseStarted => fuseStarted;
+        public float TotalFuseTime => fuseTime;
         public float RemainingFuseTime => remainingFuseTime;
+        public float LastImpactForce { get; private set; }
+        public float ImpactExplosionRatio => Mathf.Clamp01(LastImpactForce / explosionThreshold);
 
         private void Awake()
         {
@@ -94,6 +97,10 @@ namespace BC.Bomb
                 return;
 
             remainingFuseTime -= Time.deltaTime;
+            // lastImpactForce は爆発のトリガーにはならないが、爆発エフェクトの演出などに利用できるようにする。
+            LastImpactForce = Mathf.Lerp(LastImpactForce, 0f, Time.deltaTime * 5f);
+            if (LastImpactForce < 0.01f)
+                LastImpactForce = 0f;
 
             if (remainingFuseTime <= 0f)
             {
@@ -194,6 +201,7 @@ namespace BC.Bomb
 
             if (impactForce >= threshold)
             {
+                LastImpactForce = impactForce;
                 Explode();
             }
         }

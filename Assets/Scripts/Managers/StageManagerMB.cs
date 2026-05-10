@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using BC.Bomb;
 using BC.Stage;
+using BombCourier.CameraIntro;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 namespace BC.Manager
 {
@@ -8,6 +10,7 @@ namespace BC.Manager
     {
         public List<BombMB> bombs; // ステージ内の爆弾のリスト
         public List<PlayerSpawnPointMB> spawnPoints; // ステージ内のプレイヤースポーンポイントのリスト
+        public IntroCameraPathAuthoring introCameraPath; // イントロカメラのパス (nullの場合はイントロなし)
     }
     public class StageManagerMB : MonoBehaviour
     {
@@ -50,11 +53,14 @@ namespace BC.Manager
             {
                 spawnPoints.Add(spawnPoint);
             }
+            // イントロカメラのパス
+            IntroCameraPathAuthoring introCameraPath = stageInstance.GetComponentInChildren<IntroCameraPathAuthoring>();
 
             return new StageLoadResult
             {
                 bombs = bombs,
-                spawnPoints = spawnPoints
+                spawnPoints = spawnPoints,
+                introCameraPath = introCameraPath
             };
         }
         public void CaptureStageCheckpoint()

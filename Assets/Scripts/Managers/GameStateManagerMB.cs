@@ -1,9 +1,11 @@
 using UnityEngine;
 using BC.Utility;
+using Unity.VisualScripting;
 namespace BC.Manager
 {
     public enum GameState
     {
+        Loading, // Logic側がステージをロードしている状態。StageManagerMBがこの状態のとき、GameLogicManagerMBはまだステージの情報を持っていない可能性がある。
         Starting,
         Intro,
         Playing,
@@ -14,6 +16,8 @@ namespace BC.Manager
     {
         public static GameStateManagerMB Instance { get; private set; }
         private StateMachine<GameState> _stateMachine = new StateMachine<GameState>();
+        public GameState CurrentState => _stateMachine.CurrentState;
+        public StateMachine<GameState> StateMachine => _stateMachine;
         private void Awake()
         {
             if (Instance != null && Instance != this)

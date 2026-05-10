@@ -1,0 +1,7 @@
+OVDF v1.1
+BC.Base.SpriteAnimationPlayerMB, Assembly-CSharp
+MetaGuid:b20377c05852deb47a5e72a5dd581d17
+
+# initialClip
++ [Sirenix.OdinInspector.LabelWidthAttribute]
+	Width = 70.71

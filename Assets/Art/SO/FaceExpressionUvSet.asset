@@ -12,12 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb806ef07afd19747abceef3f18a6611, type: 3}
   m_Name: FaceExpressionUvSet
   m_EditorClassIdentifier: Assembly-CSharp::BC.Character.FaceExpressionUvSet
-  atlasTexture: {fileID: 0}
+  atlasTexture: {fileID: 2800000, guid: 3d1d3eaae7a53e844a0bf19d869892a4, type: 3}
   pixelRectUsesTopLeftOrigin: 1
-  sourcePixelRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 0
-    height: 0
-  entries: []
+  entries:
+  - expression: 0
+    pixelRect:
+      serializedVersion: 2
+      x: 15
+      y: 16
+      width: 20
+      height: 16
+  - expression: 4
+    pixelRect:
+      serializedVersion: 2
+      x: 16
+      y: 36
+      width: 20
+      height: 16
+  - expression: 7
+    pixelRect:
+      serializedVersion: 2
+      x: 37
+      y: 15
+      width: 16
+      height: 19
