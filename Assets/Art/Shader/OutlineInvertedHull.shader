@@ -21,7 +21,7 @@ Shader "BC/PickupOutlineInvertedHull"
 
             Cull Front
             ZWrite Off
-            ZTest LEqual
+            ZTest Greater
             Blend SrcAlpha OneMinusSrcAlpha
 
             HLSLPROGRAM

@@ -120,7 +120,7 @@ namespace BC.Bomb
             rb.isKinematic = true;
             rb.detectCollisions = false;
 
-            transform.SetParent(handlePoint, false);
+            transform.SetParent(handlePoint, true);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
 
