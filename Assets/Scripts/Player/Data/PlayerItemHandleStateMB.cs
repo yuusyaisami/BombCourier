@@ -232,7 +232,7 @@ namespace BC.Player
         }
         private void HandleItem(IItemObject item)
         {
-            if (item == null)
+            if (item == null || item.ItemTransform == null)
                 return;
 
             ClearPickupOutlines();

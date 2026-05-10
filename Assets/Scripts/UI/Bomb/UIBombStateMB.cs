@@ -15,12 +15,19 @@ namespace BC.UI
 
         private BombMB bomb;
         private bool isFuseStarted;
-        private void Start()
+        private void OnEnable()
         {
+            if (GameLogicManagerMB.Instance == null)
+                return;
+
             GameLogicManagerMB.Instance.OnCurrentBombChanged += HandleCurrentBombChanged;
+            HandleCurrentBombChanged(GameLogicManagerMB.Instance.CurrentBomb);
         }
-        private void OnDestroy()
+        private void OnDisable()
         {
+            if (GameLogicManagerMB.Instance == null)
+                return;
+
             GameLogicManagerMB.Instance.OnCurrentBombChanged -= HandleCurrentBombChanged;
         }
 

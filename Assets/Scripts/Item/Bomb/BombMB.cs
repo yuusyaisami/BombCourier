@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using BC.Base;
+using BC.Manager;
 
 namespace BC.Bomb
 {
@@ -42,6 +43,7 @@ namespace BC.Bomb
     public sealed class BombMB : MonoBehaviour, IItemObject
     {
         public event Action<BombMB> Exploded;
+        public event Action<BombMB> StartedFuse;
 
         [Header("Fuse")]
         [SerializeField] private float fuseTime = 8.0f;
@@ -170,6 +172,8 @@ namespace BC.Bomb
             {
                 startFuseEffect.Play();
             }
+
+            StartedFuse?.Invoke(this);
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -230,6 +234,8 @@ namespace BC.Bomb
             {
                 return;
             }
+
+            GameLogicManagerMB.Instance.SetCurrentBomb(null); // 爆弾が爆発したらGameLogicManagerに通知する
 
             Destroy(gameObject);
         }

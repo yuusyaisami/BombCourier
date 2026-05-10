@@ -8,8 +8,11 @@ namespace BC.Manager
         Loading, // Logic側がステージをロードしている状態。StageManagerMBがこの状態のとき、GameLogicManagerMBはまだステージの情報を持っていない可能性がある。
         Starting,
         Intro,
-        Playing,
+        SetupPlaying,
+        FusePlaying,
+        Exploded, // 爆弾が爆発した状態。プレイヤーはこの状態になったときにリロードを促すUIを表示する。
         StageClear,
+        Reload,
         GameOver // 爆弾爆発
     }
     public class GameStateManagerMB : MonoBehaviour
@@ -45,7 +48,7 @@ namespace BC.Manager
                 case GameState.Intro:
                     //HandleIntro();
                     break;
-                case GameState.Playing:
+                case GameState.SetupPlaying:
                     //HandlePlaying();
                     break;
                 case GameState.StageClear:
