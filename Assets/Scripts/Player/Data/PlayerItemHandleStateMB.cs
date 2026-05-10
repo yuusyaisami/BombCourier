@@ -46,7 +46,7 @@ namespace BC.Player
             isHandlingItem = false;
             handleItemPressTimer = 0f;
 
-            valueStore = GetComponent<SceneKernelMB>().Kernel.ValueStore;
+            valueStore = GetComponentInParent<SceneKernelMB>().Kernel.ValueStore;
             EntityMB entityMB = GetComponentInParent<EntityMB>();
             if (entityMB != null && entityMB.HasEntity)
             {

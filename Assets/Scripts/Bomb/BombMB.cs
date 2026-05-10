@@ -42,7 +42,8 @@ namespace BC.Bomb
         [SerializeField] private float explosionThreshold = 10f;
         [SerializeField] private float explosionRadius = 5f;
         [SerializeField] private float explosionForce = 1000f;
-        [SerializeField] private GameObject explosionEffectPrefab;
+        [SerializeField] private ParticleSystem explosionEffectPrefab;
+        [SerializeField] private ParticleSystem startFuseEffect;
         [SerializeField] private BombExplosionThresholdDataset thresholdDataset;
 
         private Rigidbody rb;
@@ -93,6 +94,8 @@ namespace BC.Bomb
 
             fuseStarted = true;
             remainingFuseTime = fuseTime;
+            if (startFuseEffect != null)
+                startFuseEffect.Play();
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -133,7 +136,7 @@ namespace BC.Bomb
             exploded = true;
 
             if (explosionEffectPrefab != null)
-                Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+                Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity).Play();
 
             ApplyExplosionImpact();
 
