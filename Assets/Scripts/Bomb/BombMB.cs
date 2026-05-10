@@ -26,8 +26,12 @@ namespace BC.Bomb
     {
         void OnBombImpactReceived(Vector3 direction, float impactForce);
     }
+    public interface IItemObject
+    {
+        void OnHandle();
+    }
 
-    public sealed class BombMB : MonoBehaviour
+    public sealed class BombMB : MonoBehaviour, IItemObject
     {
         public event Action<BombMB> Exploded;
 
@@ -145,6 +149,12 @@ namespace BC.Bomb
             }
 
             Destroy(gameObject);
+        }
+
+        // OnHandle
+        public void OnHandle()
+        {
+            // ここでは特に何もしない。アイテムを扱う処理は、アイテムを扱う側（PlayerItemHandleStateMBなど）で行う想定。
         }
 
         private void ApplyExplosionImpact()

@@ -65,11 +65,21 @@ namespace BC.Base
                     ValueCompositionMode.NumericAddMul
                 );
         }
+        public static class Item
+        {
+            public static readonly ValueKey<bool> CanCarry =
+                new ValueKey<bool>(
+                    new ValueKeyId(4001),
+                    "Item.CanCarry",
+                    true,
+                    ValueCompositionMode.BoolAnd
+                );
+        }
         public static class Runtime
         {
             public static readonly ValueKey<EntityMoveState> MoveState =
                 new ValueKey<EntityMoveState>(
-                    new ValueKeyId(4001),
+                    new ValueKeyId(8001),
                     "Runtime.MoveState",
                     EntityMoveState.Idle,
                     ValueCompositionMode.Raw
@@ -77,7 +87,7 @@ namespace BC.Base
 
             public static readonly ValueKey<float> CurrentPlanarSpeed =
                 new ValueKey<float>(
-                    new ValueKeyId(4002),
+                    new ValueKeyId(8002),
                     "Runtime.CurrentPlanarSpeed",
                     0f,
                     ValueCompositionMode.NumericAddMul
@@ -85,7 +95,7 @@ namespace BC.Base
 
             public static readonly ValueKey<float> VerticalVelocity =
                 new ValueKey<float>(
-                    new ValueKeyId(4003),
+                    new ValueKeyId(8003),
                     "Runtime.VerticalVelocity",
                     0f,
                     ValueCompositionMode.NumericAddMul
@@ -93,7 +103,7 @@ namespace BC.Base
 
             public static readonly ValueKey<bool> IsGrounded =
                 new ValueKey<bool>(
-                    new ValueKeyId(4004),
+                    new ValueKeyId(8004),
                     "Runtime.IsGrounded",
                     false,
                     ValueCompositionMode.BoolOr
@@ -101,7 +111,7 @@ namespace BC.Base
 
             public static readonly ValueKey<bool> IsSprinting =
                 new ValueKey<bool>(
-                    new ValueKeyId(4005),
+                    new ValueKeyId(8005),
                     "Runtime.IsSprinting",
                     false,
                     ValueCompositionMode.BoolOr
@@ -109,8 +119,15 @@ namespace BC.Base
 
             public static readonly ValueKey<bool> IsDead =
                 new ValueKey<bool>(
-                    new ValueKeyId(4006),
+                    new ValueKeyId(8006),
                     "Runtime.IsDead",
+                    false,
+                    ValueCompositionMode.BoolOr
+                );
+            public static readonly ValueKey<bool> IsHandlingItem =
+                new ValueKey<bool>(
+                    new ValueKeyId(8007),
+                    "Runtime.IsHandlingItem",
                     false,
                     ValueCompositionMode.BoolOr
                 );
