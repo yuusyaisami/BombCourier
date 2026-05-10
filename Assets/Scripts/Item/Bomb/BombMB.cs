@@ -54,6 +54,8 @@ namespace BC.Bomb
         [SerializeField] private ParticleSystem explosionEffectPrefab;
         [SerializeField] private ParticleSystem startFuseEffect;
         [SerializeField] private BombExplosionThresholdDataset thresholdDataset;
+        [Header("Safety")] // 拾った瞬間に爆発するのを防ぐため
+        [SerializeField] private float impactExplosionGraceTime = 0.2f;
 
         private Rigidbody rb;
         private Collider bombCollider;
@@ -64,6 +66,7 @@ namespace BC.Bomb
         private bool exploded;
         private bool isHandled;
         private float remainingFuseTime;
+        private float ignoreImpactExplosionUntilTime;
 
         public Transform ItemTransform => transform;
         public bool IsHandled => isHandled;
@@ -110,8 +113,8 @@ namespace BC.Bomb
                 return;
 
             isHandled = true;
+            ignoreImpactExplosionUntilTime = Time.time + impactExplosionGraceTime;
 
-            // 持っている間は物理で暴れないようにする。
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
@@ -133,6 +136,7 @@ namespace BC.Bomb
                 return;
 
             isHandled = false;
+            ignoreImpactExplosionUntilTime = Time.time + impactExplosionGraceTime;
 
             transform.SetParent(null, true);
 
@@ -149,7 +153,7 @@ namespace BC.Bomb
                 return;
 
             fuseStarted = true;
-            remainingFuseTime = fuseTime;
+            remainingFuseTime = Mathf.Max(0.1f, fuseTime);
 
             if (startFuseEffect != null)
             {
@@ -160,6 +164,9 @@ namespace BC.Bomb
         private void OnCollisionEnter(Collision collision)
         {
             if (exploded || rb == null || bombCollider == null || isHandled)
+                return;
+
+            if (Time.time < ignoreImpactExplosionUntilTime)
                 return;
 
             float threshold = explosionThreshold;
