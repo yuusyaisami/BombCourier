@@ -1,9 +1,9 @@
 using BC.Base;
 using BC.Bomb;
-using BC.Utility;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using BC.Rendering;
 namespace BC.Player
 {
     [DisallowMultipleComponent]
@@ -29,6 +29,7 @@ namespace BC.Player
 
         private const int MaxItemHits = 32;
         private readonly Collider[] itemHits = new Collider[MaxItemHits];
+        private readonly HashSet<PickupOutlineTargetMB> outlinedTargets = new();
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
@@ -195,6 +196,7 @@ namespace BC.Player
             );
 
             float bestScore = float.MaxValue;
+            List<IItemObject> canHandleItems = new();
 
             for (int i = 0; i < hitCount; i++)
             {
@@ -241,10 +243,62 @@ namespace BC.Player
                     bestScore = score;
                     bestItem = item;
                 }
+                canHandleItems.Add(item);
             }
+            UpdatePickupOutlines(canHandleItems, bestItem);
+
 
             return bestItem != null;
         }
+        private void UpdatePickupOutlines(IReadOnlyList<IItemObject> candidates, IItemObject bestItem)
+        {
+            foreach (PickupOutlineTargetMB target in outlinedTargets)
+            {
+                if (target != null)
+                {
+                    target.ClearOutline();
+                }
+            }
+
+            outlinedTargets.Clear();
+
+            if (candidates == null)
+                return;
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                IItemObject item = candidates[i];
+
+                if (item is not MonoBehaviour itemMB)
+                    continue;
+
+                PickupOutlineTargetMB target = itemMB.GetComponentInParent<PickupOutlineTargetMB>();
+
+                if (target == null)
+                    continue;
+
+                PickupOutlineKind kind = ReferenceEquals(item, bestItem)
+                    ? PickupOutlineKind.Best
+                    : PickupOutlineKind.Candidate;
+
+                target.SetOutline(kind);
+                outlinedTargets.Add(target);
+            }
+        }
+
+        private void ClearPickupOutlines()
+        {
+            foreach (PickupOutlineTargetMB target in outlinedTargets)
+            {
+                if (target != null)
+                {
+                    target.ClearOutline();
+                }
+            }
+
+            outlinedTargets.Clear();
+        }
+
 
         private void PublishRuntimeValues()
         {
