@@ -75,6 +75,7 @@ namespace BC.Bomb
         private const int MaxHeldCollisionHits = 16;
         private readonly Collider[] heldCollisionHits = new Collider[MaxHeldCollisionHits];
         private readonly List<Collider> ignoredPlayerColliders = new(16);
+        private readonly List<EntityImpactResponseMB> explosionImpactResponses = new(16);
 
         public Transform ItemTransform => transform;
         public bool IsHandled => isHandled;
@@ -484,6 +485,7 @@ namespace BC.Bomb
         private void ApplyExplosionImpact()
         {
             Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
+            explosionImpactResponses.Clear();
 
             for (int i = 0; i < hits.Length; i++)
             {
@@ -492,7 +494,12 @@ namespace BC.Bomb
                 if (hit == null)
                     continue;
 
-                Vector3 direction = hit.transform.position - transform.position;
+                Vector3 hitPoint = hit.ClosestPoint(transform.position);
+                Vector3 direction = hitPoint - transform.position;
+
+                if (direction.sqrMagnitude <= 0.0001f)
+                    direction = hit.transform.position - transform.position;
+
                 float distance = Mathf.Max(0.1f, direction.magnitude);
                 direction /= distance;
 
@@ -502,14 +509,23 @@ namespace BC.Bomb
                     explosionForce
                 );
 
-                if (hit.TryGetComponent(out Rigidbody hitRb) && hitRb != rb)
+                bool handledByEntityImpactResponse = TryHandleEntityExplosionImpact(
+                    hit,
+                    hitPoint,
+                    direction,
+                    forceMagnitude);
+
+                Rigidbody hitRb = hit.attachedRigidbody;
+
+                if (hitRb != null && hitRb != rb)
                 {
                     if (hitRb.TryGetComponent(out IBombImpactDetector detector))
                     {
                         detector.OnBombImpact(direction, forceMagnitude);
                     }
 
-                    hitRb.AddForce(direction * forceMagnitude, ForceMode.Impulse);
+                    if (!handledByEntityImpactResponse)
+                        hitRb.AddForce(direction * forceMagnitude, ForceMode.Impulse);
                 }
 
                 if (hit.TryGetComponent(out IBombImpactReceiver receiver))
@@ -517,6 +533,40 @@ namespace BC.Bomb
                     receiver.OnBombImpactReceived(direction, forceMagnitude);
                 }
             }
+
+            explosionImpactResponses.Clear();
+        }
+
+        private bool TryHandleEntityExplosionImpact(
+            Collider hit,
+            Vector3 hitPoint,
+            Vector3 direction,
+            float forceMagnitude)
+        {
+            if (hit == null || hit.attachedRigidbody == rb || hit.transform.IsChildOf(transform))
+                return false;
+
+            EntityImpactResponseMB impactResponse = hit.GetComponentInParent<EntityImpactResponseMB>();
+
+            if (impactResponse == null)
+                return false;
+
+            if (explosionImpactResponses.Contains(impactResponse))
+                return true;
+
+            explosionImpactResponses.Add(impactResponse);
+
+            EntityImpactData impactData = new EntityImpactData(
+                EntityImpactKind.Explosion,
+                gameObject,
+                transform,
+                hit,
+                hitPoint,
+                direction,
+                forceMagnitude);
+
+            impactResponse.TryApplyImpact(impactData);
+            return true;
         }
     }
 }
