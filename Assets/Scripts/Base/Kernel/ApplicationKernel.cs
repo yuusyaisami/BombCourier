@@ -5,6 +5,11 @@ namespace BC.Base
         public ScopedEntityRegistry ApplicationEntityRegistry { get; set; }
 
         public EventService Events { get; set; }
+        public KernelValueStoreService KernelValueStore { get; set; }
+        public IKernelEventBus KernelEvents => Events;
+
+        // 旧名互換。新規コードでは KernelEvents を使う。
+        public IGameEventBus GameEvents => Events;
 
         public ApplicationKernel()
         {

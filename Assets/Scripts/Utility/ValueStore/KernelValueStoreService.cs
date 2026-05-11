@@ -1,15 +1,8 @@
 namespace BC.Base
 {
-    public sealed class EntityValueStore
+    public sealed class KernelValueStoreService : IKernelValueStoreService
     {
         private readonly ValueStoreScope scope = new();
-
-        public EntityRef Entity { get; }
-
-        public EntityValueStore(EntityRef entity)
-        {
-            Entity = entity;
-        }
 
         public T Get<T>(ValueKeyReference key)
         {
@@ -31,6 +24,66 @@ namespace BC.Base
             return scope.Set(key, value);
         }
 
+        public bool SetAdd(ValueKeyReference key, ValueModifierTagId tag, float value)
+        {
+            return scope.SetAdd(key, tag, value);
+        }
+
+        public bool SetAdd(ValueKey<float> key, ValueModifierTagId tag, float value)
+        {
+            return scope.SetAdd(key, tag, value);
+        }
+
+        public bool SetAdd(ValueKey<int> key, ValueModifierTagId tag, float value)
+        {
+            return scope.SetAdd(key, tag, value);
+        }
+
+        public bool SetMul(ValueKeyReference key, ValueModifierTagId tag, float value)
+        {
+            return scope.SetMul(key, tag, value);
+        }
+
+        public bool SetMul(ValueKey<float> key, ValueModifierTagId tag, float value)
+        {
+            return scope.SetMul(key, tag, value);
+        }
+
+        public bool SetMul(ValueKey<int> key, ValueModifierTagId tag, float value)
+        {
+            return scope.SetMul(key, tag, value);
+        }
+
+        public bool RemoveAdd(ValueKeyReference key, ValueModifierTagId tag)
+        {
+            return scope.RemoveAdd(key, tag);
+        }
+
+        public bool RemoveAdd(ValueKey<float> key, ValueModifierTagId tag)
+        {
+            return scope.RemoveAdd(key, tag);
+        }
+
+        public bool RemoveAdd(ValueKey<int> key, ValueModifierTagId tag)
+        {
+            return scope.RemoveAdd(key, tag);
+        }
+
+        public bool RemoveMul(ValueKeyReference key, ValueModifierTagId tag)
+        {
+            return scope.RemoveMul(key, tag);
+        }
+
+        public bool RemoveMul(ValueKey<float> key, ValueModifierTagId tag)
+        {
+            return scope.RemoveMul(key, tag);
+        }
+
+        public bool RemoveMul(ValueKey<int> key, ValueModifierTagId tag)
+        {
+            return scope.RemoveMul(key, tag);
+        }
+
         public bool SetBoolModifier(ValueKeyReference key, ValueModifierTagId tag, bool value)
         {
             return scope.SetBoolModifier(key, tag, value);
@@ -49,66 +102,6 @@ namespace BC.Base
         public bool RemoveBoolModifier(ValueKey<bool> key, ValueModifierTagId tag)
         {
             return scope.RemoveBoolModifier(key, tag);
-        }
-
-        public bool SetAdd(ValueKeyReference key, ValueModifierTagId tag, float value)
-        {
-            return scope.SetAdd(key, tag, value);
-        }
-
-        public bool SetAdd(ValueKey<float> key, ValueModifierTagId tag, float value)
-        {
-            return scope.SetAdd(key, tag, value);
-        }
-
-        public bool SetMul(ValueKeyReference key, ValueModifierTagId tag, float value)
-        {
-            return scope.SetMul(key, tag, value);
-        }
-
-        public bool SetMul(ValueKey<float> key, ValueModifierTagId tag, float value)
-        {
-            return scope.SetMul(key, tag, value);
-        }
-
-        public bool RemoveAdd(ValueKeyReference key, ValueModifierTagId tag)
-        {
-            return scope.RemoveAdd(key, tag);
-        }
-
-        public bool RemoveAdd(ValueKey<float> key, ValueModifierTagId tag)
-        {
-            return scope.RemoveAdd(key, tag);
-        }
-
-        public bool RemoveMul(ValueKeyReference key, ValueModifierTagId tag)
-        {
-            return scope.RemoveMul(key, tag);
-        }
-
-        public bool RemoveMul(ValueKey<float> key, ValueModifierTagId tag)
-        {
-            return scope.RemoveMul(key, tag);
-        }
-
-        public bool SetAdd(ValueKey<int> key, ValueModifierTagId tag, float value)
-        {
-            return scope.SetAdd(key, tag, value);
-        }
-
-        public bool SetMul(ValueKey<int> key, ValueModifierTagId tag, float value)
-        {
-            return scope.SetMul(key, tag, value);
-        }
-
-        public bool RemoveAdd(ValueKey<int> key, ValueModifierTagId tag)
-        {
-            return scope.RemoveAdd(key, tag);
-        }
-
-        public bool RemoveMul(ValueKey<int> key, ValueModifierTagId tag)
-        {
-            return scope.RemoveMul(key, tag);
         }
     }
 }

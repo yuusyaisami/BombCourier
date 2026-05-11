@@ -4,7 +4,8 @@ namespace BC.Base
     {
         private ScopedEntityRegistry SceneRegistry;
         private ScopedEntityRegistry ApplicationRegistry;
-        private EventService events;
+        private IKernelEventBus kernelEvents;
+        private IEntityEventService entityEvents;
         // private ValueStoreService valueStore;
 
         public int Order => 0;
@@ -13,7 +14,8 @@ namespace BC.Base
         {
             SceneRegistry = kernel.EntitiesRegistry;
             ApplicationRegistry = ApplicationKernelMB.Instance.Kernel.ApplicationEntityRegistry;
-            events = kernel.Events;
+            kernelEvents = kernel.KernelEvents;
+            entityEvents = kernel.EntityEvents;
         }
 
         public EntityRef Register(EntityRegistryRequest request)
@@ -29,7 +31,8 @@ namespace BC.Base
                 entity = SceneRegistry.Register(request);
             }
 
-            events.Publish(new EntityRegisterEvent(entity, request.Tag, request.Flags));
+            entityEvents.Publish(entity, new EntityRegisteredEvent(entity, request.Tag, request.Flags));
+            kernelEvents.Publish(new EntityRegisteredKernelEvent(entity, request.Tag, request.Flags));
 
             return entity;
         }
@@ -49,8 +52,9 @@ namespace BC.Base
             if (!removed)
                 return false;
 
-            events.ClearEntity(entity);
-            events.Publish(new EntityUnregisteredGameEvent(entity));
+            entityEvents.Publish(entity, new EntityUnregisteredEvent(entity));
+            entityEvents.ClearEntity(entity);
+            kernelEvents.Publish(new EntityUnregisteredKernelEvent(entity));
 
             return true;
         }

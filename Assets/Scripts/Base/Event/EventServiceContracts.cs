@@ -1,7 +1,12 @@
 using System;
 namespace BC.Base
 {
-    public interface IGameEvent
+    public interface IKernelEvent
+    {
+    }
+
+    // 旧名互換。新規コードでは IKernelEvent を使う。
+    public interface IGameEvent : IKernelEvent
     {
     }
 
@@ -55,15 +60,19 @@ namespace BC.Base
             service.Publish(entity, entityEvent);
         }
     }
-    // Sceneならシーン全体のイベント、Applicationならアプリ全体のイベントを管理するイメージ
-    // GameLogicとして追加なら基本はScene
-    public interface IGameEventBus
+    // Sceneならシーン全体、Applicationならアプリ全体のイベントを管理する。
+    public interface IKernelEventBus
     {
         EventSubscription Subscribe<TEvent>(Action<TEvent> handler)
-            where TEvent : struct, IGameEvent;
+            where TEvent : struct, IKernelEvent;
 
-        void Publish<TEvent>(in TEvent gameEvent)
-            where TEvent : struct, IGameEvent;
+        void Publish<TEvent>(in TEvent kernelEvent)
+            where TEvent : struct, IKernelEvent;
+    }
+
+    // 旧名互換。新規コードでは IKernelEventBus を使う。
+    public interface IGameEventBus : IKernelEventBus
+    {
     }
     // Entityに関連するイベントを管理するサービスのインターフェース
     public interface IEntityEventService
