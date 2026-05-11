@@ -92,6 +92,13 @@ namespace BC.Base
         [Header("Cushion")]
         [SerializeField, Min(0.0f)] private float cushionImpactCooldown = 0.12f;
 
+        [Header("Contact Push")]
+        [SerializeField] private bool pushRigidbodiesOnContact = true;
+        [SerializeField, Min(0.0f)] private float contactPushImpulse = 0.35f;
+        [SerializeField, Min(0.0f)] private float contactPushSpeedMultiplier = 0.2f;
+        [SerializeField, Min(0.0f)] private float maxContactPushImpulse = 2.0f;
+        [SerializeField, Min(0.0f)] private float minContactPushSpeed = 0.1f;
+
         [Header("Visual Rotation")]
         [SerializeField] private float modelTurnSharpness = 16.0f;
         [SerializeField] private float minModelTurnSpeed = 0.1f;
@@ -608,7 +615,12 @@ namespace BC.Base
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            if (hit == null || hit.collider == null || Time.time < nextCushionImpactTime)
+            if (hit == null || hit.collider == null)
+                return;
+
+            TryApplyContactPush(hit);
+
+            if (Time.time < nextCushionImpactTime)
                 return;
 
             CushionSurfaceMB surface = hit.collider.GetComponentInParent<CushionSurfaceMB>();
@@ -633,6 +645,76 @@ namespace BC.Base
 
             if (HandleCushionImpact(impactData, result))
                 nextCushionImpactTime = Time.time + cushionImpactCooldown;
+        }
+
+        private void TryApplyContactPush(ControllerColliderHit hit)
+        {
+            if (!pushRigidbodiesOnContact || IsReceiveBombImpact || motionLocked)
+                return;
+
+            if (hit.moveDirection.y < -0.3f || hit.collider.transform.IsChildOf(transform))
+                return;
+
+            Vector3 pushDirection = ResolveContactPushDirection(hit);
+
+            if (pushDirection.sqrMagnitude <= 0.0001f)
+                return;
+
+            float pushSpeed = new Vector3(CurrentVelocity.x, 0.0f, CurrentVelocity.z).magnitude;
+
+            if (pushSpeed < minContactPushSpeed)
+                return;
+
+            float pushImpulse = Mathf.Min(
+                maxContactPushImpulse,
+                contactPushImpulse + pushSpeed * contactPushSpeedMultiplier);
+
+            if (pushImpulse <= 0.0f)
+                return;
+
+            EntityImpactData impactData = new EntityImpactData(
+                EntityImpactKind.Contact,
+                gameObject,
+                transform,
+                hit.collider,
+                hit.point,
+                pushDirection,
+                pushImpulse);
+
+            EntityImpactResponseMB impactResponse = hit.collider.GetComponentInParent<EntityImpactResponseMB>();
+
+            if (impactResponse != null)
+            {
+                impactResponse.TryApplyImpact(impactData);
+                return;
+            }
+
+            Rigidbody hitRigidbody = hit.collider.attachedRigidbody;
+
+            if (hitRigidbody == null || hitRigidbody.isKinematic)
+                return;
+
+            hitRigidbody.AddForceAtPosition(pushDirection * pushImpulse, hit.point, ForceMode.Impulse);
+        }
+
+        private Vector3 ResolveContactPushDirection(ControllerColliderHit hit)
+        {
+            Vector3 direction = hit.moveDirection;
+            direction.y = 0.0f;
+
+            if (direction.sqrMagnitude <= 0.0001f)
+            {
+                direction = CurrentVelocity;
+                direction.y = 0.0f;
+            }
+
+            if (direction.sqrMagnitude <= 0.0001f)
+            {
+                direction = hit.collider.transform.position - transform.position;
+                direction.y = 0.0f;
+            }
+
+            return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
         }
 
         private void ApplyCushionStop()
