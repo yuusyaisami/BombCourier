@@ -318,7 +318,9 @@ namespace BC.Base
 
             if (wantsJump && canUseCoyote)
             {
-                float jumpSpeed = Mathf.Sqrt(jumpHeight * -2.0f * gravity);
+                float jumpHeightMultiplier = Mathf.Max(0.0f, GetJumpHeightMultiplier(1.0f));
+                float effectiveJumpHeight = Mathf.Max(0.0f, jumpHeight * jumpHeightMultiplier);
+                float jumpSpeed = Mathf.Sqrt(effectiveJumpHeight * -2.0f * gravity);
                 verticalVelocity = jumpSpeed;
 
                 if (inheritMovingPlatformVelocityOnJump)

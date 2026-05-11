@@ -7,9 +7,19 @@ namespace BC.Base
     {
         private readonly Dictionary<uint, EntityValueStore> storesByEntityId = new();
 
+        public T Get<T>(EntityRef entity, ValueKeyReference key)
+        {
+            return GetRequiredStore(entity).Get<T>(key);
+        }
+
         public T Get<T>(EntityRef entity, ValueKey<T> key)
         {
             return GetRequiredStore(entity).Get(key);
+        }
+
+        public bool Set<T>(EntityRef entity, ValueKeyReference key, T value)
+        {
+            return GetRequiredStore(entity).Set(key, value);
         }
 
         public bool Set<T>(EntityRef entity, ValueKey<T> key, T value)
@@ -17,9 +27,19 @@ namespace BC.Base
             return GetRequiredStore(entity).Set(key, value);
         }
 
+        public bool SetAdd(EntityRef entity, ValueKeyReference key, ValueModifierTagId tag, float value)
+        {
+            return GetRequiredStore(entity).SetAdd(key, tag, value);
+        }
+
         public bool SetAdd(EntityRef entity, ValueKey<float> key, ValueModifierTagId tag, float value)
         {
             return GetRequiredStore(entity).SetAdd(key, tag, value);
+        }
+
+        public bool SetMul(EntityRef entity, ValueKeyReference key, ValueModifierTagId tag, float value)
+        {
+            return GetRequiredStore(entity).SetMul(key, tag, value);
         }
 
         public bool SetMul(EntityRef entity, ValueKey<float> key, ValueModifierTagId tag, float value)
@@ -27,9 +47,19 @@ namespace BC.Base
             return GetRequiredStore(entity).SetMul(key, tag, value);
         }
 
+        public bool RemoveAdd(EntityRef entity, ValueKeyReference key, ValueModifierTagId tag)
+        {
+            return GetRequiredStore(entity).RemoveAdd(key, tag);
+        }
+
         public bool RemoveAdd(EntityRef entity, ValueKey<float> key, ValueModifierTagId tag)
         {
             return GetRequiredStore(entity).RemoveAdd(key, tag);
+        }
+
+        public bool RemoveMul(EntityRef entity, ValueKeyReference key, ValueModifierTagId tag)
+        {
+            return GetRequiredStore(entity).RemoveMul(key, tag);
         }
 
         public bool RemoveMul(EntityRef entity, ValueKey<float> key, ValueModifierTagId tag)
@@ -56,9 +86,20 @@ namespace BC.Base
         {
             return GetRequiredStore(entity).RemoveMul(key, tag);
         }
+
+        public bool SetBoolModifier(EntityRef entity, ValueKeyReference key, ValueModifierTagId tag, bool value)
+        {
+            return GetRequiredStore(entity).SetBoolModifier(key, tag, value);
+        }
+
         public bool SetBoolModifier(EntityRef entity, ValueKey<bool> key, ValueModifierTagId tag, bool value)
         {
             return GetRequiredStore(entity).SetBoolModifier(key, tag, value);
+        }
+
+        public bool RemoveBoolModifier(EntityRef entity, ValueKeyReference key, ValueModifierTagId tag)
+        {
+            return GetRequiredStore(entity).RemoveBoolModifier(key, tag);
         }
 
         public bool RemoveBoolModifier(EntityRef entity, ValueKey<bool> key, ValueModifierTagId tag)

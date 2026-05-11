@@ -21,20 +21,36 @@ namespace BC.Player
         [SerializeField] private InputActionReference handleItemAction;
 
         [Header("Throw")]
-        [SerializeField] private float maxThrowForce = 5f;
-        [SerializeField] private float minThrowForce = 2f;
-        [SerializeField] private float throwForceChargeTime = 2f;
+        [SerializeField] private float maxThrowForce = 12f;
+        [SerializeField] private float minThrowForce = 4f;
+        [SerializeField] private float throwForceChargeTime = 1.5f;
+
+        [Header("Carry")]
+        [SerializeField, Range(0.0f, 1.0f)] private float carryingJumpHeightMultiplier = 0.65f;
+
+        [Header("Trajectory")]
+        [SerializeField] private LineRenderer trajectoryLineRenderer;
+        [SerializeField] private LayerMask trajectoryCollisionMask = ~0;
+        [SerializeField, Min(2)] private int trajectoryPointCount = 32;
+        [SerializeField, Min(0.01f)] private float trajectoryTimeStep = 0.08f;
+        [SerializeField, Min(0.01f)] private float trajectoryProbeRadius = 0.45f;
+        [SerializeField, Min(0.001f)] private float trajectoryLineWidth = 0.04f;
+        [SerializeField] private Color trajectoryColor = new Color(1.0f, 0.62f, 0.08f, 0.9f);
 
         [Header("Runtime Debug")]
         [SerializeField] private bool isHandlingItem;
 
 
+        private static readonly ValueModifierTagId CarryItemJumpPenaltyTag = new ValueModifierTagId(10003);
         private const int MaxItemHits = 32;
+        private const int MaxTrajectoryHits = 16;
         // アイテムを拾った後、プレイヤーが入力を離すまで次のアイテムを拾えないようにするためのフラグ。これがないと、例えば爆弾を投げた瞬間にもう一度掴んでしまう。
         private bool waitForPickupInputRelease;
         private bool isThrowCharging;
+        private bool carryJumpPenaltyApplied;
 
         private readonly Collider[] itemHits = new Collider[MaxItemHits];
+        private readonly RaycastHit[] trajectoryHits = new RaycastHit[MaxTrajectoryHits];
         private readonly List<IItemObject> pickupCandidates = new(16);
         private readonly HashSet<PickupOutlineTargetMB> outlinedTargets = new();
 
@@ -43,6 +59,8 @@ namespace BC.Player
         private IItemObject currentlyHandledItem;
         private IItemObject currentBestItem;
         private float throwForceChargeTimer;
+        private Vector3[] trajectoryPoints = new Vector3[32];
+        private Material ownedTrajectoryMaterial;
 
         public bool IsHandlingItem => isHandlingItem;
 
@@ -57,19 +75,7 @@ namespace BC.Player
             if (handleItemAction == null || handleItemAction.action == null)
                 Debug.LogError($"{nameof(PlayerItemHandleStateMB)}: handleItemAction is not assigned.", this);
 
-            SceneKernelMB kernelMB = GetComponentInParent<SceneKernelMB>();
-            if (kernelMB != null && kernelMB.Kernel != null)
-                valueStore = kernelMB.Kernel.ValueStore;
-
-            EntityMB entityMB = GetComponentInParent<EntityMB>();
-            if (entityMB != null && entityMB.HasEntity)
-            {
-                entityRef = entityMB.Entity;
-            }
-            else
-            {
-                Debug.LogWarning($"{nameof(PlayerItemHandleStateMB)}: EntityMB is not found or not bound.", this);
-            }
+            ResolveRuntimeReferences(logMissingEntity: true);
         }
 
         private void OnEnable()
@@ -81,6 +87,17 @@ namespace BC.Player
         {
             handleItemAction?.action?.Disable();
             ClearPickupOutlines();
+            HideTrajectory();
+            RemoveCarryJumpPenalty();
+        }
+
+        private void OnDestroy()
+        {
+            if (ownedTrajectoryMaterial != null)
+            {
+                Destroy(ownedTrajectoryMaterial);
+                ownedTrajectoryMaterial = null;
+            }
         }
 
         private void Update()
@@ -93,6 +110,7 @@ namespace BC.Player
 
             if (!isHandlingItem)
             {
+                HideTrajectory();
                 RefreshPickupCandidates();
                 TickPickup();
             }
@@ -198,6 +216,8 @@ namespace BC.Player
             // 拾った時の入力がまだ押されている間は、投げ処理を一切しない。
             if (waitForPickupInputRelease)
             {
+                HideTrajectory();
+
                 if (handleItemAction.action.IsPressed())
                 {
                     return;
@@ -211,10 +231,13 @@ namespace BC.Player
             // 2回目の押下で初めてチャージ開始。
             if (!isThrowCharging)
             {
+                HideTrajectory();
+
                 if (handleItemAction.action.WasPressedThisFrame())
                 {
                     isThrowCharging = true;
                     throwForceChargeTimer = 0f;
+                    UpdateThrowTrajectory();
                 }
 
                 return;
@@ -224,6 +247,7 @@ namespace BC.Player
             if (handleItemAction.action.IsPressed())
             {
                 throwForceChargeTimer += Time.deltaTime;
+                UpdateThrowTrajectory();
                 return;
             }
 
@@ -249,6 +273,7 @@ namespace BC.Player
             isThrowCharging = false;
 
             item.OnHandle(handleItemPoint);
+            ApplyCarryJumpPenaltyIfNeeded(item);
 
             PublishRuntimeValues();
         }
@@ -261,21 +286,7 @@ namespace BC.Player
                 return;
             }
 
-            float chargeRatio = Mathf.Clamp01(throwForceChargeTimer / Mathf.Max(0.01f, throwForceChargeTime));
-            float throwForce = Mathf.Lerp(minThrowForce, maxThrowForce, chargeRatio);
-
-            Vector3 throwDirection = playerModel.transform.forward;
-            throwDirection.y = 0f;
-
-            if (throwDirection.sqrMagnitude <= 0.0001f)
-            {
-                throwDirection = transform.forward;
-                throwDirection.y = 0f;
-            }
-
-            throwDirection.Normalize();
-
-            currentlyHandledItem.OnRelease(throwDirection * throwForce);
+            currentlyHandledItem.OnRelease(BuildThrowVelocity());
 
             ClearHeldState();
         }
@@ -291,7 +302,225 @@ namespace BC.Player
             waitForPickupInputRelease = false;
             isThrowCharging = false;
 
+            HideTrajectory();
+            RemoveCarryJumpPenalty();
             PublishRuntimeValues();
+        }
+
+        private float CalculateThrowForce()
+        {
+            float chargeRatio = Mathf.Clamp01(throwForceChargeTimer / Mathf.Max(0.01f, throwForceChargeTime));
+            return Mathf.Lerp(minThrowForce, maxThrowForce, chargeRatio);
+        }
+
+        private Vector3 BuildThrowVelocity()
+        {
+            return BuildThrowDirection() * CalculateThrowForce();
+        }
+
+        private Vector3 BuildThrowDirection()
+        {
+            UnityEngine.Camera mainCamera = UnityEngine.Camera.main;
+
+            if (mainCamera != null && mainCamera.transform.forward.sqrMagnitude > 0.0001f)
+                return mainCamera.transform.forward.normalized;
+
+            Vector3 fallbackDirection = playerModel != null
+                ? playerModel.transform.forward
+                : transform.forward;
+
+            fallbackDirection.y = 0.0f;
+
+            if (fallbackDirection.sqrMagnitude <= 0.0001f)
+                fallbackDirection = transform.forward;
+
+            return fallbackDirection.normalized;
+        }
+
+        private void ApplyCarryJumpPenaltyIfNeeded(IItemObject item)
+        {
+            if (item is not BombMB)
+                return;
+
+            ResolveRuntimeReferences(logMissingEntity: false);
+
+            if (valueStore == null || !entityRef.IsValid)
+                return;
+
+            valueStore.SetMul(
+                entityRef,
+                ValueKeys.Move.JumpHeightMultiplier,
+                CarryItemJumpPenaltyTag,
+                carryingJumpHeightMultiplier);
+
+            carryJumpPenaltyApplied = true;
+        }
+
+        private void RemoveCarryJumpPenalty()
+        {
+            if (!carryJumpPenaltyApplied)
+                return;
+
+            ResolveRuntimeReferences(logMissingEntity: false);
+
+            if (valueStore != null && entityRef.IsValid)
+            {
+                valueStore.RemoveMul(
+                    entityRef,
+                    ValueKeys.Move.JumpHeightMultiplier,
+                    CarryItemJumpPenaltyTag);
+            }
+
+            carryJumpPenaltyApplied = false;
+        }
+
+        private void UpdateThrowTrajectory()
+        {
+            if (currentlyHandledItem == null || currentlyHandledItem.ItemTransform == null)
+            {
+                HideTrajectory();
+                return;
+            }
+
+            EnsureTrajectoryRenderer();
+
+            if (trajectoryLineRenderer == null)
+                return;
+
+            int pointCount = Mathf.Clamp(trajectoryPointCount, 2, 64);
+
+            if (trajectoryPoints == null || trajectoryPoints.Length < pointCount)
+                trajectoryPoints = new Vector3[pointCount];
+
+            Vector3 origin = currentlyHandledItem.ItemTransform.position;
+            Vector3 velocity = BuildThrowVelocity();
+            Vector3 previous = origin;
+
+            trajectoryPoints[0] = origin;
+            int usedPointCount = 1;
+
+            for (int i = 1; i < pointCount; i++)
+            {
+                float time = trajectoryTimeStep * i;
+                Vector3 next = origin + velocity * time + 0.5f * Physics.gravity * time * time;
+
+                if (TryFindTrajectoryHit(previous, next, out Vector3 hitPoint))
+                {
+                    trajectoryPoints[usedPointCount++] = hitPoint;
+                    break;
+                }
+
+                trajectoryPoints[usedPointCount++] = next;
+                previous = next;
+            }
+
+            trajectoryLineRenderer.positionCount = usedPointCount;
+
+            for (int i = 0; i < usedPointCount; i++)
+            {
+                trajectoryLineRenderer.SetPosition(i, trajectoryPoints[i]);
+            }
+
+            trajectoryLineRenderer.enabled = true;
+        }
+
+        private bool TryFindTrajectoryHit(Vector3 from, Vector3 to, out Vector3 hitPoint)
+        {
+            hitPoint = to;
+
+            Vector3 segment = to - from;
+            float distance = segment.magnitude;
+
+            if (distance <= 0.0001f)
+                return false;
+
+            Vector3 direction = segment / distance;
+            float radius = Mathf.Max(0.01f, trajectoryProbeRadius);
+
+            int hitCount = Physics.SphereCastNonAlloc(
+                from,
+                radius,
+                direction,
+                trajectoryHits,
+                distance,
+                trajectoryCollisionMask,
+                QueryTriggerInteraction.Ignore);
+
+            bool found = false;
+            float bestDistance = float.MaxValue;
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit hit = trajectoryHits[i];
+
+                if (hit.collider == null || IsIgnoredTrajectoryCollider(hit.collider))
+                    continue;
+
+                if (hit.distance < bestDistance)
+                {
+                    bestDistance = hit.distance;
+                    found = true;
+                }
+            }
+
+            if (!found)
+                return false;
+
+            hitPoint = from + direction * bestDistance;
+            return true;
+        }
+
+        private bool IsIgnoredTrajectoryCollider(Collider hit)
+        {
+            if (hit == null)
+                return true;
+
+            if (hit.transform.IsChildOf(transform))
+                return true;
+
+            Transform itemTransform = currentlyHandledItem?.ItemTransform;
+            return itemTransform != null && hit.transform.IsChildOf(itemTransform);
+        }
+
+        private void EnsureTrajectoryRenderer()
+        {
+            if (trajectoryLineRenderer == null)
+            {
+                GameObject lineObject = new GameObject("Bomb Throw Trajectory");
+                lineObject.transform.SetParent(transform, false);
+                trajectoryLineRenderer = lineObject.AddComponent<LineRenderer>();
+            }
+
+            trajectoryLineRenderer.useWorldSpace = true;
+            trajectoryLineRenderer.startWidth = trajectoryLineWidth;
+            trajectoryLineRenderer.endWidth = trajectoryLineWidth;
+            trajectoryLineRenderer.startColor = trajectoryColor;
+            trajectoryLineRenderer.endColor = trajectoryColor;
+            trajectoryLineRenderer.numCapVertices = 4;
+            trajectoryLineRenderer.numCornerVertices = 4;
+
+            if (trajectoryLineRenderer.sharedMaterial == null)
+            {
+                Shader shader = Shader.Find("Sprites/Default");
+
+                if (shader == null)
+                    shader = Shader.Find("Universal Render Pipeline/Unlit");
+
+                if (shader != null)
+                {
+                    ownedTrajectoryMaterial = new Material(shader);
+                    trajectoryLineRenderer.sharedMaterial = ownedTrajectoryMaterial;
+                }
+            }
+        }
+
+        private void HideTrajectory()
+        {
+            if (trajectoryLineRenderer == null)
+                return;
+
+            trajectoryLineRenderer.enabled = false;
+            trajectoryLineRenderer.positionCount = 0;
         }
 
         private void UpdatePickupOutlines(IReadOnlyList<IItemObject> candidates, IItemObject bestItem)
@@ -341,10 +570,37 @@ namespace BC.Player
 
         private void PublishRuntimeValues()
         {
+            ResolveRuntimeReferences(logMissingEntity: false);
+
             if (valueStore == null || !entityRef.IsValid)
                 return;
 
             valueStore.Set(entityRef, ValueKeys.Runtime.IsHandlingItem, isHandlingItem);
+        }
+
+        private void ResolveRuntimeReferences(bool logMissingEntity)
+        {
+            if (valueStore == null)
+            {
+                SceneKernelMB kernelMB = GetComponentInParent<SceneKernelMB>();
+
+                if (kernelMB != null && kernelMB.Kernel != null)
+                    valueStore = kernelMB.Kernel.ValueStore;
+            }
+
+            if (entityRef.IsValid)
+                return;
+
+            EntityMB entityMB = GetComponentInParent<EntityMB>();
+
+            if (entityMB != null && entityMB.HasEntity)
+            {
+                entityRef = entityMB.Entity;
+            }
+            else if (logMissingEntity)
+            {
+                Debug.LogWarning($"{nameof(PlayerItemHandleStateMB)}: EntityMB is not found or not bound.", this);
+            }
         }
 
         private void OnDrawGizmosSelected()
