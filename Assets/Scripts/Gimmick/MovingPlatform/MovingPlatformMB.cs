@@ -8,7 +8,10 @@ namespace BC.Gimmick.MovingPlatform
     public sealed class MovingPlatformMB : MonoBehaviour, IMovingPlatformMotionSource
     {
         [Header("Layers")]
-        [SerializeField] private MovingPlatformLayer[] layers;
+        [LabelText("Layers")]
+        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [SerializeField]
+        private MovingPlatformLayer[] layers = System.Array.Empty<MovingPlatformLayer>();
 
         [Header("Signals")]
         [SerializeField] private bool publishLayerSignals = true;

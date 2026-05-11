@@ -52,24 +52,34 @@ namespace BC.Gimmick.MovingPlatform
         [Header("Transform Points")]
 
         [ShowIf(nameof(UsesTransformPointsPath))]
+        [LabelText("Path Points")]
+        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
         [SerializeField]
-        private Transform[] pathPoints;
+        private Transform[] pathPoints = Array.Empty<Transform>();
 
         [Header("Cubic Bezier")]
 
+        [TitleGroup("Path / Cubic Bezier")]
         [ShowIf(nameof(UsesBezierPath))]
+        [LabelText("Start")]
         [SerializeField]
         private Transform bezierStart;
 
+        [TitleGroup("Path / Cubic Bezier")]
         [ShowIf(nameof(UsesBezierPath))]
+        [LabelText("Control A")]
         [SerializeField]
         private Transform bezierControlA;
 
+        [TitleGroup("Path / Cubic Bezier")]
         [ShowIf(nameof(UsesBezierPath))]
+        [LabelText("Control B")]
         [SerializeField]
         private Transform bezierControlB;
 
+        [TitleGroup("Path / Cubic Bezier")]
         [ShowIf(nameof(UsesBezierPath))]
+        [LabelText("End")]
         [SerializeField]
         private Transform bezierEnd;
 

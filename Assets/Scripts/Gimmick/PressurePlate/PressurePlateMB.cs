@@ -28,8 +28,15 @@ namespace BC.Gimmick.PressurePlate
             KernelSignalReference.From(Signals.Gimmick.PressurePlate.Released);
 
         [Header("Actions")]
-        [SerializeField] private WiringAction[] onPressedActions;
-        [SerializeField] private WiringAction[] onReleasedActions;
+        [LabelText("Pressed Actions")]
+        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [SerializeField]
+        private WiringAction[] onPressedActions = System.Array.Empty<WiringAction>();
+
+        [LabelText("Released Actions")]
+        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [SerializeField]
+        private WiringAction[] onReleasedActions = System.Array.Empty<WiringAction>();
 
         [InlineProperty]
         [HideLabel]
