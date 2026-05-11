@@ -4,6 +4,11 @@ namespace BC.Base
     {
         private readonly ValueStoreScope scope = new();
 
+        public void Clear()
+        {
+            scope.Clear();
+        }
+
         public T Get<T>(ValueKeyReference key)
         {
             return scope.Get<T>(key);

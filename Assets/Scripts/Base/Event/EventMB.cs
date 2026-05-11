@@ -4,6 +4,7 @@ namespace BC.Base
 {
     public class EventMB : MonoBehaviour, IKernelInstaller
     {
+        // StoreやLifecycleが購読できるよう、Eventは先に初期化する。
         public int Order => -5;
         private EventService eventService;
 

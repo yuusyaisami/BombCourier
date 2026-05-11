@@ -443,6 +443,17 @@ namespace BC.Base
 
             Transform platform = ground.Transform;
 
+            IMovingPlatformMotionSource motionSource = platform.GetComponentInParent<IMovingPlatformMotionSource>();
+
+            if (motionSource != null &&
+                motionSource.TryGetPassengerMotion(transform.position, dt, out MovingPlatformPassengerMotion motion))
+            {
+                platformDelta = motion.Delta;
+                platformVelocity = motion.Velocity;
+                currentPlatform = platform;
+                return;
+            }
+
             if (currentPlatform == platform && hasPlatformPose)
             {
                 Vector3 positionDelta = platform.position - lastPlatformPosition;
@@ -546,6 +557,8 @@ namespace BC.Base
         private void TickLockedMotion(float dt)
         {
             ProbeGround();
+            bool isGrounded = ground.IsValid || characterController.isGrounded;
+            UpdatePlatformMotion(dt, isGrounded);
             UpdateExternalVelocity(dt);
 
             Vector3 displacement =

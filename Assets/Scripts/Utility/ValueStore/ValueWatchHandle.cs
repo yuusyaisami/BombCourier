@@ -43,6 +43,7 @@ namespace BC.Base
     {
         Type ValueType { get; }
         void Refresh();
+        void ClearListeners();
     }
 
     internal sealed class ValueWatchNode<T> : IValueWatchSource<T>, IValueWatchNode
@@ -88,6 +89,11 @@ namespace BC.Base
             {
                 listeners[i].Invoke(currentValue);
             }
+        }
+
+        public void ClearListeners()
+        {
+            listeners.Clear();
         }
     }
 }

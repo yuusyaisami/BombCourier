@@ -30,7 +30,11 @@ namespace BC.Base
 
         private void OnDestroy()
         {
-            kernel.Dispose();
+            kernel?.Dispose();
+            kernel = null;
+
+            if (Instance == this)
+                Instance = null;
         }
     }
 }

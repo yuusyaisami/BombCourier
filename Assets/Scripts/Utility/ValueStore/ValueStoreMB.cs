@@ -9,6 +9,8 @@ namespace BC.Base
         public ValueStoreService ValueStore => entityValueStore;
         public ValueStoreService EntityValueStore => entityValueStore;
         public KernelValueStoreService KernelValueStore => kernelValueStore;
+
+        // Event/Lifecycleの後に、Entity単位とKernel単位のStoreを公開する。
         public int Order => 0;
 
 

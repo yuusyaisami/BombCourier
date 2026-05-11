@@ -117,6 +117,28 @@ namespace BC.Base
             return GetRequiredStore(entity).RemoveBoolModifier(key, tag);
         }
 
+        public void ClearEntity(EntityRef entity)
+        {
+            if (!storesByEntityId.TryGetValue(entity.EntityId, out EntityValueStore store))
+                return;
+
+            if (!store.Entity.Equals(entity))
+                return;
+
+            store.Clear();
+            storesByEntityId.Remove(entity.EntityId);
+        }
+
+        public void Clear()
+        {
+            foreach (EntityValueStore store in storesByEntityId.Values)
+            {
+                store.Clear();
+            }
+
+            storesByEntityId.Clear();
+        }
+
         private EntityValueStore GetRequiredStore(EntityRef entity)
         {
             if (!storesByEntityId.TryGetValue(entity.EntityId, out EntityValueStore store))

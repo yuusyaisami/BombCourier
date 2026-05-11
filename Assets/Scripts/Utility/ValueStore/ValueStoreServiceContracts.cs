@@ -1,9 +1,12 @@
 namespace BC.Base
 {
+    // Entity単位のStore。EntityRefごとに独立したValueStoreScopeを持つ。
     public interface IEntityValueStoreService
     {
         T Get<T>(EntityRef entity, ValueKeyReference key);
         T Get<T>(EntityRef entity, ValueKey<T> key);
+
+        // 毎フレーム監視する値はGetを繰り返さず、HandleのCurrentValue/Versionを読む。
         ValueWatchHandle<T> GetHandle<T>(EntityRef entity, ValueKeyReference key);
         ValueWatchHandle<T> GetHandle<T>(EntityRef entity, ValueKey<T> key);
         bool Set<T>(EntityRef entity, ValueKeyReference key, T value);
@@ -24,12 +27,17 @@ namespace BC.Base
         bool SetBoolModifier(EntityRef entity, ValueKey<bool> key, ValueModifierTagId tag, bool value);
         bool RemoveBoolModifier(EntityRef entity, ValueKeyReference key, ValueModifierTagId tag);
         bool RemoveBoolModifier(EntityRef entity, ValueKey<bool> key, ValueModifierTagId tag);
+        void ClearEntity(EntityRef entity);
+        void Clear();
     }
 
+    // Kernel単位のStore。Scene全体やApplication全体の共有状態を表す。
     public interface IKernelValueStoreService
     {
         T Get<T>(ValueKeyReference key);
         T Get<T>(ValueKey<T> key);
+
+        // Gimmickの条件監視はKernelValueStoreのHandleを標準入口にする。
         ValueWatchHandle<T> GetHandle<T>(ValueKeyReference key);
         ValueWatchHandle<T> GetHandle<T>(ValueKey<T> key);
         bool Set<T>(ValueKeyReference key, T value);
@@ -50,5 +58,6 @@ namespace BC.Base
         bool SetBoolModifier(ValueKey<bool> key, ValueModifierTagId tag, bool value);
         bool RemoveBoolModifier(ValueKeyReference key, ValueModifierTagId tag);
         bool RemoveBoolModifier(ValueKey<bool> key, ValueModifierTagId tag);
+        void Clear();
     }
 }

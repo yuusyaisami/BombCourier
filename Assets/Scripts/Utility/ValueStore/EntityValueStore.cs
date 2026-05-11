@@ -11,6 +11,11 @@ namespace BC.Base
             Entity = entity;
         }
 
+        public void Clear()
+        {
+            scope.Clear();
+        }
+
         public T Get<T>(ValueKeyReference key)
         {
             return scope.Get<T>(key);

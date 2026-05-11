@@ -172,7 +172,8 @@ namespace BC.Base
 
         public static class Kernel
         {
-            // Kernel系はScene全体の状態を表す。既存Identity(9001)との衝突を避けるため10000番台を使う。
+            // Kernel系はScene全体の状態を表す。ValueKeyIdは10000番台以降を使う。
+            // AuthoringではValueKeyDropdown(pathPrefix: "Kernel")でEntity系キーと分ける。
             public static class Gimmick
             {
                 public static readonly ValueKey<bool> GlobalEnabled =

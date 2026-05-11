@@ -25,7 +25,8 @@ namespace BC.Base
 
         private void OnDestroy()
         {
-            kernel.Dispose();
+            kernel?.Dispose();
+            kernel = null;
         }
     }
 }
