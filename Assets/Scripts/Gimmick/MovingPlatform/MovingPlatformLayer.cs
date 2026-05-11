@@ -53,7 +53,7 @@ namespace BC.Gimmick.MovingPlatform
 
         [ShowIf(nameof(UsesTransformPointsPath))]
         [LabelText("Path Points")]
-        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
         [SerializeField]
         private Transform[] pathPoints = Array.Empty<Transform>();
 

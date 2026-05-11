@@ -15,12 +15,12 @@ namespace BC.Base
     public sealed class WiringSequenceStep
     {
         [LabelText("Enter Actions")]
-        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
         [SerializeField]
         private WiringAction[] onEnterActions = Array.Empty<WiringAction>();
 
         [LabelText("Exit Actions")]
-        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
         [SerializeField]
         private WiringAction[] onExitActions = Array.Empty<WiringAction>();
 
@@ -42,7 +42,7 @@ namespace BC.Base
         [SerializeField]
         private WiringSequencePlayMode playMode = WiringSequencePlayMode.Once;
 
-        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
         [SerializeField]
         private WiringSequenceStep[] steps = Array.Empty<WiringSequenceStep>();
 

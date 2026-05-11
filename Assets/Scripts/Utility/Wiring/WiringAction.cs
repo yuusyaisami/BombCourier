@@ -161,6 +161,8 @@ namespace BC.Base
 
         public bool Execute(in WiringActionContext context)
         {
+            WiringActionContext capturedContext = context;
+
             switch (kind)
             {
                 case WiringActionKind.KernelStoreSet:
@@ -185,31 +187,31 @@ namespace BC.Base
                     return ExecuteStoreRemoveBoolModifier(context.SceneKernel?.KernelValueStore, kernelValueKey);
 
                 case WiringActionKind.EntityStoreSet:
-                    return ExecuteForTargets(context, entity => ExecuteEntityStoreSet(context, entity));
+                    return ExecuteForTargets(capturedContext, entity => ExecuteEntityStoreSet(capturedContext, entity));
 
                 case WiringActionKind.EntityStoreAdd:
-                    return ExecuteForTargets(context, entity => ExecuteEntityStoreAdd(context, entity));
+                    return ExecuteForTargets(capturedContext, entity => ExecuteEntityStoreAdd(capturedContext, entity));
 
                 case WiringActionKind.EntityStoreMul:
-                    return ExecuteForTargets(context, entity => ExecuteEntityStoreMul(context, entity));
+                    return ExecuteForTargets(capturedContext, entity => ExecuteEntityStoreMul(capturedContext, entity));
 
                 case WiringActionKind.EntityStoreBoolModifier:
-                    return ExecuteForTargets(context, entity => ExecuteEntityStoreBoolModifier(context, entity));
+                    return ExecuteForTargets(capturedContext, entity => ExecuteEntityStoreBoolModifier(capturedContext, entity));
 
                 case WiringActionKind.EntityStoreRemoveAdd:
-                    return ExecuteForTargets(context, entity => ExecuteEntityStoreRemoveAdd(context, entity));
+                    return ExecuteForTargets(capturedContext, entity => ExecuteEntityStoreRemoveAdd(capturedContext, entity));
 
                 case WiringActionKind.EntityStoreRemoveMul:
-                    return ExecuteForTargets(context, entity => ExecuteEntityStoreRemoveMul(context, entity));
+                    return ExecuteForTargets(capturedContext, entity => ExecuteEntityStoreRemoveMul(capturedContext, entity));
 
                 case WiringActionKind.EntityStoreRemoveBoolModifier:
-                    return ExecuteForTargets(context, entity => ExecuteEntityStoreRemoveBoolModifier(context, entity));
+                    return ExecuteForTargets(capturedContext, entity => ExecuteEntityStoreRemoveBoolModifier(capturedContext, entity));
 
                 case WiringActionKind.KernelSignalPublish:
                     return context.SceneKernel != null && context.SceneKernel.KernelEvents.RaiseSignal(kernelSignal);
 
                 case WiringActionKind.EntitySignalPublish:
-                    return ExecuteForTargets(context, entity => context.SceneKernel.EntityEvents.RaiseSignal(entity, entitySignal));
+                    return ExecuteForTargets(capturedContext, entity => capturedContext.SceneKernel.EntityEvents.RaiseSignal(entity, entitySignal));
 
                 default:
                     return false;

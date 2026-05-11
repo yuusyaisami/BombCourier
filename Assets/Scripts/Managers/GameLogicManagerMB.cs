@@ -38,7 +38,7 @@ namespace BC.Manager
         public Action ExplodedState; // 爆弾が爆発したときに呼び出されるイベント
         private SceneKernel sceneKernel; // シーンカーネルの参照。シーン全体の状態を管理するために使用する。
 
-        private float currentGameStage;
+        private int currentGameStage;
 
         public BombMB CurrentBomb => currentBomb;
 
@@ -89,6 +89,7 @@ namespace BC.Manager
         }
         private async UniTask LoadStageAsync(int stageIndex)
         {
+            currentGameStage = stageIndex;
             LoadGameStage();
 
             await UniTask.CompletedTask;
@@ -152,7 +153,7 @@ namespace BC.Manager
         {
             if (debugStageInstance == null)
             {
-                StageLoadResult result = StageManagerMB.Instance.LoadStage((int)currentGameStage);
+                StageLoadResult result = StageManagerMB.Instance.LoadStage(currentGameStage);
                 if (result.bombs.Count > 0)
                 {
                     SetCurrentBomb(result.bombs[0]);

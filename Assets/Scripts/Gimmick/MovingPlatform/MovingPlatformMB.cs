@@ -9,7 +9,7 @@ namespace BC.Gimmick.MovingPlatform
     {
         [Header("Layers")]
         [LabelText("Layers")]
-        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
         [SerializeField]
         private MovingPlatformLayer[] layers = System.Array.Empty<MovingPlatformLayer>();
 

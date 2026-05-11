@@ -80,10 +80,6 @@ namespace BC.Base
         [Header("Moving Platform")]
         [SerializeField] private bool inheritMovingPlatformVelocityOnJump = true;
         [SerializeField] private float platformJumpVelocityInheritance = 1.0f;
-        [Header("Animation Output")]
-        [SerializeField] private bool normalizeAnimatorSpeed = true;
-        [SerializeField] private float animatorReferenceSpeed = 7.5f;
-        [SerializeField] private float fallVelocityThreshold = -0.15f;
 
         [Header("External Momentum")]
         [SerializeField] private float externalVelocityDamping = 6.0f;
