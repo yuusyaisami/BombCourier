@@ -22,6 +22,11 @@ namespace BC.Base
         protected SceneKernel SceneKernel { get; private set; }
         protected EntityRef Entity { get; private set; }
 
+        private ValueWatchHandle<bool> canMoveHandle;
+        private ValueWatchHandle<float> moveBaseSpeedHandle;
+        private ValueWatchHandle<float> sprintMultiplierHandle;
+        private ValueWatchHandle<float> jumpHeightMultiplierHandle;
+
         public EntityMoveState MoveState => StateMachine.CurrentState;
         public bool IsRuntimeReady { get; private set; }
 
@@ -69,37 +74,59 @@ namespace BC.Base
             if (!IsRuntimeReady)
                 return false;
 
-            if (SceneKernel.ValueStore == null)
+            if (!TryEnsureMoveValueHandles())
             {
-                Debug.LogError($"{nameof(EntityMoveController)}: SceneKernel.ValueStore is null.", this);
                 return false;
             }
 
-            return SceneKernel.ValueStore.Get(Entity, ValueKeys.Move.CanMove);
+            return canMoveHandle.CurrentValue;
         }
 
         protected float GetMoveBaseSpeed(float fallback)
         {
-            if (!IsRuntimeReady || SceneKernel.ValueStore == null)
+            if (!IsRuntimeReady || !TryEnsureMoveValueHandles())
                 return fallback;
 
-            return SceneKernel.ValueStore.Get(Entity, ValueKeys.Move.BaseSpeed);
+            return moveBaseSpeedHandle.CurrentValue;
         }
 
         protected float GetSprintMultiplier(float fallback)
         {
-            if (!IsRuntimeReady || SceneKernel.ValueStore == null)
+            if (!IsRuntimeReady || !TryEnsureMoveValueHandles())
                 return fallback;
 
-            return SceneKernel.ValueStore.Get(Entity, ValueKeys.Move.SprintMultiplier);
+            return sprintMultiplierHandle.CurrentValue;
         }
 
         protected float GetJumpHeightMultiplier(float fallback)
         {
-            if (!IsRuntimeReady || SceneKernel.ValueStore == null)
+            if (!IsRuntimeReady || !TryEnsureMoveValueHandles())
                 return fallback;
 
-            return SceneKernel.ValueStore.Get(Entity, ValueKeys.Move.JumpHeightMultiplier);
+            return jumpHeightMultiplierHandle.CurrentValue;
+        }
+
+        private bool TryEnsureMoveValueHandles()
+        {
+            if (canMoveHandle != null &&
+                moveBaseSpeedHandle != null &&
+                sprintMultiplierHandle != null &&
+                jumpHeightMultiplierHandle != null)
+            {
+                return true;
+            }
+
+            if (SceneKernel == null || SceneKernel.EntityValueStore == null)
+            {
+                Debug.LogError($"{nameof(EntityMoveController)}: SceneKernel.EntityValueStore is null.", this);
+                return false;
+            }
+
+            canMoveHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.CanMove);
+            moveBaseSpeedHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.BaseSpeed);
+            sprintMultiplierHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.SprintMultiplier);
+            jumpHeightMultiplierHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.JumpHeightMultiplier);
+            return true;
         }
     }
 }
