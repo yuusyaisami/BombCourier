@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using BC.Base;
+using BC.Gimmick.Cushion;
+using BC.Item;
 using BC.Manager;
 
 namespace BC.Bomb
@@ -29,19 +31,10 @@ namespace BC.Bomb
         void OnBombImpactReceived(Vector3 direction, float impactForce);
     }
 
-    public interface IItemObject
-    {
-        Transform ItemTransform { get; }
-        bool IsHandled { get; }
-
-        void OnHandle(Transform handlePoint);
-        void OnRelease(Vector3 throwVelocity);
-    }
-
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class BombMB : MonoBehaviour, IItemObject
+    public sealed class BombMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource
     {
         public event Action<BombMB> Exploded;
         public event Action<BombMB> StartedFuse;
@@ -49,6 +42,9 @@ namespace BC.Bomb
         [Header("Fuse")]
         [SerializeField] private float fuseTime = 8.0f;
         [SerializeField] private bool startFuseOnHandle = true;
+
+        [Header("Carry")]
+        [SerializeField, Range(0.0f, 1.0f)] private float carryJumpHeightMultiplier = 0.65f;
 
         [Header("Explosion")]
         [SerializeField] private float explosionThreshold = 10f;
@@ -65,6 +61,7 @@ namespace BC.Bomb
         private Rigidbody rb;
         private Collider bombCollider;
         private SceneKernelMB kernelMB;
+        private EntityMB entityMB;
         private EntityRef entityRef;
 
         private bool fuseStarted;
@@ -81,11 +78,20 @@ namespace BC.Bomb
 
         public Transform ItemTransform => transform;
         public bool IsHandled => isHandled;
+        public bool CanBeCarried => !exploded;
+        public Transform CushionImpactRoot => transform;
+        public EntityTagId CushionImpactTag => ResolveImpactTag();
         public bool FuseStarted => fuseStarted;
         public float TotalFuseTime => fuseTime;
         public float RemainingFuseTime => remainingFuseTime;
         public float LastImpactForce { get; private set; }
         public float ImpactExplosionRatio => Mathf.Clamp01(LastImpactForce / explosionThreshold);
+
+        public bool TryGetJumpHeightMultiplier(out float jumpHeightMultiplier)
+        {
+            jumpHeightMultiplier = carryJumpHeightMultiplier;
+            return true;
+        }
 
         private void Awake()
         {
@@ -93,7 +99,7 @@ namespace BC.Bomb
             bombCollider = GetComponent<Collider>();
             kernelMB = GetComponentInParent<SceneKernelMB>();
 
-            EntityMB entityMB = GetComponentInParent<EntityMB>();
+            entityMB = GetComponentInParent<EntityMB>();
             if (entityMB != null && entityMB.HasEntity)
             {
                 entityRef = entityMB.Entity;
@@ -113,9 +119,15 @@ namespace BC.Bomb
             if (!fuseStarted || exploded)
                 return;
 
-            remainingFuseTime -= Time.deltaTime;
+            TickFuse(Time.deltaTime);
+        }
+
+        private void TickFuse(float dt)
+        {
+            // 将来ヒューズ停止ギミックを入れる時は、この入口で停止条件を差し込める。
+            remainingFuseTime -= dt;
             // lastImpactForce は爆発のトリガーにはならないが、爆発エフェクトの演出などに利用できるようにする。
-            LastImpactForce = Mathf.Lerp(LastImpactForce, 0f, Time.deltaTime * 5f);
+            LastImpactForce = Mathf.Lerp(LastImpactForce, 0f, dt * 5f);
             if (LastImpactForce < 0.01f)
                 LastImpactForce = 0f;
 
@@ -236,6 +248,11 @@ namespace BC.Bomb
             if (exploded || rb == null || bombCollider == null || isHandled)
                 return;
 
+            float impactForce = collision.impulse.magnitude / Mathf.Max(Time.fixedDeltaTime, 0.0001f);
+
+            if (TryHandleCushionCollision(collision, impactForce))
+                return;
+
             if (Time.time < ignoreImpactExplosionUntilTime)
                 return;
 
@@ -256,13 +273,63 @@ namespace BC.Bomb
                 }
             }
 
-            float impactForce = collision.impulse.magnitude / Time.fixedDeltaTime;
-
             if (impactForce >= threshold)
             {
                 LastImpactForce = impactForce;
                 Explode();
             }
+        }
+
+        public bool HandleCushionImpact(CushionImpactData impactData, CushionImpactResult impactResult)
+        {
+            if (!impactResult.IsHandled || exploded || rb == null)
+                return false;
+
+            isHandled = false;
+            ClearIgnoredPlayerCollisions();
+            hasPreviousHeldPosition = false;
+            ignoreImpactExplosionUntilTime = Time.time + impactExplosionGraceTime;
+
+            return CushionRigidbodyImpactApplier.Apply(transform, rb, impactResult);
+        }
+
+        private bool TryHandleCushionCollision(Collision collision, float impactForce)
+        {
+            CushionSurfaceMB surface = collision.collider.GetComponentInParent<CushionSurfaceMB>();
+
+            if (surface == null)
+                return false;
+
+            ContactPoint contact = collision.contactCount > 0 ? collision.GetContact(0) : default;
+            Vector3 normal = collision.contactCount > 0
+                ? contact.normal
+                : -collision.relativeVelocity.normalized;
+
+            CushionImpactData impactData = new CushionImpactData(
+                gameObject,
+                transform,
+                entityMB,
+                CushionImpactTag,
+                rb,
+                bombCollider,
+                collision.contactCount > 0 ? contact.point : transform.position,
+                normal,
+                rb.linearVelocity,
+                impactForce);
+
+            if (!surface.TryEvaluate(impactData, out CushionImpactResult result))
+                return false;
+
+            LastImpactForce = impactForce;
+            return HandleCushionImpact(impactData, result);
+        }
+
+        private EntityTagId ResolveImpactTag()
+        {
+            if (entityMB != null && entityMB.Tag.IsValid)
+                return entityMB.Tag;
+
+            return EntityTags.Item.Bomb.Id;
         }
 
         private void Explode()
@@ -407,6 +474,9 @@ namespace BC.Bomb
             {
                 return true;
             }
+
+            if (hit.GetComponentInParent<CushionSurfaceMB>() != null)
+                return true;
 
             return ignoredPlayerColliders.Contains(hit);
         }

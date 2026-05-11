@@ -17,14 +17,16 @@ namespace BC.Base
     }
     public sealed class EntityMB : MonoBehaviour
     {
-        [SerializeField] private EntityTagId tag;
+        [SerializeField, HideInInspector] private EntityTagId tag;
+        [SerializeField, InspectorName("Tag"), EntityTagDropdown] private EntityTagReference tagReference;
         [SerializeField] private EntityFlags flags = EntityFlags.None;
         [SerializeField] private EntityRegistrationMode registrationMode = EntityRegistrationMode.ScenePlaced;
         public StateMachine<EntityState> EntityStateMachine = new StateMachine<EntityState>();
 
 
         public EntityRef Entity { get; private set; }
-        public EntityTagId Tag => tag;
+        public EntityTagId Tag => tagReference.IsAssigned ? tagReference.Id : tag;
+        public EntityTagReference TagReference => tagReference;
         public EntityRegistrationMode RegistrationMode => registrationMode;
         public EntityFlags Flags => flags;
 

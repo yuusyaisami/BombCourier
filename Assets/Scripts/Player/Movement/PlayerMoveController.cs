@@ -1,6 +1,7 @@
 using BC.Base;
 using BC.Bomb;
 using BC.Camera;
+using BC.Gimmick.Cushion;
 using BC.Manager;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -34,7 +35,7 @@ namespace BC.Base
 
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CharacterController))]
-    public sealed class PlayerMoveController : EntityMoveController, IEntityMoveAnimationSource, IBombImpactReceiver // Rigidbodyがないので
+    public sealed class PlayerMoveController : EntityMoveController, IEntityMoveAnimationSource, IBombImpactReceiver, ICushionImpactSource // Rigidbodyがないので
     {
         private static readonly ValueModifierTagId DeadMoveLockTag = new ValueModifierTagId(10001);
         public static readonly ValueModifierTagId GameLogicTag = new ValueModifierTagId(10002);
@@ -88,12 +89,16 @@ namespace BC.Base
         [SerializeField] private float externalVelocityDamping = 6.0f;
         [SerializeField] private float minExternalVelocity = 0.03f;
 
+        [Header("Cushion")]
+        [SerializeField, Min(0.0f)] private float cushionImpactCooldown = 0.12f;
+
         [Header("Visual Rotation")]
         [SerializeField] private float modelTurnSharpness = 16.0f;
         [SerializeField] private float minModelTurnSpeed = 0.1f;
 
         private ICameraController cameraController;
         private IPlayerRagdollController ragdollController;
+        private EntityMB entityMB;
 
         private Vector3 planarVelocity;
         private float verticalVelocity;
@@ -114,6 +119,7 @@ namespace BC.Base
 
         private bool motionLocked;
         private Vector3 preservedVelocityWhenLocked;
+        private float nextCushionImpactTime;
 
         public Vector3 PlanarVelocity => planarVelocity;
         public float VerticalVelocity => verticalVelocity;
@@ -122,6 +128,8 @@ namespace BC.Base
 
         public Vector3 CurrentVelocity =>
             planarVelocity + Vector3.up * verticalVelocity + externalVelocity + platformVelocity;
+        public Transform CushionImpactRoot => transform;
+        public EntityTagId CushionImpactTag => ResolveCushionImpactTag();
         private bool IsReceiveBombImpact; // 今は常に受け取るようにするが、将来的には状態によって受け取らないこともあるかもしれない
 
         protected override void Start()
@@ -144,6 +152,7 @@ namespace BC.Base
             cameraController = cameraControllerSource as ICameraController;
 
             ragdollController = GetComponent<IPlayerRagdollController>();
+            entityMB = GetComponentInParent<EntityMB>();
 
             if (cameraController == null)
             {
@@ -561,6 +570,79 @@ namespace BC.Base
         public void ClearExternalVelocity()
         {
             externalVelocity = Vector3.zero;
+        }
+
+        public bool HandleCushionImpact(CushionImpactData impactData, CushionImpactResult impactResult)
+        {
+            if (!impactResult.IsHandled || IsReceiveBombImpact)
+                return false;
+
+            switch (impactResult.ResponseKind)
+            {
+                case CushionResponseKind.Bounce:
+                    ApplyCushionBounce(impactResult.BounceVelocity);
+                    return true;
+
+                case CushionResponseKind.Stop:
+                case CushionResponseKind.StopAndAttach:
+                    ApplyCushionStop();
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (hit == null || hit.collider == null || Time.time < nextCushionImpactTime)
+                return;
+
+            CushionSurfaceMB surface = hit.collider.GetComponentInParent<CushionSurfaceMB>();
+
+            if (surface == null)
+                return;
+
+            CushionImpactData impactData = new CushionImpactData(
+                gameObject,
+                transform,
+                entityMB,
+                CushionImpactTag,
+                null,
+                characterController,
+                hit.point,
+                hit.normal,
+                CurrentVelocity,
+                CurrentVelocity.magnitude);
+
+            if (!surface.TryEvaluate(impactData, out CushionImpactResult result))
+                return;
+
+            if (HandleCushionImpact(impactData, result))
+                nextCushionImpactTime = Time.time + cushionImpactCooldown;
+        }
+
+        private void ApplyCushionStop()
+        {
+            // CharacterController は Rigidbody ではないため、速度層を明示的に消して停止させる。
+            planarVelocity = Vector3.zero;
+            externalVelocity = Vector3.zero;
+            verticalVelocity = groundedStickVelocity;
+        }
+
+        private void ApplyCushionBounce(Vector3 bounceVelocity)
+        {
+            planarVelocity = Vector3.zero;
+            verticalVelocity = groundedStickVelocity;
+            externalVelocity = bounceVelocity;
+        }
+
+        private EntityTagId ResolveCushionImpactTag()
+        {
+            if (entityMB != null && entityMB.Tag.IsValid)
+                return entityMB.Tag;
+
+            return EntityTags.Actor.Player.Id;
         }
 
         public void SetPlanarVelocity(Vector3 velocity)
