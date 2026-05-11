@@ -17,6 +17,16 @@ namespace BC.Base
             return GetRequiredStore(entity).Get(key);
         }
 
+        public ValueWatchHandle<T> GetHandle<T>(EntityRef entity, ValueKeyReference key)
+        {
+            return GetRequiredStore(entity).GetHandle<T>(key);
+        }
+
+        public ValueWatchHandle<T> GetHandle<T>(EntityRef entity, ValueKey<T> key)
+        {
+            return GetRequiredStore(entity).GetHandle(key);
+        }
+
         public bool Set<T>(EntityRef entity, ValueKeyReference key, T value)
         {
             return GetRequiredStore(entity).Set(key, value);

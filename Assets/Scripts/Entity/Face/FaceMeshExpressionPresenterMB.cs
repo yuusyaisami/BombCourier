@@ -15,14 +15,13 @@ namespace BC.Character
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
+        private ValueWatchHandle<FaceExpressionId> expressionHandle;
+        private EventSubscription expressionSubscription;
 
         private Mesh runtimeMesh;
         private Vector2[] sourceUvs;
         private Vector2[] workingUvs;
         private Rect sourceUvRect;
-
-        private bool hasLastExpression;
-        private FaceExpressionId lastExpression;
 
         private void Reset()
         {
@@ -74,23 +73,13 @@ namespace BC.Character
 
             ResolveValueStore();
 
-            ApplyExpression(FaceExpressionId.Neutral);
-        }
-
-        private void Update()
-        {
-            if (valueStore == null || !entityRef.IsValid)
+            if (!enabled)
                 return;
 
-            FaceExpressionId expression = valueStore.Get(entityRef, ValueKeys.Runtime.FaceExpression);
+            expressionHandle = valueStore.GetHandle(entityRef, ValueKeys.Runtime.FaceExpression);
+            expressionSubscription = expressionHandle.Subscribe(ApplyExpression);
 
-            if (hasLastExpression && expression == lastExpression)
-                return;
-
-            hasLastExpression = true;
-            lastExpression = expression;
-
-            ApplyExpression(expression);
+            ApplyExpression(expressionHandle.CurrentValue);
         }
 
         private Mesh GetSourceMesh()
@@ -181,14 +170,14 @@ namespace BC.Character
         {
             SceneKernelMB kernelMB = GetComponentInParent<SceneKernelMB>();
 
-            if (kernelMB == null || kernelMB.Kernel == null || kernelMB.Kernel.ValueStore == null)
+            if (kernelMB == null || kernelMB.Kernel == null || kernelMB.Kernel.EntityValueStore == null)
             {
                 Debug.LogError($"{nameof(FaceMeshExpressionPresenterMB)}: ValueStore is not found.", this);
                 enabled = false;
                 return;
             }
 
-            valueStore = kernelMB.Kernel.ValueStore;
+            valueStore = kernelMB.Kernel.EntityValueStore;
 
             EntityMB entityMB = GetComponentInParent<EntityMB>();
 
@@ -204,6 +193,8 @@ namespace BC.Character
 
         private void OnDestroy()
         {
+            expressionSubscription?.Dispose();
+
             if (runtimeMesh == null)
                 return;
 

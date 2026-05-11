@@ -4,6 +4,8 @@ namespace BC.Base
     {
         T Get<T>(EntityRef entity, ValueKeyReference key);
         T Get<T>(EntityRef entity, ValueKey<T> key);
+        ValueWatchHandle<T> GetHandle<T>(EntityRef entity, ValueKeyReference key);
+        ValueWatchHandle<T> GetHandle<T>(EntityRef entity, ValueKey<T> key);
         bool Set<T>(EntityRef entity, ValueKeyReference key, T value);
         bool Set<T>(EntityRef entity, ValueKey<T> key, T value);
         bool SetAdd(EntityRef entity, ValueKeyReference key, ValueModifierTagId tag, float value);
@@ -28,6 +30,8 @@ namespace BC.Base
     {
         T Get<T>(ValueKeyReference key);
         T Get<T>(ValueKey<T> key);
+        ValueWatchHandle<T> GetHandle<T>(ValueKeyReference key);
+        ValueWatchHandle<T> GetHandle<T>(ValueKey<T> key);
         bool Set<T>(ValueKeyReference key, T value);
         bool Set<T>(ValueKey<T> key, T value);
         bool SetAdd(ValueKeyReference key, ValueModifierTagId tag, float value);

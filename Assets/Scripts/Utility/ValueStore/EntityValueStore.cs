@@ -21,6 +21,16 @@ namespace BC.Base
             return scope.Get(key);
         }
 
+        public ValueWatchHandle<T> GetHandle<T>(ValueKeyReference key)
+        {
+            return scope.GetHandle<T>(key);
+        }
+
+        public ValueWatchHandle<T> GetHandle<T>(ValueKey<T> key)
+        {
+            return scope.GetHandle(key);
+        }
+
         public bool Set<T>(ValueKeyReference key, T value)
         {
             return scope.Set(key, value);

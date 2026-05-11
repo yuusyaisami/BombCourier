@@ -6,6 +6,7 @@ namespace BC.Base
     internal sealed class ValueStoreScope
     {
         private readonly Dictionary<ValueKeyId, ValueSlot> slotsByKey = new();
+        private readonly Dictionary<ValueKeyId, IValueWatchNode> watchNodesByKey = new();
 
         public T Get<T>(ValueKeyReference key)
         {
@@ -39,6 +40,32 @@ namespace BC.Base
             return raw.Get();
         }
 
+        public ValueWatchHandle<T> GetHandle<T>(ValueKeyReference key)
+        {
+            return GetHandle(key.Resolve<T>());
+        }
+
+        public ValueWatchHandle<T> GetHandle<T>(ValueKey<T> key)
+        {
+            if (typeof(T) == typeof(float))
+            {
+                return CreateFloatHandle<T>(UnsafeCastKey<float, T>(key));
+            }
+
+            if (typeof(T) == typeof(int))
+            {
+                return CreateIntHandle<T>(UnsafeCastKey<int, T>(key));
+            }
+
+            if (typeof(T) == typeof(bool))
+            {
+                return CreateBoolHandle<T>(UnsafeCastKey<bool, T>(key));
+            }
+
+            var raw = GetOrCreateRawSlot(key);
+            return new ValueWatchHandle<T>(GetOrCreateWatchNode(key, raw.Get));
+        }
+
         public bool Set<T>(ValueKeyReference key, T value)
         {
             return Set(key.Resolve<T>(), value);
@@ -49,23 +76,31 @@ namespace BC.Base
             if (typeof(T) == typeof(float))
             {
                 var slot = GetOrCreateFloatSlot(UnsafeCastKey<float, T>(key));
-                return slot.SetBase((float)(object)value);
+                bool changed = slot.SetBase((float)(object)value);
+                NotifyWatchNodeChanged(key.Id, changed);
+                return changed;
             }
 
             if (typeof(T) == typeof(int))
             {
                 var slot = GetOrCreateIntSlot(UnsafeCastKey<int, T>(key));
-                return slot.SetBase((int)(object)value);
+                bool changed = slot.SetBase((int)(object)value);
+                NotifyWatchNodeChanged(key.Id, changed);
+                return changed;
             }
 
             if (typeof(T) == typeof(bool))
             {
                 var slot = GetOrCreateBoolSlot(UnsafeCastKey<bool, T>(key));
-                return slot.SetBase((bool)(object)value);
+                bool changed = slot.SetBase((bool)(object)value);
+                NotifyWatchNodeChanged(key.Id, changed);
+                return changed;
             }
 
             var raw = GetOrCreateRawSlot(key);
-            return raw.Set(value);
+            bool rawChanged = raw.Set(value);
+            NotifyWatchNodeChanged(key.Id, rawChanged);
+            return rawChanged;
         }
 
         public bool SetBoolModifier(ValueKeyReference key, ValueModifierTagId tag, bool value)
@@ -75,7 +110,9 @@ namespace BC.Base
 
         public bool SetBoolModifier(ValueKey<bool> key, ValueModifierTagId tag, bool value)
         {
-            return GetOrCreateBoolSlot(key).SetModifier(tag, value);
+            bool changed = GetOrCreateBoolSlot(key).SetModifier(tag, value);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool RemoveBoolModifier(ValueKeyReference key, ValueModifierTagId tag)
@@ -85,7 +122,9 @@ namespace BC.Base
 
         public bool RemoveBoolModifier(ValueKey<bool> key, ValueModifierTagId tag)
         {
-            return GetOrCreateBoolSlot(key).RemoveModifier(tag);
+            bool changed = GetOrCreateBoolSlot(key).RemoveModifier(tag);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool SetAdd(ValueKeyReference key, ValueModifierTagId tag, float value)
@@ -97,12 +136,16 @@ namespace BC.Base
 
         public bool SetAdd(ValueKey<float> key, ValueModifierTagId tag, float value)
         {
-            return GetOrCreateFloatSlot(key).SetAdd(tag, value);
+            bool changed = GetOrCreateFloatSlot(key).SetAdd(tag, value);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool SetAdd(ValueKey<int> key, ValueModifierTagId tag, float value)
         {
-            return GetOrCreateIntSlot(key).SetAdd(tag, value);
+            bool changed = GetOrCreateIntSlot(key).SetAdd(tag, value);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool SetMul(ValueKeyReference key, ValueModifierTagId tag, float value)
@@ -114,12 +157,16 @@ namespace BC.Base
 
         public bool SetMul(ValueKey<float> key, ValueModifierTagId tag, float value)
         {
-            return GetOrCreateFloatSlot(key).SetMul(tag, value);
+            bool changed = GetOrCreateFloatSlot(key).SetMul(tag, value);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool SetMul(ValueKey<int> key, ValueModifierTagId tag, float value)
         {
-            return GetOrCreateIntSlot(key).SetMul(tag, value);
+            bool changed = GetOrCreateIntSlot(key).SetMul(tag, value);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool RemoveAdd(ValueKeyReference key, ValueModifierTagId tag)
@@ -131,12 +178,16 @@ namespace BC.Base
 
         public bool RemoveAdd(ValueKey<float> key, ValueModifierTagId tag)
         {
-            return GetOrCreateFloatSlot(key).RemoveAdd(tag);
+            bool changed = GetOrCreateFloatSlot(key).RemoveAdd(tag);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool RemoveAdd(ValueKey<int> key, ValueModifierTagId tag)
         {
-            return GetOrCreateIntSlot(key).RemoveAdd(tag);
+            bool changed = GetOrCreateIntSlot(key).RemoveAdd(tag);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool RemoveMul(ValueKeyReference key, ValueModifierTagId tag)
@@ -148,12 +199,61 @@ namespace BC.Base
 
         public bool RemoveMul(ValueKey<float> key, ValueModifierTagId tag)
         {
-            return GetOrCreateFloatSlot(key).RemoveMul(tag);
+            bool changed = GetOrCreateFloatSlot(key).RemoveMul(tag);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
         }
 
         public bool RemoveMul(ValueKey<int> key, ValueModifierTagId tag)
         {
-            return GetOrCreateIntSlot(key).RemoveMul(tag);
+            bool changed = GetOrCreateIntSlot(key).RemoveMul(tag);
+            NotifyWatchNodeChanged(key.Id, changed);
+            return changed;
+        }
+
+        private ValueWatchHandle<T> CreateFloatHandle<T>(ValueKey<float> key)
+        {
+            var slot = GetOrCreateFloatSlot(key);
+            return (ValueWatchHandle<T>)(object)new ValueWatchHandle<float>(GetOrCreateWatchNode(key, slot.Get));
+        }
+
+        private ValueWatchHandle<T> CreateIntHandle<T>(ValueKey<int> key)
+        {
+            var slot = GetOrCreateIntSlot(key);
+            return (ValueWatchHandle<T>)(object)new ValueWatchHandle<int>(GetOrCreateWatchNode(key, slot.Get));
+        }
+
+        private ValueWatchHandle<T> CreateBoolHandle<T>(ValueKey<bool> key)
+        {
+            var slot = GetOrCreateBoolSlot(key);
+            return (ValueWatchHandle<T>)(object)new ValueWatchHandle<bool>(GetOrCreateWatchNode(key, slot.Get));
+        }
+
+        private ValueWatchNode<T> GetOrCreateWatchNode<T>(ValueKey<T> key, Func<T> readCurrentValue)
+        {
+            if (watchNodesByKey.TryGetValue(key.Id, out IValueWatchNode existing))
+            {
+                if (existing is ValueWatchNode<T> typed)
+                    return typed;
+
+                throw new InvalidOperationException(
+                    $"Value watch node type mismatch. Path={key.Path}, Key={key.Id}, Expected={typeof(T).Name}, Actual={existing.ValueType.Name}");
+            }
+
+            var created = new ValueWatchNode<T>(readCurrentValue);
+            watchNodesByKey.Add(key.Id, created);
+            return created;
+        }
+
+        private void NotifyWatchNodeChanged(ValueKeyId keyId, bool changed)
+        {
+            if (!changed)
+                return;
+
+            if (!watchNodesByKey.TryGetValue(keyId, out IValueWatchNode watchNode))
+                return;
+
+            watchNode.Refresh();
         }
 
         private RawValueSlot<T> GetOrCreateRawSlot<T>(ValueKey<T> key)
