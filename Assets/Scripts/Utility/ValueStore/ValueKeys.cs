@@ -57,6 +57,13 @@ namespace BC.Base
                     1.5f,
                     ValueCompositionMode.NumericAddMul
                 );
+            public static readonly ValueKey<float> JumpHeightMultiplier =
+                new ValueKey<float>(
+                    new ValueKeyId(2004),
+                    "Move.JumpHeightMultiplier",
+                    1.0f,
+                    ValueCompositionMode.NumericAddMul
+                );
         }
 
         public static class Bomb

@@ -14,6 +14,11 @@ namespace BC.Base
             Entity = entity;
         }
 
+        public T Get<T>(ValueKeyReference key)
+        {
+            return Get(key.Resolve<T>());
+        }
+
         public T Get<T>(ValueKey<T> key)
         {
             if (typeof(T) == typeof(float))
@@ -41,6 +46,11 @@ namespace BC.Base
             return raw.Get();
         }
 
+        public bool Set<T>(ValueKeyReference key, T value)
+        {
+            return Set(key.Resolve<T>(), value);
+        }
+
         public bool Set<T>(ValueKey<T> key, T value)
         {
             if (typeof(T) == typeof(float))
@@ -64,9 +74,20 @@ namespace BC.Base
             var raw = GetOrCreateRawSlot(key);
             return raw.Set(value);
         }
+
+        public bool SetBoolModifier(ValueKeyReference key, ValueModifierTagId tag, bool value)
+        {
+            return SetBoolModifier(key.Resolve<bool>(), tag, value);
+        }
+
         public bool SetBoolModifier(ValueKey<bool> key, ValueModifierTagId tag, bool value)
         {
             return GetOrCreateBoolSlot(key).SetModifier(tag, value);
+        }
+
+        public bool RemoveBoolModifier(ValueKeyReference key, ValueModifierTagId tag)
+        {
+            return RemoveBoolModifier(key.Resolve<bool>(), tag);
         }
 
         public bool RemoveBoolModifier(ValueKey<bool> key, ValueModifierTagId tag)
@@ -74,9 +95,23 @@ namespace BC.Base
             return GetOrCreateBoolSlot(key).RemoveModifier(tag);
         }
 
+        public bool SetAdd(ValueKeyReference key, ValueModifierTagId tag, float value)
+        {
+            return ExecuteNumericModifier(key, nameof(SetAdd),
+                floatKey => SetAdd(floatKey, tag, value),
+                intKey => SetAdd(intKey, tag, value));
+        }
+
         public bool SetAdd(ValueKey<float> key, ValueModifierTagId tag, float value)
         {
             return GetOrCreateFloatSlot(key).SetAdd(tag, value);
+        }
+
+        public bool SetMul(ValueKeyReference key, ValueModifierTagId tag, float value)
+        {
+            return ExecuteNumericModifier(key, nameof(SetMul),
+                floatKey => SetMul(floatKey, tag, value),
+                intKey => SetMul(intKey, tag, value));
         }
 
         public bool SetMul(ValueKey<float> key, ValueModifierTagId tag, float value)
@@ -84,9 +119,23 @@ namespace BC.Base
             return GetOrCreateFloatSlot(key).SetMul(tag, value);
         }
 
+        public bool RemoveAdd(ValueKeyReference key, ValueModifierTagId tag)
+        {
+            return ExecuteNumericModifier(key, nameof(RemoveAdd),
+                floatKey => RemoveAdd(floatKey, tag),
+                intKey => RemoveAdd(intKey, tag));
+        }
+
         public bool RemoveAdd(ValueKey<float> key, ValueModifierTagId tag)
         {
             return GetOrCreateFloatSlot(key).RemoveAdd(tag);
+        }
+
+        public bool RemoveMul(ValueKeyReference key, ValueModifierTagId tag)
+        {
+            return ExecuteNumericModifier(key, nameof(RemoveMul),
+                floatKey => RemoveMul(floatKey, tag),
+                intKey => RemoveMul(intKey, tag));
         }
 
         public bool RemoveMul(ValueKey<float> key, ValueModifierTagId tag)
@@ -202,6 +251,38 @@ namespace BC.Base
                 (TTarget)(object)key.DefaultValue,
                 key.CompositionMode
             );
+        }
+
+        private static InvalidOperationException CreateUnsupportedNumericModifierException(
+            string operation,
+            ValueKeyReference key)
+        {
+            if (key.TryResolve(out ValueKeyDescriptor descriptor))
+            {
+                return new InvalidOperationException(
+                    $"{operation} supports only int or float ValueKeys. Path={descriptor.Path}, Actual={descriptor.TypeName}");
+            }
+
+            return new InvalidOperationException(
+                $"{operation} could not resolve ValueKey. Id={key.RawId}, Path={key.Path}");
+        }
+
+        private static bool ExecuteNumericModifier(
+            ValueKeyReference key,
+            string operation,
+            Func<ValueKey<float>, bool> floatHandler,
+            Func<ValueKey<int>, bool> intHandler)
+        {
+            if (key.TryResolve(out ValueKeyDescriptor descriptor))
+            {
+                if (descriptor.ValueType == typeof(float))
+                    return floatHandler(descriptor.GetKey<float>());
+
+                if (descriptor.ValueType == typeof(int))
+                    return intHandler(descriptor.GetKey<int>());
+            }
+
+            throw CreateUnsupportedNumericModifierException(operation, key);
         }
     }
 }

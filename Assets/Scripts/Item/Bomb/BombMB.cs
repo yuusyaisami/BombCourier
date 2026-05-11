@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using BC.Base;
 using BC.Manager;
@@ -58,6 +59,8 @@ namespace BC.Bomb
         [SerializeField] private BombExplosionThresholdDataset thresholdDataset;
         [Header("Safety")] // 拾った瞬間に爆発するのを防ぐため
         [SerializeField] private float impactExplosionGraceTime = 0.2f;
+        [SerializeField] private float heldImpactExplosionSpeed = 2.0f;
+        [SerializeField] private float heldCollisionProbePadding = 0.02f;
 
         private Rigidbody rb;
         private Collider bombCollider;
@@ -69,6 +72,12 @@ namespace BC.Bomb
         private bool isHandled;
         private float remainingFuseTime;
         private float ignoreImpactExplosionUntilTime;
+        private bool hasPreviousHeldPosition;
+        private Vector3 previousHeldPosition;
+
+        private const int MaxHeldCollisionHits = 16;
+        private readonly Collider[] heldCollisionHits = new Collider[MaxHeldCollisionHits];
+        private readonly List<Collider> ignoredPlayerColliders = new(16);
 
         public Transform ItemTransform => transform;
         public bool IsHandled => isHandled;
@@ -93,6 +102,12 @@ namespace BC.Bomb
             remainingFuseTime = fuseTime;
         }
 
+        private void OnDisable()
+        {
+            ClearIgnoredPlayerCollisions();
+            hasPreviousHeldPosition = false;
+        }
+
         private void Update()
         {
             if (!fuseStarted || exploded)
@@ -108,6 +123,41 @@ namespace BC.Bomb
             {
                 Explode();
             }
+        }
+
+        private void FixedUpdate()
+        {
+            if (!isHandled || exploded || rb == null || bombCollider == null)
+            {
+                hasPreviousHeldPosition = false;
+                return;
+            }
+
+            Vector3 currentPosition = transform.position;
+
+            if (!hasPreviousHeldPosition)
+            {
+                previousHeldPosition = currentPosition;
+                hasPreviousHeldPosition = true;
+                return;
+            }
+
+            float heldSpeed = (currentPosition - previousHeldPosition).magnitude /
+                              Mathf.Max(Time.fixedDeltaTime, 0.0001f);
+
+            previousHeldPosition = currentPosition;
+
+            if (Time.time < ignoreImpactExplosionUntilTime)
+                return;
+
+            if (heldSpeed < heldImpactExplosionSpeed)
+                return;
+
+            if (!IsTouchingNonPlayerCollider())
+                return;
+
+            LastImpactForce = heldSpeed;
+            Explode();
         }
 
         public void OnHandle(Transform handlePoint)
@@ -127,14 +177,17 @@ namespace BC.Bomb
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
-            rb.detectCollisions = false;
+            rb.detectCollisions = true;
 
             // 落下しないようにする
             rb.useGravity = false;
+            ConfigureHeldPlayerCollisionIgnore(handlePoint);
 
             transform.SetParent(handlePoint, true);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
+            previousHeldPosition = transform.position;
+            hasPreviousHeldPosition = true;
 
             if (startFuseOnHandle)
             {
@@ -149,6 +202,8 @@ namespace BC.Bomb
 
             isHandled = false;
             ignoreImpactExplosionUntilTime = Time.time + impactExplosionGraceTime;
+            hasPreviousHeldPosition = false;
+            ClearIgnoredPlayerCollisions();
 
             transform.SetParent(null, true);
 
@@ -216,6 +271,8 @@ namespace BC.Bomb
                 return;
 
             exploded = true;
+            ClearIgnoredPlayerCollisions();
+            hasPreviousHeldPosition = false;
 
             if (explosionEffectPrefab != null)
             {
@@ -238,6 +295,120 @@ namespace BC.Bomb
             GameLogicManagerMB.Instance.SetCurrentBomb(null); // 爆弾が爆発したらGameLogicManagerに通知する
 
             Destroy(gameObject);
+        }
+
+        private void ConfigureHeldPlayerCollisionIgnore(Transform handlePoint)
+        {
+            ClearIgnoredPlayerCollisions();
+
+            if (handlePoint == null || bombCollider == null)
+                return;
+
+            CharacterController ownerController = handlePoint.GetComponentInParent<CharacterController>();
+            Transform ownerRoot = ownerController != null
+                ? ownerController.transform
+                : handlePoint.root;
+
+            if (ownerRoot == null)
+                return;
+
+            Collider[] ownerColliders = ownerRoot.GetComponentsInChildren<Collider>(true);
+
+            for (int i = 0; i < ownerColliders.Length; i++)
+            {
+                Collider ownerCollider = ownerColliders[i];
+
+                if (!CanIgnorePlayerCollider(ownerCollider))
+                    continue;
+
+                Physics.IgnoreCollision(bombCollider, ownerCollider, true);
+                ignoredPlayerColliders.Add(ownerCollider);
+            }
+        }
+
+        private bool CanIgnorePlayerCollider(Collider ownerCollider)
+        {
+            if (ownerCollider == null ||
+                ownerCollider == bombCollider ||
+                !ownerCollider.enabled ||
+                !ownerCollider.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+
+            if (ownerCollider.transform.IsChildOf(transform))
+                return false;
+
+            return !ignoredPlayerColliders.Contains(ownerCollider);
+        }
+
+        private void ClearIgnoredPlayerCollisions()
+        {
+            if (bombCollider != null)
+            {
+                for (int i = 0; i < ignoredPlayerColliders.Count; i++)
+                {
+                    Collider ignored = ignoredPlayerColliders[i];
+
+                    if (ignored != null)
+                        Physics.IgnoreCollision(bombCollider, ignored, false);
+                }
+            }
+
+            ignoredPlayerColliders.Clear();
+        }
+
+        private bool IsTouchingNonPlayerCollider()
+        {
+            Bounds bounds = bombCollider.bounds;
+            float probeRadius = bounds.extents.magnitude + Mathf.Max(0.0f, heldCollisionProbePadding);
+
+            int hitCount = Physics.OverlapSphereNonAlloc(
+                bounds.center,
+                probeRadius,
+                heldCollisionHits,
+                ~0,
+                QueryTriggerInteraction.Ignore);
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider hit = heldCollisionHits[i];
+
+                if (ShouldIgnoreHeldCollision(hit))
+                    continue;
+
+                if (Physics.ComputePenetration(
+                        bombCollider,
+                        transform.position,
+                        transform.rotation,
+                        hit,
+                        hit.transform.position,
+                        hit.transform.rotation,
+                        out _,
+                        out float distance) &&
+                    distance > 0.0001f)
+                {
+                    return true;
+                }
+
+                if (bombCollider.bounds.Intersects(hit.bounds))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool ShouldIgnoreHeldCollision(Collider hit)
+        {
+            if (hit == null ||
+                hit == bombCollider ||
+                hit.attachedRigidbody == rb ||
+                hit.transform.IsChildOf(transform))
+            {
+                return true;
+            }
+
+            return ignoredPlayerColliders.Contains(hit);
         }
 
         private void ApplyExplosionImpact()

@@ -18645,9 +18645,9 @@ MonoBehaviour:
   handleItemPoint: {fileID: 1905889926}
   playerModel: {fileID: 1106097473}
   handleItemAction: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  maxThrowForce: 5
-  minThrowForce: 2
-  throwForceChargeTime: 2
+  maxThrowForce: 12
+  minThrowForce: 4
+  throwForceChargeTime: 1.5
   isHandlingItem: 0
 --- !u!114 &2038659212
 MonoBehaviour:

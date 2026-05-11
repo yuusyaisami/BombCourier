@@ -93,5 +93,13 @@ namespace BC.Base
 
             return SceneKernel.ValueStore.Get(Entity, ValueKeys.Move.SprintMultiplier);
         }
+
+        protected float GetJumpHeightMultiplier(float fallback)
+        {
+            if (!IsRuntimeReady || SceneKernel.ValueStore == null)
+                return fallback;
+
+            return SceneKernel.ValueStore.Get(Entity, ValueKeys.Move.JumpHeightMultiplier);
+        }
     }
 }
