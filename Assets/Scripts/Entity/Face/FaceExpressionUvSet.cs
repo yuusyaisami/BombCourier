@@ -18,12 +18,14 @@ namespace BC.Character
         [Header("Expressions")]
         [SerializeField] private Entry[] entries;
 
+#pragma warning disable CS0649
         [Serializable]
         private struct Entry
         {
             public FaceExpressionId expression;
             public Rect pixelRect;
         }
+#pragma warning restore CS0649
 
         public bool TryGetExpressionUvRect(FaceExpressionId expression, out Rect uvRect)
         {

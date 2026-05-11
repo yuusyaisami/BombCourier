@@ -29,12 +29,12 @@ namespace BC.Gimmick.PressurePlate
 
         [Header("Actions")]
         [LabelText("Pressed Actions")]
-        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
         [SerializeField]
         private WiringAction[] onPressedActions = System.Array.Empty<WiringAction>();
 
         [LabelText("Released Actions")]
-        [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+        [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
         [SerializeField]
         private WiringAction[] onReleasedActions = System.Array.Empty<WiringAction>();
 
