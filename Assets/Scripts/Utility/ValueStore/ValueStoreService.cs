@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BC.Base
 {
-    public sealed class ValueStoreService
+    public sealed class ValueStoreService : IEntityValueStoreService
     {
         private readonly Dictionary<uint, EntityValueStore> storesByEntityId = new();
 

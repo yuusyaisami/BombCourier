@@ -3,23 +3,22 @@ using System.Collections.Generic;
 
 namespace BC.Base
 {
-    public sealed class EventService : IGameEventBus, IEntityEventService
+    public sealed class KernelEventService : IGameEventBus
     {
-        private readonly Dictionary<Type, object> globalHandlersByType = new();
-        private readonly Dictionary<EntityEventKey, object> entityHandlersByKey = new();
+        private readonly Dictionary<Type, object> handlersByType = new();
 
         public EventSubscription Subscribe<TEvent>(Action<TEvent> handler)
-            where TEvent : struct, IGameEvent
+            where TEvent : struct, IKernelEvent
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
             Type type = typeof(TEvent);
 
-            if (!globalHandlersByType.TryGetValue(type, out object listObject))
+            if (!handlersByType.TryGetValue(type, out object listObject))
             {
                 listObject = new List<Action<TEvent>>();
-                globalHandlersByType.Add(type, listObject);
+                handlersByType.Add(type, listObject);
             }
 
             var list = (List<Action<TEvent>>)listObject;
@@ -30,25 +29,30 @@ namespace BC.Base
                 list.Remove(handler);
 
                 if (list.Count == 0)
-                    globalHandlersByType.Remove(type);
+                    handlersByType.Remove(type);
             });
         }
 
-        public void Publish<TEvent>(in TEvent gameEvent)
-            where TEvent : struct, IGameEvent
+        public void Publish<TEvent>(in TEvent kernelEvent)
+            where TEvent : struct, IKernelEvent
         {
             Type type = typeof(TEvent);
 
-            if (!globalHandlersByType.TryGetValue(type, out object listObject))
+            if (!handlersByType.TryGetValue(type, out object listObject))
                 return;
 
             var list = (List<Action<TEvent>>)listObject;
 
             for (int i = 0; i < list.Count; i++)
             {
-                list[i].Invoke(gameEvent);
+                list[i].Invoke(kernelEvent);
             }
         }
+    }
+
+    public sealed class EntityEventService : IEntityEventService
+    {
+        private readonly Dictionary<EntityEventKey, object> entityHandlersByKey = new();
 
         public EntityEventHandle For(EntityRef entity)
         {
@@ -113,6 +117,46 @@ namespace BC.Base
             {
                 entityHandlersByKey.Remove(removeKeys[i]);
             }
+        }
+    }
+
+    public sealed class EventService : IGameEventBus, IEntityEventService
+    {
+        public KernelEventService KernelEvents { get; } = new KernelEventService();
+        public EntityEventService EntityEvents { get; } = new EntityEventService();
+
+        public EventSubscription Subscribe<TEvent>(Action<TEvent> handler)
+            where TEvent : struct, IKernelEvent
+        {
+            return KernelEvents.Subscribe(handler);
+        }
+
+        public void Publish<TEvent>(in TEvent kernelEvent)
+            where TEvent : struct, IKernelEvent
+        {
+            KernelEvents.Publish(kernelEvent);
+        }
+
+        public EntityEventHandle For(EntityRef entity)
+        {
+            return EntityEvents.For(entity);
+        }
+
+        public EventSubscription Subscribe<TEvent>(EntityRef entity, Action<TEvent> handler)
+            where TEvent : struct, IEntityEvent
+        {
+            return EntityEvents.Subscribe(entity, handler);
+        }
+
+        public void Publish<TEvent>(EntityRef entity, in TEvent entityEvent)
+            where TEvent : struct, IEntityEvent
+        {
+            EntityEvents.Publish(entity, entityEvent);
+        }
+
+        public void ClearEntity(EntityRef entity)
+        {
+            EntityEvents.ClearEntity(entity);
         }
     }
 }

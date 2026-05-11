@@ -169,5 +169,44 @@ namespace BC.Base
                     ValueCompositionMode.Raw
                 );
         }
+
+        public static class Kernel
+        {
+            // Kernel系はScene全体の状態を表す。既存Identity(9001)との衝突を避けるため10000番台を使う。
+            public static class Gimmick
+            {
+                public static readonly ValueKey<bool> GlobalEnabled =
+                    new ValueKey<bool>(
+                        new ValueKeyId(10001),
+                        "Kernel.Gimmick.GlobalEnabled",
+                        true,
+                        ValueCompositionMode.BoolAnd
+                    );
+
+                public static readonly ValueKey<bool> AnySignalActive =
+                    new ValueKey<bool>(
+                        new ValueKeyId(10002),
+                        "Kernel.Gimmick.AnySignalActive",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+
+                public static readonly ValueKey<int> SequenceIndex =
+                    new ValueKey<int>(
+                        new ValueKeyId(10003),
+                        "Kernel.Gimmick.SequenceIndex",
+                        0,
+                        ValueCompositionMode.NumericAddMul
+                    );
+
+                public static readonly ValueKey<float> LastSignalTime =
+                    new ValueKey<float>(
+                        new ValueKeyId(10004),
+                        "Kernel.Gimmick.LastSignalTime",
+                        0.0f,
+                        ValueCompositionMode.NumericAddMul
+                    );
+            }
+        }
     }
 }

@@ -3,8 +3,12 @@ namespace BC.Base
 {
     public class ValueStoreMB : MonoBehaviour, IKernelInstaller
     {
-        private ValueStoreService valueStore;
-        public ValueStoreService ValueStore => valueStore;
+        private ValueStoreService entityValueStore;
+        private KernelValueStoreService kernelValueStore;
+
+        public ValueStoreService ValueStore => entityValueStore;
+        public ValueStoreService EntityValueStore => entityValueStore;
+        public KernelValueStoreService KernelValueStore => kernelValueStore;
         public int Order => 0;
 
 
@@ -12,8 +16,15 @@ namespace BC.Base
         {
             if (kernel is SceneKernel sceneKernel)
             {
-                valueStore = new ValueStoreService();
-                sceneKernel.ValueStore = valueStore;
+                entityValueStore = new ValueStoreService();
+                kernelValueStore = new KernelValueStoreService();
+                sceneKernel.EntityValueStore = entityValueStore;
+                sceneKernel.KernelValueStore = kernelValueStore;
+            }
+            else if (kernel is ApplicationKernel applicationKernel)
+            {
+                kernelValueStore = new KernelValueStoreService();
+                applicationKernel.KernelValueStore = kernelValueStore;
             }
             else
             {
