@@ -2,6 +2,7 @@ namespace BC.Base
 {
     public class EntityLifecycleService
     {
+        private SceneKernel kernel;
         private ScopedEntityRegistry SceneRegistry;
         private ScopedEntityRegistry ApplicationRegistry;
         private IKernelEventBus kernelEvents;
@@ -12,6 +13,7 @@ namespace BC.Base
 
         public EntityLifecycleService(SceneKernel kernel)
         {
+            this.kernel = kernel;
             SceneRegistry = kernel.EntitiesRegistry;
             ApplicationRegistry = ApplicationKernelMB.Instance.Kernel.ApplicationEntityRegistry;
             kernelEvents = kernel.KernelEvents;
@@ -54,6 +56,7 @@ namespace BC.Base
 
             entityEvents.Publish(entity, new EntityUnregisteredEvent(entity));
             entityEvents.ClearEntity(entity);
+            kernel.EntityValueStore?.ClearEntity(entity);
             kernelEvents.Publish(new EntityUnregisteredKernelEvent(entity));
 
             return true;

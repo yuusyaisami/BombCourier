@@ -3,8 +3,12 @@ namespace BC.Base
     public sealed class SceneKernel : BaseKernel
     {
         public ScopedEntityRegistry EntitiesRegistry { get; set; }
+
+        // KernelEventsはScene全体通知、EntityEventsはEntity単位通知として使い分ける。
         public EventService Events { get; set; }
         public EntityLifecycleService EntityLifecycle { get; set; }
+
+        // EntityValueStoreはEntityRefごとの状態、KernelValueStoreはScene全体の共有状態を扱う。
         public ValueStoreService EntityValueStore { get; set; }
         public KernelValueStoreService KernelValueStore { get; set; }
         public EntitySpawnerService Spawner { get; set; }
@@ -32,7 +36,9 @@ namespace BC.Base
 
         public void Dispose()
         {
-            // 必要ならClear
+            Events?.Clear();
+            EntityValueStore?.Clear();
+            KernelValueStore?.Clear();
         }
     }
 }

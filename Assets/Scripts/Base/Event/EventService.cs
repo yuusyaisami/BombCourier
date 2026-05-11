@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace BC.Base
@@ -47,6 +48,17 @@ namespace BC.Base
             {
                 list[i].Invoke(kernelEvent);
             }
+        }
+
+        public void Clear()
+        {
+            foreach (object listObject in handlersByType.Values)
+            {
+                if (listObject is IList list)
+                    list.Clear();
+            }
+
+            handlersByType.Clear();
         }
     }
 
@@ -118,6 +130,17 @@ namespace BC.Base
                 entityHandlersByKey.Remove(removeKeys[i]);
             }
         }
+
+        public void Clear()
+        {
+            foreach (object listObject in entityHandlersByKey.Values)
+            {
+                if (listObject is IList list)
+                    list.Clear();
+            }
+
+            entityHandlersByKey.Clear();
+        }
     }
 
     public sealed class EventService : IGameEventBus, IEntityEventService
@@ -157,6 +180,12 @@ namespace BC.Base
         public void ClearEntity(EntityRef entity)
         {
             EntityEvents.ClearEntity(entity);
+        }
+
+        public void Clear()
+        {
+            KernelEvents.Clear();
+            EntityEvents.Clear();
         }
     }
 }

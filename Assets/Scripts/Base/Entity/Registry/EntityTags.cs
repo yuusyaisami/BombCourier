@@ -70,6 +70,18 @@ namespace BC.Base
                     new EntityTagId(3001),
                     "Gimmick.Cushion"
                 );
+
+            public static readonly EntityTag PressurePlate =
+                new EntityTag(
+                    new EntityTagId(3002),
+                    "Gimmick.PressurePlate"
+                );
+
+            public static readonly EntityTag MovingPlatform =
+                new EntityTag(
+                    new EntityTagId(3003),
+                    "Gimmick.MovingPlatform"
+                );
         }
     }
 }

@@ -4,6 +4,7 @@ namespace BC.Base
     {
         public ScopedEntityRegistry ApplicationEntityRegistry { get; set; }
 
+        // Application単位で必要な共有通知と共有状態だけを置く。
         public EventService Events { get; set; }
         public KernelValueStoreService KernelValueStore { get; set; }
         public IKernelEventBus KernelEvents => Events;
@@ -21,7 +22,8 @@ namespace BC.Base
 
         public void Dispose()
         {
-            // 必要ならClear
+            Events?.Clear();
+            KernelValueStore?.Clear();
         }
     }
 }

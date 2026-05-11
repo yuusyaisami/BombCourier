@@ -68,6 +68,8 @@ namespace BC.Base
 
         void Publish<TEvent>(in TEvent kernelEvent)
             where TEvent : struct, IKernelEvent;
+
+        void Clear();
     }
 
     // 旧名互換。新規コードでは IKernelEventBus を使う。
@@ -86,6 +88,7 @@ namespace BC.Base
             where TEvent : struct, IEntityEvent;
 
         void ClearEntity(EntityRef entity);
+        void Clear();
     }
 
     public readonly struct EntityEventKey : IEquatable<EntityEventKey>

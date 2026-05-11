@@ -8,6 +8,17 @@ namespace BC.Base
         private readonly Dictionary<ValueKeyId, ValueSlot> slotsByKey = new();
         private readonly Dictionary<ValueKeyId, IValueWatchNode> watchNodesByKey = new();
 
+        public void Clear()
+        {
+            foreach (IValueWatchNode watchNode in watchNodesByKey.Values)
+            {
+                watchNode.ClearListeners();
+            }
+
+            watchNodesByKey.Clear();
+            slotsByKey.Clear();
+        }
+
         public T Get<T>(ValueKeyReference key)
         {
             return Get(key.Resolve<T>());
