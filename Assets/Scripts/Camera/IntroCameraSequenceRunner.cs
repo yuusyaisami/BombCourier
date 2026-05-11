@@ -33,6 +33,13 @@ namespace BombCourier.CameraIntro
         [SerializeField]
         private bool useUnscaledTime = false;
 
+        [Header("Return To Gameplay")]
+        [SerializeField]
+        private bool returnToGameplayInstantly = true;
+
+        [SerializeField]
+        private float returnToGameplayDuration = 0.5f;
+
         [Header("Events")]
         [SerializeField]
         private UnityEvent<bool> inputLockChanged;
@@ -195,6 +202,15 @@ namespace BombCourier.CameraIntro
                 }
             }
 
+            if (returnToGameplayInstantly || returnToGameplayDuration <= 0f)
+            {
+                SnapIntroCameraToGameplay();
+            }
+            else
+            {
+                await ReturnToGameplayAsync(cancellationToken);
+            }
+
             SetPriority(introCamera, inactivePriority);
             SetPriority(gameplayCamera, gameplayPriority);
             gameplayCamera.Prioritize();
@@ -225,6 +241,61 @@ namespace BombCourier.CameraIntro
         private float DeltaTime()
         {
             return useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+        }
+
+        private async UniTask ReturnToGameplayAsync(CancellationToken cancellationToken)
+        {
+            Transform introTransform = introCamera.transform;
+            Transform gameplayTransform = gameplayCamera.transform;
+
+            Vector3 startPosition = introTransform.position;
+            Quaternion startRotation = introTransform.rotation;
+            Vector3 targetPosition = gameplayTransform.position;
+            Quaternion targetRotation = gameplayTransform.rotation;
+
+            float duration = Mathf.Max(0f, returnToGameplayDuration);
+
+            if (duration <= 0f)
+            {
+                introTransform.SetPositionAndRotation(targetPosition, targetRotation);
+                return;
+            }
+
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                if (skipRequested)
+                {
+                    break;
+                }
+
+                float t = Mathf.Clamp01(elapsed / duration);
+                float easedT = defaultEase != null ? defaultEase.Evaluate(t) : SmoothStep(t);
+
+                introTransform.SetPositionAndRotation(
+                    Vector3.Lerp(startPosition, targetPosition, easedT),
+                    Quaternion.Slerp(startRotation, targetRotation, easedT)
+                );
+
+                elapsed += DeltaTime();
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+            }
+
+            introTransform.SetPositionAndRotation(targetPosition, targetRotation);
+        }
+
+        private void SnapIntroCameraToGameplay()
+        {
+            if (introCamera == null || gameplayCamera == null)
+            {
+                return;
+            }
+
+            introCamera.transform.SetPositionAndRotation(
+                gameplayCamera.transform.position,
+                gameplayCamera.transform.rotation
+            );
         }
 
         private static void SetPriority(CinemachineCamera camera, int priority)
