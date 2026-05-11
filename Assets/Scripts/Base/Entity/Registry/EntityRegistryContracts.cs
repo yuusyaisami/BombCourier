@@ -102,6 +102,7 @@ namespace BC.Base
     public readonly struct EntityTagId : IEquatable<EntityTagId>
     {
         public readonly int Value;
+        public bool IsValid => Value != 0;
 
         public EntityTagId(int value)
         {
@@ -109,7 +110,12 @@ namespace BC.Base
         }
 
         public bool Equals(EntityTagId other) => Value == other.Value;
+        public override bool Equals(object obj) => obj is EntityTagId other && Equals(other);
         public override int GetHashCode() => Value;
+        public override string ToString() => Value.ToString();
+
+        public static bool operator ==(EntityTagId left, EntityTagId right) => left.Equals(right);
+        public static bool operator !=(EntityTagId left, EntityTagId right) => !left.Equals(right);
     }
 
     public readonly struct EntityRecord

@@ -1,5 +1,5 @@
 using BC.Base;
-using BC.Bomb;
+using BC.Item;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -25,9 +25,6 @@ namespace BC.Player
         [SerializeField] private float minThrowForce = 4f;
         [SerializeField] private float throwForceChargeTime = 1.5f;
 
-        [Header("Carry")]
-        [SerializeField, Range(0.0f, 1.0f)] private float carryingJumpHeightMultiplier = 0.65f;
-
         [Header("Trajectory")]
         [SerializeField] private LineRenderer trajectoryLineRenderer;
         [SerializeField] private LayerMask trajectoryCollisionMask = ~0;
@@ -51,13 +48,13 @@ namespace BC.Player
 
         private readonly Collider[] itemHits = new Collider[MaxItemHits];
         private readonly RaycastHit[] trajectoryHits = new RaycastHit[MaxTrajectoryHits];
-        private readonly List<IItemObject> pickupCandidates = new(16);
+        private readonly List<ICarryableItem> pickupCandidates = new(16);
         private readonly HashSet<PickupOutlineTargetMB> outlinedTargets = new();
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
-        private IItemObject currentlyHandledItem;
-        private IItemObject currentBestItem;
+        private ICarryableItem currentlyHandledItem;
+        private ICarryableItem currentBestItem;
         private float throwForceChargeTimer;
         private Vector3[] trajectoryPoints = new Vector3[32];
         private Material ownedTrajectoryMaterial;
@@ -145,9 +142,12 @@ namespace BC.Player
                 if (hit == null)
                     continue;
 
-                IItemObject item = hit.GetComponentInParent<IItemObject>();
+                ICarryableItem item = hit.GetComponentInParent<ICarryableItem>();
 
                 if (item == null)
+                    continue;
+
+                if (!item.CanBeCarried)
                     continue;
 
                 if (item.IsHandled)
@@ -254,7 +254,7 @@ namespace BC.Player
             // チャージ後に離したら投げる。
             ReleaseCurrentItem();
         }
-        private void HandleItem(IItemObject item)
+        private void HandleItem(ICarryableItem item)
         {
             if (item == null || item.ItemTransform == null)
                 return;
@@ -337,9 +337,15 @@ namespace BC.Player
             return fallbackDirection.normalized;
         }
 
-        private void ApplyCarryJumpPenaltyIfNeeded(IItemObject item)
+        private void ApplyCarryJumpPenaltyIfNeeded(ICarryableItem item)
         {
-            if (item is not BombMB)
+            if (item is not ICarryMoveModifier moveModifier)
+                return;
+
+            if (!moveModifier.TryGetJumpHeightMultiplier(out float jumpHeightMultiplier))
+                return;
+
+            if (Mathf.Approximately(jumpHeightMultiplier, 1.0f))
                 return;
 
             ResolveRuntimeReferences(logMissingEntity: false);
@@ -347,11 +353,12 @@ namespace BC.Player
             if (valueStore == null || !entityRef.IsValid)
                 return;
 
+            // 持ち物ごとの移動補正は、拾う側ではなくアイテム側の任意インターフェースから受け取る。
             valueStore.SetMul(
                 entityRef,
                 ValueKeys.Move.JumpHeightMultiplier,
                 CarryItemJumpPenaltyTag,
-                carryingJumpHeightMultiplier);
+                Mathf.Max(0.0f, jumpHeightMultiplier));
 
             carryJumpPenaltyApplied = true;
         }
@@ -523,7 +530,7 @@ namespace BC.Player
             trajectoryLineRenderer.positionCount = 0;
         }
 
-        private void UpdatePickupOutlines(IReadOnlyList<IItemObject> candidates, IItemObject bestItem)
+        private void UpdatePickupOutlines(IReadOnlyList<ICarryableItem> candidates, ICarryableItem bestItem)
         {
             foreach (PickupOutlineTargetMB target in outlinedTargets)
             {
@@ -538,7 +545,7 @@ namespace BC.Player
 
             for (int i = 0; i < candidates.Count; i++)
             {
-                IItemObject item = candidates[i];
+                ICarryableItem item = candidates[i];
 
                 if (item is not MonoBehaviour itemMB)
                     continue;
