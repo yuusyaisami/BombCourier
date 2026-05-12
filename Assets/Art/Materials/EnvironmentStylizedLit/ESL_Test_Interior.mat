@@ -22,11 +22,36 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 04c01d4069e544668f82df3adf97a88c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 2800000, guid: cf34c683fd4d4f34ac8a2f7f90eb20b9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: f7d3310630ee41febf624017e1c821f4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 2800000, guid: 853d94af512744079219a34e9e05542e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaClip: 1
     - _Cull: 1
+    - _Cutoff: 0.5
+    - _EmissionStrength: 0.15
+    - _Metallic: 0
+    - _NormalScale: 0
+    - _OcclusionStrength: 1
+    - _Smoothness: 0.25
     m_Colors:
     - _BaseColor: {r: 0.7, g: 0.78, b: 0.92, a: 1}
+    - _EmissionColor: {r: 0.8, g: 0.55, b: 0.25, a: 1}
+    - _SpecularColor: {r: 0.16, g: 0.16, b: 0.18, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
