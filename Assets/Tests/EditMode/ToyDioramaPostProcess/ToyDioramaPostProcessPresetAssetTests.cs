@@ -24,6 +24,7 @@ namespace BC.Rendering.Tests
             Assert.AreEqual("MattePlastic", presets[ToyDioramaPresetKind.MattePlastic].name);
             Assert.AreEqual("PictureBook", presets[ToyDioramaPresetKind.PictureBook].name);
             Assert.AreEqual("CleanDebug", presets[ToyDioramaPresetKind.CleanDebug].name);
+            Assert.AreEqual("MobileOptimized", presets[ToyDioramaPresetKind.MobileOptimized].name);
         }
 
         [Test]
@@ -56,10 +57,28 @@ namespace BC.Rendering.Tests
             Assert.AreEqual(0f, settings.HighlightTintStrength);
         }
 
+        [Test]
+        public void MobileOptimizedPresetKeepsCoreStylizationWhileDisablingSecondaryEffects()
+        {
+            ToyDioramaPostProcessPreset mobilePreset = LoadPresetDictionary()[ToyDioramaPresetKind.MobileOptimized];
+            ToyDioramaPostProcessSettings settings = mobilePreset.Settings;
+
+            Assert.AreEqual(ToyDioramaQualityTier.Low, settings.QualityTier);
+            Assert.Greater(settings.PastelStrength, 0f);
+            Assert.Greater(settings.CreamHighlightStrength, 0f);
+            Assert.IsTrue(settings.EdgeToneEnabled);
+            Assert.IsFalse(settings.DepthHazeEnabled);
+            Assert.IsFalse(settings.SoftBloomEnabled);
+            Assert.IsFalse(settings.HalationEnabled);
+            Assert.IsFalse(settings.GrainEnabled);
+            Assert.Greater(settings.ShadowTintStrength, 0f);
+            Assert.Greater(settings.HighlightTintStrength, 0f);
+        }
+
         private static Dictionary<ToyDioramaPresetKind, ToyDioramaPostProcessPreset> LoadPresetDictionary()
         {
             string[] assetGuids = AssetDatabase.FindAssets("t:ToyDioramaPostProcessPreset", new[] { PresetsFolder });
-            Assert.AreEqual(5, assetGuids.Length, "Expected 5 ToyDiorama preset assets.");
+            Assert.AreEqual(6, assetGuids.Length, "Expected 6 ToyDiorama preset assets.");
 
             return assetGuids
                 .Select(AssetDatabase.GUIDToAssetPath)

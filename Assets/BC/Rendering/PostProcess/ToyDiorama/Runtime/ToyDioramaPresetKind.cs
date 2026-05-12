@@ -6,6 +6,7 @@ namespace BC.Rendering
         ClayDiorama = 1,
         MattePlastic = 2,
         PictureBook = 3,
-        CleanDebug = 4
+        CleanDebug = 4,
+        MobileOptimized = 5
     }
 }

@@ -4,10 +4,10 @@ namespace BC.Rendering.Editor
 {
     internal static class ToyDioramaPostProcessInspectorUtility
     {
-        internal static void DrawFeatureSettings(SerializedProperty settingsProperty)
+        internal static void DrawFeatureSettings(ToyDioramaPostProcessFeature feature, SerializedProperty settingsProperty)
         {
             DrawPropertyGroup("Pipeline", settingsProperty, "enabled", "qualityTier");
-            DrawQualitySummary(settingsProperty.FindPropertyRelative("qualityTier"));
+            DrawQualitySummary(feature, settingsProperty.FindPropertyRelative("qualityTier"));
             DrawAuthoringSettings(settingsProperty);
             DrawPropertyGroup("Debug", settingsProperty, "debugView");
         }
@@ -105,7 +105,7 @@ namespace BC.Rendering.Editor
                 "grainTemporalStrength");
         }
 
-        private static void DrawQualitySummary(SerializedProperty qualityTierProperty)
+        private static void DrawQualitySummary(ToyDioramaPostProcessFeature feature, SerializedProperty qualityTierProperty)
         {
             if (qualityTierProperty == null)
             {
@@ -113,7 +113,26 @@ namespace BC.Rendering.Editor
             }
 
             ToyDioramaQualityTier qualityTier = (ToyDioramaQualityTier)qualityTierProperty.enumValueIndex;
-            EditorGUILayout.HelpBox(GetQualitySummary(qualityTier), MessageType.None);
+            EditorGUILayout.HelpBox($"Authored Quality Tier: {qualityTier}. {GetQualitySummary(qualityTier)}", MessageType.None);
+
+            if (feature == null)
+            {
+                return;
+            }
+
+            ToyDioramaQualityTier resolvedQualityTier = feature.GetResolvedQualityTier();
+
+            if (resolvedQualityTier == qualityTier)
+            {
+                EditorGUILayout.HelpBox(
+                    $"Resolved Runtime Tier: {resolvedQualityTier}. Runtime matches the authored Quality Tier.",
+                    MessageType.None);
+                return;
+            }
+
+            EditorGUILayout.HelpBox(
+                $"Resolved Runtime Tier: {resolvedQualityTier}. Runtime differs from authored {qualityTier} because this feature instance forces Low at runtime.",
+                MessageType.Info);
         }
 
         private static string GetQualitySummary(ToyDioramaQualityTier qualityTier)

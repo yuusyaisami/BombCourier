@@ -804,6 +804,20 @@ DebugView 中は Inspector に警告を出す。
 
 ---
 
+## 22.6 Mobile Optimized
+
+Mobile_Renderer 向け。
+
+```text
+特徴:
+  core color grade は残す
+  EdgeTone は維持する
+  DepthHaze / Bloom / Halation / Grain は切る
+  runtime は Low tier 前提
+```
+
+---
+
 # 23. 実装ファイル構成
 
 推奨構成：
@@ -1022,6 +1036,17 @@ Screen Space UIまでPostProcessで変色すると、
 
 最初はゲーム画面全体に適用でよい。
 最終的には UI Layer を後段描画するか、Camera分離で対応する。
+
+BombCourier の現行実装では以下を採用する。
+
+```text
+- PC_Renderer は ToyDiorama を有効化した renderer を canonical とする
+- Mobile_Renderer は ToyDiorama を有効化した supported fallback renderer とする
+- Mobile_Renderer では Force Low Quality Tier を有効にし、MobileOptimized preset を基準にする
+- legacy PS2 FullScreenPass は canonical renderer では無効のまま保持する
+- SampleScene の Screen Space UI は Screen Space Overlay を維持する
+- Screen Space Camera UI が必要になった場合は ToyDiorama 後段の UI camera に分離する
+```
 
 ---
 

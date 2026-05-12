@@ -5,6 +5,46 @@
 
 # EnvironmentStylizedLit Milestone Spec v0.1
 
+## 現在の進捗棚卸し
+
+この節は planned scope ではなく、2026-05-13 時点の実装実体ベースの進捗です。
+
+### 進捗サマリー
+
+```text
+- 現在の実装到達点: M2 SurfaceData Foundation
+- 直列完了点: M1 Minimal URP Forward Shader
+- 順番評価: M0 -> M1 -> M2 の順で進んでおり、M3 以降には未着手
+```
+
+### Milestone Progress
+
+| Milestone | Status | Progress | Notes |
+| --- | --- | --- | --- |
+| M0 Project Scaffold / File Layout | Complete | 100% | Shader / HLSL / Editor / Presets / Documentation / Test material / validation scene の受け皿が存在します。 |
+| M1 Minimal URP Forward Shader | Complete | 100% | ForwardLit pass で BaseColor を描画する最小 shader は成立しています。 |
+| M2 SurfaceData Foundation | Partial | 70% | BaseMap / BaseColor / AlphaClip / NormalMap / Occlusion / Emission / Metallic / Smoothness は入っていますが、M2 の完了条件を満たす authoring と検証までは閉じていません。 |
+| M3 Stylized Main Light Diffuse | Not Started | 0% | Lighting / StylizedDiffuse / Debug の本体が未実装です。 |
+| M4 Shadow / Cull / Interior Room Stability | Not Started | 0% | ShadowCaster / Receive Shadow の実装は stub 段階です。 |
+| M5 Ambient / Bounce / Shadow Color System | Not Started | 0% | Ambient 系 HLSL は空です。 |
+| M6 Stylized Specular / Edge Sheen | Not Started | 0% | Specular 系 HLSL は空です。 |
+| M7 World Noise / Band Noise | Not Started | 0% | Noise 系 HLSL は空です。 |
+| M8 Required Render Pass Completion | Not Started | 0% | DepthOnly / DepthNormals / Meta pass は未実装です。 |
+| M9 Baked GI / Light Probe / SSAO Compatibility | Not Started | 0% | GI / SSAO 接続は未実装です。 |
+| M10 Additional Lights | Not Started | 0% | Additional lights の評価は未実装です。 |
+| M11 Triplanar / Vertex Color / World Gradient | Not Started | 0% | Triplanar は stub のみで、vertex color / world gradient も未着手です。 |
+| M12 ShaderGUI / Validator / Presets | Partial | 20% | ShaderGUI / Validator / PresetUtility の空クラスはありますが、機能は未実装です。 |
+| M13 Performance / Variant Cleanup | Not Started | 0% | variant policy / optimization / validation は未着手です。 |
+| M14 Production Validation / Authoring Guide | Not Started | 0% | module-local guide と validation 体系は未整備です。 |
+
+### 判断メモ
+
+```text
+- この milestone line は PostProcess とは別物です。
+- 現在 repo にある実装から見る限り、EnvironmentStylizedLit は M0-M2 の基礎作業段階です。
+- したがって、ここまでの会話で進んでいた主対象は ShaderMilestoneSpec ではなく ToyDioramaPostProcess milestone です。
+```
+
 ## 0. 基本方針
 
 この Shader は、以下の順で作る。

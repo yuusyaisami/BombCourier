@@ -42,6 +42,7 @@ bool ToyDiorama_IsPreBloomDebugView(int debugView)
         debugView == TOY_DIORAMA_DEBUG_MID_MASK ||
         debugView == TOY_DIORAMA_DEBUG_HIGHLIGHT_MASK ||
         debugView == TOY_DIORAMA_DEBUG_BEFORE_COLOR_GRADE ||
+        debugView == TOY_DIORAMA_DEBUG_AFTER_COLOR_GRADE ||
         debugView == TOY_DIORAMA_DEBUG_PASTEL_MASK ||
         debugView == TOY_DIORAMA_DEBUG_HIGH_SATURATION_MASK ||
         debugView == TOY_DIORAMA_DEBUG_CREAM_HIGHLIGHT_MASK ||
@@ -95,6 +96,11 @@ float3 ToyDiorama_ApplyPreBloomDebugView(float3 beforeColorGrade, ToyDiorama_Col
     if (debugView == TOY_DIORAMA_DEBUG_HIGHLIGHT_MASK)
     {
         return pipelineData.colorGradeMasks.highlight.xxx;
+    }
+
+    if (debugView == TOY_DIORAMA_DEBUG_AFTER_COLOR_GRADE)
+    {
+        return pipelineData.beforePastel;
     }
 
     if (debugView == TOY_DIORAMA_DEBUG_PASTEL_MASK)
@@ -189,11 +195,6 @@ float3 ToyDiorama_ApplyFinalDebugView(float3 preBloomColor, ToyDiorama_FinalColo
     if (debugView == TOY_DIORAMA_DEBUG_HALATION_MASK)
     {
         return pipelineData.bloomComposite.a.xxx;
-    }
-
-    if (debugView == TOY_DIORAMA_DEBUG_AFTER_COLOR_GRADE)
-    {
-        return pipelineData.afterColorGrade;
     }
 
     if (debugView == TOY_DIORAMA_DEBUG_AFTER_BLOOM)
