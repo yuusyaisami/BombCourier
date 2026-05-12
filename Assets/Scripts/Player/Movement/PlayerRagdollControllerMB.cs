@@ -12,7 +12,8 @@ namespace BC.Manager
     public sealed class PlayerRagdollControllerMB : MonoBehaviour, IPlayerRagdollController
     {
         [SerializeField] private Animator animator;
-        [SerializeField] private CharacterController characterController;
+        [SerializeField] private Rigidbody movementRigidbody;
+        [SerializeField] private Collider movementCollider;
         [SerializeField] private PlayerMoveController moveController;
 
         [Header("Ragdoll Parts Only")]
@@ -28,7 +29,8 @@ namespace BC.Manager
         private void Reset()
         {
             animator = GetComponentInChildren<Animator>();
-            characterController = GetComponent<CharacterController>();
+            movementRigidbody = GetComponent<Rigidbody>();
+            movementCollider = GetComponent<Collider>();
             moveController = GetComponent<PlayerMoveController>();
 
             // 注意：
@@ -74,6 +76,7 @@ namespace BC.Manager
 
         private void Awake()
         {
+            ResolveMovementBody();
             SetRagdollEnabled(false);
             IgnoreSelfCollisions();
         }
@@ -88,8 +91,18 @@ namespace BC.Manager
             if (moveController != null)
                 moveController.enabled = false;
 
-            if (characterController != null)
-                characterController.enabled = false;
+            ResolveMovementBody();
+
+            if (movementCollider != null)
+                movementCollider.enabled = false;
+
+            if (movementRigidbody != null)
+            {
+                movementRigidbody.linearVelocity = Vector3.zero;
+                movementRigidbody.angularVelocity = Vector3.zero;
+                movementRigidbody.isKinematic = true;
+                movementRigidbody.detectCollisions = false;
+            }
 
             if (animator != null)
                 animator.enabled = false;
@@ -118,11 +131,34 @@ namespace BC.Manager
             if (animator != null)
                 animator.enabled = true;
 
-            if (characterController != null)
-                characterController.enabled = true;
+            ResolveMovementBody();
+
+            if (movementCollider != null)
+                movementCollider.enabled = true;
+
+            if (movementRigidbody != null)
+            {
+                movementRigidbody.isKinematic = false;
+                movementRigidbody.detectCollisions = true;
+                movementRigidbody.useGravity = false;
+                movementRigidbody.linearVelocity = Vector3.zero;
+                movementRigidbody.angularVelocity = Vector3.zero;
+            }
 
             if (moveController != null)
                 moveController.enabled = true;
+        }
+
+        private void ResolveMovementBody()
+        {
+            if (movementRigidbody == null)
+                movementRigidbody = GetComponent<Rigidbody>();
+
+            if (movementCollider == null)
+                movementCollider = GetComponent<CapsuleCollider>();
+
+            if (movementCollider == null)
+                movementCollider = GetComponent<Collider>();
         }
 
         private void SetRagdollEnabled(bool enabled)

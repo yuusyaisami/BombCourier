@@ -353,10 +353,37 @@ namespace BombCourier.CameraIntro
                     return fallbackRotation;
                 }
 
-                return Quaternion.LookRotation(direction.normalized, Vector3.up);
+                Vector3 preferredUp = Vector3.Slerp(from.transform.up, to.transform.up, t);
+                return SafeLookRotation(direction.normalized, preferredUp, fallbackRotation);
             }
 
             return Quaternion.Slerp(from.transform.rotation, to.transform.rotation, t);
+        }
+
+        private static Quaternion SafeLookRotation(Vector3 forward, Vector3 preferredUp, Quaternion fallbackRotation)
+        {
+            if (forward.sqrMagnitude < 0.0001f)
+                return fallbackRotation;
+
+            Vector3 up = preferredUp.sqrMagnitude > 0.0001f
+                ? preferredUp.normalized
+                : fallbackRotation * Vector3.up;
+
+            up = Vector3.ProjectOnPlane(up, forward);
+
+            if (up.sqrMagnitude < 0.0001f)
+                up = Vector3.ProjectOnPlane(fallbackRotation * Vector3.up, forward);
+
+            if (up.sqrMagnitude < 0.0001f)
+                up = Vector3.ProjectOnPlane(Vector3.up, forward);
+
+            if (up.sqrMagnitude < 0.0001f)
+                up = Vector3.ProjectOnPlane(Vector3.right, forward);
+
+            if (up.sqrMagnitude < 0.0001f)
+                return fallbackRotation;
+
+            return Quaternion.LookRotation(forward, up.normalized);
         }
 
         private static Vector3 GetPointPosition(IReadOnlyList<IntroCameraPoint> points, int index)

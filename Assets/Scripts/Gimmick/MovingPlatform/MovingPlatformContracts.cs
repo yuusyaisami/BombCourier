@@ -5,8 +5,9 @@ namespace BC.Gimmick.MovingPlatform
     public enum MovingPlatformPathMode
     {
         LocalOffset = 0,
-        TransformPoints = 1,
+        Vector3Points = 1,
         CubicBezier = 2,
+        TransformPoints = 3,
     }
 
     public enum MovingPlatformPlaybackMode
@@ -23,6 +24,13 @@ namespace BC.Gimmick.MovingPlatform
         EaseInOutSine = 2,
     }
 
+    public enum MovingPlatformStepPoseBasis
+    {
+        LayerBase = 0,
+        PreviousStepEnd = 1,
+        World = 2,
+    }
+
     public readonly struct MovingPlatformBasePose
     {
         public readonly Vector3 Position;
@@ -34,6 +42,11 @@ namespace BC.Gimmick.MovingPlatform
             Position = position;
             Rotation = rotation;
             LocalScale = localScale;
+        }
+
+        public MovingPlatformPose ToPose()
+        {
+            return new MovingPlatformPose(Position, Rotation, LocalScale);
         }
     }
 

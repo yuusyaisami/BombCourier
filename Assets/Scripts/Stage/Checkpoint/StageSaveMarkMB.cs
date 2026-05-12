@@ -49,14 +49,36 @@ namespace BC.Stage
 
         internal void Restore(StageObjectSnapshot snapshot)
         {
+            Rigidbody rb = saveRigidbody && snapshot.HasRigidbody && TryGetComponent(out Rigidbody cachedRigidbody)
+                ? cachedRigidbody
+                : null;
+
             if (saveTransform)
             {
-                transform.localPosition = snapshot.LocalPosition;
-                transform.localRotation = snapshot.LocalRotation;
+                if (rb != null)
+                {
+                    Transform parent = transform.parent;
+                    Vector3 worldPosition = parent != null
+                        ? parent.TransformPoint(snapshot.LocalPosition)
+                        : snapshot.LocalPosition;
+
+                    Quaternion worldRotation = parent != null
+                        ? parent.rotation * snapshot.LocalRotation
+                        : snapshot.LocalRotation;
+
+                    rb.position = worldPosition;
+                    rb.rotation = worldRotation;
+                }
+                else
+                {
+                    transform.localPosition = snapshot.LocalPosition;
+                    transform.localRotation = snapshot.LocalRotation;
+                }
+
                 transform.localScale = snapshot.LocalScale;
             }
 
-            if (saveRigidbody && snapshot.HasRigidbody && TryGetComponent(out Rigidbody rb))
+            if (rb != null)
             {
                 rb.linearVelocity = snapshot.LinearVelocity;
                 rb.angularVelocity = snapshot.AngularVelocity;

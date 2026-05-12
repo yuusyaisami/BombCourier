@@ -482,11 +482,26 @@ namespace BC.Player
             if (hit == null)
                 return true;
 
-            if (hit.transform.IsChildOf(transform))
+            Transform holderRoot = ResolveTrajectoryHolderRoot();
+
+            if (holderRoot != null && hit.transform.IsChildOf(holderRoot))
                 return true;
 
             Transform itemTransform = currentlyHandledItem?.ItemTransform;
             return itemTransform != null && hit.transform.IsChildOf(itemTransform);
+        }
+
+        private Transform ResolveTrajectoryHolderRoot()
+        {
+            if (handleItemPoint == null)
+                return transform;
+
+            CharacterController ownerController = handleItemPoint.GetComponentInParent<CharacterController>();
+
+            if (ownerController != null)
+                return ownerController.transform;
+
+            return handleItemPoint.root != null ? handleItemPoint.root : transform;
         }
 
         private void EnsureTrajectoryRenderer()
