@@ -13,10 +13,24 @@ struct ToyDiorama_ColorPipelineData
 {
     float3 beforePastel;
     float3 afterPastel;
+    float3 beforeBloom;
     float3 afterColorGrade;
     ToyDiorama_ColorGradeMasks colorGradeMasks;
     ToyDiorama_PastelData pastelData;
     ToyDiorama_CreamHighlightData creamHighlightData;
+    ToyDiorama_DepthHazeData depthHazeData;
+    ToyDiorama_EdgeToneData edgeToneData;
+    ToyDiorama_GrainData grainData;
+};
+
+struct ToyDiorama_FinalColorPipelineData
+{
+    float3 beforeBloom;
+    float4 bloomComposite;
+    float3 afterBloom;
+    float3 afterColorGrade;
+    ToyDiorama_EdgeToneData edgeToneData;
+    ToyDiorama_GrainData grainData;
 };
 
 float3 ToyDiorama_PrepareColorGradeBase(float3 sourceColor)
@@ -74,7 +88,7 @@ float3 ToyDiorama_ApplyBaseColorGrade(float3 sourceColor, out ToyDiorama_ColorGr
     return saturate(color);
 }
 
-ToyDiorama_ColorPipelineData ToyDiorama_EvaluateColorPipeline(float3 sourceColor)
+ToyDiorama_ColorPipelineData ToyDiorama_EvaluatePreBloomPipeline(float3 sourceColor, float2 uv)
 {
     ToyDiorama_ColorPipelineData data;
 
@@ -82,6 +96,7 @@ ToyDiorama_ColorPipelineData ToyDiorama_EvaluateColorPipeline(float3 sourceColor
     {
         data.beforePastel = sourceColor;
         data.afterPastel = sourceColor;
+        data.beforeBloom = sourceColor;
         data.afterColorGrade = sourceColor;
         data.colorGradeMasks = ToyDiorama_CalculateColorGradeMasks(saturate(sourceColor));
         data.pastelData.color = sourceColor;
@@ -89,6 +104,9 @@ ToyDiorama_ColorPipelineData ToyDiorama_EvaluateColorPipeline(float3 sourceColor
         data.pastelData.pastelMask = 0.0;
         data.creamHighlightData.color = sourceColor;
         data.creamHighlightData.mask = 0.0;
+        data.depthHazeData = ToyDiorama_CreateDepthHazeNoOp(sourceColor);
+        data.edgeToneData = ToyDiorama_CreateEdgeToneNoOp(sourceColor);
+        data.grainData = ToyDiorama_CreateGrainNoOp(sourceColor);
         return data;
     }
 
@@ -96,14 +114,42 @@ ToyDiorama_ColorPipelineData ToyDiorama_EvaluateColorPipeline(float3 sourceColor
     data.pastelData = ToyDiorama_ApplyPastelCompression(data.beforePastel);
     data.afterPastel = data.pastelData.color;
     data.creamHighlightData = ToyDiorama_ApplyCreamHighlight(data.afterPastel);
-    data.afterColorGrade = data.creamHighlightData.color;
+    data.depthHazeData = ToyDiorama_ApplyDepthHaze(data.creamHighlightData.color, uv);
+    data.beforeBloom = data.depthHazeData.afterDepthHaze;
+    data.edgeToneData = ToyDiorama_CreateEdgeToneNoOp(data.beforeBloom);
+    data.grainData = ToyDiorama_CreateGrainNoOp(data.beforeBloom);
+    data.afterColorGrade = data.beforeBloom;
 
     return data;
 }
 
-float3 ToyDiorama_ApplyColorGrade(float3 sourceColor)
+ToyDiorama_FinalColorPipelineData ToyDiorama_EvaluateFinalColorPipeline(float3 preBloomColor, float4 bloomComposite, float2 uv)
 {
-    return ToyDiorama_EvaluateColorPipeline(sourceColor).afterColorGrade;
+    ToyDiorama_FinalColorPipelineData data;
+    data.beforeBloom = preBloomColor;
+    data.bloomComposite = bloomComposite;
+    data.afterBloom = saturate(preBloomColor + bloomComposite.rgb);
+    data.edgeToneData = ToyDiorama_ApplyEdgeTone(data.afterBloom, uv);
+    data.grainData = ToyDiorama_ApplyGrain(data.edgeToneData.afterEdgeTone, uv);
+    data.afterColorGrade = data.grainData.afterGrain;
+    return data;
+}
+
+ToyDiorama_ColorPipelineData ToyDiorama_EvaluateColorPipeline(float3 sourceColor, float2 uv)
+{
+    ToyDiorama_ColorPipelineData data = ToyDiorama_EvaluatePreBloomPipeline(sourceColor, uv);
+    ToyDiorama_FinalColorPipelineData finalData = ToyDiorama_EvaluateFinalColorPipeline(data.beforeBloom, float4(0.0, 0.0, 0.0, 0.0), uv);
+
+    data.edgeToneData = finalData.edgeToneData;
+    data.grainData = finalData.grainData;
+    data.afterColorGrade = finalData.afterColorGrade;
+
+    return data;
+}
+
+float3 ToyDiorama_ApplyColorGrade(float3 sourceColor, float2 uv)
+{
+    return ToyDiorama_EvaluateColorPipeline(sourceColor, uv).afterColorGrade;
 }
 
 #endif

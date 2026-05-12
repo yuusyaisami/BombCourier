@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f708dfb5712c924585f5c4a54e079bd, type: 3}
+  m_Name: PictureBook
+  m_EditorClassIdentifier: 
+  presetKind: 3
+  description: Soft picture book preset with stronger haze and gentler saturation.
+  settings:
+    enabled: 1
+    qualityTier: 2
+    debugView: 0
+    exposure: 0.04
+    contrast: 0.96
+    saturation: 0.86
+    blackLift: 0.1
+    whiteSoftClamp: 0.3
+    pastelStrength: 0.35
+    highSaturationCompress: 0.52
+    pastelLuminanceBias: 0.18
+    creamHighlightColor: {r: 1, g: 0.985, b: 0.95, a: 1}
+    creamHighlightStrength: 0.2
+    creamHighlightThreshold: 0.66
+    creamHighlightSoftness: 0.16
+    edgeToneEnabled: 1
+    edgeToneColor: {r: 0.99, g: 0.98, b: 0.96, a: 1}
+    edgeToneStrength: 0.18
+    edgeToneRadius: 0.6
+    edgeToneSoftness: 0.28
+    edgeSaturationFade: 0.24
+    edgeBrightnessOffset: -0.01
+    depthHazeEnabled: 1
+    depthHazeColor: {r: 0.82, g: 0.89, b: 0.94, a: 1}
+    depthHazeStrength: 0.18
+    depthHazeStart: 0.38
+    depthHazeEnd: 0.9
+    depthHazeSaturationFade: 0.24
+    depthHazeBrightnessLift: 0.08
+    softBloomEnabled: 1
+    softBloomThreshold: 0.84
+    softBloomSoftKnee: 0.2
+    softBloomIntensity: 0.12
+    softBloomRadius: 0.7
+    softBloomTint: {r: 1, g: 0.97, b: 0.94, a: 1}
+    halationEnabled: 1
+    halationStrength: 0.02
+    halationColor: {r: 1, g: 0.72, b: 0.6, a: 1}
+    halationThreshold: 0.9
+    halationRadius: 0.5
+    blueNoiseTex: {fileID: 0}
+    grainEnabled: 1
+    grainStrength: 0.005
+    grainScale: 1
+    grainResponse: 0.5
+    grainTemporalStrength: 0.04
+    shadowTint: {r: 0.52, g: 0.55, b: 0.7, a: 1}
+    midTint: {r: 1, g: 0.99, b: 0.97, a: 1}
+    highlightTint: {r: 1, g: 0.96, b: 0.88, a: 1}
+    shadowTintStrength: 0.3
+    midTintStrength: 0.06
+    highlightTintStrength: 0.15

@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f708dfb5712c924585f5c4a54e079bd, type: 3}
+  m_Name: MattePlastic
+  m_EditorClassIdentifier: 
+  presetKind: 2
+  description: Plastic toy leaning preset with rounded primaries and slightly stronger bloom.
+  settings:
+    enabled: 1
+    qualityTier: 2
+    debugView: 0
+    exposure: 0.08
+    contrast: 1.15
+    saturation: 1.08
+    blackLift: 0.06
+    whiteSoftClamp: 0.22
+    pastelStrength: 0.38
+    highSaturationCompress: 0.62
+    pastelLuminanceBias: 0.12
+    creamHighlightColor: {r: 1, g: 0.98, b: 0.94, a: 1}
+    creamHighlightStrength: 0.22
+    creamHighlightThreshold: 0.74
+    creamHighlightSoftness: 0.09
+    edgeToneEnabled: 1
+    edgeToneColor: {r: 0.98, g: 0.98, b: 1, a: 1}
+    edgeToneStrength: 0.08
+    edgeToneRadius: 0.66
+    edgeToneSoftness: 0.2
+    edgeSaturationFade: 0.1
+    edgeBrightnessOffset: 0.01
+    depthHazeEnabled: 1
+    depthHazeColor: {r: 0.8, g: 0.86, b: 0.92, a: 1}
+    depthHazeStrength: 0.06
+    depthHazeStart: 0.5
+    depthHazeEnd: 0.95
+    depthHazeSaturationFade: 0.12
+    depthHazeBrightnessLift: 0.03
+    softBloomEnabled: 1
+    softBloomThreshold: 0.8
+    softBloomSoftKnee: 0.2
+    softBloomIntensity: 0.18
+    softBloomRadius: 0.68
+    softBloomTint: {r: 1, g: 0.97, b: 0.93, a: 1}
+    halationEnabled: 1
+    halationStrength: 0.03
+    halationColor: {r: 1, g: 0.76, b: 0.63, a: 1}
+    halationThreshold: 0.86
+    halationRadius: 0.58
+    blueNoiseTex: {fileID: 0}
+    grainEnabled: 1
+    grainStrength: 0.01
+    grainScale: 1.1
+    grainResponse: 0.48
+    grainTemporalStrength: 0.08
+    shadowTint: {r: 0.4, g: 0.44, b: 0.54, a: 1}
+    midTint: {r: 1, g: 1, b: 1, a: 1}
+    highlightTint: {r: 1, g: 0.97, b: 0.9, a: 1}
+    shadowTintStrength: 0.24
+    midTintStrength: 0.04
+    highlightTintStrength: 0.24
