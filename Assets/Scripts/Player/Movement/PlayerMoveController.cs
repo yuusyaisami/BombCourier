@@ -124,6 +124,7 @@ namespace BC.Base
         private IPlayerRagdollController ragdollController;
         private EntityMB entityMB;
         private CharacterController legacyCharacterController;
+        private ValueWatchHandle<bool> throwPoseHandle;
 
         private Vector3 planarVelocity;
         private float verticalVelocity;
@@ -636,14 +637,36 @@ namespace BC.Base
             if (modelRoot == null)
                 return;
 
+            float t = 1.0f - Mathf.Exp(-modelTurnSharpness * dt);
+
+            if (IsThrowPoseActive())
+            {
+                Quaternion cameraAlignedRotation = cameraController != null
+                    ? cameraController.GetYawRotation()
+                    : transform.rotation;
+
+                modelRoot.rotation = Quaternion.Slerp(modelRoot.rotation, cameraAlignedRotation, t);
+                return;
+            }
+
             Vector3 horizontalVelocity = new Vector3(planarVelocity.x, 0.0f, planarVelocity.z);
 
             if (horizontalVelocity.magnitude < minModelTurnSpeed)
                 return;
 
             Quaternion targetRotation = Quaternion.LookRotation(horizontalVelocity.normalized, Vector3.up);
-            float t = 1.0f - Mathf.Exp(-modelTurnSharpness * dt);
             modelRoot.rotation = Quaternion.Slerp(modelRoot.rotation, targetRotation, t);
+        }
+
+        private bool IsThrowPoseActive()
+        {
+            if (!IsRuntimeReady || SceneKernel == null || SceneKernel.EntityValueStore == null)
+                return false;
+
+            if (throwPoseHandle == null)
+                throwPoseHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Runtime.IsThrowPoseActive);
+
+            return throwPoseHandle.CurrentValue;
         }
 
         private void TickLockedMotion(float dt)

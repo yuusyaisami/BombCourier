@@ -29,6 +29,8 @@ namespace BC.Animation
         [SerializeField] private string isJumpParameter = "IsJump";
         [SerializeField] private string isFallParameter = "IsFall";
         [SerializeField] private string currentSpeedParameter = "CurrentSpeed";
+        [SerializeField] private string isIdleThrowParameter = "IsIdleThrow";
+        [SerializeField] private string onThrowParameter = "OnThrow";
 
         [Header("Layer")]
         [SerializeField] private string upperBodyLayerName = "UpperBody";
@@ -43,8 +45,13 @@ namespace BC.Animation
         private int isJumpHash;
         private int isFallHash;
         private int currentSpeedHash;
+        private int isIdleThrowHash;
+        private int onThrowHash;
 
         private bool initialized;
+        private ValueWatchHandle<bool> isItemThrowAimingHandle;
+        private ValueWatchHandle<int> throwSequenceHandle;
+        private int lastSeenThrowSequenceVersion;
 
         private FaceExpressionId lastDebugExpression;
         private bool hasLastDebugExpression;
@@ -61,9 +68,7 @@ namespace BC.Animation
         }
         private void Start()
         {
-            valueStoreService = GetComponentInParent<SceneKernelMB>().Kernel.ValueStore;
-            entityRef = GetComponentInParent<EntityMB>().Entity;
-
+            ResolveRuntimeReferences();
         }
 
         private void LateUpdate()
@@ -103,6 +108,8 @@ namespace BC.Animation
             isJumpHash = Animator.StringToHash(isJumpParameter);
             isFallHash = Animator.StringToHash(isFallParameter);
             currentSpeedHash = Animator.StringToHash(currentSpeedParameter);
+            isIdleThrowHash = Animator.StringToHash(isIdleThrowParameter);
+            onThrowHash = Animator.StringToHash(onThrowParameter);
 
             initialized = true;
         }
@@ -215,6 +222,8 @@ namespace BC.Animation
 
         public void ApplyFaceStateParameters()
         {
+            ResolveRuntimeReferences();
+
             if (moveSource == null || valueStoreService == null || !entityRef.IsValid)
                 return;
 
@@ -260,6 +269,60 @@ namespace BC.Animation
             }
 
             animator.SetBool(isHandleItemHash, isHandlingItem);
+            ApplyThrowParameters();
+        }
+
+        private void ApplyThrowParameters()
+        {
+            ResolveRuntimeReferences();
+
+            bool isItemThrowAiming = false;
+
+            if (EnsureThrowRuntimeHandles())
+            {
+                isItemThrowAiming = isItemThrowAimingHandle.CurrentValue;
+
+                if (throwSequenceHandle.TryGetChanged(ref lastSeenThrowSequenceVersion, out _))
+                    animator.SetTrigger(onThrowHash);
+            }
+
+            animator.SetBool(isIdleThrowHash, isItemThrowAiming);
+        }
+
+        private bool EnsureThrowRuntimeHandles()
+        {
+            if (valueStoreService == null || !entityRef.IsValid)
+                return false;
+
+            if (isItemThrowAimingHandle == null)
+                isItemThrowAimingHandle = valueStoreService.GetHandle(entityRef, ValueKeys.Runtime.IsItemThrowAiming);
+
+            if (throwSequenceHandle == null)
+            {
+                throwSequenceHandle = valueStoreService.GetHandle(entityRef, ValueKeys.Runtime.ThrowSequence);
+                lastSeenThrowSequenceVersion = throwSequenceHandle.Version;
+            }
+
+            return isItemThrowAimingHandle != null && throwSequenceHandle != null;
+        }
+
+        private void ResolveRuntimeReferences()
+        {
+            if (valueStoreService == null)
+            {
+                SceneKernelMB kernelMB = GetComponentInParent<SceneKernelMB>();
+
+                if (kernelMB != null && kernelMB.Kernel != null)
+                    valueStoreService = kernelMB.Kernel.ValueStore;
+            }
+
+            if (entityRef.IsValid)
+                return;
+
+            EntityMB currentEntityMB = GetComponentInParent<EntityMB>();
+
+            if (currentEntityMB != null && currentEntityMB.HasEntity)
+                entityRef = currentEntityMB.Entity;
         }
     }
 }

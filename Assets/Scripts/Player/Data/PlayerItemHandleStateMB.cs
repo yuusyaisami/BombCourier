@@ -24,6 +24,7 @@ namespace BC.Player
         [SerializeField] private float maxThrowForce = 12f;
         [SerializeField] private float minThrowForce = 4f;
         [SerializeField] private float throwForceChargeTime = 1.5f;
+        [SerializeField, Min(0f)] private float emptyHandThrowPreviewHoldTime = 0.2f;
 
         [Header("Trajectory")]
         [SerializeField] private LineRenderer trajectoryLineRenderer;
@@ -53,11 +54,15 @@ namespace BC.Player
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
+        private ValueWatchHandle<bool> fatigueInteractHandle;
         private ICarryableItem currentlyHandledItem;
         private ICarryableItem currentBestItem;
+        private float emptyHandThrowPreviewTimer;
         private float throwForceChargeTimer;
         private Vector3[] trajectoryPoints = new Vector3[32];
         private Material ownedTrajectoryMaterial;
+        private bool isEmptyHandThrowPreviewActive;
+        private int throwSequence;
 
         public bool IsHandlingItem => isHandlingItem;
 
@@ -86,6 +91,7 @@ namespace BC.Player
             ClearPickupOutlines();
             HideTrajectory();
             RemoveCarryJumpPenalty();
+            ResetEmptyHandThrowPreview();
         }
 
         private void OnDestroy()
@@ -110,9 +116,15 @@ namespace BC.Player
                 HideTrajectory();
                 RefreshPickupCandidates();
                 TickPickup();
+
+                if (!isHandlingItem)
+                    TickEmptyHandThrowPreview(Time.deltaTime);
+                else
+                    ResetEmptyHandThrowPreview();
             }
             else
             {
+                ResetEmptyHandThrowPreview();
                 ClearPickupOutlines();
                 TickThrow();
             }
@@ -205,6 +217,26 @@ namespace BC.Player
             HandleItem(currentBestItem);
         }
 
+        private void TickEmptyHandThrowPreview(float dt)
+        {
+            if (currentBestItem != null || IsFatigueInteracting())
+            {
+                ResetEmptyHandThrowPreview();
+                return;
+            }
+
+            if (!handleItemAction.action.IsPressed())
+            {
+                ResetEmptyHandThrowPreview();
+                return;
+            }
+
+            emptyHandThrowPreviewTimer += dt;
+
+            if (emptyHandThrowPreviewTimer >= emptyHandThrowPreviewHoldTime)
+                isEmptyHandThrowPreviewActive = true;
+        }
+
         private void TickThrow()
         {
             if (currentlyHandledItem == null)
@@ -260,6 +292,7 @@ namespace BC.Player
                 return;
 
             ClearPickupOutlines();
+            ResetEmptyHandThrowPreview();
 
             currentlyHandledItem = item;
             currentBestItem = null;
@@ -287,6 +320,7 @@ namespace BC.Player
             }
 
             currentlyHandledItem.OnRelease(BuildThrowVelocity());
+            throwSequence++;
 
             ClearHeldState();
         }
@@ -302,6 +336,7 @@ namespace BC.Player
             waitForPickupInputRelease = false;
             isThrowCharging = false;
 
+            ResetEmptyHandThrowPreview();
             HideTrajectory();
             RemoveCarryJumpPenalty();
             PublishRuntimeValues();
@@ -399,7 +434,9 @@ namespace BC.Player
             if (trajectoryPoints == null || trajectoryPoints.Length < pointCount)
                 trajectoryPoints = new Vector3[pointCount];
 
-            Vector3 origin = currentlyHandledItem.ItemTransform.position;
+            Vector3 origin = handleItemPoint != null
+                ? handleItemPoint.position
+                : currentlyHandledItem.ItemTransform.position;
             Vector3 velocity = BuildThrowVelocity();
             Vector3 previous = origin;
 
@@ -598,6 +635,9 @@ namespace BC.Player
                 return;
 
             valueStore.Set(entityRef, ValueKeys.Runtime.IsHandlingItem, isHandlingItem);
+            valueStore.Set(entityRef, ValueKeys.Runtime.IsThrowPoseActive, IsThrowPoseActive());
+            valueStore.Set(entityRef, ValueKeys.Runtime.IsItemThrowAiming, IsItemThrowAiming());
+            valueStore.Set(entityRef, ValueKeys.Runtime.ThrowSequence, throwSequence);
         }
 
         private void ResolveRuntimeReferences(bool logMissingEntity)
@@ -610,19 +650,22 @@ namespace BC.Player
                     valueStore = kernelMB.Kernel.ValueStore;
             }
 
-            if (entityRef.IsValid)
-                return;
-
-            EntityMB entityMB = GetComponentInParent<EntityMB>();
-
-            if (entityMB != null && entityMB.HasEntity)
+            if (!entityRef.IsValid)
             {
-                entityRef = entityMB.Entity;
+                EntityMB entityMB = GetComponentInParent<EntityMB>();
+
+                if (entityMB != null && entityMB.HasEntity)
+                {
+                    entityRef = entityMB.Entity;
+                }
+                else if (logMissingEntity)
+                {
+                    Debug.LogWarning($"{nameof(PlayerItemHandleStateMB)}: EntityMB is not found or not bound.", this);
+                }
             }
-            else if (logMissingEntity)
-            {
-                Debug.LogWarning($"{nameof(PlayerItemHandleStateMB)}: EntityMB is not found or not bound.", this);
-            }
+
+            if (fatigueInteractHandle == null && valueStore != null && entityRef.IsValid)
+                fatigueInteractHandle = valueStore.GetHandle(entityRef, ValueKeys.Runtime.IsFatigueInteracting);
         }
 
         private void OnDrawGizmosSelected()
@@ -631,6 +674,28 @@ namespace BC.Player
                 return;
 
             Gizmos.DrawWireSphere(handleItemPoint.position, handleItemDistance);
+        }
+
+        private bool IsFatigueInteracting()
+        {
+            ResolveRuntimeReferences(logMissingEntity: false);
+            return fatigueInteractHandle != null && fatigueInteractHandle.CurrentValue;
+        }
+
+        private bool IsThrowPoseActive()
+        {
+            return isThrowCharging || isEmptyHandThrowPreviewActive;
+        }
+
+        private bool IsItemThrowAiming()
+        {
+            return isHandlingItem && currentlyHandledItem != null && isThrowCharging;
+        }
+
+        private void ResetEmptyHandThrowPreview()
+        {
+            emptyHandThrowPreviewTimer = 0f;
+            isEmptyHandThrowPreviewActive = false;
         }
     }
 }
