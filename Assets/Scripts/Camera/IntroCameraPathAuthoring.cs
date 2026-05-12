@@ -19,7 +19,7 @@ namespace BombCourier.CameraIntro
 
         public List<IntroCameraPoint> BuildOrderedPoints()
         {
-            var result = new List<IntroCameraPoint>(16);
+            var indexedPoints = new List<(IntroCameraPoint Point, int SourceIndex)>(16);
 
             if (explicitPoints != null && explicitPoints.Length > 0)
             {
@@ -27,7 +27,7 @@ namespace BombCourier.CameraIntro
                 {
                     if (explicitPoints[i] != null)
                     {
-                        result.Add(explicitPoints[i]);
+                        indexedPoints.Add((explicitPoints[i], i));
                     }
                 }
             }
@@ -40,12 +40,24 @@ namespace BombCourier.CameraIntro
                 {
                     if (found[i] != null)
                     {
-                        result.Add(found[i]);
+                        indexedPoints.Add((found[i], i));
                     }
                 }
             }
 
-            result.Sort((a, b) => a.Order.CompareTo(b.Order));
+            indexedPoints.Sort((a, b) =>
+            {
+                int orderCompare = a.Point.Order.CompareTo(b.Point.Order);
+                return orderCompare != 0 ? orderCompare : a.SourceIndex.CompareTo(b.SourceIndex);
+            });
+
+            var result = new List<IntroCameraPoint>(indexedPoints.Count);
+
+            for (int i = 0; i < indexedPoints.Count; i++)
+            {
+                result.Add(indexedPoints[i].Point);
+            }
+
             return result;
         }
 

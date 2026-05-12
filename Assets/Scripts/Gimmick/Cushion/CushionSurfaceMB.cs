@@ -7,18 +7,27 @@ namespace BC.Gimmick.Cushion
     public sealed class CushionSurfaceMB : MonoBehaviour
     {
         [Header("Target")]
+        [Tooltip("タグ判定を無視して、すべての対象を受け付けるかを指定します。")]
         [SerializeField] private bool acceptAnyTag;
-        [SerializeField, EntityTagDropdown] private EntityTagReference[] targetTags =
+        [Tooltip("このクッションが反応する EntityTag の一覧です。")]
+        [SerializeField, EntityTagDropdown]
+        private EntityTagReference[] targetTags =
         {
             EntityTagReference.From(EntityTags.Item.Bomb)
         };
 
         [Header("Response")]
+        [Tooltip("跳ね返し強度の割合です。0 の場合は跳ね返さず受け止めます。")]
         [SerializeField, Range(0.0f, 1.0f)] private float bounceRate;
+        [Tooltip("跳ね返す時の基準速度です。")]
         [SerializeField, Min(0.0f)] private float bounceSpeed = 8.0f;
+        [Tooltip("跳ね返す方向の決め方です。")]
         [SerializeField] private CushionBounceDirectionMode bounceDirectionMode = CushionBounceDirectionMode.LocalUp;
+        [Tooltip("BounceDirectionMode が CustomLocalDirection の時に使うローカル方向です。")]
         [SerializeField] private Vector3 customLocalDirection = Vector3.up;
-        [SerializeField] private bool attachWhenStopped = true;
+        [Tooltip("停止時に対象をこのクッションへ貼り付けるかを指定します。爆弾は有効でも貼り付けず吸収します。")]
+        [SerializeField] private bool attachWhenStopped;
+        [Tooltip("停止時の貼り付け先に使う Transform です。未指定ならこのオブジェクト自身を使います。")]
         [SerializeField] private Transform attachPoint;
 
         public bool TryEvaluate(CushionImpactData impactData, out CushionImpactResult result)
@@ -45,6 +54,9 @@ namespace BC.Gimmick.Cushion
 
         private CushionImpactResult BuildStopResult(CushionImpactData impactData)
         {
+            if (impactData.SourceTag.Equals(EntityTags.Item.Bomb.Id))
+                return CushionImpactResult.Stop();
+
             if (!attachWhenStopped)
                 return CushionImpactResult.Stop();
 

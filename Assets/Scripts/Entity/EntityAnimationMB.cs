@@ -30,6 +30,9 @@ namespace BC.Animation
         [SerializeField] private string isFallParameter = "IsFall";
         [SerializeField] private string currentSpeedParameter = "CurrentSpeed";
 
+        [Header("Layer")]
+        [SerializeField] private string upperBodyLayerName = "UpperBody";
+
         private IEntityMoveAnimationSource moveSource;
         private IEntityHandleItemAnimationSource handleItemSource;
         private ValueStoreService valueStoreService;
@@ -237,7 +240,6 @@ namespace BC.Animation
         {
             if (!hasLastDebugExpression || lastDebugExpression != expression)
             {
-                Debug.Log($"FaceExpression changed: {expression}", this);
                 hasLastDebugExpression = true;
                 lastDebugExpression = expression;
             }
@@ -250,6 +252,12 @@ namespace BC.Animation
             bool isHandlingItem =
                 handleItemSource != null &&
                 handleItemSource.IsHandlingItem;
+
+            int upperBodyLayerIndex = animator.GetLayerIndex(upperBodyLayerName);
+            if (upperBodyLayerIndex >= 0)
+            {
+                animator.SetLayerWeight(upperBodyLayerIndex, isHandlingItem ? 1f : 0f);
+            }
 
             animator.SetBool(isHandleItemHash, isHandlingItem);
         }

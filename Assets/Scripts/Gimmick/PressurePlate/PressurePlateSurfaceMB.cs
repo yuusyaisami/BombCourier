@@ -8,8 +8,10 @@ namespace BC.Gimmick.PressurePlate
     public sealed class PressurePlateSurfaceMB : MonoBehaviour
     {
         [Header("Target")]
+        [Tooltip("タグ判定を無視して、すべての対象を踏み判定に含めるかを指定します。")]
         [SerializeField] private bool acceptAnyTag;
         [HideIf(nameof(acceptAnyTag))]
+        [Tooltip("この感圧板が反応する EntityTag の一覧です。")]
         [SerializeField, EntityTagDropdown]
         private EntityTagReference[] targetTags =
         {
@@ -18,6 +20,7 @@ namespace BC.Gimmick.PressurePlate
         };
 
         [Header("Filter")]
+        [Tooltip("自分自身の Entity を踏み判定から除外するかを指定します。")]
         [SerializeField] private bool ignoreSelfEntity = true;
 
         public bool TryEvaluate(in PressurePlateContactData contactData)

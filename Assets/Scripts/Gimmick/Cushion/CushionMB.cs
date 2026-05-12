@@ -11,6 +11,7 @@ namespace BC.Gimmick.Cushion
     public sealed class CushionMB : MonoBehaviour, ICarryableItem, ICushionImpactSource
     {
         [Header("Carry")]
+        [Tooltip("このクッションを持ち運び可能にするかを指定します。")]
         [SerializeField] private bool canBeCarried = true;
 
         private Rigidbody rb;

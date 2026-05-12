@@ -301,7 +301,7 @@ namespace BC.Editor
                     parent.AddChild(new SelectionItem(itemName, descriptor));
                 }
 
-                if (root.children.Count == 0)
+                if (!allowNone && descriptors.Count == 0)
                     root.AddChild(new AdvancedDropdownItem("No matching Signals"));
 
                 return root;

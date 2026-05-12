@@ -11,18 +11,23 @@ namespace BC.Gimmick.PressurePlate
     public sealed class PressurePlateMB : MonoBehaviour
     {
         [Header("Runtime")]
+        [Tooltip("踏み判定に使うフィルター設定です。未指定なら同じオブジェクトから自動取得します。")]
         [SerializeField] private PressurePlateSurfaceMB surface;
+        [Tooltip("起動時にコライダーを Trigger に自動設定するかを指定します。")]
         [SerializeField] private bool autoSetTrigger = true;
 
         [Header("Signals")]
+        [Tooltip("押下と解放のタイミングで Kernel Signal を送るかを指定します。")]
         [SerializeField] private bool publishKernelSignals = true;
 
         [ShowIf(nameof(publishKernelSignals))]
+        [Tooltip("感圧板が押された瞬間に送る Signal です。")]
         [SerializeField, SignalDropdown("Gimmick.PressurePlate")]
         private KernelSignalReference pressedSignal =
             KernelSignalReference.From(Signals.Gimmick.PressurePlate.Pressed);
 
         [ShowIf(nameof(publishKernelSignals))]
+        [Tooltip("感圧板が解放された瞬間に送る Signal です。")]
         [SerializeField, SignalDropdown("Gimmick.PressurePlate")]
         private KernelSignalReference releasedSignal =
             KernelSignalReference.From(Signals.Gimmick.PressurePlate.Released);
@@ -30,16 +35,19 @@ namespace BC.Gimmick.PressurePlate
         [Header("Actions")]
         [LabelText("Pressed Actions")]
         [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
+        [Tooltip("感圧板が押された瞬間に実行する WiringAction の一覧です。")]
         [SerializeField]
         private WiringAction[] onPressedActions = System.Array.Empty<WiringAction>();
 
         [LabelText("Released Actions")]
         [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true)]
+        [Tooltip("感圧板が解放された瞬間に実行する WiringAction の一覧です。")]
         [SerializeField]
         private WiringAction[] onReleasedActions = System.Array.Empty<WiringAction>();
 
         [InlineProperty]
         [HideLabel]
+        [Tooltip("押下中のシーケンス再生設定です。")]
         [SerializeField]
         private WiringSequenceDefinition sequence;
 

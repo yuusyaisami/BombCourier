@@ -34,7 +34,7 @@ namespace BC.Bomb
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class BombMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource
+    public sealed class BombMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IBombImpactDetector
     {
         public event Action<BombMB> Exploded;
         public event Action<BombMB> StartedFuse;
@@ -71,6 +71,7 @@ namespace BC.Bomb
         private float ignoreImpactExplosionUntilTime;
         private bool hasPreviousHeldPosition;
         private Vector3 previousHeldPosition;
+        private float lastImpactThreshold;
 
         private const int MaxHeldCollisionHits = 16;
         private readonly Collider[] heldCollisionHits = new Collider[MaxHeldCollisionHits];
@@ -86,7 +87,7 @@ namespace BC.Bomb
         public float TotalFuseTime => fuseTime;
         public float RemainingFuseTime => remainingFuseTime;
         public float LastImpactForce { get; private set; }
-        public float ImpactExplosionRatio => Mathf.Clamp01(LastImpactForce / explosionThreshold);
+        public float ImpactExplosionRatio => Mathf.Clamp01(LastImpactForce / Mathf.Max(0.01f, lastImpactThreshold));
 
         public bool TryGetJumpHeightMultiplier(out float jumpHeightMultiplier)
         {
@@ -107,6 +108,7 @@ namespace BC.Bomb
             }
 
             remainingFuseTime = fuseTime;
+            lastImpactThreshold = Mathf.Max(0.01f, explosionThreshold);
         }
 
         private void OnDisable()
@@ -117,7 +119,12 @@ namespace BC.Bomb
 
         private void Update()
         {
-            if (!fuseStarted || exploded)
+            if (exploded)
+                return;
+
+            TickImpactForce(Time.deltaTime);
+
+            if (!fuseStarted)
                 return;
 
             TickFuse(Time.deltaTime);
@@ -127,15 +134,19 @@ namespace BC.Bomb
         {
             // 将来ヒューズ停止ギミックを入れる時は、この入口で停止条件を差し込める。
             remainingFuseTime -= dt;
-            // lastImpactForce は爆発のトリガーにはならないが、爆発エフェクトの演出などに利用できるようにする。
-            LastImpactForce = Mathf.Lerp(LastImpactForce, 0f, dt * 5f);
-            if (LastImpactForce < 0.01f)
-                LastImpactForce = 0f;
 
             if (remainingFuseTime <= 0f)
             {
                 Explode();
             }
+        }
+
+        private void TickImpactForce(float dt)
+        {
+            // lastImpactForce は爆発のトリガーにはならないが、爆発エフェクトの演出などに利用できるようにする。
+            LastImpactForce = Mathf.Lerp(LastImpactForce, 0f, dt * 5f);
+            if (LastImpactForce < 0.01f)
+                LastImpactForce = 0f;
         }
 
         private void FixedUpdate()
@@ -169,7 +180,7 @@ namespace BC.Bomb
             if (!IsTouchingNonPlayerCollider())
                 return;
 
-            LastImpactForce = heldSpeed;
+            RecordImpactForce(heldSpeed, explosionThreshold);
             Explode();
         }
 
@@ -249,36 +260,19 @@ namespace BC.Bomb
             if (exploded || rb == null || bombCollider == null || isHandled)
                 return;
 
-            float impactForce = collision.impulse.magnitude / Mathf.Max(Time.fixedDeltaTime, 0.0001f);
+            float rawImpactForce = collision.relativeVelocity.magnitude;
 
-            if (TryHandleCushionCollision(collision, impactForce))
+            if (TryHandleCushionCollision(collision, rawImpactForce))
                 return;
 
             if (Time.time < ignoreImpactExplosionUntilTime)
                 return;
 
-            float threshold = explosionThreshold;
+            float impactForce = ResolveEffectiveImpactForce(rawImpactForce, collision.gameObject);
+            RecordImpactForce(impactForce, explosionThreshold);
 
-            if (thresholdDataset.thresholds != null)
-            {
-                for (int i = 0; i < thresholdDataset.thresholds.Length; i++)
-                {
-                    var data = thresholdDataset.thresholds[i];
-
-                    if (!string.IsNullOrEmpty(data.unityTag) &&
-                        collision.gameObject.CompareTag(data.unityTag))
-                    {
-                        threshold *= Mathf.Max(0.01f, data.explosionThresholdMultiplier);
-                        break;
-                    }
-                }
-            }
-
-            if (impactForce >= threshold)
-            {
-                LastImpactForce = impactForce;
+            if (impactForce >= explosionThreshold)
                 Explode();
-            }
         }
 
         public bool HandleCushionImpact(CushionImpactData impactData, CushionImpactResult impactResult)
@@ -291,7 +285,35 @@ namespace BC.Bomb
             hasPreviousHeldPosition = false;
             ignoreImpactExplosionUntilTime = Time.time + impactExplosionGraceTime;
 
-            return CushionRigidbodyImpactApplier.Apply(transform, rb, impactResult);
+            CushionImpactResult appliedResult = impactResult.ResponseKind == CushionResponseKind.StopAndAttach
+                ? CushionImpactResult.Stop(impactResult.SuppressExplosion)
+                : impactResult;
+
+            if (appliedResult.ResponseKind == CushionResponseKind.Stop)
+            {
+                transform.SetParent(null, true);
+
+                rb.isKinematic = false;
+                rb.detectCollisions = true;
+                rb.useGravity = true;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                return true;
+            }
+
+            return CushionRigidbodyImpactApplier.Apply(transform, rb, appliedResult);
+        }
+
+        public void OnBombImpact(Vector3 direction, float impactForce)
+        {
+            if (exploded)
+                return;
+
+            float threshold = Mathf.Max(0.01f, explosionThreshold);
+            RecordImpactForce(impactForce, threshold);
+
+            if (impactForce >= threshold)
+                Explode();
         }
 
         private bool TryHandleCushionCollision(Collision collision, float impactForce)
@@ -321,8 +343,39 @@ namespace BC.Bomb
             if (!surface.TryEvaluate(impactData, out CushionImpactResult result))
                 return false;
 
-            LastImpactForce = impactForce;
+            if (!result.SuppressExplosion)
+                RecordImpactForce(
+                    ResolveEffectiveImpactForce(impactForce, collision.collider != null ? collision.collider.gameObject : null),
+                    explosionThreshold);
+
             return HandleCushionImpact(impactData, result);
+        }
+
+        private float ResolveEffectiveImpactForce(float rawImpactForce, GameObject otherObject)
+        {
+            float multiplier = 1.0f;
+
+            if (otherObject == null || thresholdDataset.thresholds == null)
+                return Mathf.Max(0.0f, rawImpactForce);
+
+            for (int i = 0; i < thresholdDataset.thresholds.Length; i++)
+            {
+                BombExplosionThresholdData data = thresholdDataset.thresholds[i];
+
+                if (!string.IsNullOrEmpty(data.unityTag) && otherObject.CompareTag(data.unityTag))
+                {
+                    multiplier = Mathf.Max(0.0f, data.explosionThresholdMultiplier);
+                    break;
+                }
+            }
+
+            return Mathf.Max(0.0f, rawImpactForce) * multiplier;
+        }
+
+        private void RecordImpactForce(float impactForce, float threshold)
+        {
+            LastImpactForce = Mathf.Max(0.0f, impactForce);
+            lastImpactThreshold = Mathf.Max(0.01f, threshold);
         }
 
         private EntityTagId ResolveImpactTag()
