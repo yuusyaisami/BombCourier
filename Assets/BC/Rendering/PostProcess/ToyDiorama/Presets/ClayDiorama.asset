@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f708dfb5712c924585f5c4a54e079bd, type: 3}
+  m_Name: ClayDiorama
+  m_EditorClassIdentifier: 
+  presetKind: 1
+  description: Clay and plaster leaning preset with cooler shadows and restrained grain.
+  settings:
+    enabled: 1
+    qualityTier: 1
+    debugView: 0
+    exposure: -0.05
+    contrast: 1.06
+    saturation: 0.92
+    blackLift: 0.1
+    whiteSoftClamp: 0.28
+    pastelStrength: 0.28
+    highSaturationCompress: 0.56
+    pastelLuminanceBias: 0.1
+    creamHighlightColor: {r: 1, g: 0.97, b: 0.92, a: 1}
+    creamHighlightStrength: 0.32
+    creamHighlightThreshold: 0.68
+    creamHighlightSoftness: 0.12
+    edgeToneEnabled: 1
+    edgeToneColor: {r: 0.97, g: 0.97, b: 0.99, a: 1}
+    edgeToneStrength: 0.1
+    edgeToneRadius: 0.64
+    edgeToneSoftness: 0.24
+    edgeSaturationFade: 0.14
+    edgeBrightnessOffset: 0
+    depthHazeEnabled: 1
+    depthHazeColor: {r: 0.76, g: 0.82, b: 0.88, a: 1}
+    depthHazeStrength: 0.08
+    depthHazeStart: 0.48
+    depthHazeEnd: 0.96
+    depthHazeSaturationFade: 0.12
+    depthHazeBrightnessLift: 0.02
+    softBloomEnabled: 1
+    softBloomThreshold: 0.84
+    softBloomSoftKnee: 0.18
+    softBloomIntensity: 0.1
+    softBloomRadius: 0.62
+    softBloomTint: {r: 1, g: 0.95, b: 0.9, a: 1}
+    halationEnabled: 1
+    halationStrength: 0.02
+    halationColor: {r: 1, g: 0.73, b: 0.61, a: 1}
+    halationThreshold: 0.9
+    halationRadius: 0.5
+    blueNoiseTex: {fileID: 0}
+    grainEnabled: 1
+    grainStrength: 0.008
+    grainScale: 1
+    grainResponse: 0.55
+    grainTemporalStrength: 0.06
+    shadowTint: {r: 0.43, g: 0.46, b: 0.56, a: 1}
+    midTint: {r: 0.98, g: 0.97, b: 0.95, a: 1}
+    highlightTint: {r: 1, g: 0.95, b: 0.88, a: 1}
+    shadowTintStrength: 0.42
+    midTintStrength: 0.03
+    highlightTintStrength: 0.16

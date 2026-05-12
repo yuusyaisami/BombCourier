@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f708dfb5712c924585f5c4a54e079bd, type: 3}
+  m_Name: CleanDebug
+  m_EditorClassIdentifier: 
+  presetKind: 4
+  description: Development preset that strips secondary stylization and leaves a clean grading baseline.
+  settings:
+    enabled: 1
+    qualityTier: 0
+    debugView: 0
+    exposure: 0
+    contrast: 1
+    saturation: 1
+    blackLift: 0
+    whiteSoftClamp: 0
+    pastelStrength: 0
+    highSaturationCompress: 0
+    pastelLuminanceBias: 0
+    creamHighlightColor: {r: 1, g: 1, b: 1, a: 1}
+    creamHighlightStrength: 0
+    creamHighlightThreshold: 1
+    creamHighlightSoftness: 0.1
+    edgeToneEnabled: 0
+    edgeToneColor: {r: 1, g: 1, b: 1, a: 1}
+    edgeToneStrength: 0
+    edgeToneRadius: 0.62
+    edgeToneSoftness: 0.22
+    edgeSaturationFade: 0
+    edgeBrightnessOffset: 0
+    depthHazeEnabled: 0
+    depthHazeColor: {r: 1, g: 1, b: 1, a: 1}
+    depthHazeStrength: 0
+    depthHazeStart: 0.45
+    depthHazeEnd: 0.95
+    depthHazeSaturationFade: 0
+    depthHazeBrightnessLift: 0
+    softBloomEnabled: 0
+    softBloomThreshold: 1
+    softBloomSoftKnee: 0.18
+    softBloomIntensity: 0
+    softBloomRadius: 0.65
+    softBloomTint: {r: 1, g: 1, b: 1, a: 1}
+    halationEnabled: 0
+    halationStrength: 0
+    halationColor: {r: 1, g: 1, b: 1, a: 1}
+    halationThreshold: 1
+    halationRadius: 0.55
+    blueNoiseTex: {fileID: 0}
+    grainEnabled: 0
+    grainStrength: 0
+    grainScale: 1
+    grainResponse: 0
+    grainTemporalStrength: 0
+    shadowTint: {r: 1, g: 1, b: 1, a: 1}
+    midTint: {r: 1, g: 1, b: 1, a: 1}
+    highlightTint: {r: 1, g: 1, b: 1, a: 1}
+    shadowTintStrength: 0
+    midTintStrength: 0
+    highlightTintStrength: 0

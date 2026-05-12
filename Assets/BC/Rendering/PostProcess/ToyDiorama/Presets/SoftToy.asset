@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f708dfb5712c924585f5c4a54e079bd, type: 3}
+  m_Name: SoftToy
+  m_EditorClassIdentifier: 
+  presetKind: 0
+  description: Standard gameplay preset. Bright, soft, and restrained.
+  settings:
+    enabled: 1
+    qualityTier: 1
+    debugView: 0
+    exposure: 0
+    contrast: 1
+    saturation: 1
+    blackLift: 0.08
+    whiteSoftClamp: 0.25
+    pastelStrength: 0.3
+    highSaturationCompress: 0.5
+    pastelLuminanceBias: 0.15
+    creamHighlightColor: {r: 1, g: 0.98, b: 0.93, a: 1}
+    creamHighlightStrength: 0.25
+    creamHighlightThreshold: 0.7
+    creamHighlightSoftness: 0.1
+    edgeToneEnabled: 1
+    edgeToneColor: {r: 1, g: 0.98, b: 0.95, a: 1}
+    edgeToneStrength: 0.12
+    edgeToneRadius: 0.62
+    edgeToneSoftness: 0.22
+    edgeSaturationFade: 0.18
+    edgeBrightnessOffset: 0
+    depthHazeEnabled: 1
+    depthHazeColor: {r: 0.78, g: 0.86, b: 0.92, a: 1}
+    depthHazeStrength: 0.1
+    depthHazeStart: 0.45
+    depthHazeEnd: 0.95
+    depthHazeSaturationFade: 0.18
+    depthHazeBrightnessLift: 0.04
+    softBloomEnabled: 1
+    softBloomThreshold: 0.82
+    softBloomSoftKnee: 0.18
+    softBloomIntensity: 0.14
+    softBloomRadius: 0.65
+    softBloomTint: {r: 1, g: 0.96, b: 0.92, a: 1}
+    halationEnabled: 1
+    halationStrength: 0.04
+    halationColor: {r: 1, g: 0.74, b: 0.62, a: 1}
+    halationThreshold: 0.88
+    halationRadius: 0.55
+    blueNoiseTex: {fileID: 0}
+    grainEnabled: 1
+    grainStrength: 0.02
+    grainScale: 1
+    grainResponse: 0.6
+    grainTemporalStrength: 0.1
+    shadowTint: {r: 0.46, g: 0.5, b: 0.68, a: 1}
+    midTint: {r: 1, g: 1, b: 1, a: 1}
+    highlightTint: {r: 1, g: 0.95, b: 0.86, a: 1}
+    shadowTintStrength: 0.35
+    midTintStrength: 0
+    highlightTintStrength: 0.2
