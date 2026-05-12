@@ -150,12 +150,40 @@ namespace BC.Base
                     false,
                     ValueCompositionMode.BoolOr
                 );
+            public static readonly ValueKey<bool> IsThrowPoseActive =
+                new ValueKey<bool>(
+                    new ValueKeyId(8008),
+                    "Runtime.IsThrowPoseActive",
+                    false,
+                    ValueCompositionMode.BoolOr
+                );
+            public static readonly ValueKey<bool> IsItemThrowAiming =
+                new ValueKey<bool>(
+                    new ValueKeyId(8009),
+                    "Runtime.IsItemThrowAiming",
+                    false,
+                    ValueCompositionMode.BoolOr
+                );
             public static readonly ValueKey<FaceExpressionId> FaceExpression =
                 new ValueKey<FaceExpressionId>(
                     new ValueKeyId(8010),
                     "Runtime.FaceExpression",
                     FaceExpressionId.Neutral,
                     ValueCompositionMode.Raw
+                );
+            public static readonly ValueKey<int> ThrowSequence =
+                new ValueKey<int>(
+                    new ValueKeyId(8011),
+                    "Runtime.ThrowSequence",
+                    0,
+                    ValueCompositionMode.Raw
+                );
+            public static readonly ValueKey<bool> IsFatigueInteracting =
+                new ValueKey<bool>(
+                    new ValueKeyId(8012),
+                    "Runtime.IsFatigueInteracting",
+                    false,
+                    ValueCompositionMode.BoolOr
                 );
         }
 

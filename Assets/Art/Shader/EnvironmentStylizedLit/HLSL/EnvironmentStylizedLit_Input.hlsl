@@ -1,0 +1,9 @@
+#ifndef BC_ENVIRONMENT_STYLIZED_LIT_INPUT_INCLUDED
+#define BC_ENVIRONMENT_STYLIZED_LIT_INPUT_INCLUDED
+
+CBUFFER_START(UnityPerMaterial)
+    float4 _BaseColor;
+    float _Cull;
+CBUFFER_END
+
+#endif
