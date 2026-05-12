@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using BC.Rendering;
 using NUnit.Framework;
 using UnityEngine;
@@ -268,6 +270,8 @@ namespace BC.Rendering.Tests
                 Assert.IsFalse(settings.RequiresFinalCompositePass());
                 Assert.AreEqual(4, settings.GetBloomDownsampleDivisor());
                 Assert.AreEqual(1, settings.GetBloomBlurPassPairCount());
+                Assert.AreEqual(0, settings.GetBloomRasterPassCount());
+                Assert.AreEqual(1, settings.GetTotalRasterPassCount());
                 Assert.AreEqual((float)ToyDioramaDebugView.BeforeBloom, material.GetFloat("_ToyDioramaDebugView"));
                 Assert.AreEqual(0f, material.GetFloat("_ToyDioramaDepthHazeEnabled"));
                 Assert.AreEqual(0f, material.GetFloat("_ToyDioramaSoftBloomEnabled"));
@@ -300,6 +304,8 @@ namespace BC.Rendering.Tests
             Assert.IsTrue(mediumSettings.RequiresFinalCompositePass());
             Assert.AreEqual(4, mediumSettings.GetBloomDownsampleDivisor());
             Assert.AreEqual(1, mediumSettings.GetBloomBlurPassPairCount());
+            Assert.AreEqual(4, mediumSettings.GetBloomRasterPassCount());
+            Assert.AreEqual(6, mediumSettings.GetTotalRasterPassCount());
 
             ToyDioramaPostProcessSettings highSettings = new ToyDioramaPostProcessSettings
             {
@@ -317,6 +323,8 @@ namespace BC.Rendering.Tests
             Assert.IsTrue(highSettings.RequiresFinalCompositePass());
             Assert.AreEqual(2, highSettings.GetBloomDownsampleDivisor());
             Assert.AreEqual(2, highSettings.GetBloomBlurPassPairCount());
+            Assert.AreEqual(6, highSettings.GetBloomRasterPassCount());
+            Assert.AreEqual(8, highSettings.GetTotalRasterPassCount());
 
             ToyDioramaPostProcessSettings cinematicSettings = new ToyDioramaPostProcessSettings
             {
@@ -328,6 +336,8 @@ namespace BC.Rendering.Tests
             Assert.IsTrue(cinematicSettings.IsHalationEnabledForQuality());
             Assert.AreEqual(2, cinematicSettings.GetBloomDownsampleDivisor());
             Assert.AreEqual(3, cinematicSettings.GetBloomBlurPassPairCount());
+            Assert.AreEqual(8, cinematicSettings.GetBloomRasterPassCount());
+            Assert.AreEqual(10, cinematicSettings.GetTotalRasterPassCount());
         }
 
         [Test]
@@ -373,6 +383,111 @@ namespace BC.Rendering.Tests
             {
                 UnityEngine.Object.DestroyImmediate(preset);
             }
+        }
+
+        [Test]
+        public void ToyDioramaShaderSourcesRemainZeroVariant()
+        {
+            string shaderRoot = Path.Combine(
+                Application.dataPath,
+                "BC",
+                "Rendering",
+                "PostProcess",
+                "ToyDiorama",
+                "Shaders");
+
+            Assert.IsTrue(Directory.Exists(shaderRoot), $"ToyDiorama shader root was not found: {shaderRoot}");
+
+            string[] shaderSourceFiles = Directory.GetFiles(shaderRoot, "*.*", SearchOption.AllDirectories);
+            Assert.IsNotEmpty(shaderSourceFiles, $"Expected ToyDiorama shader sources under: {shaderRoot}");
+
+            foreach (string shaderSourceFile in shaderSourceFiles)
+            {
+                string extension = Path.GetExtension(shaderSourceFile);
+                if (!extension.Equals(".shader", StringComparison.OrdinalIgnoreCase) &&
+                    !extension.Equals(".hlsl", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                string[] lines = File.ReadAllLines(shaderSourceFile);
+
+                for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+                {
+                    string line = lines[lineIndex].TrimStart();
+                    if (!line.StartsWith("#pragma ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (line.StartsWith("#pragma shader_feature", StringComparison.OrdinalIgnoreCase) ||
+                        line.StartsWith("#pragma multi_compile", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Assert.Fail(
+                            $"ToyDiorama shader sources must remain zero-variant. Found '{line}' in {shaderSourceFile}:{lineIndex + 1}.");
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void AfterColorGradeDebugViewRemainsPreBloomColorGradeStage()
+        {
+            string debugSourcePath = Path.Combine(
+                Application.dataPath,
+                "BC",
+                "Rendering",
+                "PostProcess",
+                "ToyDiorama",
+                "Shaders",
+                "HLSL",
+                "ToyDiorama_Debug.hlsl");
+
+            Assert.IsTrue(File.Exists(debugSourcePath), $"ToyDiorama debug shader source was not found: {debugSourcePath}");
+
+            string debugSource = File.ReadAllText(debugSourcePath);
+            int preBloomClassificationIndex = debugSource.IndexOf(
+                "debugView == TOY_DIORAMA_DEBUG_AFTER_COLOR_GRADE ||",
+                StringComparison.Ordinal);
+            int preBloomReturnBlockIndex = debugSource.IndexOf(
+                "if (debugView == TOY_DIORAMA_DEBUG_AFTER_COLOR_GRADE)",
+                StringComparison.Ordinal);
+
+            Assert.GreaterOrEqual(preBloomClassificationIndex, 0, "AfterColorGrade must stay classified as a pre-bloom debug view.");
+            Assert.GreaterOrEqual(preBloomReturnBlockIndex, 0, "AfterColorGrade must keep an explicit pre-bloom return block.");
+
+            int beforePastelReturnIndex = debugSource.IndexOf(
+                "return pipelineData.beforePastel;",
+                preBloomReturnBlockIndex,
+                StringComparison.Ordinal);
+            int nextConditionalIndex = debugSource.IndexOf(
+                "if (debugView == ",
+                preBloomReturnBlockIndex + 1,
+                StringComparison.Ordinal);
+
+            Assert.Greater(beforePastelReturnIndex, preBloomReturnBlockIndex, "AfterColorGrade should return the base color-grade result before pastel compression.");
+            Assert.IsTrue(
+                nextConditionalIndex < 0 || beforePastelReturnIndex < nextConditionalIndex,
+                "AfterColorGrade should resolve inside its own pre-bloom return block.");
+        }
+
+        [Test]
+        public void AfterColorGradeDebugViewSkipsFinalCompositePass()
+        {
+            ToyDioramaPostProcessSettings settings = new ToyDioramaPostProcessSettings
+            {
+                Enabled = true,
+                QualityTier = ToyDioramaQualityTier.High,
+                DebugView = ToyDioramaDebugView.AfterColorGrade,
+                SoftBloomEnabled = true,
+                SoftBloomIntensity = 0.14f,
+                HalationEnabled = true,
+                HalationStrength = 0.04f
+            };
+
+            Assert.IsTrue(settings.RequiresBloomPass(), "AfterColorGrade should not rewrite bloom requirements by itself.");
+            Assert.IsFalse(settings.RequiresFinalCompositePass(), "AfterColorGrade must remain a pre-bloom debug stage.");
+            Assert.AreEqual(7, settings.GetTotalRasterPassCount(), "AfterColorGrade should skip only the final composite pass from the high-tier topology.");
         }
 
         private static void AssertColorApproximately(Color expected, Color actual)

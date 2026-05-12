@@ -24,8 +24,9 @@ namespace BC.Rendering
         private Material material;
         private ToyDioramaPostProcessSettings settings;
         private Texture2D fallbackBlueNoiseTexture;
-        private ToyDioramaRenderTargets renderTargets;
         private bool presentToCameraColor;
+
+        public int LastRecordedRasterPassCount { get; private set; }
 
         public ToyDioramaCompositePass(CompositeStage stage)
         {
@@ -36,13 +37,11 @@ namespace BC.Rendering
             Material material,
             ToyDioramaPostProcessSettings settings,
             Texture2D fallbackBlueNoiseTexture,
-            ToyDioramaRenderTargets renderTargets,
             bool presentToCameraColor)
         {
             this.material = material;
             this.settings = settings;
             this.fallbackBlueNoiseTexture = fallbackBlueNoiseTexture;
-            this.renderTargets = renderTargets;
             this.presentToCameraColor = presentToCameraColor;
             requiresIntermediateTexture = true;
             ConfigureInput(stage == CompositeStage.PreBloom && NeedsDepthInput(settings)
@@ -52,12 +51,15 @@ namespace BC.Rendering
 
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            if (material == null || settings == null || !settings.Enabled || renderTargets == null)
+            LastRecordedRasterPassCount = 0;
+
+            if (material == null || settings == null || !settings.Enabled)
             {
                 return;
             }
 
             UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+            ToyDioramaRenderTargets renderTargets = frameData.GetOrCreate<ToyDioramaRenderTargets>();
 
             if (resourceData.isActiveTargetBackBuffer)
             {
@@ -68,14 +70,17 @@ namespace BC.Rendering
 
             if (stage == CompositeStage.PreBloom)
             {
-                RecordPreBloomPass(renderGraph, resourceData);
+                RecordPreBloomPass(renderGraph, resourceData, renderTargets);
                 return;
             }
 
-            RecordFinalCompositePass(renderGraph, resourceData);
+            RecordFinalCompositePass(renderGraph, resourceData, renderTargets);
         }
 
-        private void RecordPreBloomPass(RenderGraph renderGraph, UniversalResourceData resourceData)
+        private void RecordPreBloomPass(
+            RenderGraph renderGraph,
+            UniversalResourceData resourceData,
+            ToyDioramaRenderTargets renderTargets)
         {
             bool depthInputRequested = NeedsDepthInput(settings);
             TextureHandle cameraDepthTexture = resourceData.cameraDepthTexture;
@@ -110,6 +115,8 @@ namespace BC.Rendering
                 });
             }
 
+            LastRecordedRasterPassCount = 1;
+
             renderTargets.PreBloomColor = destination;
 
             if (presentToCameraColor)
@@ -118,7 +125,10 @@ namespace BC.Rendering
             }
         }
 
-        private void RecordFinalCompositePass(RenderGraph renderGraph, UniversalResourceData resourceData)
+        private void RecordFinalCompositePass(
+            RenderGraph renderGraph,
+            UniversalResourceData resourceData,
+            ToyDioramaRenderTargets renderTargets)
         {
             if (!renderTargets.PreBloomColor.IsValid())
             {
@@ -163,7 +173,14 @@ namespace BC.Rendering
                 });
             }
 
+            LastRecordedRasterPassCount = 1;
+
             resourceData.cameraColor = destination;
+        }
+
+        internal void ResetRecordedRasterPassCount()
+        {
+            LastRecordedRasterPassCount = 0;
         }
 
         private static bool NeedsDepthInput(ToyDioramaPostProcessSettings settings)

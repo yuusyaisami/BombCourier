@@ -1,20 +1,16 @@
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 
 namespace BC.Rendering.Editor
 {
     [CustomEditor(typeof(ToyDioramaPostProcessFeature))]
     public sealed class ToyDioramaPostProcessFeatureEditor : UnityEditor.Editor
     {
-        private static readonly string[] VolumeSearchFolders = { "Assets/Settings" };
-
         private SerializedProperty compositeShaderProperty;
         private SerializedProperty bloomShaderProperty;
         private SerializedProperty passEventProperty;
         private SerializedProperty sceneViewEnabledProperty;
+        private SerializedProperty forceLowQualityTierProperty;
         private SerializedProperty selectedPresetProperty;
         private SerializedProperty settingsProperty;
 
@@ -24,6 +20,7 @@ namespace BC.Rendering.Editor
             bloomShaderProperty = serializedObject.FindProperty("bloomShader");
             passEventProperty = serializedObject.FindProperty("passEvent");
             sceneViewEnabledProperty = serializedObject.FindProperty("sceneViewEnabled");
+            forceLowQualityTierProperty = serializedObject.FindProperty("forceLowQualityTier");
             selectedPresetProperty = serializedObject.FindProperty("selectedPreset");
             settingsProperty = serializedObject.FindProperty("settings");
         }
@@ -32,9 +29,11 @@ namespace BC.Rendering.Editor
         {
             serializedObject.Update();
 
+            ToyDioramaPostProcessFeature feature = (ToyDioramaPostProcessFeature)target;
+
             DrawPresetSection();
             DrawInjectionPolicySection();
-            ToyDioramaPostProcessInspectorUtility.DrawFeatureSettings(settingsProperty);
+            ToyDioramaPostProcessInspectorUtility.DrawFeatureSettings(feature, settingsProperty);
             DrawRuntimeResources();
 
             serializedObject.ApplyModifiedProperties();
@@ -45,14 +44,48 @@ namespace BC.Rendering.Editor
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Injection Policy", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(sceneViewEnabledProperty, new GUIContent("Scene View Enabled"));
+            EditorGUILayout.PropertyField(forceLowQualityTierProperty, new GUIContent("Force Low Quality Tier"));
 
             ToyDioramaPostProcessFeature feature = (ToyDioramaPostProcessFeature)target;
             EditorGUILayout.HelpBox(feature.GetCameraPolicySummary(), MessageType.None);
+
+            if (feature.ForceLowQualityTier)
+            {
+                EditorGUILayout.HelpBox(
+                    "This feature instance resolves runtime Quality Tier to Low without mutating the authored settings asset values.",
+                    MessageType.Info);
+            }
+
+            if (ToyDioramaPostProcessBuildValidator.TryGetRendererPolicyBuildError(feature, out string policyError))
+            {
+                EditorGUILayout.HelpBox(policyError, MessageType.Error);
+            }
+
             EditorGUILayout.HelpBox(
                 "World Space UI may receive ToyDiorama. Screen Space UI should stay outside the ToyDiorama camera path.",
                 MessageType.Info);
 
-            if (TryBuildProjectPostProcessWarning(out string warningMessage))
+            if (ToyDioramaPostProcessBuildValidator.TryGetRendererOwnershipWarning(feature, out string rendererWarning))
+            {
+                EditorGUILayout.HelpBox(rendererWarning, MessageType.Warning);
+            }
+
+            if (ToyDioramaPostProcessBuildValidator.TryGetDebugViewAuthoringWarning(feature, out string debugViewWarning))
+            {
+                EditorGUILayout.HelpBox(debugViewWarning, MessageType.Warning);
+            }
+
+            if (ToyDioramaPostProcessBuildValidator.TryGetMobileQualityPolicyWarning(feature, out string mobileWarning))
+            {
+                EditorGUILayout.HelpBox(mobileWarning, MessageType.Warning);
+            }
+
+            if (ToyDioramaPostProcessBuildValidator.TryGetMobileAuthoredQualityTierWarning(feature, out string mobileAuthoredTierWarning))
+            {
+                EditorGUILayout.HelpBox(mobileAuthoredTierWarning, MessageType.Warning);
+            }
+
+            if (ToyDioramaPostProcessBuildValidator.TryGetProjectPostProcessOverlapWarning(out string warningMessage))
             {
                 EditorGUILayout.HelpBox(warningMessage, MessageType.Warning);
             }
@@ -96,57 +129,6 @@ namespace BC.Rendering.Editor
             EditorGUILayout.PropertyField(compositeShaderProperty);
             EditorGUILayout.PropertyField(bloomShaderProperty);
             EditorGUILayout.PropertyField(passEventProperty);
-        }
-
-        private static bool TryBuildProjectPostProcessWarning(out string warningMessage)
-        {
-            List<string> conflicts = new List<string>();
-            string[] profileGuids = AssetDatabase.FindAssets("t:VolumeProfile", VolumeSearchFolders);
-
-            foreach (string profileGuid in profileGuids)
-            {
-                string path = AssetDatabase.GUIDToAssetPath(profileGuid);
-                VolumeProfile profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
-
-                if (profile == null || !TryGetOverlappingComponents(profile, out string componentSummary))
-                {
-                    continue;
-                }
-
-                conflicts.Add($"{profile.name} ({componentSummary})");
-            }
-
-            if (conflicts.Count == 0)
-            {
-                warningMessage = null;
-                return false;
-            }
-
-            warningMessage =
-                "ToyDiorama owns Color Grade and Bloom. Disable URP Bloom / ColorAdjustments in these VolumeProfiles: " +
-                string.Join(", ", conflicts);
-            return true;
-        }
-
-        private static bool TryGetOverlappingComponents(VolumeProfile profile, out string componentSummary)
-        {
-            List<string> overlappingComponents = new List<string>();
-
-            if (profile.TryGet(out Bloom bloom) && bloom.active && bloom.AnyPropertiesIsOverridden() && bloom.IsActive())
-            {
-                overlappingComponents.Add("Bloom");
-            }
-
-            if (profile.TryGet(out ColorAdjustments colorAdjustments) &&
-                colorAdjustments.active &&
-                colorAdjustments.AnyPropertiesIsOverridden() &&
-                colorAdjustments.IsActive())
-            {
-                overlappingComponents.Add("ColorAdjustments");
-            }
-
-            componentSummary = string.Join(" + ", overlappingComponents);
-            return overlappingComponents.Count > 0;
         }
     }
 }

@@ -281,6 +281,49 @@ namespace BC.Rendering
             return qualityTier == ToyDioramaQualityTier.High ? 2 : 1;
         }
 
+        public int GetBloomRasterPassCount()
+        {
+            if (!RequiresBloomPass())
+            {
+                return 0;
+            }
+
+            ToyDioramaDebugView resolvedDebugView = GetResolvedDebugView();
+            int passCount = 1;
+
+            if (resolvedDebugView == ToyDioramaDebugView.BloomPrefilter)
+            {
+                return passCount;
+            }
+
+            passCount += GetBloomBlurPassPairCount() * 2;
+
+            if (resolvedDebugView == ToyDioramaDebugView.BloomBlur)
+            {
+                return passCount;
+            }
+
+            return passCount + 1;
+        }
+
+        public int GetTotalRasterPassCount()
+        {
+            if (!enabled)
+            {
+                return 0;
+            }
+
+            int passCount = 1;
+            passCount += GetBloomRasterPassCount();
+
+            if (RequiresFinalCompositePass())
+            {
+                passCount++;
+            }
+
+            return passCount;
+        }
+
         public static bool IsPreBloomDebugView(ToyDioramaDebugView view)
         {
             switch (view)
@@ -292,6 +335,7 @@ namespace BC.Rendering
                 case ToyDioramaDebugView.MidMask:
                 case ToyDioramaDebugView.HighlightMask:
                 case ToyDioramaDebugView.BeforeColorGrade:
+                case ToyDioramaDebugView.AfterColorGrade:
                 case ToyDioramaDebugView.PastelMask:
                 case ToyDioramaDebugView.HighSaturationMask:
                 case ToyDioramaDebugView.CreamHighlightMask:

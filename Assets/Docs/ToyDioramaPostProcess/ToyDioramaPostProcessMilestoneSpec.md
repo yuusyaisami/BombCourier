@@ -7,6 +7,46 @@
 
 # ToyDioramaPostProcess Milestone Spec
 
+## 現在の進捗棚卸し
+
+この節は planned scope ではなく、2026-05-13 時点の実装・test・docs の実体ベースの進捗です。
+
+### 進捗サマリー
+
+```text
+- 現在の実装到達点: M14 Mobile Renderer / Low-Tier Runtime Support
+- 直列完了点: M12 Production Validation / Authoring Guide
+- 順番評価: M0 -> M12 までは順に完了。M13 に残件があるまま M14 を実装したため、厳密には完全直列完了ではない。
+```
+
+### Milestone Progress
+
+| Milestone | Status | Progress | Notes |
+| --- | --- | --- | --- |
+| M0 Project Scaffold / File Layout | Complete | 100% | shader / runtime / editor / presets / scenes / docs の分離が repo 上に成立しています。 |
+| M1 Passthrough Composite Pass | Complete | 100% | Composite path の最小 pass と feature が存在します。 |
+| M2 Settings Binding / Debug View Foundation | Complete | 100% | Settings binding と debug view 基盤が実装済みです。 |
+| M3 Core Color Grade | Complete | 100% | Core color grade path は runtime / shader に組み込み済みです。 |
+| M4 Pastel Compression / Cream Highlight | Complete | 100% | Pastel / Highlight 系の shader path と設定が実装済みです。 |
+| M5 Edge Tone / Lens Shading | Complete | 100% | Edge tone 系の shader path と設定が実装済みです。 |
+| M6 Depth Haze | Complete | 100% | Depth haze の tier-gated runtime path が実装済みです。 |
+| M7 Clean Grain / Blue Noise | Complete | 100% | Grain / blue noise path が実装済みです。 |
+| M8 Soft Bloom / Halation Pipeline | Complete | 100% | Bloom / halation pass と shader が実装済みです。 |
+| M9 Quality Tier / Preset System | Complete | 100% | tier policy と preset asset 群が実装済みです。 |
+| M10 Camera / UI / Injection Policy | Complete | 100% | canonical renderer ownership と camera / UI policy が test / validator まで固定済みです。 |
+| M11 Performance / RT Lifetime / Cleanup | Complete | 100% | RT lifetime / cleanup と tier perf policy の基本線は実装済みです。 |
+| M12 Production Validation / Authoring Guide | Complete | 100% | validation scenes、EditMode / PlayMode suites、authoring docs が同期済みです。 |
+| M13 Performance / Zero-Variant Guard | Partial | 70% | zero-variant audit、tier topology contract、tests、docs sync は完了。Gameplay baseline measurement と deeper no-op cleanup が残っています。 |
+| M14 Mobile Renderer / Low-Tier Runtime Support | Complete | 100% | Mobile_Renderer 登録、ForceLowQualityTier、MobileOptimized preset、validator、EditMode / PlayMode coverage、docs sync まで完了です。 |
+
+### 判断メモ
+
+```text
+- ここまでの会話で実際に進んでいた主対象はこの ToyDioramaPostProcess milestone です。
+- ShaderMilestoneSpec と責務が別なので、PostProcess を進めても EnvironmentStylizedLit shader milestone の進捗には直結しません。
+- 厳密な順守という意味では、M13 を完全に閉じる前に M14 へ進んでいます。
+```
+
 ## 0. 基本方針
 
 このポストプロセスは、以下の順で作る。
@@ -25,6 +65,8 @@ M9  Quality Tier / Preset System
 M10 Camera / UI / Injection Policy
 M11 Performance / RT Lifetime / Cleanup
 M12 Production Validation / Authoring Guide
+M13 Performance / Zero-Variant Guard
+M14 Mobile Renderer / Low-Tier Runtime Support
 ```
 
 最初から全部作らない。
@@ -95,6 +137,7 @@ Assets/
             MattePlastic.asset
             PictureBook.asset
             CleanDebug.asset
+            MobileOptimized.asset
 
           Samples/
             ToyDiorama_ColorLab.unity
@@ -700,6 +743,7 @@ Low:
   Edge Tone
   No DepthHaze
   No Bloom
+  No Halation
   No Grain
 
 Medium:
@@ -709,19 +753,28 @@ Medium:
   Edge Tone
   DepthHaze
   Grain
-  Simple Bloom
+  Bloom
+  BloomDownsampleDivisor = 4
+  BloomBlurPassPairCount = 1
 
 High:
   Medium +
-  Better Bloom
+  BloomDownsampleDivisor = 2
+  BloomBlurPassPairCount = 2
   Halation
-  More precise masks
 
 Cinematic:
   High +
-  Stronger Haze
-  Stronger Bloom
-  Optional lens softness
+  BloomDownsampleDivisor = 2
+  BloomBlurPassPairCount = 3
+```
+
+補足:
+
+```text
+- QualityTier は effect を強制的に有効化するものではない
+- authoring 側で off の effect は上位 tier でも off のまま
+- Bloom pass は Bloom / Halation / Bloom debug view のいずれかが必要な時だけ走る
 ```
 
 ## 完了条件
@@ -801,6 +854,15 @@ Preview Camera:
 原則として、ToyDiorama側で ColorGrade / Bloom を持つなら、URP側の同種エフェクトは切るべきです。
 二重にかけると調整不能になります。
 
+### BombCourier実装方針
+
+```text
+- PC_Renderer では ToyDioramaPostProcessFeature を canonical な最終ルック owner とする
+- 同 renderer 上の legacy FullScreenPassRendererFeature は inactive に保つ
+- Screen Space UI は Screen Space Overlay を優先し、必要なら ToyDiorama 後段の UI camera に分離する
+- Assets/Settings 配下の VolumeProfile では URP Bloom / ColorAdjustments を実効状態で併用しない
+```
+
 ---
 
 # M11 Performance / RT Lifetime / Cleanup
@@ -820,6 +882,7 @@ Preview Camera:
 - Camera変更対応
 - Low/Medium/Highの負荷確認
 - Bloom downsample回数の制御
+- QualityTierごとのBloom divisor / blur pair count contract 固定
 - DebugViewの本番無効化方針
 - 不要shader keyword整理
 ```
@@ -855,6 +918,42 @@ Preview Camera:
 - Debug用分岐を本番で放置しない
 ```
 
+### BombCourier Tier Perf Policy
+
+```text
+Low:
+  DepthHaze = off
+  Bloom = off
+  Halation = off
+  Grain = off
+
+Medium:
+  DepthHaze = on if enabled
+  Bloom = on if enabled
+  Halation = off
+  Grain = on if enabled
+  BloomDownsampleDivisor = 4
+  BloomBlurPassPairCount = 1
+
+High:
+  Medium +
+  Halation = on if enabled
+  BloomDownsampleDivisor = 2
+  BloomBlurPassPairCount = 2
+
+Cinematic:
+  High +
+  BloomDownsampleDivisor = 2
+  BloomBlurPassPairCount = 3
+```
+
+### BombCourier Validation
+
+```text
+- EditMode settings contract:
+  ./Tools/Run-UnityTests.ps1 -Platform EditMode -TestFilter "BC.Rendering.Tests.ToyDioramaPostProcessSettingsTests" -RunSynchronously -NoGraphics -TimeoutSeconds 900
+```
+
 ---
 
 # M12 Production Validation / Authoring Guide
@@ -881,6 +980,17 @@ ToyDiorama_BloomLab
 ToyDiorama_GameplayLab
 ```
 
+BombCourier では以下に配置する。
+
+```text
+Assets/Scenes/ToyDiorama/ToyDiorama_ColorLab.unity
+Assets/Scenes/ToyDiorama/ToyDiorama_DepthLab.unity
+Assets/Scenes/ToyDiorama/ToyDiorama_BloomLab.unity
+Assets/Scenes/ToyDiorama/ToyDiorama_GameplayLab.unity
+```
+
+scene 雛形は editor utility から再生成できる状態を維持する。
+
 ## 検証項目
 
 ```text
@@ -905,9 +1015,153 @@ ToyDiorama_GameplayLab
 - 安いレトロフィルター感がない
 - EnvironmentStylizedLitの質感を壊さない
 - 通常プレイで視認性が落ちない
+- 4つの validation scene が存在し、それぞれ役割別の確認面を持つ
+- EditMode / PlayMode の最低限の validation command が整備されている
 - Authoring Guideがある
 - Troubleshootingがある
 - Presetの用途が明確
+```
+
+## BombCourier 実装メモ
+
+```text
+- validation scene generator:
+  BC.Rendering.Editor.ToyDioramaValidationSceneGenerator.GenerateAllBatch
+- EditMode contract:
+  ./Tools/Run-UnityTests.ps1 -Platform EditMode -TestFilter "BC.Rendering.Tests.ToyDioramaValidationSceneTests" -RunSynchronously -NoGraphics -TimeoutSeconds 900
+- PlayMode smoke:
+  ./Tools/Run-UnityTests.ps1 -Platform PlayMode -TestFilter "BC.Rendering.PlayModeTests.ToyDioramaPostProcessPlayModeSmokeTests" -NoGraphics -TimeoutSeconds 900
+- PlayMode smoke は GameplayLab を additive load し、camera / UI / canonical renderer ownership を確認する
+```
+
+---
+
+# M13 Performance / Zero-Variant Guard
+
+## 目的
+
+PC canonical path を前提に、ToyDiorama の perf cleanup を進めつつ、shader variant を増やさない運用を固定する。
+
+## 実装内容
+
+```text
+- zero-variant shader source audit
+- runtime no-op path cleanup
+- GameplayLab baseline measurement
+- EditMode / PlayMode validation 追加
+- docs / spec sync
+```
+
+## 非スコープ
+
+```text
+- Mobile_Renderer 対応
+- new preset 追加
+- inspector help link / custom tooling 追加
+```
+
+## 基本方針
+
+```text
+- PC_Renderer を唯一の canonical runtime target とする
+- shader_feature / multi_compile を増やして variant で最適化しない
+- 既存の tier-driven bloom divisor / blur pair count を source of truth とする
+- absolute ms gate より、tier ordering と topology consistency を優先する
+```
+
+## 完了条件
+
+```text
+- ToyDiorama shader 群に shader_feature / multi_compile 系 pragma がない
+- Low / Medium / High / Cinematic の tier policy が test で固定されている
+- GameplayLab で perf baseline を採取できる
+- M10-M12 の canonical validation を壊していない
+- docs / spec が zero-variant policy と validation command に同期している
+```
+
+## BombCourier 実装メモ
+
+```text
+- shader source audit target:
+  Assets/BC/Rendering/PostProcess/ToyDiorama/Shaders/**/*.shader
+  Assets/BC/Rendering/PostProcess/ToyDiorama/Shaders/**/*.hlsl
+- runtime tier source of truth:
+  ToyDioramaPostProcessSettings.IsDepthHazeEnabledForQuality
+  ToyDioramaPostProcessSettings.IsSoftBloomEnabledForQuality
+  ToyDioramaPostProcessSettings.IsHalationEnabledForQuality
+  ToyDioramaPostProcessSettings.GetBloomDownsampleDivisor
+  ToyDioramaPostProcessSettings.GetBloomBlurPassPairCount
+- EditMode audit contract:
+  ./Tools/Run-UnityTests.ps1 -Platform EditMode -TestFilter "BC.Rendering.Tests.ToyDioramaPostProcessSettingsTests" -RunSynchronously -NoGraphics -TimeoutSeconds 900
+- PlayMode perf surface:
+  Assets/Scenes/ToyDiorama/ToyDiorama_GameplayLab.unity
+```
+
+---
+
+# M14 Mobile Renderer / Low-Tier Runtime Support
+
+## 目的
+
+Mobile_Renderer と Mobile_RPAsset でも ToyDiorama を supported runtime path に載せつつ、mobile 側の runtime budget は Low tier に固定する。
+
+## 実装内容
+
+```text
+- Mobile_Renderer.asset へ ToyDioramaPostProcessFeature 登録
+- feature instance-specific ForceLowQualityTier runtime clamp
+- MobileOptimized preset 追加
+- mobile quality policy warning と inspector surface 追加
+- EditMode / PlayMode validation 追加
+- docs / spec sync
+```
+
+## 非スコープ
+
+```text
+- mobile 専用 shader keyword 導入
+- mobile で Medium / High / Cinematic を解禁すること
+- PC canonical path の ownership policy 緩和
+- absolute frame-time gate の導入
+```
+
+## 基本方針
+
+```text
+- PC_Renderer は desktop canonical path のまま維持する
+- Mobile_Renderer は supported fallback renderer として扱う
+- Mobile_Renderer 上の ToyDiorama feature は ForceLowQualityTier を有効化する
+- authored settings を mutate せず、resolved runtime tier だけを Low に clamp する
+- mobile authoring preset は MobileOptimized を starting point にする
+```
+
+## 完了条件
+
+```text
+- Mobile_Renderer.asset に active な ToyDioramaPostProcessFeature が登録されている
+- Mobile_Renderer.asset の selected preset が MobileOptimized を指す
+- mobile runtime path は Low topology (Bloom raster pass 0 / total raster pass 2) に固定される
+- mobile quality policy warning が EditMode test で固定されている
+- GameplayLab smoke が Mobile_RPAsset override でも通る
+- docs / spec / troubleshooting が mobile path に同期している
+```
+
+## BombCourier 実装メモ
+
+```text
+- mobile renderer asset:
+  Assets/Settings/Mobile_Renderer.asset
+- mobile render pipeline asset:
+  Assets/Settings/Mobile_RPAsset.asset
+- mobile preset:
+  Assets/BC/Rendering/PostProcess/ToyDiorama/Presets/MobileOptimized.asset
+- EditMode mobile contracts:
+  ./Tools/Run-UnityTests.ps1 -Platform EditMode -TestFilter "BC.Rendering.Tests.ToyDioramaPostProcessFeatureTests" -RunSynchronously -NoGraphics -TimeoutSeconds 900
+  ./Tools/Run-UnityTests.ps1 -Platform EditMode -TestFilter "BC.Rendering.Tests.ToyDioramaPostProcessBuildValidatorTests" -RunSynchronously -NoGraphics -TimeoutSeconds 900
+  ./Tools/Run-UnityTests.ps1 -Platform EditMode -TestFilter "BC.Rendering.Tests.ToyDioramaPostProcessPresetAssetTests" -RunSynchronously -NoGraphics -TimeoutSeconds 900
+- PlayMode mobile smoke:
+  ./Tools/Run-UnityTests.ps1 -Platform PlayMode -TestFilter "BC.Rendering.PlayModeTests.ToyDioramaPostProcessPlayModeSmokeTests" -NoGraphics -TimeoutSeconds 1200
+- editor 上の PlayMode smoke は Mobile quality level 名ではなく Mobile_RPAsset override で mobile path を検証する
 ```
 
 ---
@@ -942,6 +1196,10 @@ M10
 M11
 ↓
 M12
+↓
+M13
+↓
+M14
 ```
 
 特に重要なのは、**M8 Bloom / Halation を M3〜M5 より前にやらないこと**です。

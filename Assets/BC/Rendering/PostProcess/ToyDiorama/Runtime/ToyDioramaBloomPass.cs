@@ -20,25 +20,32 @@ namespace BC.Rendering
 
         private Material material;
         private ToyDioramaPostProcessSettings settings;
-        private ToyDioramaRenderTargets renderTargets;
 
-        public void Setup(Material material, ToyDioramaPostProcessSettings settings, ToyDioramaRenderTargets renderTargets)
+        public int LastRecordedRasterPassCount { get; private set; }
+
+        public void Setup(Material material, ToyDioramaPostProcessSettings settings)
         {
             this.material = material;
             this.settings = settings;
-            this.renderTargets = renderTargets;
             requiresIntermediateTexture = true;
             ConfigureInput(ScriptableRenderPassInput.None);
         }
 
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
+            LastRecordedRasterPassCount = 0;
+
             if (material == null ||
                 settings == null ||
                 !settings.Enabled ||
-                renderTargets == null ||
-                !renderTargets.PreBloomColor.IsValid() ||
                 !settings.RequiresBloomPass())
+            {
+                return;
+            }
+
+            ToyDioramaRenderTargets renderTargets = frameData.GetOrCreate<ToyDioramaRenderTargets>();
+
+            if (!renderTargets.PreBloomColor.IsValid())
             {
                 return;
             }
@@ -143,6 +150,13 @@ namespace BC.Rendering
                         data.sourceTexelSize);
                 });
             }
+
+            LastRecordedRasterPassCount++;
+        }
+
+        internal void ResetRecordedRasterPassCount()
+        {
+            LastRecordedRasterPassCount = 0;
         }
 
         private static void ExecutePass(
