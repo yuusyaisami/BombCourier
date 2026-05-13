@@ -33,6 +33,12 @@ namespace BC.UI
 
         private void Start()
         {
+            if (GameStateManagerMB.Instance == null)
+            {
+                Debug.LogError($"{nameof(UIStageClearMB)}: GameStateManagerMB.Instance is null.", this);
+                return;
+            }
+
             GameStateManagerMB.Instance.StateMachine.Subscribe(OnGameStateChanged);
         }
 
