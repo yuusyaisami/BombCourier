@@ -103,7 +103,7 @@ Shader "BC/PostProcess/ToyDioramaComposite"
                 ToyDiorama_ColorPipelineData pipelineData = ToyDiorama_EvaluatePreBloomPipeline(beforeColorGrade, uv);
                 float3 outputColor = ToyDiorama_ApplyPreBloomDebugView(beforeColorGrade, pipelineData, uv);
 
-                return half4(outputColor, source.a);
+                return half4(outputColor, 1.0);
             }
 
             ENDHLSL
@@ -119,6 +119,7 @@ Shader "BC/PostProcess/ToyDioramaComposite"
             #pragma fragment ToyDiorama_FinalCompositeFragment
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
             #include "HLSL/ToyDiorama_Input.hlsl"
             #include "HLSL/ToyDiorama_Common.hlsl"
@@ -139,14 +140,14 @@ Shader "BC/PostProcess/ToyDioramaComposite"
 
                 if (ToyDiorama_IsPreBloomDebugView((int)round(_ToyDioramaDebugView)))
                 {
-                    return preBloom;
+                    return half4(preBloom.rgb, 1.0);
                 }
 
                 half4 bloom = SAMPLE_TEXTURE2D_X(_ToyDioramaBloomTex, sampler_LinearClamp, uv);
                 ToyDiorama_FinalColorPipelineData pipelineData = ToyDiorama_EvaluateFinalColorPipeline(preBloom.rgb, bloom, uv);
                 float3 outputColor = ToyDiorama_ApplyFinalDebugView(preBloom.rgb, pipelineData);
 
-                return half4(outputColor, preBloom.a);
+                return half4(outputColor, 1.0);
             }
 
             ENDHLSL

@@ -74,52 +74,6 @@ MonoBehaviour:
   candidateOutlineMaterial: {fileID: 2100000, guid: 9fd6c435ccd03f747b0e5aced5758fda, type: 2}
   bestOutlineMaterial: {fileID: 2100000, guid: 3f30d4827b20d0d49944fd40b9eb3e44, type: 2}
   passEvent: 500
---- !u!114 &7833122117494664109
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f62c9c65cf3354c93be831c8bc075510, type: 3}
-  m_Name: ScreenSpaceAmbientOcclusion
-  m_EditorClassIdentifier: 
-  m_Active: 1
-  m_Settings:
-    AOMethod: 0
-    Downsample: 0
-    AfterOpaque: 0
-    Source: 1
-    NormalSamples: 1
-    Intensity: 0.4
-    DirectLightingStrength: 0.25
-    Radius: 0.3
-    Samples: 1
-    BlurQuality: 0
-    Falloff: 100
-    SampleCount: -1
---- !u!114 &9168044358975667069
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
-  m_Name: FullScreenPassRendererFeature
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
-  m_Active: 0
-  injectionPoint: 600
-  fetchColorBuffer: 1
-  requirements: 0
-  passMaterial: {fileID: 2100000, guid: 73643971cf3dbfa4b81f9691c7bcf2f7, type: 2}
-  passIndex: 0
-  bindDepthStencilAttachment: 0
-  m_Version: 1
 --- !u!114 &6842631049803492175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,7 +90,8 @@ MonoBehaviour:
   compositeShader: {fileID: 4800000, guid: e0ce73f4e1e1d2941bdc5fb4eb5cbfc4, type: 3}
   bloomShader: {fileID: 4800000, guid: 45e35c160f91e2f43ac7814fb806c647, type: 3}
   passEvent: 600
-  sceneViewEnabled: 0
+  sceneViewEnabled: 1
+  forceLowQualityTier: 0
   selectedPreset: {fileID: 11400000, guid: 6d2a74e3f2794f94b86a8c314b4e51aa, type: 2}
   settings:
     enabled: 1
@@ -191,3 +146,49 @@ MonoBehaviour:
     shadowTintStrength: 0.35
     midTintStrength: 0
     highlightTintStrength: 0.2
+--- !u!114 &7833122117494664109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f62c9c65cf3354c93be831c8bc075510, type: 3}
+  m_Name: ScreenSpaceAmbientOcclusion
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  m_Settings:
+    AOMethod: 0
+    Downsample: 0
+    AfterOpaque: 0
+    Source: 1
+    NormalSamples: 1
+    Intensity: 0.4
+    DirectLightingStrength: 0.25
+    Radius: 0.3
+    Samples: 1
+    BlurQuality: 0
+    Falloff: 100
+    SampleCount: -1
+--- !u!114 &9168044358975667069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
+  m_Name: FullScreenPassRendererFeature
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
+  m_Active: 0
+  injectionPoint: 600
+  fetchColorBuffer: 1
+  requirements: 0
+  passMaterial: {fileID: 2100000, guid: 73643971cf3dbfa4b81f9691c7bcf2f7, type: 2}
+  passIndex: 0
+  bindDepthStencilAttachment: 0
+  m_Version: 1

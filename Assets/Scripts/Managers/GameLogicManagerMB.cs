@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using BC.Base;
 using BC.Bomb;
+using BC.Gimmick;
 using BombCourier.CameraIntro;
 using Cysharp.Threading.Tasks;
+using Unity.Cinemachine;
 using UnityEngine;
 namespace BC.Manager
 {
@@ -31,6 +33,7 @@ namespace BC.Manager
         private BombMB currentBomb;
         private GameObject stageInstance; // 現在のステージのインスタンス。ステージをリセットするときに使用する。
         private PlayerMB playerInstance; // プレイヤーのインスタンス。プレイヤーをスポーンさせるときに使用する。
+        private GoalData currentGoalData; // 現在のゴールのデータ。ゴールに到達したときの処理に使用する。
         private EntityRef playerRef; // プレイヤーのEntityRef。プレイヤーの状態を管理するために使用する。
         private Action<PlayerMB> onPlayerSpawned; // プレイヤーがスポーンしたときに呼び出されるイベント
         public Action<BombMB> OnCurrentBombChanged; // 現在の爆弾が変わったときに呼び出されるイベント
@@ -78,14 +81,29 @@ namespace BC.Manager
                 ReloadStageAsync().Forget(); // ステージをリロードする
 
             }
+            else if (newState == GameState.Goaling)
+            {
+                GoalAsync().Forget(); // ゴール処理を実行する
+            }
             else if (newState == GameState.StageClear)
             {
-                // ステージクリアしたときの処理
             }
             else if (newState == GameState.GameOver)
             {
                 // ゲームオーバーになったときの処理
             }
+        }
+        public async UniTask GoalAsync()
+        {
+            if (currentGoalData == null) return;
+
+            //一時体にCinemaCameraを切り替える。
+            CinemachineCamera goalCamera = currentGoalData.GoalCamera;
+            goalCamera.Priority = 100; // カメラの優先度を上げて切り替える
+
+            // Playerを止める
+            await playerInstance.MoveController.MoveToAsync(currentGoalData.PlayerTargetPoint.position, 0.1f);
+            sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMove, PlayerMoveController.GameLogicTag, false);
         }
         private async UniTask LoadStageAsync(int stageIndex)
         {
@@ -165,6 +183,8 @@ namespace BC.Manager
                     PlayerSpawnPointMB spawnPoint = result.spawnPoints[0];
                     SpawnAndTeleportPlayer(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
                 }
+                // goalDataの保存
+                currentGoalData = result.goalData;
                 // instanceを保存
                 stageInstance = result.stageInstance;
             }

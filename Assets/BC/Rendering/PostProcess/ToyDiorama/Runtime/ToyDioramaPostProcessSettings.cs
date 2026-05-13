@@ -239,8 +239,7 @@ namespace BC.Rendering
 
         public bool IsGrainEnabledForQuality(Texture2D fallbackBlueNoiseTexture = null)
         {
-            Texture2D resolvedBlueNoiseTexture = blueNoiseTex != null ? blueNoiseTex : fallbackBlueNoiseTexture;
-            return qualityTier != ToyDioramaQualityTier.Low && grainEnabled && resolvedBlueNoiseTexture != null && grainStrength > 0f;
+            return qualityTier != ToyDioramaQualityTier.Low && grainEnabled && grainStrength > 0f;
         }
 
         public bool RequiresDepthTexture()

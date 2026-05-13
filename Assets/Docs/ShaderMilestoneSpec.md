@@ -12,9 +12,9 @@
 ### 進捗サマリー
 
 ```text
-- 現在の実装到達点: M2 SurfaceData Foundation
-- 直列完了点: M1 Minimal URP Forward Shader
-- 順番評価: M0 -> M1 -> M2 の順で進んでおり、M3 以降には未着手
+- 現在の実装到達点: M14 Production Validation / Authoring Guide
+- 直列完了点: M14 Production Validation / Authoring Guide
+- 順番評価: M0 -> M1 -> M2 -> M3 -> M4 -> M5 -> M6 -> M7 -> M8 -> M9 -> M10 -> M11 -> M12 -> M13 -> M14 の順で進んでいます
 ```
 
 ### Milestone Progress
@@ -23,26 +23,26 @@
 | --- | --- | --- | --- |
 | M0 Project Scaffold / File Layout | Complete | 100% | Shader / HLSL / Editor / Presets / Documentation / Test material / validation scene の受け皿が存在します。 |
 | M1 Minimal URP Forward Shader | Complete | 100% | ForwardLit pass で BaseColor を描画する最小 shader は成立しています。 |
-| M2 SurfaceData Foundation | Partial | 70% | BaseMap / BaseColor / AlphaClip / NormalMap / Occlusion / Emission / Metallic / Smoothness は入っていますが、M2 の完了条件を満たす authoring と検証までは閉じていません。 |
-| M3 Stylized Main Light Diffuse | Not Started | 0% | Lighting / StylizedDiffuse / Debug の本体が未実装です。 |
-| M4 Shadow / Cull / Interior Room Stability | Not Started | 0% | ShadowCaster / Receive Shadow の実装は stub 段階です。 |
-| M5 Ambient / Bounce / Shadow Color System | Not Started | 0% | Ambient 系 HLSL は空です。 |
-| M6 Stylized Specular / Edge Sheen | Not Started | 0% | Specular 系 HLSL は空です。 |
-| M7 World Noise / Band Noise | Not Started | 0% | Noise 系 HLSL は空です。 |
-| M8 Required Render Pass Completion | Not Started | 0% | DepthOnly / DepthNormals / Meta pass は未実装です。 |
-| M9 Baked GI / Light Probe / SSAO Compatibility | Not Started | 0% | GI / SSAO 接続は未実装です。 |
-| M10 Additional Lights | Not Started | 0% | Additional lights の評価は未実装です。 |
-| M11 Triplanar / Vertex Color / World Gradient | Not Started | 0% | Triplanar は stub のみで、vertex color / world gradient も未着手です。 |
-| M12 ShaderGUI / Validator / Presets | Partial | 20% | ShaderGUI / Validator / PresetUtility の空クラスはありますが、機能は未実装です。 |
-| M13 Performance / Variant Cleanup | Not Started | 0% | variant policy / optimization / validation は未着手です。 |
-| M14 Production Validation / Authoring Guide | Not Started | 0% | module-local guide と validation 体系は未整備です。 |
+| M2 SurfaceData Foundation | Complete | 100% | BaseMap / BaseColor / AlphaClip / NormalMap / Occlusion / Emission / Metallic / Smoothness の SurfaceData build は成立しており、M2 validation material / scene と EditMode contract test まで閉じています。 |
+| M3 Stylized Main Light Diffuse | Complete | 100% | Main Light の stepped diffuse、Wrap Lighting、Band color controls、M3 debug views を runtime HLSL と EditMode contract tests まで閉じています。 |
+| M4 Shadow / Cull / Interior Room Stability | Complete | 100% | Main Light の receive shadow、ShadowInfluence / ShadowSoftFill / ShadowColorBlend、AlphaClip 対応 ShadowCaster、ESL_TestRoom の室内箱 / Cull / cast-shadow validation を runtime と EditMode contract tests まで閉じています。 |
+| M5 Ambient / Bounce / Shadow Color System | Complete | 100% | Directional ambient、疑似 bounce light、IndirectShadowColor、M5 validation material / scene / EditMode contract tests まで閉じています。 |
+| M6 Stylized Specular / Edge Sheen | Complete | 100% | SpecularMode Off / Soft / Quantized / Ceramic / Plastic、EdgeSheen、M6 validation material / scene / EditMode contract tests まで閉じています。 |
+| M7 World Noise / Band Noise | Complete | 100% | Noise.hlsl に軽量 world/object noise と distance fade を実装し、noise source を World/ObjectSpace から選択できるようにした上で、Surface / StylizedDiffuse / Debug と M7 validation material / scene / EditMode contract tests まで閉じています。 |
+| M8 Required Render Pass Completion | Complete | 100% | ShadowCaster / DepthOnly / DepthNormalsOnly / Meta pass を実装し、AlphaClip を Shadow / Depth / DepthNormals に反映、Meta では bake 用 Albedo / Emission のみを出力し、M8 validation scene anchor と EditMode contract tests まで閉じています。 |
+| M9 Baked GI / Light Probe / SSAO Compatibility | Complete | 100% | ForwardLit が baked GI / Light Probe SH / SSAO AO factor / shadow mask を transport し、Lighting が MixRealtimeAndBakedGI と cavity tint を owner として扱い、M9 validation material / scene / EditMode contract tests まで閉じています。 |
+| M10 Additional Lights | Complete | 100% | AdditionalLightMode Off / FillOnly / Quantized / Continuous、AdditionalLightIntensity、AdditionalLightShadowInfluence、AdditionalLightColorInfluence、point/spot light validation materials / scene anchors / EditMode contract tests まで閉じています。 |
+| M11 Triplanar / Vertex Color / World Gradient | Complete | 100% | Triplanar BaseMap / NormalMap / Noise、vertex color mask、world Y gradient、validation materials / scene anchors / EditMode contract tests まで閉じています。 |
+| M12 ShaderGUI / Validator / Presets | Complete | 100% | CustomEditor 接続、用途別 section を持つ ShaderGUI、DebugView / Triplanar warning と値正規化を行う validator、5 種 preset のワンクリック適用、M12 EditMode contract tests まで閉じています。 |
+| M13 Performance / Variant Cleanup | Complete | 100% | triplanar-only local keyword policy、DebugView の non-development build validator、Low / Medium / High tier utility、M13 validation material / scene anchor、EditMode contract tests まで閉じています。 |
+| M14 Production Validation / Authoring Guide | Complete | 100% | module-local guide、production validation anchor、preset review material、M14 EditMode contract が同期済みです。 |
 
 ### 判断メモ
 
 ```text
 - この milestone line は PostProcess とは別物です。
-- 現在 repo にある実装から見る限り、EnvironmentStylizedLit は M0-M2 の基礎作業段階です。
-- したがって、ここまでの会話で進んでいた主対象は ShaderMilestoneSpec ではなく ToyDioramaPostProcess milestone です。
+- 現在 repo にある実装から見る限り、EnvironmentStylizedLit は M14 の production validation / authoring guide 段階まで到達しています。
+- DebugView の本番禁止は ShaderGUI warning だけでなく build validator で固定し、tier 定義は preset から分離しています。
 ```
 
 ## 0. 基本方針
@@ -773,6 +773,9 @@ G = Band Offset Mask
 B = Color Variation Mask
 A = Special Effect Mask
 ```
+
+M11ではAを予約チャンネルとして保持する。
+具体的なSpecial Effectの消費処理は、後続Milestoneで用途を明文化してから追加する。
 
 ## 使用ファイル
 

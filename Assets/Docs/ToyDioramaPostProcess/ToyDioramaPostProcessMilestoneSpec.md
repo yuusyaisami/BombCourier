@@ -1111,8 +1111,9 @@ Mobile_Renderer と Mobile_RPAsset でも ToyDiorama を supported runtime path 
 - Mobile_Renderer.asset へ ToyDioramaPostProcessFeature 登録
 - feature instance-specific ForceLowQualityTier runtime clamp
 - MobileOptimized preset 追加
-- mobile quality policy warning と inspector surface 追加
+- mobile quality policy warning、build-safe validator、inspector surface 追加
 - EditMode / PlayMode validation 追加
+- runtime feature queue plan を使った topology coverage 追加
 - docs / spec sync
 ```
 
@@ -1140,8 +1141,9 @@ Mobile_Renderer と Mobile_RPAsset でも ToyDiorama を supported runtime path 
 ```text
 - Mobile_Renderer.asset に active な ToyDioramaPostProcessFeature が登録されている
 - Mobile_Renderer.asset の selected preset が MobileOptimized を指す
+- PC_Renderer.asset では ForceLowQualityTier が off のまま維持される
 - mobile runtime path は Low topology (Bloom raster pass 0 / total raster pass 2) に固定される
-- mobile quality policy warning が EditMode test で固定されている
+- mobile quality policy warning / build-safe policy が EditMode test で固定されている
 - GameplayLab smoke が Mobile_RPAsset override でも通る
 - docs / spec / troubleshooting が mobile path に同期している
 ```

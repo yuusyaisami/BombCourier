@@ -7,6 +7,44 @@ namespace BC.Rendering
 {
     public sealed class ToyDioramaPostProcessFeature : ScriptableRendererFeature
     {
+        public readonly struct RuntimeQueuePlan
+        {
+            public RuntimeQueuePlan(
+                CameraType cameraType,
+                ToyDioramaQualityTier resolvedQualityTier,
+                bool runtimeResourcesReady,
+                bool appliesToCameraType,
+                int preBloomPassCount,
+                int bloomRasterPassCount,
+                int finalCompositePassCount)
+            {
+                CameraType = cameraType;
+                ResolvedQualityTier = resolvedQualityTier;
+                RuntimeResourcesReady = runtimeResourcesReady;
+                AppliesToCameraType = appliesToCameraType;
+                PreBloomPassCount = preBloomPassCount;
+                BloomRasterPassCount = bloomRasterPassCount;
+                FinalCompositePassCount = finalCompositePassCount;
+                TotalRasterPassCount = preBloomPassCount + bloomRasterPassCount + finalCompositePassCount;
+            }
+
+            public CameraType CameraType { get; }
+
+            public ToyDioramaQualityTier ResolvedQualityTier { get; }
+
+            public bool RuntimeResourcesReady { get; }
+
+            public bool AppliesToCameraType { get; }
+
+            public int PreBloomPassCount { get; }
+
+            public int BloomRasterPassCount { get; }
+
+            public int FinalCompositePassCount { get; }
+
+            public int TotalRasterPassCount { get; }
+        }
+
         private const string DefaultBlueNoiseResourcePath = "ToyDioramaBlueNoise";
 
         [SerializeField] private Shader compositeShader;
@@ -25,6 +63,11 @@ namespace BC.Rendering
         private ToyDioramaCompositePass finalCompositePass;
         private Texture2D defaultBlueNoiseTexture;
         private bool hasLoggedRuntimeResourceError;
+        private ToyDioramaQualityTier lastQueuedResolvedQualityTier;
+        private int lastQueuedPreBloomPassCount;
+        private int lastQueuedBloomRasterPassCount;
+        private int lastQueuedFinalCompositePassCount;
+        private int lastQueuedTotalRasterPassCount;
         private readonly ToyDioramaPostProcessSettings resolvedRuntimeSettings = new ToyDioramaPostProcessSettings();
 
         public ToyDioramaPostProcessSettings Settings => settings;
@@ -47,6 +90,54 @@ namespace BC.Rendering
             set => forceLowQualityTier = value;
         }
 
+        public RuntimeQueuePlan EvaluateRuntimeQueuePlan(CameraType cameraType)
+        {
+            defaultBlueNoiseTexture ??= Resources.Load<Texture2D>(DefaultBlueNoiseResourcePath);
+
+            if (!HasValidRuntimeResources())
+            {
+                Create();
+
+                if (!HasValidRuntimeResources())
+                {
+                    return new RuntimeQueuePlan(
+                        cameraType,
+                        GetResolvedQualityTier(),
+                        false,
+                        false,
+                        0,
+                        0,
+                        0);
+                }
+            }
+
+            ToyDioramaPostProcessSettings runtimeSettings = ResolveRuntimeSettings();
+
+            if (!runtimeSettings.Enabled || !ShouldApplyToCameraType(cameraType))
+            {
+                return new RuntimeQueuePlan(
+                    cameraType,
+                    runtimeSettings.QualityTier,
+                    true,
+                    false,
+                    0,
+                    0,
+                    0);
+            }
+
+            bool requiresBloomPass = runtimeSettings.RequiresBloomPass();
+            bool requiresFinalCompositePass = runtimeSettings.RequiresFinalCompositePass();
+
+            return new RuntimeQueuePlan(
+                cameraType,
+                runtimeSettings.QualityTier,
+                true,
+                true,
+                1,
+                requiresBloomPass ? runtimeSettings.GetBloomRasterPassCount() : 0,
+                requiresFinalCompositePass ? 1 : 0);
+        }
+
         public int LastRecordedPreBloomRasterPassCount => preBloomPass?.LastRecordedRasterPassCount ?? 0;
 
         public int LastRecordedBloomRasterPassCount => bloomPass?.LastRecordedRasterPassCount ?? 0;
@@ -57,6 +148,16 @@ namespace BC.Rendering
             LastRecordedPreBloomRasterPassCount +
             LastRecordedBloomRasterPassCount +
             LastRecordedFinalCompositeRasterPassCount;
+
+        public ToyDioramaQualityTier LastQueuedResolvedQualityTier => lastQueuedResolvedQualityTier;
+
+        public int LastQueuedPreBloomPassCount => lastQueuedPreBloomPassCount;
+
+        public int LastQueuedBloomRasterPassCount => lastQueuedBloomRasterPassCount;
+
+        public int LastQueuedFinalCompositePassCount => lastQueuedFinalCompositePassCount;
+
+        public int LastQueuedTotalRasterPassCount => lastQueuedTotalRasterPassCount;
 
         public bool TryGetRuntimeResourceError(out string errorMessage)
         {
@@ -76,7 +177,6 @@ namespace BC.Rendering
             AppendMissingRuntimeResource(builder, preBloomPass == null, " Missing pre-bloom pass instance.");
             AppendMissingRuntimeResource(builder, bloomPass == null, " Missing bloom pass instance.");
             AppendMissingRuntimeResource(builder, finalCompositePass == null, " Missing final composite pass instance.");
-            AppendMissingRuntimeResource(builder, defaultBlueNoiseTexture == null, " Missing default blue-noise texture resource.");
 
             errorMessage = builder.ToString();
             return true;
@@ -166,8 +266,8 @@ namespace BC.Rendering
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
+            CameraType cameraType = renderingData.cameraData.cameraType;
             defaultBlueNoiseTexture ??= Resources.Load<Texture2D>(DefaultBlueNoiseResourcePath);
-            ResetRecordedRasterPassCounts();
 
             if (!HasValidRuntimeResources())
             {
@@ -175,6 +275,11 @@ namespace BC.Rendering
 
                 if (!HasValidRuntimeResources())
                 {
+                    if (cameraType == CameraType.Game)
+                    {
+                        ResetRecordedRasterPassCounts();
+                        ResetQueuedPassCounts();
+                    }
                     ReportRuntimeResourceErrorOnce();
                     return;
                 }
@@ -184,15 +289,32 @@ namespace BC.Rendering
 
             if (!runtimeSettings.Enabled)
             {
+                if (cameraType == CameraType.Game)
+                {
+                    ResetRecordedRasterPassCounts();
+                    ResetQueuedPassCounts();
+                }
                 return;
             }
 
-            if (!ShouldApplyToCameraType(renderingData.cameraData.cameraType))
+            if (!ShouldApplyToCameraType(cameraType))
             {
                 return;
             }
             bool requiresBloomPass = runtimeSettings.RequiresBloomPass();
             bool requiresFinalCompositePass = runtimeSettings.RequiresFinalCompositePass();
+
+            if (cameraType == CameraType.Game)
+            {
+                lastQueuedResolvedQualityTier = runtimeSettings.QualityTier;
+                lastQueuedPreBloomPassCount = 1;
+                lastQueuedBloomRasterPassCount = requiresBloomPass ? runtimeSettings.GetBloomRasterPassCount() : 0;
+                lastQueuedFinalCompositePassCount = requiresFinalCompositePass ? 1 : 0;
+                lastQueuedTotalRasterPassCount =
+                    lastQueuedPreBloomPassCount +
+                    lastQueuedBloomRasterPassCount +
+                    lastQueuedFinalCompositePassCount;
+            }
 
             preBloomPass.renderPassEvent = passEvent;
             preBloomPass.Setup(
@@ -215,6 +337,15 @@ namespace BC.Rendering
                 finalCompositePass.renderPassEvent = passEvent;
                 finalCompositePass.Setup(finalCompositeMaterial, runtimeSettings, defaultBlueNoiseTexture, false);
                 renderer.EnqueuePass(finalCompositePass);
+            }
+            if (!requiresBloomPass)
+            {
+                bloomPass?.ResetRecordedRasterPassCount();
+            }
+
+            if (!requiresFinalCompositePass)
+            {
+                finalCompositePass?.ResetRecordedRasterPassCount();
             }
         }
 
@@ -255,8 +386,7 @@ namespace BC.Rendering
                 bloomMaterial != null &&
                 preBloomPass != null &&
                 bloomPass != null &&
-                finalCompositePass != null &&
-                defaultBlueNoiseTexture != null;
+                finalCompositePass != null;
         }
 
         private void ReportRuntimeResourceErrorOnce()
@@ -275,6 +405,14 @@ namespace BC.Rendering
             preBloomPass?.ResetRecordedRasterPassCount();
             bloomPass?.ResetRecordedRasterPassCount();
             finalCompositePass?.ResetRecordedRasterPassCount();
+        }
+
+        private void ResetQueuedPassCounts()
+        {
+            lastQueuedPreBloomPassCount = 0;
+            lastQueuedBloomRasterPassCount = 0;
+            lastQueuedFinalCompositePassCount = 0;
+            lastQueuedTotalRasterPassCount = 0;
         }
 
         private static void AppendMissingRuntimeResource(StringBuilder builder, bool isMissing, string message)

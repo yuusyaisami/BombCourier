@@ -15,6 +15,9 @@ namespace BC.Base
         [SerializeField] private ParticleSystem respawnEffectPrefab; // スポーン(またはリスポーン)したときの演出
         [SerializeField] private PlayerRagdollControllerMB ragdollController;
         [SerializeField] private PlayerMoveController moveController;
+
+        public PlayerRagdollControllerMB RagdollController => ragdollController;
+        public PlayerMoveController MoveController => moveController;
         private void Reset()
         {
             ragdollController = GetComponentInChildren<PlayerRagdollControllerMB>();

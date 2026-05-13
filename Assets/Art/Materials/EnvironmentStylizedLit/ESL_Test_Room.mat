@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ESL_Test_Room
+  m_Shader: {fileID: 4800000, guid: accc8418cdf94873ba854349a7ac29ba, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 5247f3d3d5dc4f42955fd01cd4a44f52, type: 3}
+        m_Scale: {x: 2, y: 2}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 2800000, guid: cf34c683fd4d4f34ac8a2f7f90eb20b9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: 1736b83951e147878ac6c88e9f286184, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 2800000, guid: 853d94af512744079219a34e9e05542e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _BandContrast: 1
+    - _BandOffset: 0
+    - _Cull: 1
+    - _Cutoff: 0.5
+    - _DebugView: 0
+    - _EmissionStrength: 0.35
+    - _LightStepCount: 3
+    - _LightStepSmoothness: 0.08
+    - _Metallic: 0
+    - _NormalScale: 1
+    - _OcclusionStrength: 1
+    - _ShadowColorBlend: 0.75
+    - _ShadowInfluence: 1
+    - _ShadowSoftFill: 0.3
+    - _Smoothness: 0.35
+    - _WrapLighting: 0.15
+    m_Colors:
+    - _BaseColor: {r: 0.92, g: 0.96, b: 1, a: 1}
+    - _DeepShadowColor: {r: 0.33999997, g: 0.39999998, b: 0.56, a: 1}
+    - _EmissionColor: {r: 0.3, g: 0.75, b: 1, a: 1}
+    - _HighlightColor: {r: 1, g: 0.97999996, b: 0.94, a: 1}
+    - _LightColor: {r: 1, g: 0.96, b: 0.9, a: 1}
+    - _MidColor: {r: 0.8399999, g: 0.88, b: 0.93, a: 1}
+    - _ShadowColor: {r: 0.56, g: 0.63, b: 0.78999996, a: 1}
+    - _SpecularColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

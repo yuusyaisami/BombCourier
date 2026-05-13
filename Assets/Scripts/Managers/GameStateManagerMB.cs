@@ -11,6 +11,7 @@ namespace BC.Manager
         SetupPlaying,
         FusePlaying,
         Exploded, // 爆弾が爆発した状態。プレイヤーはこの状態になったときにリロードを促すUIを表示する。
+        Goaling, // ゴールに到達した状態。プレイヤーはこの状態になったときにステージクリアのUIを表示する。
         StageClear,
         Reload,
         GameOver // 爆弾爆発

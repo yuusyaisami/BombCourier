@@ -6,7 +6,7 @@ AvatarMask:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: NezumiAvatarMask
+  m_Name: NezumiUpperAvatarMask
   m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
   m_Elements:
   - m_Path: 
@@ -20,7 +20,7 @@ AvatarMask:
   - m_Path: Armature/Root
     m_Weight: 0
   - m_Path: Armature/Root/Spine
-    m_Weight: 1
+    m_Weight: 0
   - m_Path: Armature/Root/Spine/Arm.L
     m_Weight: 1
   - m_Path: Armature/Root/Spine/Arm.L/Arm2.L

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using BC.Bomb;
+using BC.Gimmick;
 using BC.Stage;
 using BombCourier.CameraIntro;
 using Cysharp.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace BC.Manager
         public List<BombMB> bombs; // ステージ内の爆弾のリスト
         public List<PlayerSpawnPointMB> spawnPoints; // ステージ内のプレイヤースポーンポイントのリスト
         public IntroCameraPathAuthoring introCameraPath; // イントロカメラのパス 
+        public GoalData goalData; // ゴールのデータ
         public GameObject stageInstance; // ステージのインスタンス
     }
     public class StageManagerMB : MonoBehaviour
@@ -62,6 +64,7 @@ namespace BC.Manager
                 bombs = bombs,
                 spawnPoints = spawnPoints,
                 introCameraPath = introCameraPath,
+                goalData = stageInstance.GetComponentInChildren<BreakableGateObjectMB>()?.GoalData,
                 stageInstance = stageInstance
             };
         }

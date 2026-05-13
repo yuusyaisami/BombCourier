@@ -19,7 +19,6 @@ namespace BC.Base
     public sealed class EntityMB : MonoBehaviour
     {
         [FormerlySerializedAs("tag")]
-        [SerializeField, HideInInspector] private EntityTagId legacyTag;
         [SerializeField, InspectorName("Tag"), EntityTagDropdown] private EntityTagReference tagReference;
         [SerializeField] private EntityFlags flags = EntityFlags.None;
         [SerializeField] private EntityRegistrationMode registrationMode = EntityRegistrationMode.ScenePlaced;
@@ -27,7 +26,7 @@ namespace BC.Base
 
 
         public EntityRef Entity { get; private set; }
-        public EntityTagId Tag => tagReference.IsAssigned ? tagReference.Id : legacyTag;
+        public EntityTagId Tag => tagReference.IsAssigned ? tagReference.Id : default;
         public EntityTagReference TagReference => tagReference;
         public EntityRegistrationMode RegistrationMode => registrationMode;
         public EntityFlags Flags => flags;

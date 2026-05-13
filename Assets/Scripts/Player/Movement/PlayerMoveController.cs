@@ -1,8 +1,11 @@
+using System;
 using BC.Base;
 using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick.Cushion;
 using BC.Manager;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -46,6 +49,7 @@ namespace BC.Base
         [Header("References")]
         [SerializeField] private Rigidbody playerRigidbody;
         [SerializeField] private CapsuleCollider playerCollider;
+
         [SerializeField] private Transform modelRoot;
         [SerializeField] private MonoBehaviour cameraControllerSource;
 
@@ -116,7 +120,6 @@ namespace BC.Base
         private const float StepAssistSurfaceSkin = 0.02f;
         private const float StepAssistWallMaxUpDot = 0.25f;
         private const float StepAssistMinApproachDot = 0.2f;
-
         private readonly RaycastHit[] groundHits = new RaycastHit[MaxGroundHits];
         private readonly Collider[] stepOverlapHits = new Collider[MaxStepOverlapHits];
 
@@ -150,6 +153,14 @@ namespace BC.Base
         private Vector3 preservedVelocityWhenLocked;
         private float nextCushionImpactTime;
         private bool IsReceiveBombImpact;
+
+        private CancellationTokenSource activeAutoMoveCancellationTokenSource;
+        private Vector3 autoMoveTargetPosition;
+        private float autoMoveArrivalDistanceSqr;
+        private bool autoMoveActive;
+        private bool autoMoveReachedTarget;
+
+        private const float AutoMoveStopSpeedSqr = 0.01f;
 
         public Vector3 PlanarVelocity => planarVelocity;
         public float VerticalVelocity => verticalVelocity;
@@ -209,6 +220,7 @@ namespace BC.Base
             moveInputAction?.action?.Disable();
             jumpInputAction?.action?.Disable();
             sprintInputAction?.action?.Disable();
+            CancelAutoMove();
         }
 
         private void Update()
@@ -247,6 +259,14 @@ namespace BC.Base
 
         private void ReadInput(float dt)
         {
+            if (autoMoveActive)
+            {
+                moveInput = Vector2.zero;
+                sprintHeld = false;
+                jumpBufferCounter = 0.0f;
+                return;
+            }
+
             bool canReceiveInput = CanReceiveMoveInput();
 
             if (canReceiveInput && moveInputAction != null && moveInputAction.action != null)
@@ -317,7 +337,7 @@ namespace BC.Base
 
         private void UpdatePlanarVelocity(float dt, bool isGrounded)
         {
-            Vector3 desiredDirection = BuildCameraRelativeMoveDirection(moveInput);
+            Vector3 desiredDirection = GetDesiredMoveDirection();
             bool hasMoveInput = desiredDirection.sqrMagnitude > 0.0001f;
 
             float moveSpeed = GetMoveBaseSpeed(fallbackMoveSpeed);
@@ -354,6 +374,9 @@ namespace BC.Base
             }
 
             planarVelocity = Vector3.MoveTowards(planarVelocity, desiredVelocity, acceleration * dt);
+
+            if (autoMoveActive && autoMoveReachedTarget && planarVelocity.sqrMagnitude <= AutoMoveStopSpeedSqr)
+                CompleteAutoMoveTarget();
 
             if (!isGrounded)
             {
@@ -859,7 +882,7 @@ namespace BC.Base
             if (!canStep)
                 return false;
 
-            Vector3 moveDirection = BuildCameraRelativeMoveDirection(moveInput);
+            Vector3 moveDirection = GetDesiredMoveDirection();
             Vector3 horizontalVelocity = bodyVelocity;
             horizontalVelocity.y = 0.0f;
 
@@ -953,6 +976,128 @@ namespace BC.Base
                 verticalVelocity = groundedStickVelocity;
 
             return true;
+        }
+
+        public override async UniTask<bool> MoveToAsync(Vector3 targetPosition, float arriveDistance = 0.1f, CancellationToken cancellationToken = default)
+        {
+            if (IsAlreadyAtAutoMoveTarget(targetPosition, arriveDistance))
+                return true;
+
+            if (!CanStartAutoMove())
+                return false;
+
+            CancellationTokenSource autoMoveCancellationTokenSource = BeginNewAutoMove();
+            CancellationTokenSource linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                autoMoveCancellationTokenSource.Token);
+            bool reachedTarget = false;
+
+            try
+            {
+                autoMoveTargetPosition = targetPosition;
+                autoMoveArrivalDistanceSqr = Mathf.Max(0.0001f, arriveDistance * arriveDistance);
+                autoMoveReachedTarget = false;
+                autoMoveActive = true;
+
+                await UniTask.WaitUntil(() => !autoMoveActive, PlayerLoopTiming.Update, linkedCancellationTokenSource.Token);
+                reachedTarget = autoMoveReachedTarget;
+            }
+            catch (OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested)
+            {
+                return false;
+            }
+            finally
+            {
+                if (ReferenceEquals(activeAutoMoveCancellationTokenSource, autoMoveCancellationTokenSource))
+                {
+                    activeAutoMoveCancellationTokenSource = null;
+                    autoMoveActive = false;
+                    autoMoveReachedTarget = false;
+                }
+
+                CompleteAutoMove(autoMoveCancellationTokenSource);
+                linkedCancellationTokenSource.Dispose();
+            }
+
+            return reachedTarget;
+        }
+
+        public void CancelAutoMove()
+        {
+            if (activeAutoMoveCancellationTokenSource != null)
+                activeAutoMoveCancellationTokenSource.Cancel();
+
+            autoMoveActive = false;
+            autoMoveReachedTarget = false;
+        }
+
+        private bool CanStartAutoMove()
+        {
+            return IsRuntimeReady &&
+                   playerRigidbody != null &&
+                   playerCollider != null &&
+                   !motionLocked &&
+                   !IsReceiveBombImpact &&
+                   CanReceiveMoveInput();
+        }
+
+        private bool IsAlreadyAtAutoMoveTarget(Vector3 targetPosition, float arriveDistance)
+        {
+            if (playerRigidbody == null)
+                return false;
+
+            Vector3 toTarget = targetPosition - playerRigidbody.position;
+            toTarget.y = 0.0f;
+
+            return toTarget.sqrMagnitude <= Mathf.Max(0.0001f, arriveDistance * arriveDistance);
+        }
+
+        private Vector3 GetDesiredMoveDirection()
+        {
+            if (autoMoveActive)
+                return BuildAutoMoveDirection();
+
+            return BuildCameraRelativeMoveDirection(moveInput);
+        }
+
+        private Vector3 BuildAutoMoveDirection()
+        {
+            if (playerRigidbody == null)
+                return Vector3.zero;
+
+            Vector3 toTarget = autoMoveTargetPosition - playerRigidbody.position;
+            toTarget.y = 0.0f;
+
+            autoMoveReachedTarget = toTarget.sqrMagnitude <= autoMoveArrivalDistanceSqr;
+
+            if (autoMoveReachedTarget)
+            {
+                return Vector3.zero;
+            }
+
+            return toTarget.normalized;
+        }
+
+        private CancellationTokenSource BeginNewAutoMove()
+        {
+            if (activeAutoMoveCancellationTokenSource != null)
+                activeAutoMoveCancellationTokenSource.Cancel();
+
+            activeAutoMoveCancellationTokenSource = new CancellationTokenSource();
+            return activeAutoMoveCancellationTokenSource;
+        }
+
+        private void CompleteAutoMove(CancellationTokenSource autoMoveCancellationTokenSource)
+        {
+            if (ReferenceEquals(activeAutoMoveCancellationTokenSource, autoMoveCancellationTokenSource))
+                activeAutoMoveCancellationTokenSource = null;
+
+            autoMoveCancellationTokenSource.Dispose();
+        }
+
+        private void CompleteAutoMoveTarget()
+        {
+            autoMoveActive = false;
         }
 
         private bool CanOccupyCapsule(Vector3 bodyPosition, float candidateFeetY)

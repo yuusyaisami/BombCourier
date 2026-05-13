@@ -1041,8 +1041,10 @@ BombCourier の現行実装では以下を採用する。
 
 ```text
 - PC_Renderer は ToyDiorama を有効化した renderer を canonical とする
+- PC_Renderer では Force Low Quality Tier を無効のまま維持する
 - Mobile_Renderer は ToyDiorama を有効化した supported fallback renderer とする
 - Mobile_Renderer では Force Low Quality Tier を有効にし、MobileOptimized preset を基準にする
+- renderer policy 違反は build validator で停止する
 - legacy PS2 FullScreenPass は canonical renderer では無効のまま保持する
 - SampleScene の Screen Space UI は Screen Space Overlay を維持する
 - Screen Space Camera UI が必要になった場合は ToyDiorama 後段の UI camera に分離する

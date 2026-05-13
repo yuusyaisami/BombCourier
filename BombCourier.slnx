@@ -1,6 +1,7 @@
 ﻿<Solution>
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="BombCourier.EnvironmentStylizedLit.EditorTests.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.Editor.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.PlayModeTests.csproj" />

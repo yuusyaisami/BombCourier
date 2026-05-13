@@ -1,0 +1,503 @@
+
+> BC.Rendering.EnvironmentStylizedLitValidationBootstrapper.BootstrapM7ValidationAssets
+  -logFile
+  Logs\m7_bootstrap.log
+  -quit
+  Successfully changed project path to: C:\Users\macar\BombCourier
+  C:/Users/macar/BombCourier
+  [UnityMemory] Configuration Parameters - Can be set up in boot.config
+      "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+      "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+      "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+      "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+      "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+      "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+      "memorysetup-temp-allocator-size-audio-worker=65536"
+      "memorysetup-temp-allocator-size-cloud-worker=32768"
+      "memorysetup-temp-allocator-size-gfx=262144"
+      "memorysetup-temp-allocator-size-preload-manager=33554432"
+      "memorysetup-temp-allocator-size-job-worker=262144"
+      "memorysetup-temp-allocator-size-background-worker=32768"
+      "memorysetup-allocator-temp-initial-block-size-main=262144"
+      "memorysetup-allocator-temp-initial-block-size-worker=262144"
+      "memorysetup-bucket-allocator-granularity=16"
+      "memorysetup-bucket-allocator-bucket-count=8"
+      "memorysetup-bucket-allocator-block-size=33554432"
+      "memorysetup-bucket-allocator-block-count=8"
+      "memorysetup-main-allocator-block-size=16777216"
+      "memorysetup-thread-allocator-block-size=16777216"
+      "memorysetup-gfx-main-allocator-block-size=16777216"
+      "memorysetup-gfx-thread-allocator-block-size=16777216"
+      "memorysetup-cache-allocator-block-size=4194304"
+      "memorysetup-typetree-allocator-block-size=2097152"
+      "memorysetup-profiler-bucket-allocator-granularity=16"
+      "memorysetup-profiler-bucket-allocator-bucket-count=8"
+      "memorysetup-profiler-bucket-allocator-block-size=33554432"
+      "memorysetup-profiler-bucket-allocator-block-count=8"
+      "memorysetup-profiler-allocator-block-size=16777216"
+      "memorysetup-profiler-editor-allocator-block-size=1048576"
+      "memorysetup-temp-allocator-size-main=16777216"
+      "memorysetup-job-temp-allocator-block-size=2097152"
+      "memorysetup-job-temp-allocator-block-size-background=1048576"
+      "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+  Player connection [12496]  Target information:
+  
+  Player connection [12496]  * "[IP] 192.168.11.12 [Port] 55504 [Flags] 2 [Guid] 3956626338 [EditorId] 3956626338 [Version] 1048832 [Id] WindowsEditor(7,yuusya) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+  
+  Player connection [12496]  * "[IP] 192.168.56.1 [Port] 55504 [Flags] 2 [Guid] 3956626338 [EditorId] 3956626338 [Version] 1048832 [Id] WindowsEditor(7,yuusya) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+  
+  Player connection [12496] Host joined multi-casting on [225.0.0.222:54997]...
+  Player connection [12496] Host joined alternative multi-casting on [225.0.0.222:34997]...
+  Input System module state changed to: Initialized.
+  [Physics::Module] Initialized fallback backend.
+  [Physics::Module] Id: 0xdecafbad
+  [Package Manager] Connected to IPC stream "Upm-44332" after 0.5 seconds.
+  [Licensing::Module] Licensing is not yet initialized.
+  [Licensing::Client] Error: HandshakeResponse reported an error:
+  	ResponseCode: 505
+  	ResponseStatus: Unsupported protocol version '1.18.1'.
+  [Licensing::Module] Error: Failed to handshake to channel: "LicenseClient-macar"
+  [Licensing::IpcConnector] LicenseClient-macar channel disconnected successfully.
+  [Licensing::IpcConnector] Channel LicenseClient-macar-6000.4.6 doesn't exist
+  [Licensing::Module] Successfully launched the LicensingClient (PId: 43436)
+  [Licensing::IpcConnector] Successfully connected to: "LicenseClient-macar-6000.4.6" at "2026-05-12T23:51:34.5765633Z"
+  [Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 43436, path: "C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+  [Licensing::Module] LicensingClient has failed validation; ignoring
+  [Licensing::Client] Handshaking with LicensingClient:
+    Version:                 1.18.1+9fbee8e
+    Session Id:              c30012182163409a843c20e8c3b97254
+    Correlation Id:          d14321e3032dc02e97dae22a21b7d903
+    External correlation Id: 3435619971820292191
+    Machine Id:              wZy5JA3FomZqDA6xOB5B4r6W+BE=
+  [Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-macar-6000.4.6" (connect: 0.57s, validation: 0.35s, handshake: 0.02s)
+  [Licensing::IpcConnector] Successfully connected to: "LicenseClient-macar-6000.4.6-notifications" at "2026-05-12T23:51:34.9456543Z"
+  [Licensing::Module] Connected to LicensingClient (PId: 43436, launch time: 0.01, total connection time: 0.93s)
+  [Licensing::Module] Error: Access token is unavailable; failed to update
+  [Licensing::Client] Successfully resolved entitlement details
+  [Licensing::Module] License group:
+    Id: 15668192204198-UnityPersXXXX
+    Product: Unity Personal
+    Type: Assigned
+    Expiration: Unlimited
+  [Licensing::Client] Successfully updated license, isAsync: True, time: 0.02
+  [Licensing::Client] Successfully resolved entitlement details
+  [Licensing::Module] Licensing Background thread has ended after 4.51s
+  [Licensing::Module] Licensing is initialized (took 3.64s).
+  [Licensing::Client] Successfully resolved entitlement details
+  Library Redirect Path: Library/
+  [Physics::Module] Selected backend.
+  [Physics::Module] Name: PhysX
+  [Physics::Module] Id: 0xf2b8ea05
+  [Physics::Module] SDK Version: 4.1.2
+  [Physics::Module] Integration Version: 1.0.0
+  [Physics::Module] Threading Mode: Multi-Threaded
+  Initialize engine version: 6000.4.6f1 (0b051c2e5d54)
+  [Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/Resources/UnitySubsystems
+  [Subsystems] Discovering subsystems at path C:/Users/macar/BombCourier/Assets
+  GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+  Direct3D:
+      Version:  Direct3D 11.0 [level 11.1]
+      Renderer: NVIDIA GeForce RTX 3060 (ID=0x2503)
+      Vendor:   NVIDIA
+      VRAM:     12113 MB
+      Driver:   32.0.15.9636
+  Initialize mono
+  Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/Managed'
+  Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+  Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/MonoBleedingEdge/etc'
+  Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56332
+  CodeReloadManager initialized
+  Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+  Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+  ImportWorker Server TCP listen port: 0
+  AcceleratorClientConnectionCallback - disconnected - :0
+  Begin MonoManager ReloadAssembly
+  Registering precompiled unity dll's ...
+  Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+  Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+  [Licensing::Client] Successfully resolved entitlement details
+  Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/PlaybackEngines/MetroSupport/UnityEditor.UWP.Extensions.dll
+  [Licensing::Client] Successfully resolved entitlement details
+  Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+  Registered in 0.013929 seconds.
+  Native extension for Android target not found
+  Native extension for UWP target not found
+  Native extension for WindowsStandalone target not found
+  Native extension for WebGL target not found
+  Package Manager log level set to [2]
+  ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+  Mono: successfully reloaded assembly
+  - Finished resetting the current domain, in  0.696 seconds
+  Domain Reload Profiling: 1498ms
+  	BeginReloadAssembly (203ms)
+  		CreateAndSetChildDomain (13ms)
+  	RebuildCommonClasses (68ms)
+  	RebuildNativeTypeToScriptingClass (28ms)
+  	initialDomainReloadingComplete (119ms)
+  	LoadAllAssembliesAndSetupDomain (380ms)
+  		LoadAssemblies (186ms)
+  		AnalyzeDomain (364ms)
+  			TypeCache.Refresh (362ms)
+  				TypeCache.ScanAssembly (335ms)
+  	FinalizeReload (699ms)
+  		SetupLoadedEditorAssemblies (0ms)
+  			InitializePlatformSupportModulesInManaged (90ms)
+  			BeforeProcessingInitializeOnLoad (151ms)
+  			ProcessInitializeOnLoadAttributes (197ms)
+  			ProcessInitializeOnLoadMethodAttributes (158ms)
+  [Licensing::Client] Successfully resolved entitlement details
+  Application.AssetDatabase Initial Refresh Start
+  [Package Manager] Restoring resolved packages state from cache
+  [Licensing::Client] Successfully resolved entitlement details
+  [Package Manager] Registered 63 packages:
+    Packages from [https://packages.unity.com]:
+      com.unity.ai.navigation@2.0.12 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.ai.navigation@734c2c4c5591)
+      com.unity.cinemachine@3.1.6 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.cinemachine@285f38545487)
+      com.unity.collab-proxy@2.12.4 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.collab-proxy@0b1559bcd34e)
+      com.unity.ide.rider@3.0.39 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.ide.rider@4504839d03f7)
+      com.unity.ide.visualstudio@2.0.27 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.ide.visualstudio@dc1ddd4f09b6)
+      com.unity.inputsystem@1.19.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.inputsystem@21a28c3a6c83)
+      com.unity.probuilder@6.0.9 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.probuilder@1f279ab829b7)
+      com.unity.timeline@1.8.12 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.timeline@8cd8509afae5)
+      com.unity.visualscripting@1.9.11 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.visualscripting@8bed5ad90189)
+      com.unity.settings-manager@2.1.1 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.settings-manager@0b8638c5ce86)
+      com.unity.splines@2.8.4 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.splines@9b00833aca09)
+      com.unity.searcher@4.9.4 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.searcher@d45a78918735)
+      com.unity.burst@1.8.29 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.burst@6bb9aca3ef38)
+      com.unity.mathematics@1.3.3 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.mathematics@19a9377c4ffa)
+      com.unity.nuget.mono-cecil@1.11.6 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+      com.unity.test-framework.performance@3.4.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.test-framework.performance@aa81a99c4a75)
+    Built-in packages:
+      com.unity.2d.sprite@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.2d.sprite@929df5adbb1f)
+      com.unity.multiplayer.center@1.0.1 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.multiplayer.center@f01f4ba8d00a)
+      com.unity.render-pipelines.universal@17.4.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.render-pipelines.universal@0d0659f1368d)
+      com.unity.test-framework@1.6.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.test-framework@76560ee600cb)
+      com.unity.ugui@2.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.ugui@473409526770)
+      com.unity.modules.accessibility@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.accessibility)
+      com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.adaptiveperformance)
+      com.unity.modules.ai@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.ai)
+      com.unity.modules.androidjni@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.androidjni)
+      com.unity.modules.animation@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.animation)
+      com.unity.modules.assetbundle@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.assetbundle)
+      com.unity.modules.audio@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.audio)
+      com.unity.modules.cloth@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.cloth)
+      com.unity.modules.director@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.director)
+      com.unity.modules.imageconversion@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.imageconversion)
+      com.unity.modules.imgui@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.imgui)
+      com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.jsonserialize)
+      com.unity.modules.particlesystem@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.particlesystem)
+      com.unity.modules.physics@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.physics)
+      com.unity.modules.physics2d@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.physics2d)
+      com.unity.modules.screencapture@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.screencapture)
+      com.unity.modules.terrain@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.terrain)
+      com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.terrainphysics)
+      com.unity.modules.tilemap@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.tilemap)
+      com.unity.modules.ui@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.ui)
+      com.unity.modules.uielements@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.uielements)
+      com.unity.modules.umbra@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.umbra)
+      com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.unityanalytics)
+      com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.unitywebrequest)
+      com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+      com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+      com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+      com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+      com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.vectorgraphics)
+      com.unity.modules.vehicles@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.vehicles)
+      com.unity.modules.video@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.video)
+      com.unity.modules.vr@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.vr)
+      com.unity.modules.wind@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.wind)
+      com.unity.modules.xr@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.xr)
+      com.unity.modules.subsystems@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.subsystems)
+      com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.modules.hierarchycore)
+      com.unity.ext.nunit@2.0.5 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+      com.unity.render-pipelines.core@17.4.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.render-pipelines.core@630143bbfe2b)
+      com.unity.shadergraph@17.4.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.shadergraph@04a6ef07359e)
+      com.unity.render-pipelines.universal-config@17.4.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.render-pipelines.universal-config@0db4263b9e6b)
+      com.unity.collections@6.4.0 (location: C:\Users\macar\BombCourier\Library\PackageCache\com.unity.collections@65f499a3cc26)
+    Git packages:
+      com.cysharp.unitask@https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask (location: C:\Users\macar\BombCourier\Library\PackageCache\com.cysharp.unitask@ad5ed25e82a3)
+  [Subsystems] No new subsystems found in resolved package list.
+  [Package Manager] Done registering packages in 0.03 seconds
+  Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
+  Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
+  [ScriptCompilation] Requested script compilation because: AssetDatabase observed changes in script compilation related files
+  Starting: C:\Program Files\Unity\Hub\Editor\6000.4.6f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+  WorkingDir: C:/Users/macar/BombCourier
+  DisplayProgressbar: Compiling Scripts
+  Starting: C:\Program Files\Unity\Hub\Editor\6000.4.6f1\Editor\Data\netcorerun\netcorerun.exe "C:\Program Files\Unity\Hub\Editor\6000.4.6f1\Editor\Data\Tools\BuildPipeline\ScriptCompilationBuildProgram.exe" "Library/Bee/1900b0aE.dag.json" "Library/Bee/1900b0aE-inputdata.json" "Library\Bee\buildprogram0.traceevents"
+  WorkingDir: C:/Users/macar/BombCourier
+  ExitCode: 4 Duration: 3s847ms
+  Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1900b0aE-inputdata.json
+  [ 912/1184  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+  [ 913/1184  3s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+  *** Tundra requires additional run (3.79 seconds), 2 items updated, 911 evaluated
+  ExitCode: 0 Duration: 2s437ms
+  Starting: C:\Program Files\Unity\Hub\Editor\6000.4.6f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --dagfilejson="Library\Bee\1900b0aE.dag.json" --profile="Library/Bee/backend2.traceevents" ScriptAssemblies
+  WorkingDir: C:/Users/macar/BombCourier
+  ExitCode: 0 Duration: 4s203ms
+  Finished compiling graph: 1188 nodes, 23566 flattened edges (19520 ToBuild, 192 ToUse), maximum node priority 1310
+  [ 630/1184  0s] WriteText Library/Bee/artifacts/1900b0aE.dag/BombCourier.EnvironmentStylizedLit.EditorTests.rsp
+  [ 912/1184  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+  [1177/1184  0s] Csc Library/Bee/artifacts/1900b0aE.dag/BombCourier.EnvironmentStylizedLit.EditorTests.dll (+2 others)
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM3ValidationTests.cs(106,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM3ValidationTests.cs(110,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM4ValidationTests.cs(133,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM4ValidationTests.cs(137,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM5ValidationTests.cs(130,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM5ValidationTests.cs(134,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM7ValidationTests.cs(160,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM6ValidationTests.cs(161,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM7ValidationTests.cs(164,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM6ValidationTests.cs(165,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  [1178/1184  0s] ILPostProcess Library/Bee/artifacts/1900b0aE.dag/post-processed/BombCourier.EnvironmentStylizedLit.EditorTests.dll (+pdb)
+  Processing assembly Library/Bee/artifacts/1900b0aE.dag/BombCourier.EnvironmentStylizedLit.EditorTests.dll, with 142 defines and 276 references
+  
+  processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+  
+  running Unity.Jobs.CodeGen.JobsILPostProcessor
+  
+  running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+  [1179/1184  1s] ILPostProcess Library/Bee/artifacts/1900b0aE.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+  Processing assembly Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll, with 142 defines and 372 references
+  
+  processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+  
+  running Unity.Jobs.CodeGen.JobsILPostProcessor
+  
+  running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+  [1180/1184  0s] CopyFiles Library/ScriptAssemblies/BombCourier.EnvironmentStylizedLit.EditorTests.pdb
+  [1181/1184  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+  [1182/1184  0s] CopyFiles Library/ScriptAssemblies/BombCourier.EnvironmentStylizedLit.EditorTests.dll
+  [1183/1184  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+  *** Tundra build success (4.16 seconds), 9 items updated, 1184 evaluated
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM3ValidationTests.cs(106,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM3ValidationTests.cs(110,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM4ValidationTests.cs(133,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM4ValidationTests.cs(137,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM5ValidationTests.cs(130,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM5ValidationTests.cs(134,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM7ValidationTests.cs(160,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM6ValidationTests.cs(161,33): warning CS0618: 'ShaderUtil.GetPropertyCount(Shader)' is obsolete: 'Use Shader.GetPropertyCount instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM7ValidationTests.cs(164,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  Assets\Tests\EditMode\EnvironmentStylizedLit\EnvironmentStylizedLitM6ValidationTests.cs(165,21): warning CS0618: 'ShaderUtil.GetPropertyName(Shader, int)' is obsolete: 'Use Shader.GetPropertyName instead.'
+  AssetDatabase: script compilation time: 11.152742s
+  Begin MonoManager ReloadAssembly
+  Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
+  Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
+  Assembly DocCodeExamples.dll at Library/ScriptAssemblies/DocCodeExamples.dll not valid. Loading of assembly skipped.
+  Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
+  Assembly Unity.2D.Sprite.Package.EditorTests.dll at Library/ScriptAssemblies/Unity.2D.Sprite.Package.EditorTests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Collections.BurstCompatibilityGen.dll at Library/ScriptAssemblies/Unity.Collections.BurstCompatibilityGen.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Collections.DocCodeSamples.dll at Library/ScriptAssemblies/Unity.Collections.DocCodeSamples.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Collections.PerformanceTests.dll at Library/ScriptAssemblies/Unity.Collections.PerformanceTests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Collections.Tests.dll at Library/ScriptAssemblies/Unity.Collections.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Collections.Tests.Playmode.dll at Library/ScriptAssemblies/Unity.Collections.Tests.Playmode.dll not valid. Loading of assembly skipped.
+  Assembly Unity.InputSystem.IntegrationTests.dll at Library/ScriptAssemblies/Unity.InputSystem.IntegrationTests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Mathematics.Tests.dll at Library/ScriptAssemblies/Unity.Mathematics.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Multiplayer.Center.Editor.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Editor.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Multiplayer.Center.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Nuget.Mono-Cecil.dll at Library/ScriptAssemblies/Unity.Nuget.Mono-Cecil.dll not valid. Loading of assembly skipped.
+  Assembly Unity.PathTracing.Editor.Tests.dll at Library/ScriptAssemblies/Unity.PathTracing.Editor.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.PathTracing.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.PathTracing.Runtime.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.RenderPipelines.Core.Editor.Tests.dll at Library/ScriptAssemblies/Unity.RenderPipelines.Core.Editor.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.RenderPipelines.Core.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.RenderPipelines.Universal.Config.Editor.Tests.dll at Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Config.Editor.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.RenderPipelines.Universal.Editor.Tests.dll at Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Editor.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.RenderPipelines.Universal.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Runtime.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Searcher.EditorTests.dll at Library/ScriptAssemblies/Unity.Searcher.EditorTests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.Settings.Tests.dll at Library/ScriptAssemblies/Unity.Settings.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.ShaderGraph.Editor.Tests.dll at Library/ScriptAssemblies/Unity.ShaderGraph.Editor.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.TextMeshPro.Editor.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Editor.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.TextMeshPro.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Tests.dll not valid. Loading of assembly skipped.
+  Assembly Unity.UnifiedRayTracing.Editor.Tests.dll at Library/ScriptAssemblies/Unity.UnifiedRayTracing.Editor.Tests.dll not valid. Loading of assembly skipped.
+  Assembly UnityEditor.UI.Common.Tests.dll at Library/ScriptAssemblies/UnityEditor.UI.Common.Tests.dll not valid. Loading of assembly skipped.
+  Assembly UnityEditor.UI.EditorTests.dll at Library/ScriptAssemblies/UnityEditor.UI.EditorTests.dll not valid. Loading of assembly skipped.
+  Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
+  'Packages/com.unity.cinemachine/Editor/Editors/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+  'Packages/com.unity.cinemachine/Editor/Obsolete/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+  Refreshing native plugins compatible for Editor in 3.22 ms, found 4 plugins.
+  Native extension for Android target not found
+  Native extension for UWP target not found
+  Native extension for WindowsStandalone target not found
+  Native extension for WebGL target not found
+  Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
+  Refreshing native plugins compatible for Editor in 2.51 ms, found 4 plugins.
+  [MODES] ModeService[none].Initialize
+  [MODES] ModeService[none].LoadModes
+  [MODES] Loading mode Default (0) for mode-current-id-BombCourier
+  ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+  Mono: successfully reloaded assembly
+  - Finished resetting the current domain, in  8.683 seconds
+  Domain Reload Profiling: 13224ms
+  	BeginReloadAssembly (494ms)
+  		DisableScriptedObjects (40ms)
+  		CreateAndSetChildDomain (186ms)
+  	RebuildCommonClasses (67ms)
+  	RebuildNativeTypeToScriptingClass (20ms)
+  	initialDomainReloadingComplete (2553ms)
+  	LoadAllAssembliesAndSetupDomain (1407ms)
+  		LoadAssemblies (884ms)
+  		AnalyzeDomain (709ms)
+  			TypeCache.Refresh (527ms)
+  				TypeCache.ScanAssembly (482ms)
+  			BuildScriptInfoCaches (150ms)
+  			ResolveRequiredComponents (29ms)
+  	FinalizeReload (8684ms)
+  		SetupLoadedEditorAssemblies (0ms)
+  			InitializePlatformSupportModulesInManaged (65ms)
+  			BeforeProcessingInitializeOnLoad (309ms)
+  			ProcessInitializeOnLoadAttributes (7084ms)
+  			ProcessInitializeOnLoadMethodAttributes (719ms)
+  			AfterProcessingInitializeOnLoad (29ms)
+  		AwakeInstancesAfterBackupRestoration (28ms)
+  Start importing Assets/Art/Shader/EnvironmentStylizedLit/HLSL/EnvironmentStylizedLit_Input.hlsl using Guid(10abba04af3f47619db5ab0f710bfd82) (ShaderIncludeImporter) -> (Import Result ID: '7be55d796e24f0a9d243eda69f4ce019') in 0.0150123 seconds [static dependencies only]. Details - ImportResultOutputID=04f604291b13abb9f77631e1b9dfe81f DependenciesID=24571148b0af4cd9df17718d138c8f16 StaticDependenciesID=85ff2e4bfa92c8997b1a2a604eb9d92c 
+  Start importing Assets/Art/Shader/EnvironmentStylizedLit/HLSL/EnvironmentStylizedLit_Debug.hlsl using Guid(5095b1529b1f47d3ad01e88e94b96488) (ShaderIncludeImporter) -> (Import Result ID: '8373f38c2d573115588e6f3710603769') in 0.0027272 seconds [static dependencies only]. Details - ImportResultOutputID=ce3135170de22fe2b952018533b76110 DependenciesID=59b5200ba84e4f5f34207588346ff9b0 StaticDependenciesID=2a60498d78cabfd7ed2432c4afc788ae 
+  Start importing Assets/Art/Shader/EnvironmentStylizedLit/HLSL/EnvironmentStylizedLit_Surface.hlsl using Guid(63481b10f7cb4188ab378c65c746a7a1) (ShaderIncludeImporter) -> (Import Result ID: 'd9a4b40344c8ba6e74b92766e5c642bc') in 0.0027377 seconds [static dependencies only]. Details - ImportResultOutputID=f222cc6d68d7c1efc9630d27e5abe029 DependenciesID=72b3bdd485fea451bb710db01bc912b4 StaticDependenciesID=6232ffb8240f42158881122cf0545c1f 
+  Start importing Assets/Art/Shader/EnvironmentStylizedLit/HLSL/EnvironmentStylizedLit_StylizedDiffuse.hlsl using Guid(34a2b5a2c4a541239503c7289f844f82) (ShaderIncludeImporter) -> (Import Result ID: 'a090075a3ef8ec54df3766b8aa441425') in 0.0052423 seconds [static dependencies only]. Details - ImportResultOutputID=4f39b6f5dbaf26addd5e42007780b1b0 DependenciesID=5ce3a7807f519ace76c540571ff6e48e StaticDependenciesID=c921338dad5d10bf9583e7f0e961feed 
+  Start importing Assets/Art/Shader/EnvironmentStylizedLit/HLSL/EnvironmentStylizedLit_Noise.hlsl using Guid(15fd571b3306433fb0601254aa420bec) (ShaderIncludeImporter) -> (Import Result ID: 'eb3543ce209fcb9b4b26ea77fc9721ca') in 0.0159302 seconds [static dependencies only]. Details - ImportResultOutputID=49be0d6523b411557847167cd07f1d89 DependenciesID=79ba029ef30e5a6bb2d4dabeb2744c65 StaticDependenciesID=01310bb6a902e2fbe9bdddfe0920e244 
+  Start importing Assets/Art/Shader/EnvironmentStylizedLit/HLSL/Passes/EnvironmentStylizedLit_ForwardLitPass.hlsl using Guid(285645ed364c4ea1b5ab1fe3a0626eb8) (ShaderIncludeImporter) -> (Import Result ID: '06ac6351c4ebe8e4914cb55096422efe') in 0.0031576 seconds [static dependencies only]. Details - ImportResultOutputID=ffbb2fa722dfe897a514893f434fc581 DependenciesID=fe1615219a4d149847d2164719dd3225 StaticDependenciesID=80898d66594cd3abd584455a1fab773c 
+  Start importing Assets/Art/Shader/EnvironmentStylizedLit/EnvironmentStylizedLit.shader using Guid(accc8418cdf94873ba854349a7ac29ba) (ShaderImporter)Launched and connected shader compiler UnityShaderCompiler.exe after 0.02 seconds
+   -> (Import Result ID: 'd947ec88dc5960d7ecb539bc5485f872') in 0.116496 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=55cf6498ca1ca564ae76ae2e5b93264e DependenciesID=30851e66bb65d46bc8aea2cc9d91976c StaticDependenciesID=350a4cc8a6c9327153643ebb8fa480e7 
+  Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceRays.urtshader using Guid(1142bbad8b9e8c44c83a9775ff120d37) (ScriptedImporter)
+  Compiling Ray Tracing Shader "TraceRays.urtshader", keywords = <no keywords>
+      finished in 0.01 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: 'cf7c04febc6be62fa93a9b4519d05eff') in 0.0291201 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=21e20c2f711ae19844630876d76b6f92 DependenciesID=aad2e6ef9dee815d799cb92e0a6b6775 StaticDependenciesID=b7859538b7c8061be2c1df0681a26cec 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/Lighting/SurfaceCache/RisEstimation.urtshader using Guid(713f6141bd66a134383b787f2eaa7c11) (ScriptedImporter)
+  Compiling Ray Tracing Shader "RisEstimation.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '1dd15efe1c4b83ea3528e7027e820fd4') in 0.0236385 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=a82b30921765b6b760edc18ae26da013 DependenciesID=f3b053af63b22507009114238d81f9c7 StaticDependenciesID=1251c416255850dca778d66927462604 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LightmapShadowMaskIntegration.urtshader using Guid(d19f4f8a13b6edb48b986a47ec96402e) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LightmapShadowMaskIntegration.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '1264b2a4a908397d4bb7c47aa92a8a25') in 0.0324432 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=9ddff4634ab63ac904d73e2405da4094 DependenciesID=ffc8722471d032207ad4475b198cdbdd StaticDependenciesID=dddefbaa39ba5d51a386df5433e82fa1 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LightmapGBufferDebug.urtshader using Guid(737a1597422c12547a8714d76a9406ec) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LightmapGBufferDebug.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: 'b35177ed952a51fc283df3159d44faaf') in 0.0232362 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=b679e100aa63bd47ce12189579d7bba5 DependenciesID=d5340e3f67ef7dbb5307a8b144a008af StaticDependenciesID=62194a0448f2b8616e1214fb593272db 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LightmapNormalIntegration.urtshader using Guid(1451d029813b192429211be28181beab) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LightmapNormalIntegration.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '823f5b41eabbf5eae9e8850e8b1f0a34') in 0.0197299 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=f5e78361ac1af9bf1d45dc9bbf4844d9 DependenciesID=e38c6a3e2ae63499c79d1ef6fd10e148 StaticDependenciesID=cbe3820d9825e61936c3967ec27e4e90 
+  Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/RenderingLayerMask/TraceRenderingLayerMask.urtshader using Guid(94a070d33e408384bafc1dea4a565df9) (ScriptedImporter)
+  Compiling Ray Tracing Shader "TraceRenderingLayerMask.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '19e1c1cd8ea8d38c44d891321b898df4') in 0.0167916 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=b96706131d2589dbb3905ceda1ae1132 DependenciesID=5e0890490b5ab135ca6a223d42bdfdaf StaticDependenciesID=83d03f1fcc976b11b697d3bab0b97d8c 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/Lighting/SurfaceCache/UniformEstimation.urtshader using Guid(94a39d12848d8d64ca962a72b74e7c50) (ScriptedImporter)
+  Compiling Ray Tracing Shader "UniformEstimation.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '59ec6aad33e75dcfd97087078b776b91') in 0.0161626 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=d38c271622dec39a1b5b288064f8e020 DependenciesID=f15628005f341703e44588dcd218e751 StaticDependenciesID=f100dc97879ef35876f7ad5427566dd9 
+  Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceTransparentRays.urtshader using Guid(6513c3b892e933c4f8d00c19d5c47532) (ScriptedImporter)
+  Compiling Ray Tracing Shader "TraceTransparentRays.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: 'd7d486e522e3a5cb2d50df80a312aef4') in 0.01085 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=8ef60b30aa3db6e9cbb0eb87f9cc877e DependenciesID=1a4ab7f03c6bb4e8662bb84ec03f26f1 StaticDependenciesID=5e41b194f27d8b70c797e75555e2b1f0 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LightmapIndirectIntegration.urtshader using Guid(7624adbeb148b5c48ab5ab660cc2602a) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LightmapIndirectIntegration.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: 'f49ae0a2a7320eedbddf6d02474736b8') in 0.0203594 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=9f5f5060319712817c904aa3ef07c0bd DependenciesID=d341bd1b77e0ae0fe960dbb21ec48ae7 StaticDependenciesID=6d19372de11b03798f093933090e79bb 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LightmapGBufferIntegration.urtshader using Guid(e9f4de6d1e07fb94f9a60d35b618f724) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LightmapGBufferIntegration.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '40074a96a3fe36c08698ce7b541bdcd0') in 0.0144688 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=55f9af736fe1398b3c119b3cf21774d0 DependenciesID=6ee5dcd734e1e05dbeaec9a80fa64fb1 StaticDependenciesID=66dc06979910318021783fcb4ccd3ecc 
+  Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/DynamicGI/DynamicGISkyOcclusion.urtshader using Guid(5a2a534753fbdb44e96c3c78b5a6999d) (ScriptedImporter)
+  Compiling Ray Tracing Shader "DynamicGISkyOcclusion.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: 'd8ded6dc5c3b04e91c062fec19c82a7c') in 0.0143128 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=322d7d8fa876f352ce0db697b476b038 DependenciesID=5490f389d8f71a38daa5f6d84f0aee4b StaticDependenciesID=18974378deb0e4fc540e6b2321b0ff13 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LightmapDirectIntegration.urtshader using Guid(5bbebdef5916845478fcef13fa10d89f) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LightmapDirectIntegration.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '7e27f8826a087acb9e8b0c854a1174b1') in 0.0204983 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=ee07de9a1cfd7d1ea55ee050bdcb2f50 DependenciesID=7785453c74c66faa210e906a7c38c941 StaticDependenciesID=63188f79534be5f4b9e074ad4af5bfb7 
+  Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceRaysAndFetchAttributes.urtshader using Guid(fbc59f55df2416344b008dc23753cae2) (ScriptedImporter)
+  Compiling Ray Tracing Shader "TraceRaysAndFetchAttributes.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '8e035d2af7af9aae17cd26d191149584') in 0.0115578 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=b6e2eae356b5970494320f97574c4741 DependenciesID=0d9bee40825d6072233e26e62a49e6ca StaticDependenciesID=aa8291e86ea82085a643681c1c779d39 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LightmapAOIntegration.urtshader using Guid(1c410815c01ce1d4d82c645c0cd45747) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LightmapAOIntegration.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '0ac6965b8f7c38236e998fbbd7c1923a') in 0.0197153 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=b56d9ee1f70afc1d3714cd131cd4f4fb DependenciesID=9ea87e46a631c828066b2ff9bb32bcaf StaticDependenciesID=bcaf3aac9727a2ca27155e619d011e5f 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/ProbeIntegrationValidity.urtshader using Guid(2c32233d92a2d0745930664c087c5c9a) (ScriptedImporter)
+  Compiling Ray Tracing Shader "ProbeIntegrationValidity.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: 'a8a23debe44577f90b5dec603a3fead9') in 0.0171544 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=004d617a6e19642074ae39fec2fdb46f DependenciesID=e7ca257ff36a7859dace051ddc6b714e StaticDependenciesID=4aea10376946a8225ccdfdec15a70dac 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LightmapValidityIntegration.urtshader using Guid(ace95ac84e213794891b4bd7c9b3c158) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LightmapValidityIntegration.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '3e6495cc74158fc089ac7348abc0990f') in 0.031408 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=4c92990546703840ab0731a3c78282bd DependenciesID=420f3851492d6d21991e571fd3b69f3b StaticDependenciesID=46d905dacc01197a8e043a8ad4f9d21d 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/Lighting/SurfaceCache/RestirCandidateTemporal.urtshader using Guid(ad3a9f9982f8c4f4a839a78955e78458) (ScriptedImporter)
+  Compiling Ray Tracing Shader "RestirCandidateTemporal.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: 'b2772b095459374b0ce32fe5c5282cd0') in 0.0167774 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=842b178c635807ad6ced256ed1ed845e DependenciesID=03f07e01f4507dcb3b560ca183144bb5 StaticDependenciesID=2beaac54fac463ee5ee15c00b0990d01 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/ProbeIntegrationIndirect.urtshader using Guid(5ecdabd800f05984696f22ba95284516) (ScriptedImporter)
+  Compiling Ray Tracing Shader "ProbeIntegrationIndirect.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '69c4b59316d985a619c749d3d1df2d13') in 0.0227973 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=864430e1d9c31d570729614a30b581fb DependenciesID=b466b7b315c94abec71b14dac194ba85 StaticDependenciesID=83ecbbd61911181b4944eb7ac9eabee5 
+  Start importing Packages/com.unity.render-pipelines.core/Tests/Runtime/PathTracing/PathIteratorTest.urtshader using Guid(6e0b547bab30a804c8123974120d583f) (ScriptedImporter)
+  Compiling Ray Tracing Shader "PathIteratorTest.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: 'cbaa7cf98b3fda79f881a754b07aea17') in 0.0251188 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=d563fb3c6214fd8cb4b04517cbbaee3c DependenciesID=03a825de69f655d44bbbd0af80de6114 StaticDependenciesID=cf2a33ce9b71ea08a4459556694e1323 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/LiveGI.urtshader using Guid(ceb7a31b84722d144bbeff1c8cd88769) (ScriptedImporter)
+  Compiling Ray Tracing Shader "LiveGI.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '2d4831187b3e64e39190dcf379c41fe6') in 0.0246669 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=65d555f817fadb95ff80352c8534f258 DependenciesID=626e06ace4e9f92250fabde5a394d4cb StaticDependenciesID=628001b751fe9fddf64a203b1446575e 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/ProbeIntegrationOcclusion.urtshader using Guid(de3013e16d99f2746ab1735ec06a660b) (ScriptedImporter)
+  Compiling Ray Tracing Shader "ProbeIntegrationOcclusion.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '3ab899dff91ff43fbf28ce3aef005ccc') in 0.0235232 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=675157276d5fff80627b160cb4bb03c8 DependenciesID=4124a28ec2a70f5622584573dc02e1cc StaticDependenciesID=183f3d853e4af89ec08f4e79696e167d 
+  Start importing Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Shaders/ProbeIntegrationDirect.urtshader using Guid(1f9bfe60b4ad75943a5281839c1a4e5c) (ScriptedImporter)
+  Compiling Ray Tracing Shader "ProbeIntegrationDirect.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '21bd43bf1c8d1b040a094f675b2a3e22') in 0.0219209 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=0f93da1bb307c2ba4ba0363c3a7bbb54 DependenciesID=e3269ad8286d5f398dfac79c87f58e6f StaticDependenciesID=d3f99f9cc1ae2c0c0147c2fa8da668fc 
+  Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/VirtualOffset/TraceVirtualOffset.urtshader using Guid(ff2cbab5da58bf04d82c5f34037ed123) (ScriptedImporter)
+  Compiling Ray Tracing Shader "TraceVirtualOffset.urtshader", keywords = <no keywords>
+      finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+   -> (Import Result ID: '0832d6c59b134a92ec4c8c2c488555ae') in 0.033218 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=87b1922dc5d16cf698da333183cb3f5e DependenciesID=70c9ad4e073348d2bce2fc548e38b16e StaticDependenciesID=f51ff46b48d84884c883ac486ebfd7f9 
+  Launched and connected shader compiler UnityShaderCompiler.exe after 0.03 seconds
+  Launched and connected shader compiler UnityShaderCompiler.exe after 0.02 seconds
+  Launched and connected shader compiler UnityShaderCompiler.exe after 0.04 seconds
+  Launched and connected shader compiler UnityShaderCompiler.exe after 0.04 seconds
+  Refreshing native plugins compatible for Editor in 3.41 ms, found 4 plugins.
+  (Values over 0.050ms)
+  Asset Pipeline Refresh (id=f4d4c5b4781dcb84eaa9cf755c13b04c): Total: 28.078 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+  	Summary:
+  		Imports: total=30 (actual=30, local cache=0, cache server=0)
+  		Asset DB Process Time: managed=8 ms, native=10363 ms
+  		Asset DB Callback time: managed=953 ms, native=933 ms
+  		Scripting: domain reloads=1, domain reload time=4553 ms, compile time=11156 ms, other=107 ms
+  		Project Asset Count: scripts=1668, non-scripts=3407
+  		Asset File Changes: new=1, changed=9, moved=0, deleted=0
+  		Scan Filter Count: 0
+  	InvokePackagesCallback: 42.560ms
+  	ApplyChangesToAssetFolders: 1.054ms
+  	Scan: 352.195ms
+  	OnSourceAssetsModified: 3.940ms
+  	CategorizeScriptCompilationAssets: 90.630ms
+  	ProcessAssetsWithTransientArtifactChanges: 183.509ms
+  	CategorizeAssets: 98.310ms
+  	CompileScripts: 11156.190ms
+  	ImportOutOfDateAssets: 9390.922ms (8700.698ms without children)
+  		ImportManagerImport: 685.596ms (3.884ms without children)
+  			UpdateCategorizedAssets: 2.942ms
+  		ReloadNativeAssets: 0.092ms
+  		UnloadImportedAssets: 1.897ms
+  		ReloadImportedAssets: 8.892ms
+  		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 1.957ms
+  		OnDemandSchedulerStart: 0.661ms
+  	PostProcessAllAssets: 1833.025ms
+  		ComputeShaderImportPostprocess 388.119ms
+  		RaytracingShaderImportPostprocess 290.699ms
+  		ShaderAssetModifiedCallback 195.942ms
+  		VCAutoAddAssetPostprocess 1.910ms
+  		XRBuildSystem.XRAssetImported 0.656ms
+  		VersionControlSettings.HiddenFilePostprocess 0.120ms
+  		PostProcessCallbackCreateDeferredMaterials 0.097ms
+  		BlockShaderImporter.PostprocessAllAssets 0.064ms
+  		SpeedTreeImporter.PostprocessAllAssets 0.062ms
+
