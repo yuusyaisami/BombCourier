@@ -21,10 +21,11 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: NezumiMaterial
-  m_Shader: {fileID: 4800000, guid: 6459b2db96a08ca41b0f9b39dc7ad59e, type: 3}
+  m_Shader: {fileID: 4800000, guid: accc8418cdf94873ba854349a7ac29ba, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
+  m_ValidKeywords: []
+  m_InvalidKeywords:
   - N_F_DDMD_ON
   - N_F_EAL_ON
   - N_F_O_ON
@@ -34,7 +35,6 @@ Material:
   - N_F_SS_ON
   - N_F_TRANSAFFSHA_ON
   - _UVSET_UV0
-  m_InvalidKeywords: []
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -162,15 +162,26 @@ Material:
     m_Floats:
     - _AAS: 0.0001
     - _AddPrecomputedVelocity: 0
+    - _AdditionalLightColorInfluence: 0.75
+    - _AdditionalLightIntensity: 0.5
+    - _AdditionalLightMode: 1
+    - _AdditionalLightShadowInfluence: 0.65
+    - _AlbedoNoiseStrength: 0.18
     - _AlpToCov: 0
     - _AlphaBaseCutout: 1
     - _AlphaClip: 0
     - _AlphaToMask: 0
+    - _AmbientStrength: 0.35
+    - _BandContrast: 1
+    - _BandOffset: 0
     - _BleModDest: 0
     - _BleModSour: 1
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
+    - _BounceStrength: 0.2
+    - _BounceWrap: 0.35
     - _BumpScale: 1
+    - _CavityStrength: 0.35
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ClipAdju: 0
@@ -182,6 +193,7 @@ Material:
     - _CustomLightDirectionIntensity: 0
     - _Cutoff: 0.5
     - _Cutout: 0.5
+    - _DebugView: 0
     - _DepthThreshold: 900
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
@@ -190,6 +202,9 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _DynamicNoisyOutline: 0
+    - _EdgeSheenPower: 2.5
+    - _EdgeSheenStrength: 0.15
+    - _EmissionStrength: 0
     - _EnvironmentReflections: 1
     - _EnvironmentalLightingIntensity: 1
     - _FarDistanceMaxWidth: 10
@@ -207,15 +222,21 @@ Material:
     - _GlossyReflections: 0
     - _Glow_Edge_Width: 1
     - _HighlightColorPower: 1
+    - _IndirectStrength: 1
+    - _IndirectStylizeStrength: 0.35
     - _LLI_Max: 1
     - _LLI_Min: 0
     - _LigIgnoYNorDir: 0
     - _LightAffectOutlineColor: 1
     - _LightAffectRimLightColor: 0
     - _LightAffectShadow: 0
+    - _LightBandNoiseScale: 0.75
+    - _LightBandNoiseStrength: 0.08
     - _LightFalloffAffectShadowT: 0
     - _LightFalloffSoftness: 1
     - _LightIntensity: 1
+    - _LightStepCount: 3
+    - _LightStepSmoothness: 0.08
     - _MCIALO: 0
     - _MCapIntensity: 1
     - _MVCOL: 0
@@ -266,10 +287,14 @@ Material:
     - _N_F_TP: 0
     - _NoiTexAffStraWidt: 0
     - _NoisTexInten: 1
+    - _NoiseDistanceFadeEnd: 32
+    - _NoiseDistanceFadeStart: 12
     - _NoiseSize: 100
+    - _NoiseSpace: 0
     - _NoisyOutlineIntensity: 1
     - _NorMapAsDis: 0
     - _NormalMapIntensity: 1
+    - _NormalScale: 1
     - _ObjePosiZCS: 0
     - _OcclusionStrength: 1
     - _Opacity: 1
@@ -316,8 +341,11 @@ Material:
     - _SelfShadowRealtimeShadowIntensity: 1
     - _SelfShadowShadowTAtViewDirection: 0
     - _SelfShadowThreshold: 0.968
+    - _ShadowColorBlend: 0.6
     - _ShadowColorTexturePower: 0
     - _ShadowHardness: 0
+    - _ShadowInfluence: 1
+    - _ShadowSoftFill: 0.2
     - _ShadowTColorPower: 1
     - _ShadowTHardness: 1
     - _ShadowTIntensity: 1
@@ -333,6 +361,10 @@ Material:
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _SpecularMode: 0
+    - _SpecularStepCount: 3
+    - _SpecularStepSmoothness: 0.1
+    - _SpecularStrength: 0.25
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _StraWidt: 10
@@ -349,25 +381,53 @@ Material:
     - _TransparentThreshold: 0
     - _TriPlaBlend: 4
     - _TriPlaTile: 1
+    - _TriplanarBaseMapEnabled: 0
+    - _TriplanarBlendSharpness: 4
+    - _TriplanarNoiseEnabled: 0
+    - _TriplanarNormalMapEnabled: 0
+    - _TriplanarScale: 1
     - _UVSet: 0
     - _UseSecondaryCutout: 0
     - _UseTLB: 0
+    - _VertexColorBandOffsetStrength: 1
     - _VertexColorBlueAffectOutlineWitdh: 0
+    - _VertexColorCavityStrength: 1
+    - _VertexColorColorVariationStrength: 1
+    - _VertexColorEnabled: 0
     - _VertexColorGreenControlSelfShadowThreshold: 0
     - _VertexColorRedControlSmoothObjectNormal: 0
     - _WorkflowMode: 1
+    - _WorldNoiseContrast: 1.25
+    - _WorldNoiseScale: 0.4
+    - _WorldNoiseStrength: 0.35
+    - _WorldYGradientEnabled: 0
+    - _WorldYGradientMax: 3
+    - _WorldYGradientMin: 0
+    - _WorldYGradientStrength: 0
+    - _WrapLighting: 0.15
     - _XRMotionVectorsPass: 1
     - _ZTest: 4
     - _ZWrite: 1
     m_Colors:
+    - _AmbientBottomColor: {r: 0.21999997, g: 0.19999996, b: 0.17999998, a: 1}
+    - _AmbientSideColor: {r: 0.33999997, g: 0.37999994, b: 0.45999992, a: 1}
+    - _AmbientTopColor: {r: 0.5, g: 0.56999993, b: 0.7, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BounceColor: {r: 0.92, g: 0.78, b: 0.62, a: 1}
+    - _BounceDirection: {r: 0, g: 1, b: 0, a: 0}
+    - _CavityColor: {r: 0.68, g: 0.73, b: 0.82, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _CustomLightDirection: {r: 0, g: 0, b: 10, a: 0}
+    - _DeepShadowColor: {r: 0.33999997, g: 0.39999998, b: 0.56, a: 1}
+    - _EdgeSheenColor: {r: 1, g: 0.96999997, b: 0.92, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GlossColor: {r: 1, g: 1, b: 1, a: 1}
     - _Glow_Color: {r: 1, g: 1, b: 1, a: 1}
     - _HighlightColor: {r: 1, g: 1, b: 1, a: 1}
+    - _IndirectShadowColor: {r: 0.72, g: 0.78, b: 0.88, a: 1}
+    - _LightColor: {r: 1, g: 0.96, b: 0.9, a: 1}
     - _MainColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MidColor: {r: 0.8399999, g: 0.88, b: 0.93, a: 1}
     - _ObjPosi: {r: 0, g: 0, b: 0, a: 0}
     - _ObjectForward: {r: 0, g: 0, b: 0, a: 0}
     - _ObjectRight: {r: 0, g: 0, b: 0, a: 0}
@@ -382,8 +442,12 @@ Material:
     - _SSAOColor: {r: 0, g: 0, b: 0, a: 0}
     - _SelfLitColor: {r: 1, g: 1, b: 1, a: 1}
     - _SelfShadowRealTimeShadowColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ShadowColor: {r: 0.56, g: 0.63, b: 0.78999996, a: 1}
     - _ShadowTColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _SpecularColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _WorldYGradientBottomColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WorldYGradientTopColor: {r: 1, g: 1, b: 1, a: 1}
     - _XYZPosition: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

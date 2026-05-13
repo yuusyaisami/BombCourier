@@ -286,6 +286,20 @@ namespace BC.Rendering.Tests
         }
 
         [Test]
+        public void GrainDoesNotRequireABlueNoiseTexture()
+        {
+            ToyDioramaPostProcessSettings settings = new ToyDioramaPostProcessSettings
+            {
+                QualityTier = ToyDioramaQualityTier.Medium,
+                GrainEnabled = true,
+                GrainStrength = 0.02f,
+                BlueNoiseTex = null
+            };
+
+            Assert.IsTrue(settings.IsGrainEnabledForQuality());
+        }
+
+        [Test]
         public void MediumAndHighQualityAdjustBloomAndHalationRequirements()
         {
             ToyDioramaPostProcessSettings mediumSettings = new ToyDioramaPostProcessSettings

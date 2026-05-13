@@ -214,20 +214,16 @@ namespace BC.Rendering.PlayModeTests
                 settings.HalationStrength = 0.04f;
 
                 settings.QualityTier = ToyDioramaQualityTier.Low;
-                yield return null;
-                AssertRuntimeRasterTopology(feature, ToyDioramaQualityTier.Low, 0, 2, 1);
+                AssertRuntimeQueueTopology(feature, ToyDioramaQualityTier.Low, 0, 2, 1);
 
                 settings.QualityTier = ToyDioramaQualityTier.Medium;
-                yield return null;
-                AssertRuntimeRasterTopology(feature, ToyDioramaQualityTier.Medium, 4, 6, 1);
+                AssertRuntimeQueueTopology(feature, ToyDioramaQualityTier.Medium, 4, 6, 1);
 
                 settings.QualityTier = ToyDioramaQualityTier.High;
-                yield return null;
-                AssertRuntimeRasterTopology(feature, ToyDioramaQualityTier.High, 6, 8, 1);
+                AssertRuntimeQueueTopology(feature, ToyDioramaQualityTier.High, 6, 8, 1);
 
                 settings.QualityTier = ToyDioramaQualityTier.Cinematic;
-                yield return null;
-                AssertRuntimeRasterTopology(feature, ToyDioramaQualityTier.Cinematic, 8, 10, 1);
+                AssertRuntimeQueueTopology(feature, ToyDioramaQualityTier.Cinematic, 8, 10, 1);
             }
             finally
             {
@@ -276,11 +272,9 @@ namespace BC.Rendering.PlayModeTests
 
             try
             {
-                yield return null;
-
                 Assert.IsTrue(feature.ForceLowQualityTier, "Mobile renderer path must force Low quality tier.");
                 Assert.AreEqual(ToyDioramaQualityTier.Low, feature.GetResolvedQualityTier());
-                AssertRuntimeRasterTopology(feature, ToyDioramaQualityTier.Low, 0, 2, 1);
+                AssertRuntimeQueueTopology(feature, ToyDioramaQualityTier.Low, 0, 2, 1);
             }
             finally
             {
@@ -355,18 +349,22 @@ namespace BC.Rendering.PlayModeTests
             return null;
         }
 
-        private static void AssertRuntimeRasterTopology(
+        private static void AssertRuntimeQueueTopology(
             ToyDioramaPostProcessFeature feature,
             ToyDioramaQualityTier expectedResolvedQualityTier,
             int expectedBloomRasterPassCount,
             int expectedTotalRasterPassCount,
             int expectedFinalCompositeRasterPassCount)
         {
-            Assert.AreEqual(expectedResolvedQualityTier, feature.GetResolvedQualityTier());
-            Assert.AreEqual(1, feature.LastRecordedPreBloomRasterPassCount, "ToyDiorama should always record the pre-bloom raster pass when the effect is active on the Game Camera.");
-            Assert.AreEqual(expectedBloomRasterPassCount, feature.LastRecordedBloomRasterPassCount, "Bloom raster pass count drifted from the actual runtime RenderGraph recording.");
-            Assert.AreEqual(expectedFinalCompositeRasterPassCount, feature.LastRecordedFinalCompositeRasterPassCount, "Final composite raster pass count drifted from the actual runtime RenderGraph recording.");
-            Assert.AreEqual(expectedTotalRasterPassCount, feature.LastRecordedTotalRasterPassCount, "Total raster pass count must be validated from actual runtime RenderGraph recording, not only from helper methods.");
+            ToyDioramaPostProcessFeature.RuntimeQueuePlan queuePlan = feature.EvaluateRuntimeQueuePlan(CameraType.Game);
+
+            Assert.IsTrue(queuePlan.RuntimeResourcesReady, "ToyDiorama runtime queue planning requires valid runtime resources.");
+            Assert.IsTrue(queuePlan.AppliesToCameraType, "ToyDiorama should apply to the Game Camera on the canonical runtime path.");
+            Assert.AreEqual(expectedResolvedQualityTier, queuePlan.ResolvedQualityTier);
+            Assert.AreEqual(1, queuePlan.PreBloomPassCount, "ToyDiorama should always queue the pre-bloom pass when the effect is active on the Game Camera.");
+            Assert.AreEqual(expectedBloomRasterPassCount, queuePlan.BloomRasterPassCount, "Bloom raster pass count drifted from the runtime feature queue plan.");
+            Assert.AreEqual(expectedFinalCompositeRasterPassCount, queuePlan.FinalCompositePassCount, "Final composite queue plan drifted from the runtime feature branch.");
+            Assert.AreEqual(expectedTotalRasterPassCount, queuePlan.TotalRasterPassCount, "Total raster pass count must be validated from the runtime feature queue plan, not only from helper methods.");
         }
 
 #if UNITY_EDITOR

@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ESL_Test_AdditionalFillOnly
+  m_Shader: {fileID: 4800000, guid: accc8418cdf94873ba854349a7ac29ba, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 5247f3d3d5dc4f42955fd01cd4a44f52, type: 3}
+        m_Scale: {x: 2, y: 2}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 2800000, guid: cf34c683fd4d4f34ac8a2f7f90eb20b9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: 1736b83951e147878ac6c88e9f286184, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 2800000, guid: 853d94af512744079219a34e9e05542e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AdditionalLightColorInfluence: 0.6
+    - _AdditionalLightIntensity: 0.5
+    - _AdditionalLightMode: 1
+    - _AdditionalLightShadowInfluence: 0.65
+    - _AlbedoNoiseStrength: 0.18
+    - _AlphaClip: 0
+    - _AmbientStrength: 0.5
+    - _BandContrast: 1
+    - _BandOffset: 0
+    - _BounceStrength: 0.38
+    - _BounceWrap: 0.55
+    - _CavityStrength: 0.2
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DebugView: 0
+    - _EdgeSheenPower: 2.5
+    - _EdgeSheenStrength: 0
+    - _EmissionStrength: 0
+    - _IndirectStrength: 0.7
+    - _IndirectStylizeStrength: 0.25
+    - _LightBandNoiseScale: 0.75
+    - _LightBandNoiseStrength: 0.08
+    - _LightStepCount: 3
+    - _LightStepSmoothness: 0.08
+    - _Metallic: 0
+    - _NoiseDistanceFadeEnd: 32
+    - _NoiseDistanceFadeStart: 12
+    - _NoiseSpace: 0
+    - _NormalScale: 0.55
+    - _OcclusionStrength: 0.5
+    - _ShadowColorBlend: 0.6
+    - _ShadowInfluence: 1
+    - _ShadowSoftFill: 0.2
+    - _Smoothness: 0.35
+    - _SpecularMode: 0
+    - _SpecularStepCount: 3
+    - _SpecularStepSmoothness: 0.1
+    - _SpecularStrength: 0
+    - _TriplanarBaseMapEnabled: 0
+    - _TriplanarBlendSharpness: 4
+    - _TriplanarNoiseEnabled: 0
+    - _TriplanarNormalMapEnabled: 0
+    - _TriplanarScale: 1
+    - _VertexColorBandOffsetStrength: 1
+    - _VertexColorCavityStrength: 1
+    - _VertexColorColorVariationStrength: 1
+    - _VertexColorEnabled: 0
+    - _VertexColorSpecialStrength: 1
+    - _WorldNoiseContrast: 1.25
+    - _WorldNoiseScale: 0.4
+    - _WorldNoiseStrength: 0.35
+    - _WorldYGradientEnabled: 0
+    - _WorldYGradientMax: 3
+    - _WorldYGradientMin: 0
+    - _WorldYGradientStrength: 0
+    - _WrapLighting: 0.15
+    m_Colors:
+    - _AmbientBottomColor: {r: 0.23, g: 0.2, b: 0.18, a: 1}
+    - _AmbientSideColor: {r: 0.36, g: 0.4, b: 0.48, a: 1}
+    - _AmbientTopColor: {r: 0.54, g: 0.61, b: 0.74, a: 1}
+    - _BaseColor: {r: 0.84, g: 0.82, b: 0.78, a: 1}
+    - _BounceColor: {r: 0.94, g: 0.8, b: 0.64, a: 1}
+    - _BounceDirection: {r: 0, g: 1, b: 0, a: 0}
+    - _CavityColor: {r: 0.68, g: 0.73, b: 0.82, a: 1}
+    - _DeepShadowColor: {r: 0.33999997, g: 0.39999998, b: 0.56, a: 1}
+    - _EdgeSheenColor: {r: 1, g: 0.96999997, b: 0.92, a: 1}
+    - _EmissionColor: {r: 0.3, g: 0.75, b: 1, a: 1}
+    - _HighlightColor: {r: 1, g: 0.97999996, b: 0.94, a: 1}
+    - _IndirectShadowColor: {r: 0.72, g: 0.79, b: 0.9, a: 1}
+    - _LightColor: {r: 1, g: 0.96, b: 0.9, a: 1}
+    - _MidColor: {r: 0.8399999, g: 0.88, b: 0.93, a: 1}
+    - _ShadowColor: {r: 0.56, g: 0.63, b: 0.78999996, a: 1}
+    - _SpecularColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+    - _WorldYGradientBottomColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WorldYGradientTopColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

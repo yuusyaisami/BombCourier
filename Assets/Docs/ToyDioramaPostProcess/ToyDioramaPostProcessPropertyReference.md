@@ -9,8 +9,8 @@ source of truth は ToyDioramaPostProcessSettings.cs と ToyDioramaPostProcessIn
 | --- | --- | --- | --- |
 | Enabled | bool | true | Feature 全体の on/off。preset 適用では上書きされません。 |
 | QualityTier | Low / Medium / High / Cinematic | Medium | 実行コストと有効 effect を切り替えます。 |
-| ForceLowQualityTier | bool | false | true の時、authored QualityTier を mutate せず resolved runtime tier だけを Low に固定します。Mobile_Renderer では true が前提です。 |
-| DebugView | enum | Off | Non-development build では Off 以外を残せません。 |
+| ForceLowQualityTier | bool | false | true の時、authored QualityTier を mutate せず resolved runtime tier だけを Low に固定します。Mobile_Renderer では true、PC_Renderer では false が前提で、違反時は build validator が停止します。 |
+| DebugView | enum | Off | Non-development build では Off 以外を残せません。AfterColorGrade は base color grade 後 / Pastel 前の pre-bloom debug stage です。 |
 
 ## Core Color Grade
 
@@ -94,11 +94,11 @@ source of truth は ToyDioramaPostProcessSettings.cs と ToyDioramaPostProcessIn
 
 | Property | Range | Default | Meaning |
 | --- | --- | --- | --- |
-| BlueNoiseTex | Texture2D | null | 未指定時は feature 側の fallback blue noise を使います。 |
-| GrainEnabled | bool | true | grain を有効化します。Low では無効です。 |
-| GrainStrength | 0.0 to 0.2 | 0.02 | grain の量です。 |
-| GrainScale | 0.25 to 8.0 | 1.00 | grain パターンのサイズです。 |
-| GrainResponse | 0.0 to 1.0 | 0.60 | 明暗への反応量です。 |
+| BlueNoiseTex | Texture2D | null | 旧版の互換バインド用です。現行の grain は procedural で、見た目はこの texture の内容に依存しません。 |
+| GrainEnabled | bool | true | film grain を有効化します。Low では無効です。 |
+| GrainStrength | 0.0 to 0.2 | 0.02 | film grain の量です。 |
+| GrainScale | 0.25 to 8.0 | 1.00 | grain 粒子の大きさです。 |
+| GrainResponse | 0.0 to 1.0 | 0.60 | 暗部 / 明部での抑制量です。 |
 | GrainTemporalStrength | 0.0 to 1.0 | 0.10 | 時間方向の揺れ量です。 |
 
 ## Quality Tier Summary
@@ -117,12 +117,14 @@ source of truth は ToyDioramaPostProcessSettings.cs と ToyDioramaPostProcessIn
 - DebugView Off の runtime topology は Low=2、Medium=6、High=8、Cinematic=10 raster pass です。
 - Mobile_Renderer は ForceLowQualityTier により resolved runtime tier を Low に固定します。
 - ForceLowQualityTier は authored settings を書き換えず、runtime only の tier clamp として扱います。
+- inspector は authored Quality Tier と resolved runtime tier を別表示します。
 
 ## Debug View Notes
 
 - DebugView は editor と debug build では authoring に使えます。
 - release build では Off 以外を残せません。
 - feature が enabled のまま DebugView を残すと build validator が停止させます。
+- AfterColorGrade は pre-bloom の base color grade 結果を表示し、Pastel / Cream Highlight / Depth Haze / Bloom の後段結果は含みません。
 
 ## Preset Apply Contract
 

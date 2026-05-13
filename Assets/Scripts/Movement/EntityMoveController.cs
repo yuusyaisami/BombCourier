@@ -1,5 +1,7 @@
 using BC.Utility;
 using UnityEngine;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 namespace BC.Base
 {
@@ -34,6 +36,8 @@ namespace BC.Base
         {
             InitializeRuntimeReferences();
         }
+
+        public abstract UniTask<bool> MoveToAsync(Vector3 targetPosition, float arriveDistance = 0.1f, CancellationToken cancellationToken = default);
 
         protected void InitializeRuntimeReferences()
         {

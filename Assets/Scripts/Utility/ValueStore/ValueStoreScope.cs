@@ -35,9 +35,24 @@ namespace BC.Base
 
             if (typeof(T) == typeof(int))
             {
-                var slot = GetOrCreateIntSlot(UnsafeCastKey<int, T>(key));
-                object result = slot.Get();
-                return (T)result;
+                ValueKey<int> intKey = UnsafeCastKey<int, T>(key);
+
+                if (intKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawIntSlot = GetOrCreateRawSlot(intKey);
+                    object result = rawIntSlot.Get();
+                    return (T)result;
+                }
+
+                if (intKey.CompositionMode == ValueCompositionMode.NumericAddMul)
+                {
+                    var slot = GetOrCreateIntSlot(intKey);
+                    object result = slot.Get();
+                    return (T)result;
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw} or {ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
             }
 
             if (typeof(T) == typeof(bool))
@@ -65,7 +80,21 @@ namespace BC.Base
 
             if (typeof(T) == typeof(int))
             {
-                return CreateIntHandle<T>(UnsafeCastKey<int, T>(key));
+                ValueKey<int> intKey = UnsafeCastKey<int, T>(key);
+
+                if (intKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawIntSlot = GetOrCreateRawSlot(intKey);
+                    return (ValueWatchHandle<T>)(object)new ValueWatchHandle<int>(GetOrCreateWatchNode(intKey, rawIntSlot.Get));
+                }
+
+                if (intKey.CompositionMode == ValueCompositionMode.NumericAddMul)
+                {
+                    return CreateIntHandle<T>(intKey);
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw} or {ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
             }
 
             if (typeof(T) == typeof(bool))
@@ -73,8 +102,8 @@ namespace BC.Base
                 return CreateBoolHandle<T>(UnsafeCastKey<bool, T>(key));
             }
 
-            var raw = GetOrCreateRawSlot(key);
-            return new ValueWatchHandle<T>(GetOrCreateWatchNode(key, raw.Get));
+            var rawSlot = GetOrCreateRawSlot(key);
+            return new ValueWatchHandle<T>(GetOrCreateWatchNode(key, rawSlot.Get));
         }
 
         public bool Set<T>(ValueKeyReference key, T value)
@@ -94,10 +123,27 @@ namespace BC.Base
 
             if (typeof(T) == typeof(int))
             {
-                var slot = GetOrCreateIntSlot(UnsafeCastKey<int, T>(key));
-                bool changed = slot.SetBase((int)(object)value);
-                NotifyWatchNodeChanged(key.Id, changed);
-                return changed;
+                ValueKey<int> intKey = UnsafeCastKey<int, T>(key);
+                int intValue = (int)(object)value;
+
+                if (intKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawValueSlot = GetOrCreateRawSlot(intKey);
+                    bool changed = rawValueSlot.Set(intValue);
+                    NotifyWatchNodeChanged(key.Id, changed);
+                    return changed;
+                }
+
+                if (intKey.CompositionMode == ValueCompositionMode.NumericAddMul)
+                {
+                    var slot = GetOrCreateIntSlot(intKey);
+                    bool changed = slot.SetBase(intValue);
+                    NotifyWatchNodeChanged(key.Id, changed);
+                    return changed;
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw} or {ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
             }
 
             if (typeof(T) == typeof(bool))
@@ -108,8 +154,8 @@ namespace BC.Base
                 return changed;
             }
 
-            var raw = GetOrCreateRawSlot(key);
-            bool rawChanged = raw.Set(value);
+            var fallbackRawSlot = GetOrCreateRawSlot(key);
+            bool rawChanged = fallbackRawSlot.Set(value);
             NotifyWatchNodeChanged(key.Id, rawChanged);
             return rawChanged;
         }
