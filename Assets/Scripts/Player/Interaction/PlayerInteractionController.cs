@@ -435,7 +435,7 @@ namespace BC.Player
         private static UnityEngine.Object GetInteractableKey(IPlayerInteractable interactable)
         {
             if (interactable is CarryableItemInteractableAdapter adapter)
-                return adapter.KeyObject;
+                return adapter.OwnerObject;
 
             return interactable as UnityEngine.Object;
         }
