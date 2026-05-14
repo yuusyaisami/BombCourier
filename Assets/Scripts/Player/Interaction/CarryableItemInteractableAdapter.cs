@@ -16,7 +16,7 @@ namespace BC.Player
             this.carryableItem = carryableItem;
         }
 
-        public Object KeyObject => owner;
+        public Object OwnerObject => owner;
         public ICarryableItem CarryableItem => carryableItem;
         public Transform InteractionTransform => carryableItem != null ? carryableItem.ItemTransform : null;
         public float RequiredHoldDuration => 0f;
