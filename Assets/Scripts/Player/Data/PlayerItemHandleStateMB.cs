@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BC.Base;
 using BC.Item;
 using UnityEngine;
@@ -69,7 +70,7 @@ namespace BC.Player
         public IPlayerInteractable CurrentBestInteractable => interactionController != null ? interactionController.CurrentBestInteractable : null;
         public IPlayerInteractable ActiveInteractable => interactionController != null ? interactionController.ActiveInteractable : null;
         public float ActiveHoldProgress => interactionController != null ? interactionController.ActiveHoldProgress : 0f;
-        public System.Collections.Generic.IReadOnlyList<PlayerInteractionCandidate> Candidates =>
+        public IReadOnlyList<PlayerInteractionCandidate> Candidates =>
             interactionController != null ? interactionController.Candidates : Array.Empty<PlayerInteractionCandidate>();
 
         public event Action<PlayerInteractionEventData> InteractionEvent

@@ -55,13 +55,10 @@ namespace BC.Player
             if (sqrDistance <= 0.0001f)
                 return false;
 
-            Vector3 facingForward = query.FacingForward;
-            facingForward.y = 0f;
+            Vector3 facingForward = query.PlanarFacingForward;
 
             if (facingForward.sqrMagnitude <= 0.0001f)
                 return false;
-
-            facingForward.Normalize();
 
             Vector3 directionToItem = toItem.normalized;
             float angle = Vector3.Angle(facingForward, directionToItem);
