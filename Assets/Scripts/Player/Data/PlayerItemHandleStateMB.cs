@@ -1,14 +1,13 @@
+using System;
 using BC.Base;
 using BC.Item;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using BC.Rendering;
 
 namespace BC.Player
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerItemHandleStateMB : MonoBehaviour, IEntityHandleItemAnimationSource
+    public sealed class PlayerItemHandleStateMB : MonoBehaviour, IEntityHandleItemAnimationSource, IPlayerInteractionSource
     {
         [Header("Detection")]
         [SerializeField] private float handleItemDistance = 1.5f;
@@ -40,31 +39,52 @@ namespace BC.Player
 
 
         private static readonly ValueModifierTagId CarryItemJumpPenaltyTag = new ValueModifierTagId(10003);
-        private const int MaxItemHits = 32;
         private const int MaxTrajectoryHits = 16;
         // アイテムを拾った後、プレイヤーが入力を離すまで次のアイテムを拾えないようにするためのフラグ。これがないと、例えば爆弾を投げた瞬間にもう一度掴んでしまう。
         private bool waitForPickupInputRelease;
         private bool isThrowCharging;
         private bool carryJumpPenaltyApplied;
 
-        private readonly Collider[] itemHits = new Collider[MaxItemHits];
         private readonly RaycastHit[] trajectoryHits = new RaycastHit[MaxTrajectoryHits];
-        private readonly List<ICarryableItem> pickupCandidates = new(16);
-        private readonly HashSet<PickupOutlineTargetMB> outlinedTargets = new();
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
         private ValueWatchHandle<bool> fatigueInteractHandle;
         private ICarryableItem currentlyHandledItem;
-        private ICarryableItem currentBestItem;
+        private PlayerInteractionController interactionController;
         private float emptyHandThrowPreviewTimer;
         private float throwForceChargeTimer;
         private Vector3[] trajectoryPoints = new Vector3[32];
         private Material ownedTrajectoryMaterial;
         private bool isEmptyHandThrowPreviewActive;
         private int throwSequence;
+        private int lastConsumedInputPressSequence;
 
         public bool IsHandlingItem => isHandlingItem;
+        public bool IsInputPressed => interactionController != null && interactionController.IsInputPressed;
+        public float InputHoldDuration => interactionController != null ? interactionController.InputHoldDuration : 0f;
+        public int InputPressSequence => interactionController != null ? interactionController.InputPressSequence : 0;
+        public int InputReleaseSequence => interactionController != null ? interactionController.InputReleaseSequence : 0;
+        public bool HasCandidate => interactionController != null && interactionController.HasCandidate;
+        public IPlayerInteractable CurrentBestInteractable => interactionController != null ? interactionController.CurrentBestInteractable : null;
+        public IPlayerInteractable ActiveInteractable => interactionController != null ? interactionController.ActiveInteractable : null;
+        public float ActiveHoldProgress => interactionController != null ? interactionController.ActiveHoldProgress : 0f;
+        public System.Collections.Generic.IReadOnlyList<PlayerInteractionCandidate> Candidates =>
+            interactionController != null ? interactionController.Candidates : Array.Empty<PlayerInteractionCandidate>();
+
+        public event Action<PlayerInteractionEventData> InteractionEvent
+        {
+            add
+            {
+                if (interactionController != null)
+                    interactionController.InteractionEvent += value;
+            }
+            remove
+            {
+                if (interactionController != null)
+                    interactionController.InteractionEvent -= value;
+            }
+        }
 
         private void Awake()
         {
@@ -77,18 +97,29 @@ namespace BC.Player
             if (handleItemAction == null || handleItemAction.action == null)
                 Debug.LogError($"{nameof(PlayerItemHandleStateMB)}: handleItemAction is not assigned.", this);
 
+            interactionController = new PlayerInteractionController(
+                handleItemAction != null ? handleItemAction.action : null,
+                handleItemPoint,
+                playerModel != null ? playerModel.transform : transform,
+                handleItemDistance,
+                handleItemAngleThreshold,
+                itemLayerMask);
+            interactionController.InteractionEvent += HandleInteractionEvent;
+
             ResolveRuntimeReferences(logMissingEntity: true);
         }
 
         private void OnEnable()
         {
             handleItemAction?.action?.Enable();
+            interactionController?.Bind();
         }
 
         private void OnDisable()
         {
+            interactionController?.ResetRuntimeState();
+            interactionController?.Unbind();
             handleItemAction?.action?.Disable();
-            ClearPickupOutlines();
             HideTrajectory();
             RemoveCarryJumpPenalty();
             ResetEmptyHandThrowPreview();
@@ -96,6 +127,13 @@ namespace BC.Player
 
         private void OnDestroy()
         {
+            if (interactionController != null)
+            {
+                interactionController.InteractionEvent -= HandleInteractionEvent;
+                interactionController.Dispose();
+                interactionController = null;
+            }
+
             if (ownedTrajectoryMaterial != null)
             {
                 Destroy(ownedTrajectoryMaterial);
@@ -111,11 +149,11 @@ namespace BC.Player
             if (handleItemPoint == null || playerModel == null)
                 return;
 
+            interactionController?.Tick(Time.deltaTime, !isHandlingItem);
+
             if (!isHandlingItem)
             {
                 HideTrajectory();
-                RefreshPickupCandidates();
-                TickPickup();
 
                 if (!isHandlingItem)
                     TickEmptyHandThrowPreview(Time.deltaTime);
@@ -125,107 +163,21 @@ namespace BC.Player
             else
             {
                 ResetEmptyHandThrowPreview();
-                ClearPickupOutlines();
                 TickThrow();
             }
 
             PublishRuntimeValues();
         }
 
-        private void RefreshPickupCandidates()
-        {
-            pickupCandidates.Clear();
-            currentBestItem = null;
-
-            int hitCount = Physics.OverlapSphereNonAlloc(
-                handleItemPoint.position,
-                handleItemDistance,
-                itemHits,
-                itemLayerMask,
-                QueryTriggerInteraction.Collide
-            );
-
-            float bestScore = float.MaxValue;
-
-            for (int i = 0; i < hitCount; i++)
-            {
-                Collider hit = itemHits[i];
-
-                if (hit == null)
-                    continue;
-
-                ICarryableItem item = hit.GetComponentInParent<ICarryableItem>();
-
-                if (item == null)
-                    continue;
-
-                if (!item.CanBeCarried)
-                    continue;
-
-                if (item.IsHandled)
-                    continue;
-
-                Transform itemTransform = item.ItemTransform;
-
-                if (itemTransform == null)
-                    continue;
-
-                Vector3 toItem = itemTransform.position - playerModel.transform.position;
-                toItem.y = 0f;
-
-                float sqrDistance = toItem.sqrMagnitude;
-
-                if (sqrDistance <= 0.0001f)
-                    continue;
-
-                Vector3 playerForward = playerModel.transform.forward;
-                playerForward.y = 0f;
-
-                if (playerForward.sqrMagnitude <= 0.0001f)
-                    continue;
-
-                playerForward.Normalize();
-
-                Vector3 directionToItem = toItem.normalized;
-                float angle = Vector3.Angle(playerForward, directionToItem);
-
-                if (angle > handleItemAngleThreshold)
-                    continue;
-
-                pickupCandidates.Add(item);
-
-                float score = sqrDistance + angle * 0.05f;
-
-                if (score < bestScore)
-                {
-                    bestScore = score;
-                    currentBestItem = item;
-                }
-            }
-
-            UpdatePickupOutlines(pickupCandidates, currentBestItem);
-        }
-
-        private void TickPickup()
-        {
-            if (!handleItemAction.action.WasPressedThisFrame())
-                return;
-
-            if (currentBestItem == null)
-                return;
-
-            HandleItem(currentBestItem);
-        }
-
         private void TickEmptyHandThrowPreview(float dt)
         {
-            if (currentBestItem != null || IsFatigueInteracting())
+            if (GetCurrentBestCarryableItem() != null || IsFatigueInteracting())
             {
                 ResetEmptyHandThrowPreview();
                 return;
             }
 
-            if (!handleItemAction.action.IsPressed())
+            if (!IsInputPressed)
             {
                 ResetEmptyHandThrowPreview();
                 return;
@@ -250,7 +202,7 @@ namespace BC.Player
             {
                 HideTrajectory();
 
-                if (handleItemAction.action.IsPressed())
+                if (IsInputPressed)
                 {
                     return;
                 }
@@ -265,7 +217,7 @@ namespace BC.Player
             {
                 HideTrajectory();
 
-                if (handleItemAction.action.WasPressedThisFrame())
+                if (ConsumeInputPress())
                 {
                     isThrowCharging = true;
                     throwForceChargeTimer = 0f;
@@ -276,7 +228,7 @@ namespace BC.Player
             }
 
             // チャージ中。
-            if (handleItemAction.action.IsPressed())
+            if (IsInputPressed)
             {
                 throwForceChargeTimer += Time.deltaTime;
                 UpdateThrowTrajectory();
@@ -291,12 +243,10 @@ namespace BC.Player
             if (item == null || item.ItemTransform == null)
                 return;
 
-            ClearPickupOutlines();
+            interactionController?.ClearCandidateState();
             ResetEmptyHandThrowPreview();
 
             currentlyHandledItem = item;
-            currentBestItem = null;
-            pickupCandidates.Clear();
 
             isHandlingItem = true;
             throwForceChargeTimer = 0f;
@@ -328,8 +278,6 @@ namespace BC.Player
         private void ClearHeldState()
         {
             currentlyHandledItem = null;
-            currentBestItem = null;
-            pickupCandidates.Clear();
 
             isHandlingItem = false;
             throwForceChargeTimer = 0f;
@@ -582,49 +530,22 @@ namespace BC.Player
             trajectoryLineRenderer.positionCount = 0;
         }
 
-        private void UpdatePickupOutlines(IReadOnlyList<ICarryableItem> candidates, ICarryableItem bestItem)
+        private void HandleInteractionEvent(PlayerInteractionEventData eventData)
         {
-            foreach (PickupOutlineTargetMB target in outlinedTargets)
-            {
-                if (target != null)
-                    target.ClearOutline();
-            }
-
-            outlinedTargets.Clear();
-
-            if (candidates == null)
+            if (eventData.EventType != PlayerInteractionEventType.Completed)
                 return;
 
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                ICarryableItem item = candidates[i];
+            if (eventData.Interactable is not CarryableItemInteractableAdapter adapter)
+                return;
 
-                if (item is not MonoBehaviour itemMB)
-                    continue;
-
-                PickupOutlineTargetMB target = itemMB.GetComponentInParent<PickupOutlineTargetMB>();
-
-                if (target == null)
-                    continue;
-
-                PickupOutlineKind kind = ReferenceEquals(item, bestItem)
-                    ? PickupOutlineKind.Best
-                    : PickupOutlineKind.Candidate;
-
-                target.SetOutline(kind);
-                outlinedTargets.Add(target);
-            }
+            HandleItem(adapter.CarryableItem);
         }
 
-        private void ClearPickupOutlines()
+        private ICarryableItem GetCurrentBestCarryableItem()
         {
-            foreach (PickupOutlineTargetMB target in outlinedTargets)
-            {
-                if (target != null)
-                    target.ClearOutline();
-            }
-
-            outlinedTargets.Clear();
+            return CurrentBestInteractable is CarryableItemInteractableAdapter adapter
+                ? adapter.CarryableItem
+                : null;
         }
 
         private void PublishRuntimeValues()
@@ -696,6 +617,17 @@ namespace BC.Player
         {
             emptyHandThrowPreviewTimer = 0f;
             isEmptyHandThrowPreviewActive = false;
+        }
+
+        private bool ConsumeInputPress()
+        {
+            int currentSequence = InputPressSequence;
+
+            if (currentSequence == 0 || currentSequence == lastConsumedInputPressSequence)
+                return false;
+
+            lastConsumedInputPressSequence = currentSequence;
+            return true;
         }
     }
 }
