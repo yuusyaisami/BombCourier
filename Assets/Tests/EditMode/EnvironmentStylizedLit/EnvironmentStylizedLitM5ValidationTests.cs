@@ -127,11 +127,11 @@ namespace BC.Rendering.Tests
 
         private static void AssertShaderHasProperty(Shader shader, string propertyName)
         {
-            int propertyCount = ShaderUtil.GetPropertyCount(shader);
+            int propertyCount = shader.GetPropertyCount();
 
             for (int index = 0; index < propertyCount; index++)
             {
-                if (ShaderUtil.GetPropertyName(shader, index) == propertyName)
+                if (shader.GetPropertyName(index) == propertyName)
                 {
                     return;
                 }

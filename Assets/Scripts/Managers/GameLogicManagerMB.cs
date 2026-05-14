@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using BC.Animation;
 using BC.Base;
 using BC.Bomb;
 using BC.Gimmick;
+using BC.UI;
 using BombCourier.CameraIntro;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using Unity.Cinemachine;
 using UnityEngine;
 namespace BC.Manager
@@ -24,13 +27,15 @@ namespace BC.Manager
             }
             Instance = this;
         }
-
-        [SerializeField]
-        private IntroCameraSequenceRunner introCameraSequenceRunner; // イントロカメラのシーケンスランナー。ステージごとに異なるシーケンスを再生するために使用する。
+        [Header("References")]
+        [SerializeField] private UIFadeEffectMB uiFadeEffectMB; // UIのフェードエフェクトを管理するクラス。シーン全体のフェードイン・フェードアウトなどを担当する。
+        [SerializeField] private IntroCameraSequenceRunner introCameraSequenceRunner; // イントロカメラのシーケンスランナー。ステージごとに異なるシーケンスを再生するために使用する。
         [SerializeField] private EntityMB playerPrefab; // プレイヤーのプレハブ
         [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用のステージインスタンス。エディタで直接割り当てることができます。
         // 爆弾Ref
         private BombMB currentBomb;
+
+        private GodHandObjectMB currentGodHand; // 現在つかまっているGodHandの参照。複数のGodHandが存在する場合に、どのGodHandにつかまっているかを管理するために使用する。
         private GameObject stageInstance; // 現在のステージのインスタンス。ステージをリセットするときに使用する。
         private PlayerMB playerInstance; // プレイヤーのインスタンス。プレイヤーをスポーンさせるときに使用する。
         private GoalData currentGoalData; // 現在のゴールのデータ。ゴールに到達したときの処理に使用する。
@@ -85,8 +90,9 @@ namespace BC.Manager
             {
                 GoalAsync().Forget(); // ゴール処理を実行する
             }
-            else if (newState == GameState.StageClear)
+            else if (newState == GameState.NextStage)
             {
+                LoadStageAsync(currentGameStage + 1).Forget(); // 次のステージをロードする
             }
             else if (newState == GameState.GameOver)
             {
@@ -104,6 +110,38 @@ namespace BC.Manager
             // Playerを止める
             await playerInstance.MoveController.MoveToAsync(currentGoalData.PlayerTargetPoint.position, 0.1f);
             sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMove, PlayerMoveController.GameLogicTag, false);
+
+        }
+        private async UniTask NextStageAsync()
+        {
+            IPlayerAnimatorParameterController playerParameterController = playerInstance.GetComponent<IPlayerAnimatorParameterController>();
+            playerParameterController.SetBool(playerParameterController.IsNextStageParameter, true); // プレイヤーのアニメーションパラメーターを更新して、次のステージに進むためのアニメーションを再生する
+            currentGodHand.Catch(playerInstance.transform); // プレイヤーをGodHandにつかまらせる
+            // cinemachineCameraの方向を、Playerに向ける
+            await LookAtAsync(currentGoalData.GoalCamera.transform, playerInstance.transform.position);
+            //currentGodHand.transform.DO
+            // 次のステージに進むための処理
+            await LoadStageAsync(currentGameStage + 1);
+        }
+        private async UniTask LookAtAsync(Transform origin, Vector3 targetPosition, float duration = 1f)
+        {
+            if (currentGoalData == null) return;
+
+            // GoalCameraをPlayerに向ける
+            CinemachineCamera goalCamera = currentGoalData.GoalCamera;
+            float elapsedTime = 0f;
+            Quaternion initialRotation = goalCamera.transform.rotation;
+            Vector3 directionToTarget = (targetPosition - goalCamera.transform.position).normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(directionToTarget, Vector3.up);
+            while (elapsedTime < duration)
+            {
+                elapsedTime += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsedTime / duration);
+                goalCamera.transform.rotation = Quaternion.Slerp(initialRotation, targetRotation, t);
+                await UniTask.Yield();
+            }
+
+            await UniTask.CompletedTask;
         }
         private async UniTask LoadStageAsync(int stageIndex)
         {

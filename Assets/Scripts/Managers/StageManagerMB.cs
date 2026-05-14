@@ -14,6 +14,7 @@ namespace BC.Manager
         public IntroCameraPathAuthoring introCameraPath; // イントロカメラのパス 
         public GoalData goalData; // ゴールのデータ
         public GameObject stageInstance; // ステージのインスタンス
+        public List<GodHandObjectMB> godHandObjects; // ステージ内のGodHandオブジェクトのリスト
     }
     public class StageManagerMB : MonoBehaviour
     {
@@ -65,7 +66,8 @@ namespace BC.Manager
                 spawnPoints = spawnPoints,
                 introCameraPath = introCameraPath,
                 goalData = stageInstance.GetComponentInChildren<BreakableGateObjectMB>()?.GoalData,
-                stageInstance = stageInstance
+                stageInstance = stageInstance,
+                godHandObjects = new List<GodHandObjectMB>(stageInstance.GetComponentsInChildren<GodHandObjectMB>())    
             };
         }
         public void CaptureStageCheckpoint()

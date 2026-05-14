@@ -12,7 +12,7 @@ namespace BC.Manager
         FusePlaying,
         Exploded, // 爆弾が爆発した状態。プレイヤーはこの状態になったときにリロードを促すUIを表示する。
         Goaling, // ゴールに到達した状態。プレイヤーはこの状態になったときにステージクリアのUIを表示する。
-        StageClear,
+        NextStage, // 次のステージに進むための準備をしている状態。プレイヤーはこの状態になったときに次のステージに進むためのUIを表示する。
         Reload,
         GameOver // 爆弾爆発
     }
@@ -41,24 +41,7 @@ namespace BC.Manager
         }
         private void Update()
         {
-            switch (_stateMachine.CurrentState)
-            {
-                case GameState.Starting:
-                    //HandleStarting();
-                    break;
-                case GameState.Intro:
-                    //HandleIntro();
-                    break;
-                case GameState.SetupPlaying:
-                    //HandlePlaying();
-                    break;
-                case GameState.StageClear:
-                    //HandleStageClear();
-                    break;
-                case GameState.GameOver:
-                    //HandleGameOver();
-                    break;
-            }
+
         }
     }
 }
