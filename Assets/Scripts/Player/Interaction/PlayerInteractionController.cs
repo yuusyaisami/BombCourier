@@ -173,6 +173,9 @@ namespace BC.Player
             Vector3 facingForward = facingTransform.forward;
             facingForward.y = 0f;
 
+            if (facingForward.sqrMagnitude > 0.0001f)
+                facingForward.Normalize();
+
             for (int i = 0; i < hitCount; i++)
             {
                 Collider hit = interactionHits[i];
@@ -193,6 +196,7 @@ namespace BC.Player
                 PlayerInteractionQuery query = new PlayerInteractionQuery(
                     interactionPoint.position,
                     facingTransform.position,
+                    facingTransform.forward,
                     facingForward,
                     interactionDistance,
                     interactionAngleThreshold,

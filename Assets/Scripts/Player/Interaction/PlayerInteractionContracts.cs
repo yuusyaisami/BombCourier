@@ -18,6 +18,7 @@ namespace BC.Player
         public readonly Vector3 DetectionPosition;
         public readonly Vector3 FacingPosition;
         public readonly Vector3 FacingForward;
+        public readonly Vector3 PlanarFacingForward;
         public readonly float MaxDistance;
         public readonly float MaxAngle;
         public readonly Collider HitCollider;
@@ -26,6 +27,7 @@ namespace BC.Player
             Vector3 detectionPosition,
             Vector3 facingPosition,
             Vector3 facingForward,
+            Vector3 planarFacingForward,
             float maxDistance,
             float maxAngle,
             Collider hitCollider)
@@ -33,6 +35,7 @@ namespace BC.Player
             DetectionPosition = detectionPosition;
             FacingPosition = facingPosition;
             FacingForward = facingForward;
+            PlanarFacingForward = planarFacingForward;
             MaxDistance = maxDistance;
             MaxAngle = maxAngle;
             HitCollider = hitCollider;
