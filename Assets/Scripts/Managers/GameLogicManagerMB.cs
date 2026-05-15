@@ -233,6 +233,7 @@ namespace BC.Manager
                 playerInstance = transform.GetComponentInChildren<PlayerMB>();
                 playerRef = playerInstance.GetComponent<EntityMB>().Entity;
                 stageInstance = debugStageInstance.gameObject;
+                currentGoalData = stageInstance.GetComponentInChildren<BreakableGateObjectMB>()?.GoalData;
             }
 
 

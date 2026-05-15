@@ -15,6 +15,7 @@ namespace BC.Gimmick
         [SerializeField] private float explosionForce = 1000f; // 爆風の力の大きさ
         [SerializeField] private Vector3 breakForceDirection = Vector3.up; // 力の方向
         [SerializeField] private Transform breakForceOrigin; // 力の発生源
+        [SerializeField] private Collider gateCollider; // 壊れる前の当たり判定。壊れた後は無効にする。
         [Header("Goal Gate Settings")]
         [SerializeField] private bool isGoalGate = false;
         [SerializeField, ShowIf("isGoalGate")] private EntityTriggerObjectMB goalTriggerObject; // ゴールルームのトリガーオブジェクト
@@ -65,6 +66,7 @@ namespace BC.Gimmick
         public void OnBombImpactReceived(Vector3 impactPoint, float impactForce)
         {
             if (isBroken) return; // 既に壊れている場合は何もしない
+            Debug.Log("BreakableGateObjectMB: Bomb impact received. Force: " + impactForce);
 
             if (impactForce >= breakForceThreshold)
             {
@@ -94,6 +96,12 @@ namespace BC.Gimmick
                     Vector3 forceDirection = (impactPoint - breakForceOrigin.position).normalized * (impactForce / maxSumImpact) + breakForceDirection.normalized * (explosionForce / maxSumImpact);
                     part.AddForce(forceDirection, ForceMode.Impulse);
                 }
+            }
+
+            // 壊れる前の当たり判定を無効にする
+            if (gateCollider != null)
+            {
+                gateCollider.enabled = false;
             }
 
             // ゴールゲート

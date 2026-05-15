@@ -90,7 +90,7 @@ MonoBehaviour:
   compositeShader: {fileID: 4800000, guid: e0ce73f4e1e1d2941bdc5fb4eb5cbfc4, type: 3}
   bloomShader: {fileID: 4800000, guid: 45e35c160f91e2f43ac7814fb806c647, type: 3}
   passEvent: 600
-  sceneViewEnabled: 1
+  sceneViewEnabled: 0
   forceLowQualityTier: 0
   selectedPreset: {fileID: 11400000, guid: 6d2a74e3f2794f94b86a8c314b4e51aa, type: 2}
   settings:

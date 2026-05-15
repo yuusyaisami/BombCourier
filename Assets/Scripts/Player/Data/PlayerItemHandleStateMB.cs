@@ -25,6 +25,7 @@ namespace BC.Player
         [SerializeField] private float minThrowForce = 4f;
         [SerializeField] private float throwForceChargeTime = 1.5f;
         [SerializeField, Min(0f)] private float emptyHandThrowPreviewHoldTime = 0.2f;
+        [SerializeField, Range(0f, 30f)] private float throwUpwardCompensationAngle = 8f;
 
         [Header("Trajectory")]
         [SerializeField] private LineRenderer trajectoryLineRenderer;
@@ -34,6 +35,10 @@ namespace BC.Player
         [SerializeField, Min(0.01f)] private float trajectoryProbeRadius = 0.45f;
         [SerializeField, Min(0.001f)] private float trajectoryLineWidth = 0.04f;
         [SerializeField] private Color trajectoryColor = new Color(1.0f, 0.62f, 0.08f, 0.9f);
+        [SerializeField] private bool includeTriggerCollidersInTrajectory = true;
+        [SerializeField, Min(0f)] private float trajectoryHitMarkerMinDistance = 1.0f;
+        [SerializeField, Min(0.01f)] private float trajectoryHitMarkerDiameter = 0.24f;
+        [SerializeField] private Color trajectoryHitMarkerColor = new Color(1.0f, 0.82f, 0.24f, 0.95f);
 
         [Header("Runtime Debug")]
         [SerializeField] private bool isHandlingItem;
@@ -47,6 +52,7 @@ namespace BC.Player
         private bool carryJumpPenaltyApplied;
 
         private readonly RaycastHit[] trajectoryHits = new RaycastHit[MaxTrajectoryHits];
+        private readonly Collider[] trajectoryOverlapHits = new Collider[MaxTrajectoryHits];
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
@@ -57,6 +63,9 @@ namespace BC.Player
         private float throwForceChargeTimer;
         private Vector3[] trajectoryPoints = new Vector3[32];
         private Material ownedTrajectoryMaterial;
+        private Material ownedTrajectoryHitMarkerMaterial;
+        private Transform trajectoryHitMarkerTransform;
+        private Renderer trajectoryHitMarkerRenderer;
         private bool isEmptyHandThrowPreviewActive;
         private int throwSequence;
         private int lastConsumedInputPressSequence;
@@ -145,6 +154,12 @@ namespace BC.Player
             {
                 Destroy(ownedTrajectoryMaterial);
                 ownedTrajectoryMaterial = null;
+            }
+
+            if (ownedTrajectoryHitMarkerMaterial != null)
+            {
+                Destroy(ownedTrajectoryHitMarkerMaterial);
+                ownedTrajectoryHitMarkerMaterial = null;
             }
         }
 
@@ -324,7 +339,13 @@ namespace BC.Player
             UnityEngine.Camera mainCamera = UnityEngine.Camera.main;
 
             if (mainCamera != null && mainCamera.transform.forward.sqrMagnitude > 0.0001f)
-                return mainCamera.transform.forward.normalized;
+            {
+                // カメラ forward をそのまま使うと低めに落ちやすいので、少しだけ上方向へ補正する。
+                return ApplyThrowUpwardCompensation(
+                    mainCamera.transform.forward,
+                    mainCamera.transform.right,
+                    throwUpwardCompensationAngle);
+            }
 
             Vector3 fallbackDirection = playerModel != null
                 ? playerModel.transform.forward
@@ -335,7 +356,25 @@ namespace BC.Player
             if (fallbackDirection.sqrMagnitude <= 0.0001f)
                 fallbackDirection = transform.forward;
 
-            return fallbackDirection.normalized;
+            return ApplyThrowUpwardCompensation(
+                fallbackDirection,
+                transform.right,
+                throwUpwardCompensationAngle);
+        }
+
+        private static Vector3 ApplyThrowUpwardCompensation(Vector3 forward, Vector3 rightAxis, float upwardCompensationAngle)
+        {
+            Vector3 normalizedForward = forward.normalized;
+            if (normalizedForward.sqrMagnitude <= 0.0001f)
+                return Vector3.forward;
+
+            Vector3 normalizedRight = rightAxis.normalized;
+            if (normalizedRight.sqrMagnitude <= 0.0001f)
+                normalizedRight = Vector3.right;
+
+            // Unityの右手軸回転では負方向がカメラforwardを上へ起こす向きになる。
+            Quaternion compensationRotation = Quaternion.AngleAxis(-upwardCompensationAngle, normalizedRight);
+            return (compensationRotation * normalizedForward).normalized;
         }
 
         private void ApplyCarryJumpPenaltyIfNeeded(ICarryableItem item)
@@ -405,7 +444,10 @@ namespace BC.Player
                 : currentlyHandledItem.ItemTransform.position;
             Vector3 velocity = BuildThrowVelocity();
             Vector3 previous = origin;
+            bool hasTrajectoryHit = false;
+            Vector3 trajectoryHitPoint = Vector3.zero;
 
+            // 物理位置を点列に落とし込み、途中でColliderに当たったらそこでLineを止める。
             trajectoryPoints[0] = origin;
             int usedPointCount = 1;
 
@@ -416,6 +458,8 @@ namespace BC.Player
 
                 if (TryFindTrajectoryHit(previous, next, out Vector3 hitPoint))
                 {
+                    hasTrajectoryHit = true;
+                    trajectoryHitPoint = hitPoint;
                     trajectoryPoints[usedPointCount++] = hitPoint;
                     break;
                 }
@@ -432,6 +476,15 @@ namespace BC.Player
             }
 
             trajectoryLineRenderer.enabled = true;
+
+            if (hasTrajectoryHit && Vector3.Distance(origin, trajectoryHitPoint) >= trajectoryHitMarkerMinDistance)
+            {
+                ShowTrajectoryHitMarker(trajectoryHitPoint);
+            }
+            else
+            {
+                HideTrajectoryHitMarker();
+            }
         }
 
         private bool TryFindTrajectoryHit(Vector3 from, Vector3 to, out Vector3 hitPoint)
@@ -446,6 +499,29 @@ namespace BC.Player
 
             Vector3 direction = segment / distance;
             float radius = Mathf.Max(0.01f, trajectoryProbeRadius);
+            QueryTriggerInteraction triggerInteraction = includeTriggerCollidersInTrajectory
+                ? QueryTriggerInteraction.Collide
+                : QueryTriggerInteraction.Ignore;
+
+            // 始点がすでに collider に重なっている場合、SphereCast だけでは取りこぼすことがある。
+            int overlapCount = Physics.OverlapSphereNonAlloc(
+                from,
+                radius,
+                trajectoryOverlapHits,
+                trajectoryCollisionMask,
+                triggerInteraction);
+
+            for (int i = 0; i < overlapCount; i++)
+            {
+                Collider overlapCollider = trajectoryOverlapHits[i];
+
+                if (overlapCollider == null || IsIgnoredTrajectoryCollider(overlapCollider))
+                    continue;
+
+                // MarkerはLineの中心ではなく、Collider表面に近い位置へ置く。
+                hitPoint = overlapCollider.ClosestPoint(from);
+                return true;
+            }
 
             int hitCount = Physics.SphereCastNonAlloc(
                 from,
@@ -454,11 +530,13 @@ namespace BC.Player
                 trajectoryHits,
                 distance,
                 trajectoryCollisionMask,
-                QueryTriggerInteraction.Ignore);
+                triggerInteraction);
 
             bool found = false;
             float bestDistance = float.MaxValue;
+            Vector3 bestPoint = to;
 
+            // NonAllocの結果は距離順とは限らないため、明示的に一番手前のHitを選ぶ。
             for (int i = 0; i < hitCount; i++)
             {
                 RaycastHit hit = trajectoryHits[i];
@@ -469,6 +547,7 @@ namespace BC.Player
                 if (hit.distance < bestDistance)
                 {
                     bestDistance = hit.distance;
+                    bestPoint = hit.point;
                     found = true;
                 }
             }
@@ -476,7 +555,7 @@ namespace BC.Player
             if (!found)
                 return false;
 
-            hitPoint = from + direction * bestDistance;
+            hitPoint = bestPoint;
             return true;
         }
 
@@ -499,6 +578,7 @@ namespace BC.Player
             if (handleItemPoint == null)
                 return transform;
 
+            // 予測線がプレイヤー自身のCharacterControllerに当たって即終了しないよう、所持者Rootを除外する。
             CharacterController ownerController = handleItemPoint.GetComponentInParent<CharacterController>();
 
             if (ownerController != null)
@@ -539,13 +619,78 @@ namespace BC.Player
             }
         }
 
+        private void EnsureTrajectoryHitMarker()
+        {
+            if (trajectoryHitMarkerTransform == null)
+            {
+                GameObject markerObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                markerObject.name = "Bomb Throw Hit Marker";
+                markerObject.transform.SetParent(transform, false);
+
+                Collider markerCollider = markerObject.GetComponent<Collider>();
+                if (markerCollider != null)
+                    Destroy(markerCollider);
+
+                trajectoryHitMarkerTransform = markerObject.transform;
+                trajectoryHitMarkerRenderer = markerObject.GetComponent<Renderer>();
+            }
+
+            trajectoryHitMarkerTransform.localScale = Vector3.one * trajectoryHitMarkerDiameter;
+
+            if (trajectoryHitMarkerRenderer == null)
+                return;
+
+            if (ownedTrajectoryHitMarkerMaterial == null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+
+                if (shader == null)
+                    shader = Shader.Find("Standard");
+
+                if (shader != null)
+                {
+                    ownedTrajectoryHitMarkerMaterial = new Material(shader);
+                }
+            }
+
+            if (ownedTrajectoryHitMarkerMaterial != null)
+            {
+                ownedTrajectoryHitMarkerMaterial.color = trajectoryHitMarkerColor;
+                trajectoryHitMarkerRenderer.sharedMaterial = ownedTrajectoryHitMarkerMaterial;
+            }
+        }
+
+        private void ShowTrajectoryHitMarker(Vector3 hitPoint)
+        {
+            EnsureTrajectoryHitMarker();
+
+            if (trajectoryHitMarkerTransform == null)
+                return;
+
+            // 予想着地点を見失わないよう、ヒット地点にだけ小さな球を表示する。
+            trajectoryHitMarkerTransform.position = hitPoint;
+            trajectoryHitMarkerTransform.gameObject.SetActive(true);
+        }
+
+        private void HideTrajectoryHitMarker()
+        {
+            if (trajectoryHitMarkerTransform == null)
+                return;
+
+            trajectoryHitMarkerTransform.gameObject.SetActive(false);
+        }
+
         private void HideTrajectory()
         {
             if (trajectoryLineRenderer == null)
+            {
+                HideTrajectoryHitMarker();
                 return;
+            }
 
             trajectoryLineRenderer.enabled = false;
             trajectoryLineRenderer.positionCount = 0;
+            HideTrajectoryHitMarker();
         }
 
         private void HandleInteractionEvent(PlayerInteractionEventData eventData)

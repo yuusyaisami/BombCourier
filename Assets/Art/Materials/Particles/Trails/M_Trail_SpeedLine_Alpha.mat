@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Trail_SpeedLine_Alpha
+  m_Shader: {fileID: 4800000, guid: cde8442d752eb524187d62d3ea3a5259, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 32b4086eebbeff94daad5db4892bf4b4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseMap:
+        m_Texture: {fileID: 2800000, guid: 837ff9255aac75442bfcf14155a614d9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Alpha: 0.58
+    - _BlendMode: 0
+    - _Brightness: 1.35
+    - _ColorMask: 15
+    - _Cull: 0
+    - _DissolveAmount: 0.08
+    - _DissolveSoftness: 0.18
+    - _DstBlend: 10
+    - _EdgeFadeAxis: 1
+    - _EdgeFadePower: 3
+    - _EdgeFadeStrength: 0.9
+    - _EmissionStrength: 0
+    - _NoiseScale: 4
+    - _NoiseStrength: 0.2
+    - _QueueOffset: 0
+    - _SrcBlend: 5
+    - _UseVertexColor: 1
+    - _ZTest: 4
+    - _ZWrite: 0
+    m_Colors:
+    - _BaseColor: {r: 0.95, g: 0.98, b: 1, a: 0.55}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _NoiseScrollSpeed: {r: 0, g: 0, b: 0, a: 0}
+    - _UVScrollSpeed: {r: 0.85, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

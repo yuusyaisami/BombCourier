@@ -172,10 +172,15 @@ namespace BC.Manager
                     if (rb == null)
                         continue;
 
+                    // 先に速度を止めてから kinematic に切り替え、Unity の警告を出さない。
+                    if (!enabled)
+                    {
+                        rb.linearVelocity = Vector3.zero;
+                        rb.angularVelocity = Vector3.zero;
+                    }
+
                     rb.isKinematic = !enabled;
-                    if (!enabled) rb.linearVelocity = Vector3.zero;
                     rb.detectCollisions = enabled;
-                    rb.angularVelocity = Vector3.zero;
                 }
             }
 

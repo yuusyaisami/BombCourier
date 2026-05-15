@@ -29,6 +29,8 @@ namespace BC.UI
         {
             // ゲーム開始時のスケールを (1, 0, 1) に設定して非表示状態にする
             transform.localScale = new Vector3(1f, 0f, 1f);
+            returnToTitleButton.gameObject.SetActive(false);
+            nextStageButton.gameObject.SetActive(false);
         }
 
         private void Start()
@@ -40,6 +42,15 @@ namespace BC.UI
             }
 
             GameStateManagerMB.Instance.StateMachine.Subscribe(OnGameStateChanged);
+            // ボタンのクリックイベントにリスナーを登録
+            if (returnToTitleButton != null)
+            {
+                returnToTitleButton.onClick.AddListener(OnReturnToTitleButtonClicked);
+            }
+            if (nextStageButton != null)
+            {
+                nextStageButton.onClick.AddListener(OnNextStageButtonClicked);
+            }
         }
 
         private void OnDestroy()
@@ -62,11 +73,25 @@ namespace BC.UI
             }
         }
 
+        private void OnReturnToTitleButtonClicked()
+        {
+            HideAsync().Forget();
+            GameStateManagerMB.Instance.StateMachine.ChangeState(GameState.ReturnToTitle);
+        }
+        private void OnNextStageButtonClicked()
+        {
+            HideAsync().Forget();
+            GameStateManagerMB.Instance.StateMachine.ChangeState(GameState.NextStage);
+        }
+
         private async UniTaskVoid ShowAsync()
         {
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = new CancellationTokenSource();
+
+            returnToTitleButton.gameObject.SetActive(true);
+            nextStageButton.gameObject.SetActive(true);
 
             // パーティクルを再生
             if (goalParticle != null)
@@ -94,6 +119,33 @@ namespace BC.UI
             }
 
             transform.localScale = Vector3.one;
+        }
+        private async UniTaskVoid HideAsync()
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = new CancellationTokenSource();
+
+            // Y スケールを 1 → 0 にアニメーション
+            float elapsed = 0f;
+            float duration = Mathf.Max(revealDuration, 0.001f);
+
+            try
+            {
+                while (elapsed < duration)
+                {
+                    float t = Mathf.Clamp01(elapsed / duration);
+                    transform.localScale = new Vector3(1f, 1f - t, 1f);
+                    elapsed += Time.unscaledDeltaTime;
+                    await UniTask.Yield(PlayerLoopTiming.Update, _cts.Token);
+                }
+            }
+            catch (System.OperationCanceledException)
+            {
+                return;
+            }
+
+            transform.localScale = new Vector3(1f, 0f, 1f);
         }
     }
 }

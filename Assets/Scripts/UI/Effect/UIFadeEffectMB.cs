@@ -5,16 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 namespace BC.UI
 {
-    public enum FadeType
-    {
-        Single, // 単一フェード
-        TopBottom // 上下フェード
-    }
-    public interface IUIFadeEffect
-    {
-        void SetFadeType(FadeType fadeType);
-        UniTask StartFadeAsync(FadeType fadeType, float amount, float duration);
-    }
     // フェードエフェクトのUIロジックを管理するクラス
     public class UIFadeEffectMB : MonoBehaviour, IUIFadeEffect
     {
@@ -26,7 +16,7 @@ namespace BC.UI
         [SerializeField] private Canvas fadeCanvas;
 
         private CancellationTokenSource activeFadeCancellationTokenSource;
- 
+
         public Canvas FadeCanvas => fadeCanvas;
 
         private void OnDestroy()

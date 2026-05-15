@@ -14,7 +14,8 @@ namespace BC.Manager
         Goaling, // ゴールに到達した状態。プレイヤーはこの状態になったときにステージクリアのUIを表示する。
         NextStage, // 次のステージに進むための準備をしている状態。プレイヤーはこの状態になったときに次のステージに進むためのUIを表示する。
         Reload,
-        GameOver // 爆弾爆発
+        GameOver, // 爆弾爆発
+        ReturnToTitle, // タイトルに戻る
     }
     public class GameStateManagerMB : MonoBehaviour
     {
