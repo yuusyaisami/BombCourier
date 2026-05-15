@@ -145,7 +145,7 @@ namespace BC.Rendering
                     0.02f,
                     80));
 
-                    // ParticleSystem Trails だけでなく、LineRenderer / TrailRenderer でも同じMaterial契約を確認する。
+            // ParticleSystem Trails だけでなく、LineRenderer / TrailRenderer でも同じMaterial契約を確認する。
             EnsureLineRendererPrefab(
                 WindLinePrefabPath,
                 windMaterial);
