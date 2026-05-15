@@ -73,6 +73,12 @@ namespace BC.Player
         public IReadOnlyList<PlayerInteractionCandidate> Candidates =>
             interactionController != null ? interactionController.Candidates : Array.Empty<PlayerInteractionCandidate>();
 
+        // throw系の状態
+        public bool IsThrowCharging => isThrowCharging || isEmptyHandThrowPreviewActive;
+        public float CurrentThrowForce => CalculateThrowForce();
+        public float CurrentThrowChargeRatio => Mathf.Clamp01(throwForceChargeTimer / Mathf.Max(0.01f, throwForceChargeTime));
+        public Action OnThrowChargeStart { get; set; }
+        public Action OnThrowChargeEnd { get; set; }
         public event Action<PlayerInteractionEventData> InteractionEvent
         {
             add
@@ -221,6 +227,7 @@ namespace BC.Player
                 if (ConsumeInputPress())
                 {
                     isThrowCharging = true;
+                    OnThrowChargeStart?.Invoke();
                     throwForceChargeTimer = 0f;
                     UpdateThrowTrajectory();
                 }
@@ -237,6 +244,12 @@ namespace BC.Player
             }
 
             // チャージ後に離したら投げる。
+            if (isThrowCharging)
+            {
+                isThrowCharging = false;
+                OnThrowChargeEnd?.Invoke();
+            }
+
             ReleaseCurrentItem();
         }
         private void HandleItem(ICarryableItem item)
@@ -251,6 +264,10 @@ namespace BC.Player
 
             isHandlingItem = true;
             throwForceChargeTimer = 0f;
+
+            // 拾った時の押下シーケンスをここで消費済みにしないと、
+            // ボタンを離した直後に「2回目の押下」と誤判定して即投げへ進んでしまう。
+            lastConsumedInputPressSequence = InputPressSequence;
 
             // 拾った時の押下を、投げチャージに流用させない。
             waitForPickupInputRelease = true;

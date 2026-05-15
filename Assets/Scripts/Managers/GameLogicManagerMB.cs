@@ -49,6 +49,7 @@ namespace BC.Manager
         private int currentGameStage;
 
         public BombMB CurrentBomb => currentBomb;
+        public PlayerMB PlayerInstance => playerInstance;
 
         private void Start()
         {

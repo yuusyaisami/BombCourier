@@ -173,8 +173,8 @@ namespace BC.Manager
                         continue;
 
                     rb.isKinematic = !enabled;
+                    if (!enabled) rb.linearVelocity = Vector3.zero;
                     rb.detectCollisions = enabled;
-                    rb.linearVelocity = Vector3.zero;
                     rb.angularVelocity = Vector3.zero;
                 }
             }
