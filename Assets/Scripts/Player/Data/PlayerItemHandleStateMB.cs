@@ -58,6 +58,7 @@ namespace BC.Player
         private EntityRef entityRef;
         private ValueWatchHandle<bool> fatigueInteractHandle;
         private ICarryableItem currentlyHandledItem;
+        private IEntityVelocitySource velocitySource;
         private PlayerInteractionController interactionController;
         private float emptyHandThrowPreviewTimer;
         private float throwForceChargeTimer;
@@ -331,7 +332,28 @@ namespace BC.Player
 
         private Vector3 BuildThrowVelocity()
         {
-            return BuildThrowDirection() * CalculateThrowForce();
+            return BuildThrowDirection() * CalculateThrowForce() + GetCarrierVelocity();
+        }
+
+        private Vector3 GetCarrierVelocity()
+        {
+            if (velocitySource == null)
+                velocitySource = ResolveVelocitySource();
+
+            return velocitySource != null ? velocitySource.CurrentVelocity : Vector3.zero;
+        }
+
+        private IEntityVelocitySource ResolveVelocitySource()
+        {
+            MonoBehaviour[] behaviours = GetComponentsInParent<MonoBehaviour>();
+
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                if (behaviours[i] is IEntityVelocitySource source)
+                    return source;
+            }
+
+            return null;
         }
 
         private Vector3 BuildThrowDirection()

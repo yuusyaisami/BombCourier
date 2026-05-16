@@ -5,6 +5,7 @@ using BC.Animation;
 using BC.Base;
 using BC.Bomb;
 using BC.Gimmick;
+using BC.Stage;
 using BC.UI;
 using BombCourier.CameraIntro;
 using Cysharp.Threading.Tasks;
@@ -36,11 +37,13 @@ namespace BC.Manager
         private BombMB currentBomb;
 
         private GodHandObjectMB currentGodHand; // 現在つかまっているGodHandの参照。複数のGodHandが存在する場合に、どのGodHandにつかまっているかを管理するために使用する。
+        private MapRuntimeMB currentMapRuntime; // 現在ロードされているマップのランタイム参照。
         private GameObject stageInstance; // 現在のステージのインスタンス。ステージをリセットするときに使用する。
         private PlayerMB playerInstance; // プレイヤーのインスタンス。プレイヤーをスポーンさせるときに使用する。
         private GoalData currentGoalData; // 現在のゴールのデータ。ゴールに到達したときの処理に使用する。
+        private IntroCameraPathAuthoring currentIntroCameraPath; // 現在のイントロカメラパス。
         private EntityRef playerRef; // プレイヤーのEntityRef。プレイヤーの状態を管理するために使用する。
-        private Action<PlayerMB> onPlayerSpawned; // プレイヤーがスポーンしたときに呼び出されるイベント
+        public Action<PlayerMB> OnPlayerSpawned; // プレイヤーがスポーンしたときに呼び出されるイベント
         public Action<BombMB> OnCurrentBombChanged; // 現在の爆弾が変わったときに呼び出されるイベント
         public Action ReloadState; // ステージをリロードする必要があるときに呼び出されるイベント
         public Action ExplodedState; // 爆弾が爆発したときに呼び出されるイベント
@@ -51,12 +54,58 @@ namespace BC.Manager
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
 
+        private PlayerMB ResolvePlayerInstance()
+        {
+            if (playerInstance != null)
+            {
+                return playerInstance;
+            }
+
+            PlayerMB foundPlayer = transform.GetComponentInChildren<PlayerMB>(true);
+
+            if (foundPlayer == null)
+            {
+                foundPlayer = UnityEngine.Object.FindAnyObjectByType<PlayerMB>();
+            }
+
+            if (foundPlayer != null)
+            {
+                playerInstance = foundPlayer;
+
+                EntityMB entityMB = foundPlayer.GetComponent<EntityMB>();
+                playerRef = entityMB != null ? entityMB.Entity : default;
+            }
+
+            return playerInstance;
+        }
+
         private void Start()
         {
             sceneKernel = transform.GetComponentInChildren<SceneKernelMB>().Kernel;
-            // 最初のステージをロードする
-            GameStateManagerMB.Instance.StateMachine.Subscribe(OnStageChanged);
-            GameStateManagerMB.Instance.ChangeState(GameState.Starting);
+            GameStateManagerMB stateManager = GameStateManagerMB.Instance;
+
+            if (stateManager == null)
+            {
+                Debug.LogError("GameLogicManagerMB: GameStateManagerMB.Instance is null.", this);
+                return;
+            }
+
+            // StateMachine の購読だけ行い、Starting の発火は GameStateManager 側に一任する。
+            stateManager.StateMachine.Subscribe(OnStageChanged);
+
+            // 先に GameStateManager が Starting へ遷移していた場合は、その状態を取りこぼさない。
+            if (stateManager.CurrentState == GameState.Starting)
+            {
+                OnStageChanged(GameState.Starting);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (GameStateManagerMB.Instance != null)
+            {
+                GameStateManagerMB.Instance.StateMachine.Unsubscribe(OnStageChanged);
+            }
 
         }
 
@@ -72,7 +121,8 @@ namespace BC.Manager
             }
             else if (newState == GameState.SetupPlaying)
             {
-                sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMove, PlayerMoveController.GameLogicTag, true);
+                sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
+                sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, true);
             }
             else if (newState == GameState.FusePlaying)
             {
@@ -104,13 +154,49 @@ namespace BC.Manager
         {
             if (currentGoalData == null) return;
 
+            if (currentGoalData.GoalCamera == null)
+            {
+                Debug.LogError("GameLogicManagerMB: currentGoalData.GoalCamera is not assigned.", this);
+                return;
+            }
+
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            if (resolvedPlayer == null)
+            {
+                Debug.LogError("GameLogicManagerMB: PlayerInstance is not resolved.", this);
+                return;
+            }
+
+            EntityMoveMotorMB moveController = resolvedPlayer.MoveController;
+            if (moveController == null)
+            {
+                moveController = resolvedPlayer.GetComponent<EntityMoveMotorMB>();
+            }
+
+            if (moveController == null)
+            {
+                Debug.LogError("GameLogicManagerMB: EntityMoveMotorMB is not found on the resolved player.", this);
+                return;
+            }
+
             //一時体にCinemaCameraを切り替える。
+            Debug.Log("Switching to goal camera: " + currentGoalData.GoalCamera.name);
             CinemachineCamera goalCamera = currentGoalData.GoalCamera;
             goalCamera.Priority = 100; // カメラの優先度を上げて切り替える
 
             // Playerを止める
-            await playerInstance.MoveController.MoveToAsync(currentGoalData.PlayerTargetPoint.position, 0.1f);
-            sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMove, PlayerMoveController.GameLogicTag, false);
+            await moveController.MoveToAsync(currentGoalData.Target, 0.1f);
+            if (sceneKernel != null && playerRef.IsValid)
+            {
+                sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, false);
+                sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, false);
+            }
+
+            if (currentGodHand != null)
+            {
+                currentGodHand.SetTargetPosition(); // GodHandを元の位置に戻す
+            }
+
 
         }
         private async UniTask NextStageAsync()
@@ -120,13 +206,17 @@ namespace BC.Manager
             currentGodHand.Catch(playerInstance.transform); // プレイヤーをGodHandにつかまらせる
             // cinemachineCameraの方向を、Playerに向ける
             await LookAtAsync(currentGoalData.GoalCamera.transform, playerInstance.transform.position);
-            //currentGodHand.transform.DO
+            await currentGodHand.MoveToAsync(1.7f); // GodHandを移動させる
             // 次のステージに進むための処理
             await LoadStageAsync(currentGameStage + 1);
         }
         private async UniTask LookAtAsync(Transform origin, Vector3 targetPosition, float duration = 1f)
         {
-            if (currentGoalData == null) return;
+            if (currentGoalData == null || currentGoalData.GoalCamera == null)
+            {
+                Debug.LogError("GameLogicManagerMB: GoalCamera is not assigned for LookAtAsync.", this);
+                return;
+            }
 
             // GoalCameraをPlayerに向ける
             CinemachineCamera goalCamera = currentGoalData.GoalCamera;
@@ -159,9 +249,20 @@ namespace BC.Manager
                 return;
             }
 
-            await introCameraSequenceRunner.Play(stageInstance.GetComponentInChildren<IntroCameraPathAuthoring>());
-            playerInstance.PlayRespawnEffect(); // プレイヤーのスポーンエフェクトを再生する
+            if (currentIntroCameraPath == null)
+            {
+                Debug.LogError("GameLogicManagerMB: IntroCameraPath is not resolved from MapRuntimeMB.", this);
+                return;
+            }
+
+            await introCameraSequenceRunner.Play(currentIntroCameraPath);
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            if (resolvedPlayer != null)
+            {
+                resolvedPlayer.PlayRespawnEffect(); // プレイヤーのスポーンエフェクトを再生する
+            }
             GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
+            Debug.Log("Intro camera sequence completed. Changing state to SetupPlaying.");
         }
         private async UniTask ReloadStageAsync()
         {
@@ -208,13 +309,11 @@ namespace BC.Manager
 
         public void LoadGameStage()
         {
+            StageLoadResult result;
+
             if (debugStageInstance == null)
             {
-                StageLoadResult result = StageManagerMB.Instance.LoadStage(currentGameStage);
-                if (result.bombs.Count > 0)
-                {
-                    SetCurrentBomb(result.bombs[0]);
-                }
+                result = StageManagerMB.Instance.LoadStage(currentGameStage);
                 // playerをテレポートさせる
                 if (result.spawnPoints.Count > 0)
                 {
@@ -222,19 +321,28 @@ namespace BC.Manager
                     PlayerSpawnPointMB spawnPoint = result.spawnPoints[0];
                     SpawnAndTeleportPlayer(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
                 }
-                // goalDataの保存
-                currentGoalData = result.goalData;
-                // instanceを保存
-                stageInstance = result.stageInstance;
             }
             else
             {
-                SetCurrentBomb(transform.GetComponentInChildren<BombMB>());
-                playerInstance = transform.GetComponentInChildren<PlayerMB>();
-                playerRef = playerInstance.GetComponent<EntityMB>().Entity;
-                stageInstance = debugStageInstance.gameObject;
-                currentGoalData = stageInstance.GetComponentInChildren<BreakableGateObjectMB>()?.GoalData;
+                result = StageManagerMB.Instance.ResolveStageRuntime(debugStageInstance.gameObject);
+                playerInstance = ResolvePlayerInstance();
+                OnPlayerSpawned?.Invoke(playerInstance);
+                playerRef = playerInstance != null ? playerInstance.GetComponent<EntityMB>().Entity : default;
+
+                // デバッグ用
+                if (!playerRef.IsValid) Debug.LogError("GameLogicManagerMB: PlayerRef is not valid.", this);
             }
+
+            // StageManager が解決したランタイム参照だけを使って、ゲームロジック側の入力値を更新する。
+            stageInstance = result.stageInstance;
+            currentMapRuntime = result.mapRuntime;
+            currentGoalData = result.goalData;
+            currentIntroCameraPath = result.introCameraPath;
+            currentGodHand = result.godHandObjects.Count > 0 ? result.godHandObjects[0] : null;
+            SetCurrentBomb(result.bombs.Count > 0 ? result.bombs[0] : null);
+
+            if (currentGoalData == null) Debug.LogError("GameLogicManagerMB: GoalData is not resolved from the stage runtime.", this);
+            if (currentIntroCameraPath == null) Debug.LogError("GameLogicManagerMB: IntroCameraPath is not resolved from the stage runtime.", this);
 
 
             GameStateManagerMB.Instance.ChangeState(GameState.Intro);
@@ -242,21 +350,28 @@ namespace BC.Manager
         // ゲーム内にプレイヤーがいた場合はTeleportのみ、いない場合はSpawnしてからTeleportする
         public void SpawnAndTeleportPlayer(EntityMB player, Vector3 position = default, Quaternion rotation = default)
         {
-            PlayerMB existingPlayer = transform.GetComponentInChildren<PlayerMB>();
+            PlayerMB existingPlayer = ResolvePlayerInstance();
             if (existingPlayer != null)
             {
                 existingPlayer.TeleportToSpawnPoint(position, rotation);
                 playerInstance = existingPlayer;
+                OnPlayerSpawned?.Invoke(playerInstance);
                 playerRef = existingPlayer.GetComponent<EntityMB>().Entity;
             }
             else
             {
                 EntitySpawnResult result = SpawnPlayer(player, position, rotation);
                 playerInstance = result.GameObject.GetComponent<PlayerMB>();
+                OnPlayerSpawned?.Invoke(playerInstance);
                 playerRef = result.Entity;
             }
             // 一時的にPlayerの動きを止める
-            sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMove, PlayerMoveController.GameLogicTag, false);
+            if (!playerRef.IsValid)
+            {
+                Debug.LogError("GameLogicManagerMB: PlayerRef is not valid.", this);
+            }
+            sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
+            sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, false);
         }
         public EntitySpawnResult SpawnPlayer(EntityMB player, Vector3 position, Quaternion rotation)
         {

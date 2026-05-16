@@ -59,6 +59,13 @@ Assets/RealToon/RealToon Tools/
  ShadowTSDFModeHelper.cs
  SmearEffectHelper.cs
  SmoothObjectNormalHelper.cs
+Assets/Scripts/Action/
+ Authoring/SetActiveStepAuthoring.cs
+ Core/
+  ActionRunnerMB.cs
+  ActionRuntimeContracts.cs
+  ActionStepAuthoringContracts.cs
+  SetActiveStepRuntime.cs
 Assets/Scripts/Base/Entity/
  EntityImpactResponseMB.cs
  EntityMB.cs
@@ -74,6 +81,9 @@ Assets/Scripts/Base/Entity/
   EntityTags.cs
   SceneEntityBootstrapper.cs
   ScopedEntityRegistryMB.cs
+ Resolver/
+  EntityComponentResolverMB.cs
+  EntityComponentResolverService.cs
  Spawner/
   EntitySpawnContracts.cs
   EntitySpawnerMB.cs
@@ -136,10 +146,15 @@ Assets/Scripts/Item/
 Assets/Scripts/Managers/
  GameLogicManagerMB.cs
  GameStateManagerMB.cs
+ InputManagerMB.cs
  StageManagerMB.cs
  TalkSystemManagerMB.cs
 Assets/Scripts/
- Movement/EntityMoveController.cs
+ Map/MapRuntimeMB.cs
+ Movement/
+  EntityMoveController.cs
+  EntityMovementContracts.cs
+  EntityMoveMotorMB.cs
  Player/
   Camera/ThirdPersonCameraController.cs
   Data/

@@ -24,7 +24,8 @@ namespace BC.Base
         protected SceneKernel SceneKernel { get; private set; }
         protected EntityRef Entity { get; private set; }
 
-        private ValueWatchHandle<bool> canMoveHandle;
+        private ValueWatchHandle<bool> canMoveByInputHandle;
+        private ValueWatchHandle<bool> canMoveBySystemHandle;
         private ValueWatchHandle<float> moveBaseSpeedHandle;
         private ValueWatchHandle<float> sprintMultiplierHandle;
         private ValueWatchHandle<float> jumpHeightMultiplierHandle;
@@ -83,7 +84,20 @@ namespace BC.Base
                 return false;
             }
 
-            return canMoveHandle.CurrentValue;
+            return canMoveByInputHandle.CurrentValue;
+        }
+
+        protected bool CanApplySystemMovement()
+        {
+            if (!IsRuntimeReady)
+                return false;
+
+            if (!TryEnsureMoveValueHandles())
+            {
+                return false;
+            }
+
+            return canMoveBySystemHandle.CurrentValue;
         }
 
         protected float GetMoveBaseSpeed(float fallback)
@@ -112,7 +126,8 @@ namespace BC.Base
 
         private bool TryEnsureMoveValueHandles()
         {
-            if (canMoveHandle != null &&
+            if (canMoveByInputHandle != null &&
+                canMoveBySystemHandle != null &&
                 moveBaseSpeedHandle != null &&
                 sprintMultiplierHandle != null &&
                 jumpHeightMultiplierHandle != null)
@@ -126,7 +141,8 @@ namespace BC.Base
                 return false;
             }
 
-            canMoveHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.CanMove);
+            canMoveByInputHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.CanMoveByInput);
+            canMoveBySystemHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.CanMoveBySystem);
             moveBaseSpeedHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.BaseSpeed);
             sprintMultiplierHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.SprintMultiplier);
             jumpHeightMultiplierHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.JumpHeightMultiplier);

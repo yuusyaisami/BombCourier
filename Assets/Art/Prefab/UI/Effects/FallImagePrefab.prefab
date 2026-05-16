@@ -95,20 +95,36 @@ MonoBehaviour:
       ValueSource: 20
       ScrollVelocity: {x: 0, y: 0, z: 0}
       ScrollVelocityMin: {x: -30, y: -70, z: 0}
-      ScrollVelocityMax: {x: 0, y: -50, z: 0}
+      ScrollVelocityMax: {x: 30, y: -50, z: 0}
       Damping: 1
       ApplyShakeEffect: 0
       ShakeMagnitude: 5
       ShakeFrequency: 20
     ScaleSetting:
+      ValueSource: 10
       ScaleMultiplier: {x: 1, y: 1, z: 1}
+      ScaleMultiplierMin: {x: 1, y: 1, z: 1}
+      ScaleMultiplierMax: {x: 1, y: 1, z: 1}
     RotateSetting:
+      ValueSource: 20
       RotateAngle: {x: 0, y: 0, z: 0}
+      RotateAngleMin: {x: -30, y: -30, z: -10}
+      RotateAngleMax: {x: 30, y: 30, z: 10}
     ColorSetting:
-      ApplyOnce: 0
-      ChangeMode: 0
+      ApplyOnce: 1
+      ChangeMode: 1
       ColorChangeInterval: 1
-      ColorWeights: []
+      ColorWeights:
+      - Color: {r: 1, g: 0.95767665, b: 0.5503144, a: 1}
+        Weight: 1
+      - Color: {r: 1, g: 1, b: 1, a: 1}
+        Weight: 1
+      - Color: {r: 1, g: 0.49371064, b: 0.9039578, a: 1}
+        Weight: 1
+      - Color: {r: 0.5968551, g: 1, b: 0.5251572, a: 1}
+        Weight: 1
+      - Color: {r: 0.5377357, g: 1, b: 0.98702145, a: 1}
+        Weight: 1
       Colors: []
   targetTransform: {fileID: 6101566746082419495}
   targetRectTransform: {fileID: 6101566746082419495}

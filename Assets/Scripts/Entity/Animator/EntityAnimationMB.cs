@@ -22,7 +22,7 @@ namespace BC.Animation
         [SerializeField] private Animator animator;
 
         [Header("Sources")]
-        [Tooltip("IEntityMoveAnimationSource を実装したMonoBehaviourを指定する。通常は PlayerMoveController。")]
+        [Tooltip("IEntityMoveAnimationSource を実装したMonoBehaviourを指定する。通常は EntityMoveMotorMB。")]
         [SerializeField] private MonoBehaviour moveSourceBehaviour;
 
         [Tooltip("IEntityHandleItemAnimationSource を実装したMonoBehaviourを指定する。未実装なら空でよい。")]
@@ -73,7 +73,7 @@ namespace BC.Animation
         private void Reset()
         {
             animator = GetComponentInChildren<Animator>();
-            moveSourceBehaviour = GetComponentInParent<MonoBehaviour>();
+            moveSourceBehaviour = GetComponentInParent<EntityMoveMotorMB>();
         }
 
         private void Awake()
@@ -112,7 +112,7 @@ namespace BC.Animation
 
             if (moveSource == null)
             {
-                Debug.LogError($"{nameof(EntityAnimationMB)}: IEntityMoveAnimationSource was not found. Assign PlayerMoveController or another movement source.", this);
+                Debug.LogError($"{nameof(EntityAnimationMB)}: IEntityMoveAnimationSource was not found. Assign EntityMoveMotorMB or another movement source.", this);
                 enabled = false;
                 return;
             }
@@ -149,16 +149,24 @@ namespace BC.Animation
 
                 if (moveSource == null)
                 {
-                    Debug.LogError($"{nameof(EntityAnimationMB)}: Assigned moveSourceBehaviour does not implement {nameof(IEntityMoveAnimationSource)}.", moveSourceBehaviour);
+                    Debug.LogWarning($"{nameof(EntityAnimationMB)}: Assigned moveSourceBehaviour does not implement {nameof(IEntityMoveAnimationSource)}. Searching another source.", moveSourceBehaviour);
                 }
 
-                return;
+                if (moveSource != null)
+                    return;
             }
 
             MonoBehaviour[] behaviours = GetComponentsInParent<MonoBehaviour>(true);
 
             for (int i = 0; i < behaviours.Length; i++)
             {
+                if (behaviours[i] is PlayerMoveController playerMoveController && playerMoveController.MoveMotor != null)
+                {
+                    moveSourceBehaviour = playerMoveController.MoveMotor;
+                    moveSource = playerMoveController.MoveMotor;
+                    return;
+                }
+
                 if (behaviours[i] is IEntityMoveAnimationSource source)
                 {
                     moveSourceBehaviour = behaviours[i];
@@ -171,6 +179,13 @@ namespace BC.Animation
 
             for (int i = 0; i < behaviours.Length; i++)
             {
+                if (behaviours[i] is PlayerMoveController playerMoveController && playerMoveController.MoveMotor != null)
+                {
+                    moveSourceBehaviour = playerMoveController.MoveMotor;
+                    moveSource = playerMoveController.MoveMotor;
+                    return;
+                }
+
                 if (behaviours[i] is IEntityMoveAnimationSource source)
                 {
                     moveSourceBehaviour = behaviours[i];

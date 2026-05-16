@@ -33,6 +33,8 @@ namespace BC.Base
                 entity = SceneRegistry.Register(request);
             }
 
+            kernel.EntityComponents?.Register(entity, request.GameObject, request.Transform);
+
             entityEvents.Publish(entity, new EntityRegisteredEvent(entity, request.Tag, request.Flags));
             kernelEvents.Publish(new EntityRegisteredKernelEvent(entity, request.Tag, request.Flags));
 
@@ -54,6 +56,7 @@ namespace BC.Base
             if (!removed)
                 return false;
 
+            kernel.EntityComponents?.Unregister(entity);
             entityEvents.Publish(entity, new EntityUnregisteredEvent(entity));
             entityEvents.ClearEntity(entity);
             kernel.EntityValueStore?.ClearEntity(entity);

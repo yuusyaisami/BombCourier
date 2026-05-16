@@ -35,10 +35,10 @@ namespace BC.Base
 
         public static class Move
         {
-            public static readonly ValueKey<bool> CanMove =
+            public static readonly ValueKey<bool> CanMoveByInput =
                 new ValueKey<bool>(
                     new ValueKeyId(2001),
-                    "Move.CanMove",
+                    "Move.CanMoveByInput",
                     true,
                     ValueCompositionMode.BoolAnd
                 );
@@ -63,6 +63,14 @@ namespace BC.Base
                     "Move.JumpHeightMultiplier",
                     1.0f,
                     ValueCompositionMode.NumericAddMul
+                );
+
+            public static readonly ValueKey<bool> CanMoveBySystem =
+                new ValueKey<bool>(
+                    new ValueKeyId(2005),
+                    "Move.CanMoveBySystem",
+                    true,
+                    ValueCompositionMode.BoolAnd
                 );
         }
 
@@ -184,6 +192,20 @@ namespace BC.Base
                     "Runtime.IsFatigueInteracting",
                     false,
                     ValueCompositionMode.BoolOr
+                );
+            public static readonly ValueKey<bool> CanMoveByInput =
+                new ValueKey<bool>(
+                    new ValueKeyId(8013),
+                    "Runtime.CanMoveByInput",
+                    true,
+                    ValueCompositionMode.Raw
+                );
+            public static readonly ValueKey<bool> CanMoveBySystem =
+                new ValueKey<bool>(
+                    new ValueKeyId(8014),
+                    "Runtime.CanMoveBySystem",
+                    true,
+                    ValueCompositionMode.Raw
                 );
         }
 

@@ -18,10 +18,11 @@ namespace BC.UI
 
         [Header("Effects")]
         // ゴール時に再生する UI パーティクル（Canvas 上で動作するパーティクルシステムを割り当てる）
-        [SerializeField] private ParticleSystem goalParticle;
+        [SerializeField] private UIFallEffectMB goalParticle;
 
         [Header("Animation")]
         [SerializeField] private float revealDuration = 0.1f;
+        [SerializeField] private float delayShowDuration = 0.5f;
 
         private CancellationTokenSource _cts;
 
@@ -90,13 +91,16 @@ namespace BC.UI
             _cts?.Dispose();
             _cts = new CancellationTokenSource();
 
+            await UniTask.Delay((int)(delayShowDuration * 1000), cancellationToken: _cts.Token);
+            InputManagerMB.EnsureInstance().UnlockCursor();
+
             returnToTitleButton.gameObject.SetActive(true);
             nextStageButton.gameObject.SetActive(true);
 
             // パーティクルを再生
             if (goalParticle != null)
             {
-                goalParticle.Play();
+                goalParticle.StartFallEffect(FallEffectPlayMode.Loop);
             }
 
             // Y スケールを 0 → 1 にアニメーション
@@ -129,6 +133,12 @@ namespace BC.UI
             // Y スケールを 1 → 0 にアニメーション
             float elapsed = 0f;
             float duration = Mathf.Max(revealDuration, 0.001f);
+
+            // パーティクルを停止
+            if (goalParticle != null)
+            {
+                goalParticle.EndFallEffect();
+            }
 
             try
             {

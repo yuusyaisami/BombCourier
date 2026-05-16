@@ -131,9 +131,9 @@ namespace BC.Character
         {
             if (!uvSet.TryGetExpressionUvRect(expression, out Rect targetUvRect))
             {
-                Debug.LogWarning(
-                    $"{nameof(FaceMeshExpressionPresenterMB)}: UV rect is not registered. Expression={expression}. Fallback to Neutral.",
-                    this);
+                //Debug.LogWarning(
+                //    $"{nameof(FaceMeshExpressionPresenterMB)}: UV rect is not registered. Expression={expression}. Fallback to Neutral.",
+                //    this);
 
                 if (!uvSet.TryGetExpressionUvRect(FaceExpressionId.Neutral, out targetUvRect))
                 {

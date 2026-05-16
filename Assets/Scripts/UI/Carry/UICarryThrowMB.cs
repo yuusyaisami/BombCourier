@@ -30,13 +30,14 @@ namespace BC.UI
         {
             // PlayerMBはGameLogicから
             SetPlayerMB(GameLogicManagerMB.Instance.PlayerInstance);
-            if (itemHandState != null)
-            {
-                // PlayerMBのイベントにスライダー更新関数を登録
-                itemHandState.OnThrowChargeStart += StartThrowCharge;
-                itemHandState.OnThrowChargeEnd += EndThrowCharge;
-            }
-
+            GameLogicManagerMB.Instance.OnPlayerSpawned += SetPlayerMB;
+        }
+        void OnDestroy()
+        {
+            GameLogicManagerMB.Instance.OnPlayerSpawned -= SetPlayerMB;
+            tokenSource?.Cancel();
+            tokenSource?.Dispose();
+            tokenSource = null;
         }
         private void Update()
         {
@@ -47,6 +48,12 @@ namespace BC.UI
             if (player != null)
             {
                 itemHandState = player.GetComponent<PlayerItemHandleStateMB>();
+                if (itemHandState != null)
+                {
+                    // PlayerMBのイベントにスライダー更新関数を登録
+                    itemHandState.OnThrowChargeStart += StartThrowCharge;
+                    itemHandState.OnThrowChargeEnd += EndThrowCharge;
+                }
             }
             else
             {
@@ -66,6 +73,7 @@ namespace BC.UI
 
         private void StartThrowCharge()
         {
+            Debug.Log("StartThrowCharge called. CurrentThrowChargeRatio: " + itemHandState.CurrentThrowChargeRatio);
             throwPowerSlider.value = 0f;
             canvasGroup.DOFade(1f, 0.2f).SetEase(Ease.OutSine);
             tokenSource?.Cancel(); // 既存の更新タスクがあればキャンセル

@@ -15,6 +15,7 @@ namespace BC.Manager
         public GoalData goalData; // ゴールのデータ
         public GameObject stageInstance; // ステージのインスタンス
         public List<GodHandObjectMB> godHandObjects; // ステージ内のGodHandオブジェクトのリスト
+        public MapRuntimeMB mapRuntime; // ステージのRootで参照を集約するランタイム
     }
     public class StageManagerMB : MonoBehaviour
     {
@@ -40,34 +41,39 @@ namespace BC.Manager
             if (stageIndex < 0 || stageIndex >= stageData.Count)
             {
                 Debug.LogError($"StageManagerMB: Invalid stage index {stageIndex}.", this);
-                return default;
+                return CreateEmptyResult();
             }
 
             StageDataSO data = stageData[stageIndex];
             GameObject stageInstance = Instantiate(data.stagePrefab, stageRoot);
-            // スポーンさせたObjectないからBombMBを探してリストで返す
-            List<BombMB> bombs = new List<BombMB>();
-            foreach (var bomb in stageInstance.GetComponentsInChildren<BombMB>())
+            return ResolveStageRuntime(stageInstance);
+        }
+
+        public StageLoadResult ResolveStageRuntime(GameObject stageInstance)
+        {
+            if (stageInstance == null)
             {
-                bombs.Add(bomb);
+                Debug.LogError($"{nameof(StageManagerMB)}: stageInstance is null.", this);
+                return CreateEmptyResult();
             }
-            // スポーン
-            List<PlayerSpawnPointMB> spawnPoints = new List<PlayerSpawnPointMB>();
-            foreach (var spawnPoint in stageInstance.GetComponentsInChildren<PlayerSpawnPointMB>())
+
+            // ステージの必要参照は Root の MapRuntimeMB に集約し、Load 時の全探索をやめる。
+            MapRuntimeMB mapRuntime = stageInstance.GetComponent<MapRuntimeMB>();
+            if (mapRuntime == null)
             {
-                spawnPoints.Add(spawnPoint);
+                Debug.LogError($"{nameof(StageManagerMB)}: {nameof(MapRuntimeMB)} is not attached to the stage root.", stageInstance);
+                return CreateEmptyResult(stageInstance);
             }
-            // イントロカメラのパス
-            IntroCameraPathAuthoring introCameraPath = stageInstance.GetComponentInChildren<IntroCameraPathAuthoring>();
 
             return new StageLoadResult
             {
-                bombs = bombs,
-                spawnPoints = spawnPoints,
-                introCameraPath = introCameraPath,
-                goalData = stageInstance.GetComponentInChildren<BreakableGateObjectMB>()?.GoalData,
+                bombs = new List<BombMB>(mapRuntime.Bombs),
+                spawnPoints = new List<PlayerSpawnPointMB>(mapRuntime.SpawnPoints),
+                introCameraPath = mapRuntime.IntroCameraPath,
+                goalData = mapRuntime.GoalData,
                 stageInstance = stageInstance,
-                godHandObjects = new List<GodHandObjectMB>(stageInstance.GetComponentsInChildren<GodHandObjectMB>())    
+                godHandObjects = new List<GodHandObjectMB>(mapRuntime.GodHandObjects),
+                mapRuntime = mapRuntime,
             };
         }
         public void CaptureStageCheckpoint()
@@ -91,6 +97,20 @@ namespace BC.Manager
 
             checkpointService.Restore();
 
+        }
+
+        private static StageLoadResult CreateEmptyResult(GameObject stageInstance = null)
+        {
+            return new StageLoadResult
+            {
+                bombs = new List<BombMB>(),
+                spawnPoints = new List<PlayerSpawnPointMB>(),
+                introCameraPath = null,
+                goalData = null,
+                stageInstance = stageInstance,
+                godHandObjects = new List<GodHandObjectMB>(),
+                mapRuntime = null,
+            };
         }
     }
 }

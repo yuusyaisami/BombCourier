@@ -24,6 +24,14 @@ namespace BC.Gimmick
 
         private bool isBroken = false;
         public GoalData GoalData => goalData;
+        public Vector3 TargetPoint => isGoalGate && goalData != null ? goalData.Target : transform.position;
+        private void Awake()
+        {
+            if (isGoalGate && goalData != null)
+            {
+                goalData.goalTransform = this.transform;
+            }
+        }
 
         private void Start()
         {
@@ -92,7 +100,7 @@ namespace BC.Gimmick
                     part.isKinematic = false; // Rigidbodyを物理挙動させる
                     // 方向はimpactPointとbreakForceOriginとRBの位置の二つを考慮して決定する
                     // どれぐらいの力かで方向の重みを変える
-                    float maxSumImpact = impactForce + explosionForce;
+                    float maxSumImpact = impactForce * 0.25f + explosionForce;
                     Vector3 forceDirection = (impactPoint - breakForceOrigin.position).normalized * (impactForce / maxSumImpact) + breakForceDirection.normalized * (explosionForce / maxSumImpact);
                     part.AddForce(forceDirection, ForceMode.Impulse);
                 }
@@ -112,6 +120,13 @@ namespace BC.Gimmick
         }
 
 # if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (isGoalGate && goalData != null)
+            {
+                goalData.goalTransform = this.transform;
+            }
+        }
         private void OnDrawGizmosSelected()
         {
             if (breakForceOrigin != null)
@@ -120,7 +135,14 @@ namespace BC.Gimmick
                 Gizmos.DrawLine(breakForceOrigin.position, breakForceOrigin.position + breakForceDirection.normalized * 2f);
                 Gizmos.DrawWireSphere(breakForceOrigin.position, 0.2f);
             }
+            // PlayerTargetの位置をSceneビューでわかりやすくするためのGizmo
+            if (isGoalGate && goalData != null)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireSphere(TargetPoint, 0.2f);
+            }
         }
+
 # endif
 
     }

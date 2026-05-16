@@ -1,4 +1,5 @@
 using UnityEngine;
+using BC.Manager;
 using BC.Utility;
 
 namespace BC.Camera
@@ -16,9 +17,7 @@ namespace BC.Camera
         private void Start()
         {
             _stateMachine.ChangeState(CameraState.Follow);
-
-            // Lock cursor for testing
-            Cursor.lockState = CursorLockMode.Locked;
+            InputManagerMB.EnsureInstance();
         }
         private void Update()
         {

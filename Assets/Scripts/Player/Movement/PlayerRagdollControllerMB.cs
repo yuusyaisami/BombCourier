@@ -14,7 +14,8 @@ namespace BC.Manager
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody movementRigidbody;
         [SerializeField] private Collider movementCollider;
-        [SerializeField] private PlayerMoveController moveController;
+        [SerializeField] private EntityMoveMotorMB moveMotor;
+        [SerializeField] private PlayerMoveController playerMoveController;
 
         [Header("Ragdoll Parts Only")]
         [SerializeField] private Rigidbody[] ragdollRigidbodies;
@@ -31,7 +32,8 @@ namespace BC.Manager
             animator = GetComponentInChildren<Animator>();
             movementRigidbody = GetComponent<Rigidbody>();
             movementCollider = GetComponent<Collider>();
-            moveController = GetComponent<PlayerMoveController>();
+            moveMotor = GetComponent<EntityMoveMotorMB>();
+            playerMoveController = GetComponent<PlayerMoveController>();
 
             // 注意：
             // ここで自動収集したものをそのまま信用しない。
@@ -88,8 +90,11 @@ namespace BC.Manager
 
             isRagdoll = true;
 
-            if (moveController != null)
-                moveController.enabled = false;
+            if (playerMoveController != null)
+                playerMoveController.enabled = false;
+
+            if (moveMotor != null)
+                moveMotor.enabled = false;
 
             ResolveMovementBody();
 
@@ -145,12 +150,24 @@ namespace BC.Manager
                 movementRigidbody.angularVelocity = Vector3.zero;
             }
 
-            if (moveController != null)
-                moveController.enabled = true;
+            if (moveMotor != null)
+                moveMotor.enabled = true;
+
+            if (playerMoveController != null)
+                playerMoveController.enabled = true;
         }
 
         private void ResolveMovementBody()
         {
+            if (moveMotor == null)
+                moveMotor = GetComponent<EntityMoveMotorMB>();
+
+            if (playerMoveController == null)
+                playerMoveController = GetComponent<PlayerMoveController>();
+
+            if (moveMotor == null && playerMoveController != null)
+                moveMotor = playerMoveController.MoveMotor;
+
             if (movementRigidbody == null)
                 movementRigidbody = GetComponent<Rigidbody>();
 

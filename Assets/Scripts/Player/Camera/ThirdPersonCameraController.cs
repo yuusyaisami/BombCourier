@@ -33,14 +33,8 @@ namespace BC.Camera
         [SerializeField] private Vector3 throwShoulderOffset = new(0.85f, 0.15f, 0.0f);
         [SerializeField, Min(0.0f)] private float throwShoulderOffsetBlendSharpness = 12.0f;
 
-        [Header("Aim Spine")]
-        [SerializeField] private Transform spineBone;
-        [SerializeField, Min(0.0f)] private float spineAimBlendSharpness = 16.0f;
-        [SerializeField] private Vector3 spineAimLocalRotationOffset;
-
         private float yaw;
         private float pitch;
-        private Animator animator;
         private ValueStoreService valueStore;
         private EntityRef entityRef;
         private ValueWatchHandle<bool> throwPoseHandle;
@@ -51,8 +45,6 @@ namespace BC.Camera
         private bool hasDefaultShoulderOffset;
         private float defaultCameraDistance;
         private bool hasDefaultCameraDistance;
-        private Quaternion defaultSpineLocalRotation;
-        private bool hasDefaultSpineLocalRotation;
 
         private void Reset()
         {
@@ -71,11 +63,6 @@ namespace BC.Camera
             Vector3 euler = cameraTarget.rotation.eulerAngles;
             yaw = euler.y;
             pitch = NormalizeAngle(euler.x);
-
-            animator = GetComponent<Animator>();
-
-            if (animator == null)
-                animator = GetComponentInParent<Animator>();
 
             ResolveThirdPersonFollow();
             ApplyCameraOrientation();
@@ -120,11 +107,6 @@ namespace BC.Camera
 
             ApplyCameraOrientation();
             UpdateThrowShoulderOffset();
-        }
-
-        private void LateUpdate()
-        {
-            UpdateAimSpineRotation();
         }
 
         public Quaternion GetYawRotation()
@@ -196,37 +178,6 @@ namespace BC.Camera
             UpdateAimRotationMode();
         }
 
-        private void UpdateAimSpineRotation()
-        {
-            if (!IsThrowPoseActive() || cameraTarget == null)
-                return;
-
-            ResolveAimSpineBone();
-
-            if (spineBone == null)
-                return;
-
-            if (!hasDefaultSpineLocalRotation)
-            {
-                defaultSpineLocalRotation = spineBone.localRotation;
-                hasDefaultSpineLocalRotation = true;
-            }
-
-            Vector3 targetEuler = spineAimLocalRotationOffset;
-            targetEuler.x += pitch;
-
-            Quaternion targetLocalRotation = defaultSpineLocalRotation * Quaternion.Euler(targetEuler);
-
-            float t = spineAimBlendSharpness <= 0.0f
-                ? 1.0f
-                : 1.0f - Mathf.Exp(-spineAimBlendSharpness * Time.deltaTime);
-
-            spineBone.localRotation = Quaternion.Slerp(
-                spineBone.localRotation,
-                targetLocalRotation,
-                t);
-        }
-
         private bool IsThrowPoseActive()
         {
             if (throwPoseHandle == null)
@@ -255,29 +206,6 @@ namespace BC.Camera
 
             if (throwPoseHandle == null && valueStore != null && entityRef.IsValid)
                 throwPoseHandle = valueStore.GetHandle(entityRef, ValueKeys.Runtime.IsThrowPoseActive);
-        }
-
-        private void ResolveAimSpineBone()
-        {
-            if (spineBone != null)
-                return;
-
-            if (animator == null)
-                animator = GetComponent<Animator>();
-
-            if (animator == null)
-                animator = GetComponentInParent<Animator>();
-
-            if (animator == null)
-                return;
-
-            spineBone = animator.GetBoneTransform(HumanBodyBones.UpperChest);
-
-            if (spineBone == null)
-                spineBone = animator.GetBoneTransform(HumanBodyBones.Chest);
-
-            if (spineBone == null)
-                spineBone = animator.GetBoneTransform(HumanBodyBones.Spine);
         }
 
         private void ResolveThirdPersonFollow()
@@ -342,9 +270,6 @@ namespace BC.Camera
 
             if (thirdPersonFollow != null && hasDefaultCameraDistance)
                 thirdPersonFollow.CameraDistance = defaultCameraDistance;
-
-            if (spineBone != null && hasDefaultSpineLocalRotation)
-                spineBone.localRotation = defaultSpineLocalRotation;
 
             if (rotateWithFollowTarget != null && hasDefaultRotateWithFollowTargetEnabled)
                 rotateWithFollowTarget.enabled = defaultRotateWithFollowTargetEnabled;

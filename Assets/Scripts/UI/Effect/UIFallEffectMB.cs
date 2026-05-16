@@ -13,6 +13,7 @@ namespace BC.UI
         [SerializeField] private float spawnInterval = 0.1f; // 落下エフェクトのスポーン間隔
         [InlineProperty]
         [SerializeField] private FallEffectElementData[] fallEffectElements;
+        [SerializeField] private Vector2 spawnAreaOffset; // local spaceを基準にしている
         [SerializeField] private Vector2 spawnAreaSize; // local spaceを基準にしている
         // pool管理
         private ObjectPool<Image> fallEffectPool;
@@ -49,7 +50,8 @@ namespace BC.UI
                 Random.Range(-spawnAreaSize.x / 2, spawnAreaSize.x / 2),
                 Random.Range(-spawnAreaSize.y / 2, spawnAreaSize.y / 2)
             );
-            effectObj.transform.localPosition = randomPos;
+            randomPos += spawnAreaOffset;
+            effectObj.rectTransform.anchoredPosition = randomPos;
             // ランダムなスプライトを選択
             float randomValue = Random.Range(0, totalWeight);
             float cumulativeWeight = 0f;
@@ -108,5 +110,34 @@ namespace BC.UI
             isPlaying = false;
             endTimer = -1f;
         }
+
+#if UNITY_EDITOR
+        // Area Gizmoの表示
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = new Color(1, 0, 0, 0.5f);
+            RectTransform rectTransform = transform as RectTransform;
+
+            if (rectTransform != null)
+            {
+                // anchoredPosition を基準に、親ローカル空間へ矩形を描画する。
+                Matrix4x4 previousMatrix = Gizmos.matrix;
+                Transform parentTransform = rectTransform.parent;
+                Gizmos.matrix = parentTransform != null ? parentTransform.localToWorldMatrix : Matrix4x4.identity;
+
+                Vector2 center = rectTransform.anchoredPosition + spawnAreaOffset;
+                Vector3 size = new Vector3(spawnAreaSize.x, spawnAreaSize.y, 0.01f);
+                Gizmos.DrawWireCube(new Vector3(center.x, center.y, 0f), size);
+
+                Gizmos.matrix = previousMatrix;
+                return;
+            }
+
+            // RectTransform ではない場合は従来のワールド座標で描画する。
+            Vector3 fallbackCenter = transform.position + (Vector3)spawnAreaOffset;
+            Vector3 fallbackSize = new Vector3(spawnAreaSize.x, spawnAreaSize.y, 0.01f);
+            Gizmos.DrawWireCube(fallbackCenter, fallbackSize);
+        }
+#endif
     }
 }
