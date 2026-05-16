@@ -39,6 +39,19 @@ namespace BC.Base
 
     public static class EntityTags
     {
+        public static class System
+        {
+            public static readonly EntityTag ApplicationKernel =
+                new EntityTag(
+                    new EntityTagId(0),
+                    "System.ApplicationKernel"
+                );
+            public static readonly EntityTag SceneKernel =
+                new EntityTag(
+                    new EntityTagId(1),
+                    "System.SceneKernel"
+                );
+        }
         public static class Actor
         {
             public static readonly EntityTag Player =

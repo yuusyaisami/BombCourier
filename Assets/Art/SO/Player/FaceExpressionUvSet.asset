@@ -36,3 +36,10 @@ MonoBehaviour:
       y: 15
       width: 16
       height: 19
+  - expression: 6
+    pixelRect:
+      serializedVersion: 2
+      x: 37
+      y: 15
+      width: 16
+      height: 19

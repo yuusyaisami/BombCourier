@@ -5,35 +5,50 @@ using Unity.VisualScripting;
 using UnityEngine;
 namespace BC.Gimmick
 {
+    public interface IGodHandCatchTarget
+    {
+        bool CanBeCaughtByGodHand { get; }
+
+        void OnCaughtByGodHand(Transform catchTransform);
+        void OnReleasedByGodHand();
+    }
     public class GodHandObjectMB : MonoBehaviour
     {
         [SerializeField] private Transform catchTransform; // GodHandにつかまったときParent位置
         [SerializeField] private Vector3 originalPosition; // 初期位置
         [SerializeField] private Vector3 targetPosition; // 移動目標位置 (デフォルト値)
 
-        private Transform targetTransform; // つかまる対象のTransform
-        private Transform releaseTargetParent; // つかまる対象の元の親Transform
-        public void Catch(Transform targetTransform)
+        private IGodHandCatchTarget catchTarget; // つかまる対象のEntity契約
+        public Vector3 TargetPosition => targetPosition;
+        public Vector3 OriginalPosition => originalPosition;
+        public void Catch(IGodHandCatchTarget target)
         {
+            if (catchTransform == null)
+            {
+                Debug.LogError($"{nameof(GodHandObjectMB)}: catchTransform is not assigned.", this);
+                return;
+            }
+
+            if (target == null || !target.CanBeCaughtByGodHand)
+                return;
+
             // すでにつかまっている対象がある場合はリリースしてから新しい対象をつかむ
-            if (this.targetTransform != null)
+            if (catchTarget != null)
             {
                 Release();
             }
-            this.targetTransform = targetTransform;
-            this.releaseTargetParent = targetTransform.parent;
-            targetTransform.SetParent(catchTransform);
-            targetTransform.localPosition = Vector3.zero;
-            targetTransform.localRotation = Quaternion.identity;
+
+            catchTarget = target;
+            catchTarget.OnCaughtByGodHand(catchTransform);
+            Debug.Log($"{nameof(GodHandObjectMB)}: Caught {target}.", this);
         }
 
         public void Release()
         {
-            if (targetTransform != null)
+            if (catchTarget != null)
             {
-                targetTransform.SetParent(releaseTargetParent);
-                targetTransform = null;
-                releaseTargetParent = null;
+                catchTarget.OnReleasedByGodHand();
+                catchTarget = null;
             }
         }
         public void SetOriginalPosition()

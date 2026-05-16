@@ -83,6 +83,7 @@ namespace BC.UI
         {
             HideAsync().Forget();
             GameStateManagerMB.Instance.StateMachine.ChangeState(GameState.NextStage);
+            Debug.Log("Next Stage button clicked. Transitioning to next stage.");
         }
 
         private async UniTaskVoid ShowAsync()
@@ -96,13 +97,14 @@ namespace BC.UI
 
             returnToTitleButton.gameObject.SetActive(true);
             nextStageButton.gameObject.SetActive(true);
+            returnToTitleButton.interactable = false;
+            nextStageButton.interactable = false;
 
             // パーティクルを再生
             if (goalParticle != null)
             {
                 goalParticle.StartFallEffect(FallEffectPlayMode.Loop);
             }
-
             // Y スケールを 0 → 1 にアニメーション
             float elapsed = 0f;
             float duration = Mathf.Max(revealDuration, 0.001f);
@@ -123,6 +125,8 @@ namespace BC.UI
             }
 
             transform.localScale = Vector3.one;
+            returnToTitleButton.interactable = true;
+            nextStageButton.interactable = true;
         }
         private async UniTaskVoid HideAsync()
         {
@@ -156,6 +160,8 @@ namespace BC.UI
             }
 
             transform.localScale = new Vector3(1f, 0f, 1f);
+            returnToTitleButton.interactable = false;
+            nextStageButton.interactable = false;
         }
     }
 }

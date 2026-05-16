@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using BC.Bomb;
+using BC.Camera;
 using BC.Gimmick;
-using BombCourier.CameraIntro;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BC.Stage
 {
@@ -12,14 +13,18 @@ namespace BC.Stage
     public sealed class MapRuntimeMB : MonoBehaviour
     {
         [Header("Map References")]
-        [SerializeField] private IntroCameraPathAuthoring introCameraPath;
+        [FormerlySerializedAs("introCameraPath")]
+        [SerializeField] private CameraPathSequenceAuthoringMB cameraPath;
         [SerializeField] private BreakableGateObjectMB goalGate;
         [SerializeField] private GoalData goalData;
         [SerializeField] private List<BombMB> bombs = new List<BombMB>();
         [SerializeField] private List<PlayerSpawnPointMB> spawnPoints = new List<PlayerSpawnPointMB>();
         [SerializeField] private List<GodHandObjectMB> godHandObjects = new List<GodHandObjectMB>();
 
-        public IntroCameraPathAuthoring IntroCameraPath => introCameraPath;
+        public CameraPathSequenceAuthoringMB CameraPath => cameraPath;
+        [System.Obsolete("Use CameraPath instead.")]
+        public CameraPathSequenceAuthoringMB IntroCameraPath => cameraPath;
+        public BreakableGateObjectMB GoalGate => goalGate;
         public GoalData GoalData => goalGate != null && goalGate.GoalData != null ? goalGate.GoalData : goalData;
         public IReadOnlyList<BombMB> Bombs => bombs;
         public IReadOnlyList<PlayerSpawnPointMB> SpawnPoints => spawnPoints;
@@ -44,7 +49,7 @@ namespace BC.Stage
             bombs = new List<BombMB>(GetComponentsInChildren<BombMB>(true));
             spawnPoints = new List<PlayerSpawnPointMB>(GetComponentsInChildren<PlayerSpawnPointMB>(true));
             godHandObjects = new List<GodHandObjectMB>(GetComponentsInChildren<GodHandObjectMB>(true));
-            introCameraPath = GetComponentInChildren<IntroCameraPathAuthoring>(true);
+            cameraPath = GetComponentInChildren<CameraPathSequenceAuthoringMB>(true);
 
             goalGate = null;
             goalData = null;

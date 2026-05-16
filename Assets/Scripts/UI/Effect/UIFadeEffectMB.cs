@@ -14,10 +14,24 @@ namespace BC.UI
         [SerializeField] private Image topFadeImage;
         [SerializeField] private Image bottomFadeImage;
         [SerializeField] private Canvas fadeCanvas;
+        [SerializeField] private FadeType defaultFadeType = FadeType.Single;
+        [SerializeField] private float defaultFadeAmount = 1f;
 
         private CancellationTokenSource activeFadeCancellationTokenSource;
 
         public Canvas FadeCanvas => fadeCanvas;
+        private void Awake()
+        {
+            if (fadeCanvas == null)
+            {
+                Debug.LogError($"{nameof(UIFadeEffectMB)}: Fade Canvas is not assigned.", this);
+                return;
+            }
+
+            // 初期状態を設定する
+            SetFadeType(defaultFadeType);
+            ApplyFadeState(defaultFadeType, defaultFadeAmount);
+        }
 
         private void OnDestroy()
         {
@@ -55,7 +69,13 @@ namespace BC.UI
         {
             StartFadeAsync(fadeType, amount, duration).Forget();
         }
-
+        /// <summary>
+        /// フェードを開始する非同期メソッド。既にフェードが進行中の場合はキャンセルしてから新しいフェードを開始する。
+        /// </summary>
+        /// <param name="fadeType">フェードの種類</param>
+        /// <param name="amount">フェードの目標アルファ値 (0 = 完全に透明, 1 = 完全に不透明)</param>
+        /// <param name="duration">フェードの時間</param>
+        /// <returns></returns>
         public async UniTask StartFadeAsync(FadeType fadeType, float amount, float duration)
         {
             CancellationTokenSource fadeCancellationTokenSource = BeginNewFade();

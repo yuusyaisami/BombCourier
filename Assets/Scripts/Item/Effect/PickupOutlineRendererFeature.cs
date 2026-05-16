@@ -45,8 +45,11 @@ namespace BC.Rendering
         {
             private const string CandidateMaskPassName = "Pickup Outline Candidate Mask";
             private const string BestMaskPassName = "Pickup Outline Best Mask";
-            private const string CompositePassName = "Pickup Outline Composite";
+            private const string CandidateCompositePassName = "Pickup Outline Candidate Composite";
+            private const string BestCompositePassName = "Pickup Outline Best Composite";
 
+            private static readonly int BlitTextureId = Shader.PropertyToID("_BlitTexture");
+            private static readonly int BlitScaleBiasId = Shader.PropertyToID("_BlitScaleBias");
             private static readonly int MaskTextureId = Shader.PropertyToID("_PickupOutlineMaskTex");
             private static readonly int MaskTexelSizeId = Shader.PropertyToID("_PickupOutlineMaskTexelSize");
             private static readonly MaterialPropertyBlock SharedPropertyBlock = new();
@@ -73,15 +76,9 @@ namespace BC.Rendering
 
             private sealed class CompositePassData
             {
-                internal TextureHandle activeColorTexture;
-                internal TextureHandle activeDepthTexture;
-                internal TextureHandle candidateMaskTexture;
-                internal TextureHandle bestMaskTexture;
-                internal bool hasCandidateMask;
-                internal bool hasBestMask;
-                internal PickupOutlineEntry[] entries;
-                internal Material candidateMaterial;
-                internal Material bestMaterial;
+                internal TextureHandle sourceColorTexture;
+                internal TextureHandle maskTexture;
+                internal Material material;
                 internal Vector4 maskTexelSize;
             }
 
@@ -155,16 +152,31 @@ namespace BC.Rendering
                     activeColorDesc.width,
                     activeColorDesc.height);
 
-                RecordCompositePass(
-                    renderGraph,
-                    activeColorTexture,
-                    activeDepthTexture,
-                    candidateMask,
-                    bestMask,
-                    hasCandidate,
-                    hasBest,
-                    entries,
-                    maskTexelSize);
+                TextureHandle compositeColor = activeColorTexture;
+
+                if (hasCandidate)
+                {
+                    compositeColor = RecordCompositePass(
+                        renderGraph,
+                        CandidateCompositePassName,
+                        compositeColor,
+                        candidateMask,
+                        candidateMaterial,
+                        maskTexelSize);
+                }
+
+                if (hasBest)
+                {
+                    compositeColor = RecordCompositePass(
+                        renderGraph,
+                        BestCompositePassName,
+                        compositeColor,
+                        bestMask,
+                        bestMaterial,
+                        maskTexelSize);
+                }
+
+                resourceData.cameraColor = compositeColor;
             }
 
             private void RecordMaskPass(
@@ -197,51 +209,38 @@ namespace BC.Rendering
                 }
             }
 
-            private void RecordCompositePass(
+            private TextureHandle RecordCompositePass(
                 RenderGraph renderGraph,
-                TextureHandle activeColorTexture,
-                TextureHandle activeDepthTexture,
-                TextureHandle candidateMaskTexture,
-                TextureHandle bestMaskTexture,
-                bool hasCandidateMask,
-                bool hasBestMask,
-                PickupOutlineEntry[] entries,
+                string passName,
+                TextureHandle sourceColorTexture,
+                TextureHandle maskTexture,
+                Material material,
                 Vector4 maskTexelSize)
             {
-                using (var builder = renderGraph.AddUnsafePass<CompositePassData>(CompositePassName, out CompositePassData passData))
+                TextureDesc destinationDesc = renderGraph.GetTextureDesc(sourceColorTexture);
+                destinationDesc.name = passName;
+                destinationDesc.clearBuffer = false;
+                TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
+
+                using (var builder = renderGraph.AddRasterRenderPass<CompositePassData>(passName, out CompositePassData passData))
                 {
-                    passData.activeColorTexture = activeColorTexture;
-                    passData.activeDepthTexture = activeDepthTexture;
-                    passData.candidateMaskTexture = candidateMaskTexture;
-                    passData.bestMaskTexture = bestMaskTexture;
-                    passData.hasCandidateMask = hasCandidateMask;
-                    passData.hasBestMask = hasBestMask;
-                    passData.entries = entries;
-                    passData.candidateMaterial = candidateMaterial;
-                    passData.bestMaterial = bestMaterial;
+                    passData.sourceColorTexture = sourceColorTexture;
+                    passData.maskTexture = maskTexture;
+                    passData.material = material;
                     passData.maskTexelSize = maskTexelSize;
 
-                    builder.UseTexture(passData.activeColorTexture, AccessFlags.Write);
-
-                    if (passData.hasCandidateMask)
-                    {
-                        builder.UseTexture(passData.candidateMaskTexture, AccessFlags.Read);
-                    }
-
-                    if (passData.hasBestMask)
-                    {
-                        builder.UseTexture(passData.bestMaskTexture, AccessFlags.Read);
-                    }
-
-                    // CompositeではDepthを書かないが、Colorと同じTarget状態を保つためDepthも束ねる。
-                    builder.UseTexture(passData.activeDepthTexture, AccessFlags.Read);
+                    builder.UseTexture(passData.sourceColorTexture, AccessFlags.Read);
+                    builder.UseTexture(passData.maskTexture, AccessFlags.Read);
+                    builder.SetRenderAttachment(destination, 0, AccessFlags.Write);
                     builder.AllowPassCulling(false);
 
-                    builder.SetRenderFunc(static (CompositePassData data, UnsafeGraphContext context) =>
+                    builder.SetRenderFunc(static (CompositePassData data, RasterGraphContext context) =>
                     {
                         ExecuteCompositePass(data, context);
                     });
                 }
+
+                return destination;
             }
 
             private static void ExecuteMaskPass(MaskPassData data, UnsafeGraphContext context)
@@ -283,33 +282,24 @@ namespace BC.Rendering
                 }
             }
 
-            private static void ExecuteCompositePass(CompositePassData data, UnsafeGraphContext context)
+            private static void ExecuteCompositePass(CompositePassData data, RasterGraphContext context)
             {
-                context.cmd.SetRenderTarget(data.activeColorTexture, data.activeDepthTexture);
-
-                CommandBuffer cmd = CommandBufferHelpers.GetNativeCommandBuffer(context.cmd);
-
-                if (data.hasCandidateMask)
-                {
-                    DrawCompositeLayer(cmd, data.candidateMaterial, data.candidateMaskTexture, data.maskTexelSize);
-                }
-
-                if (data.hasBestMask)
-                {
-                    DrawCompositeLayer(cmd, data.bestMaterial, data.bestMaskTexture, data.maskTexelSize);
-                }
+                DrawCompositeLayer(context.cmd, data.material, data.sourceColorTexture, data.maskTexture, data.maskTexelSize);
             }
 
             private static void DrawCompositeLayer(
-                CommandBuffer cmd,
+                RasterCommandBuffer cmd,
                 Material material,
+                RTHandle sourceColorTexture,
                 RTHandle maskTexture,
                 Vector4 maskTexelSize)
             {
-                if (material == null || maskTexture == null)
+                if (material == null || sourceColorTexture == null || maskTexture == null)
                     return;
 
                 SharedPropertyBlock.Clear();
+                SharedPropertyBlock.SetTexture(BlitTextureId, sourceColorTexture);
+                SharedPropertyBlock.SetVector(BlitScaleBiasId, new Vector4(1f, 1f, 0f, 0f));
                 SharedPropertyBlock.SetTexture(MaskTextureId, maskTexture);
                 SharedPropertyBlock.SetVector(MaskTexelSizeId, maskTexelSize);
 

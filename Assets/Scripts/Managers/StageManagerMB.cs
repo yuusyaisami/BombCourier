@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using BC.Bomb;
+using BC.Camera;
 using BC.Gimmick;
 using BC.Stage;
-using BombCourier.CameraIntro;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 namespace BC.Manager
@@ -11,7 +11,7 @@ namespace BC.Manager
     {
         public List<BombMB> bombs; // ステージ内の爆弾のリスト
         public List<PlayerSpawnPointMB> spawnPoints; // ステージ内のプレイヤースポーンポイントのリスト
-        public IntroCameraPathAuthoring introCameraPath; // イントロカメラのパス 
+        public CameraPathSequenceAuthoringMB cameraPath; // カメラパス
         public GoalData goalData; // ゴールのデータ
         public GameObject stageInstance; // ステージのインスタンス
         public List<GodHandObjectMB> godHandObjects; // ステージ内のGodHandオブジェクトのリスト
@@ -32,19 +32,19 @@ namespace BC.Manager
             Instance = this;
         }
 
-        [SerializeField] private List<StageDataSO> stageData; // ステージデータのScriptableObject
+        [SerializeField] private StageRegistrySO stageData; // ステージデータのScriptableObject
         [SerializeField] private StageCheckpointServiceMB checkpointService; // チェックポイントサービス
         [SerializeField] private Transform stageRoot; // ステージの親オブジェクト
 
         public StageLoadResult LoadStage(int stageIndex)
         {
-            if (stageIndex < 0 || stageIndex >= stageData.Count)
+            if (stageIndex < 0 || stageIndex >= stageData.StageData.Count)
             {
                 Debug.LogError($"StageManagerMB: Invalid stage index {stageIndex}.", this);
                 return CreateEmptyResult();
             }
 
-            StageDataSO data = stageData[stageIndex];
+            StageData data = stageData.StageData[stageIndex];
             GameObject stageInstance = Instantiate(data.stagePrefab, stageRoot);
             return ResolveStageRuntime(stageInstance);
         }
@@ -69,7 +69,7 @@ namespace BC.Manager
             {
                 bombs = new List<BombMB>(mapRuntime.Bombs),
                 spawnPoints = new List<PlayerSpawnPointMB>(mapRuntime.SpawnPoints),
-                introCameraPath = mapRuntime.IntroCameraPath,
+                cameraPath = mapRuntime.CameraPath,
                 goalData = mapRuntime.GoalData,
                 stageInstance = stageInstance,
                 godHandObjects = new List<GodHandObjectMB>(mapRuntime.GodHandObjects),
@@ -105,7 +105,7 @@ namespace BC.Manager
             {
                 bombs = new List<BombMB>(),
                 spawnPoints = new List<PlayerSpawnPointMB>(),
-                introCameraPath = null,
+                cameraPath = null,
                 goalData = null,
                 stageInstance = stageInstance,
                 godHandObjects = new List<GodHandObjectMB>(),

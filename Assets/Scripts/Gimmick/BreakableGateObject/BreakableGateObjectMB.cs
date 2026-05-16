@@ -23,6 +23,7 @@ namespace BC.Gimmick
         [SerializeField, ShowIf("isGoalGate")] private GoalData goalData; // ゴールルームのデータ。ゴールカメラやゴールの位置などを管理するために使用する。
 
         private bool isBroken = false;
+        public bool IsBroken => isBroken;
         public GoalData GoalData => goalData;
         public Vector3 TargetPoint => isGoalGate && goalData != null ? goalData.Target : transform.position;
         private void Awake()

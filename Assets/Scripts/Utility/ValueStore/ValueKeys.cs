@@ -198,14 +198,14 @@ namespace BC.Base
                     new ValueKeyId(8013),
                     "Runtime.CanMoveByInput",
                     true,
-                    ValueCompositionMode.Raw
+                    ValueCompositionMode.BoolAnd
                 );
             public static readonly ValueKey<bool> CanMoveBySystem =
                 new ValueKey<bool>(
                     new ValueKeyId(8014),
                     "Runtime.CanMoveBySystem",
                     true,
-                    ValueCompositionMode.Raw
+                    ValueCompositionMode.BoolAnd
                 );
         }
 

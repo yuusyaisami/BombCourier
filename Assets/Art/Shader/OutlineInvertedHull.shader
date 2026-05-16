@@ -143,8 +143,11 @@ Shader "BC/PickupOutlineScreenSpace"
 
             half4 Frag(Varyings input) : SV_Target
             {
-                float alpha = EvaluateOutlineAlpha(input.texcoord);
-                return half4(_OutlineColor.rgb, _OutlineColor.a * alpha);
+                float2 uv = input.texcoord;
+                half4 sceneColor = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv);
+                float outlineAlpha = saturate(_OutlineColor.a * EvaluateOutlineAlpha(uv));
+                sceneColor.rgb = lerp(sceneColor.rgb, _OutlineColor.rgb, outlineAlpha);
+                return half4(sceneColor.rgb, sceneColor.a);
             }
 
             ENDHLSL

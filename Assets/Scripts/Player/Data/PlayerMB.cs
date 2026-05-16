@@ -1,4 +1,5 @@
 using BC.Camera;
+using BC.Gimmick;
 using BC.Manager;
 using BC.Utility;
 using UnityEngine;
@@ -10,7 +11,7 @@ namespace BC.Base
         bool IsHandlingItem { get; }
     }
 
-    public class PlayerMB : MonoBehaviour
+    public class PlayerMB : MonoBehaviour, IGodHandCatchTarget
     {
 
         [SerializeField] private ParticleSystem respawnEffectPrefab; // スポーン(またはリスポーン)したときの演出
@@ -18,14 +19,33 @@ namespace BC.Base
         [SerializeField] private EntityMoveMotorMB moveController;
         [SerializeField] private PlayerMoveController playerMoveController;
         [SerializeField] private ThirdPersonCameraController cameraController;
+        [SerializeField] private Rigidbody bodyRigidbody;
+
+        private Transform godHandCatchTransform;
+        private bool isCaughtByGodHand;
+        private bool cachedMoveMotorEnabled;
+        private bool cachedPlayerMoveControllerEnabled;
+        private bool cachedRigidbodyIsKinematic;
+        private bool cachedRigidbodyUseGravity;
+        private bool cachedRigidbodyDetectCollisions;
 
         public PlayerRagdollControllerMB RagdollController => ragdollController;
         public EntityMoveMotorMB MoveController => moveController != null ? moveController : GetComponent<EntityMoveMotorMB>();
         public PlayerMoveController PlayerMoveController => playerMoveController != null ? playerMoveController : GetComponent<PlayerMoveController>();
         public ThirdPersonCameraController CameraController => cameraController != null ? cameraController : GetComponentInChildren<ThirdPersonCameraController>();
+        public bool CanBeCaughtByGodHand => enabled && gameObject.activeInHierarchy;
+
         private void Awake()
         {
             ResolveReferences();
+        }
+
+        private void LateUpdate()
+        {
+            if (!isCaughtByGodHand || godHandCatchTransform == null)
+                return;
+
+            transform.SetPositionAndRotation(godHandCatchTransform.position, godHandCatchTransform.rotation);
         }
 
         private void OnValidate()
@@ -65,6 +85,95 @@ namespace BC.Base
             {
                 cameraController = GetComponentInChildren<ThirdPersonCameraController>(true);
             }
+
+            if (bodyRigidbody == null)
+            {
+                bodyRigidbody = GetComponent<Rigidbody>();
+            }
+        }
+
+        public void OnCaughtByGodHand(Transform catchTransform)
+        {
+            if (!CanBeCaughtByGodHand || catchTransform == null)
+                return;
+
+            ResolveReferences();
+
+            if (!isCaughtByGodHand)
+            {
+                CacheGodHandCatchState();
+            }
+
+            godHandCatchTransform = catchTransform;
+            isCaughtByGodHand = true;
+
+            if (playerMoveController != null)
+            {
+                playerMoveController.CancelAutoMove();
+                playerMoveController.SetPlanarVelocity(Vector3.zero);
+                playerMoveController.SetVerticalVelocity(0.0f);
+                playerMoveController.ClearExternalVelocity();
+                playerMoveController.enabled = false;
+            }
+
+            if (moveController != null)
+            {
+                moveController.CancelAutoMove();
+                moveController.ClearMoveIntent();
+                moveController.enabled = false;
+            }
+
+            if (bodyRigidbody != null)
+            {
+                bodyRigidbody.linearVelocity = Vector3.zero;
+                bodyRigidbody.angularVelocity = Vector3.zero;
+                bodyRigidbody.isKinematic = true;
+                bodyRigidbody.useGravity = false;
+                bodyRigidbody.detectCollisions = false;
+            }
+
+            transform.SetPositionAndRotation(catchTransform.position, catchTransform.rotation);
+        }
+
+        public void OnReleasedByGodHand()
+        {
+            if (!isCaughtByGodHand)
+                return;
+
+            if (bodyRigidbody != null)
+            {
+                bodyRigidbody.linearVelocity = Vector3.zero;
+                bodyRigidbody.angularVelocity = Vector3.zero;
+                bodyRigidbody.isKinematic = cachedRigidbodyIsKinematic;
+                bodyRigidbody.useGravity = cachedRigidbodyUseGravity;
+                bodyRigidbody.detectCollisions = cachedRigidbodyDetectCollisions;
+            }
+
+            if (moveController != null)
+            {
+                moveController.enabled = cachedMoveMotorEnabled;
+            }
+
+            if (playerMoveController != null)
+            {
+                playerMoveController.enabled = cachedPlayerMoveControllerEnabled;
+            }
+
+            godHandCatchTransform = null;
+            isCaughtByGodHand = false;
+        }
+
+        private void CacheGodHandCatchState()
+        {
+            cachedMoveMotorEnabled = moveController != null && moveController.enabled;
+            cachedPlayerMoveControllerEnabled = playerMoveController != null && playerMoveController.enabled;
+
+            if (bodyRigidbody == null)
+                return;
+
+            cachedRigidbodyIsKinematic = bodyRigidbody.isKinematic;
+            cachedRigidbodyUseGravity = bodyRigidbody.useGravity;
+            cachedRigidbodyDetectCollisions = bodyRigidbody.detectCollisions;
         }
         public void TeleportToSpawnPoint(Vector3 position = default, Quaternion rotation = default)
         {

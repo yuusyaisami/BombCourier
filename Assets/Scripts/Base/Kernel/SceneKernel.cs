@@ -1,6 +1,7 @@
 namespace BC.Base
 {
     using BC.ActionSystem;
+    using BC.Camera;
 
     public sealed class SceneKernel : BaseKernel
     {
@@ -16,6 +17,7 @@ namespace BC.Base
         public EntitySpawnerService Spawner { get; set; }
         public EntityComponentResolverService EntityComponents { get; set; }
         public ActionService Actions { get; set; }
+        public CameraPathPlayerService CameraPaths { get; set; }
 
         // 既存コード互換用。新規コードでは EntityValueStore / KernelValueStore を明示して使う。
         public ValueStoreService ValueStore
@@ -34,6 +36,7 @@ namespace BC.Base
         {
             EntityComponents = new EntityComponentResolverService(this);
             Actions = new ActionService(this);
+            CameraPaths = new CameraPathPlayerService(this);
 
             Tickables = new ITickable[]
             {
@@ -48,6 +51,7 @@ namespace BC.Base
             EntityValueStore?.Clear();
             KernelValueStore?.Clear();
             EntityComponents?.Clear();
+            CameraPaths?.Cancel();
             Actions?.Clear();
         }
     }

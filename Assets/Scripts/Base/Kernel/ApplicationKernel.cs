@@ -7,6 +7,8 @@ namespace BC.Base
         // Application単位で必要な共有通知と共有状態だけを置く。
         public EventService Events { get; set; }
         public KernelValueStoreService KernelValueStore { get; set; }
+        public LoadingSceneService LoadingScene { get; set; }
+        public SceneManagerService SceneManager { get; set; }
         public IKernelEventBus KernelEvents => Events;
 
         // 旧名互換。新規コードでは KernelEvents を使う。
@@ -22,6 +24,7 @@ namespace BC.Base
 
         public void Dispose()
         {
+            LoadingScene?.Dispose();
             Events?.Clear();
             KernelValueStore?.Clear();
         }

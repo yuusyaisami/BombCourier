@@ -59,6 +59,7 @@ namespace BC.Animation
         private int currentSpeedHash;
         private int isIdleThrowHash;
         private int onThrowHash;
+        private int isNextStageHash;
 
         private bool initialized;
         private ValueWatchHandle<bool> isItemThrowAimingHandle;
@@ -124,6 +125,7 @@ namespace BC.Animation
             currentSpeedHash = Animator.StringToHash(currentSpeedParameter);
             isIdleThrowHash = Animator.StringToHash(isIdleThrowParameter);
             onThrowHash = Animator.StringToHash(onThrowParameter);
+            isNextStageHash = Animator.StringToHash(isNextStageParameter);
 
             initialized = true;
         }
@@ -145,15 +147,19 @@ namespace BC.Animation
         {
             if (moveSourceBehaviour != null)
             {
-                moveSource = moveSourceBehaviour as IEntityMoveAnimationSource;
-
-                if (moveSource == null)
+                if (moveSourceBehaviour is PlayerMoveController playerMoveController && playerMoveController.MoveMotor != null)
                 {
-                    Debug.LogWarning($"{nameof(EntityAnimationMB)}: Assigned moveSourceBehaviour does not implement {nameof(IEntityMoveAnimationSource)}. Searching another source.", moveSourceBehaviour);
+                    moveSourceBehaviour = playerMoveController.MoveMotor;
+                    moveSource = playerMoveController.MoveMotor;
+                    return;
                 }
+
+                moveSource = moveSourceBehaviour as IEntityMoveAnimationSource;
 
                 if (moveSource != null)
                     return;
+
+                moveSourceBehaviour = null;
             }
 
             MonoBehaviour[] behaviours = GetComponentsInParent<MonoBehaviour>(true);
@@ -270,12 +276,15 @@ namespace BC.Animation
                 return;
 
             bool isHandlingItem = handleItemSource != null && handleItemSource.IsHandlingItem;
+            bool isNextStageActive = HasNextStageParameter() && animator.GetBool(isNextStageHash);
             EntityMoveState state = moveSource.MoveState;
 
             FaceExpressionId expression;
 
             if (state == EntityMoveState.Dead)
                 expression = FaceExpressionId.Dead;
+            else if (isNextStageActive)
+                expression = FaceExpressionId.CannotMove;
             else if (isHandlingItem)
                 expression = FaceExpressionId.CarryingItem;
             else if (state == EntityMoveState.Jumping || state == EntityMoveState.Falling)
@@ -287,6 +296,12 @@ namespace BC.Animation
 
             SetFaceExpression(expression);
         }
+
+        private bool HasNextStageParameter()
+        {
+            return !string.IsNullOrWhiteSpace(isNextStageParameter);
+        }
+
         private void SetFaceExpression(FaceExpressionId expression)
         {
             if (!hasLastDebugExpression || lastDebugExpression != expression)

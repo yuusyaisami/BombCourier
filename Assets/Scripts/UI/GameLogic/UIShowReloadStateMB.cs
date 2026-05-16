@@ -12,20 +12,29 @@ namespace BC.UI
         [SerializeField] private SpriteAnimationPlayerMB spriteAnimationPlayer; // 爆発アニメーションを再生するためのコンポーネント
         [SerializeField] private InputActionReference reloadInputActionReference; // リロードの入力アクションリファレンス
         [SerializeField] private Slider reloadProgressSlider; // リロードの進行状況を表示するスライダー
-
+        [SerializeField] private CanvasGroup canvasGroup; // UI全体のCanvasGroupコンポーネント
         private float reloadInputHoldTime; // リロード入力のホールド時間
         private float requiredHoldTime = 1.5f; // リロード入力をホールドする必要がある時間
         private void Start()
         {
             // 最初は非表示にしておく
             gameObject.SetActive(false);
-            // GameLogicManagerMBのExplodedStateイベントにリスナーを登録
-            GameLogicManagerMB.Instance.ExplodedState += OnExplodedState;
+            // Goalがまだ開いていない爆発時だけ、リロードUIを出す。
+            GameLogicManagerMB.Instance.ExplodedBeforeGoalOpenedState += OnExplodedBeforeGoalOpenedState;
         }
 
-        public void OnExplodedState()
+        private void OnDestroy()
         {
-            // 爆弾が爆発したときにUIを表示する
+            if (GameLogicManagerMB.Instance != null)
+            {
+                GameLogicManagerMB.Instance.ExplodedBeforeGoalOpenedState -= OnExplodedBeforeGoalOpenedState;
+            }
+        }
+
+        public void OnExplodedBeforeGoalOpenedState()
+        {
+            // Goalがまだ開いていない状態で爆発したときにUIを表示する
+            reloadInputHoldTime = 0f;
             gameObject.SetActive(true);
             // 爆発アニメーションを再生する
             spriteAnimationPlayer.Play(RetryTextAnimClipSource, SpriteAnimationPlayMode.Once);

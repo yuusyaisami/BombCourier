@@ -21,13 +21,35 @@ namespace BC.UI
         private float effectTimer;
         private bool isPlaying;
         private float endTimer; // 一回再生モードの終了タイマー
+
+        private void Awake()
+        {
+            DisableInputBlocking();
+        }
+
         void Start()
         {
             // 初期化処理
             // pool 初期化
             fallEffectPool = new ObjectPool<Image>(
-                createFunc: () => Instantiate(fallEffectPrefab, transform).GetComponent<Image>(),
-                actionOnGet: obj => obj.gameObject.SetActive(true),
+                createFunc: () =>
+                {
+                    Image image = Instantiate(fallEffectPrefab, transform).GetComponent<Image>();
+                    if (image != null)
+                    {
+                        image.raycastTarget = false;
+                    }
+
+                    return image;
+                },
+                actionOnGet: obj =>
+                {
+                    if (obj != null)
+                    {
+                        obj.raycastTarget = false;
+                        obj.gameObject.SetActive(true);
+                    }
+                },
                 actionOnRelease: obj => obj.gameObject.SetActive(false),
                 actionOnDestroy: obj => Destroy(obj.gameObject),
                 collectionCheck: false,
@@ -109,6 +131,18 @@ namespace BC.UI
             // 落下エフェクトの終了処理
             isPlaying = false;
             endTimer = -1f;
+        }
+
+        private void DisableInputBlocking()
+        {
+            if (fallEffectCanvasGroup == null)
+            {
+                return;
+            }
+
+            // 画面演出であり UI 操作対象ではないので、常に raycast を通す。
+            fallEffectCanvasGroup.interactable = false;
+            fallEffectCanvasGroup.blocksRaycasts = false;
         }
 
 #if UNITY_EDITOR

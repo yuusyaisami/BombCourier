@@ -27,7 +27,7 @@ Shader "BC/Particles/ParticleUnlit"
         [HDR] _EmissionColor ("Emission Color", Color) = (0, 0, 0, 1)
         _EmissionStrength ("Emission Strength", Range(0, 16)) = 0
         _EmissionAlphaInfluence ("Emission Alpha Influence", Range(0, 1)) = 0.5
-        [Enum(Final,0,BaseRGB,1,BaseAlpha,2,VertexColor,3,VertexAlpha,4,MaskDissolve,5,MaskEmission,6,MaskVariation,7,MaskShape,8,Noise,9,DissolveResult,10,EmissionResult,11,SoftCircle,12,Custom1,13,Custom2,14,UV,15)] _DebugMode ("Debug Mode", Float) = 0
+        _DebugMode ("Debug Mode", Float) = 0
 
         [Enum(Off,0,On,1)] _UseSoftParticles ("Use Soft Particles", Float) = 0
         _SoftParticleDistance ("Soft Particle Distance", Range(0.001, 4)) = 0.75

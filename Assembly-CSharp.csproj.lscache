@@ -107,8 +107,17 @@ Assets/Scripts/Base/Kernel/
  KernelContracts.cs
  SceneKernel.cs
  SceneKernelMB.cs
+Assets/Scripts/Base/Loading/
+ LoadingSceneService.cs
+ LoadingSceneServiceMB.cs
+ SceneManagerService.cs
+ SceneManagerServiceMB.cs
 Assets/Scripts/Camera/
  CameraManager.cs
+ CameraPathContracts.cs
+ CameraPathPlayerService.cs
+ CameraPathPointAuthoringMB.cs
+ CameraPathSequenceAuthoringMB.cs
  IntroCameraPathAuthoring.cs
  IntroCameraPoint.cs
  IntroCameraSequenceRunner.cs
@@ -154,76 +163,76 @@ Assets/Scripts/Managers/
  SettingManagerMB.cs
  StageManagerMB.cs
  TalkSystemManagerMB.cs
-Assets/Scripts/
- Map/MapRuntimeMB.cs
+Assets/Scripts/Movement/
+ EntityMoveController.cs
+ EntityMovementContracts.cs
+ EntityMoveMotorMB.cs
+Assets/Scripts/Player/
+ Camera/ThirdPersonCameraController.cs
+ Data/
+  ItemHoldSocketFollower.cs
+  PlayerItemHandleStateMB.cs
+  PlayerMB.cs
+  PlayerSpawnPointMB.cs
+ Interaction/
+  CarryableItemInteractableAdapter.cs
+  PlayerInteractionContracts.cs
+  PlayerInteractionController.cs
  Movement/
-  EntityMoveController.cs
-  EntityMovementContracts.cs
-  EntityMoveMotorMB.cs
- Player/
-  Camera/ThirdPersonCameraController.cs
-  Data/
-   ItemHoldSocketFollower.cs
-   PlayerItemHandleStateMB.cs
-   PlayerMB.cs
-   PlayerSpawnPointMB.cs
-  Interaction/
-   CarryableItemInteractableAdapter.cs
-   PlayerInteractionContracts.cs
-   PlayerInteractionController.cs
-  Movement/
-   PlayerMoveController.cs
-   PlayerRagdollControllerMB.cs
- Stage/Checkpoint/
-  StageCheckpointServiceMB.cs
-  StageSaveMarkMB.cs
- Stage/StageDataSO.cs
- UI/
-  Bomb/UIBombStateMB.cs
-  Carry/UICarryThrowMB.cs
-  Effect/
-   UIAnimationMB.cs
-   UIAnimationRuntime.cs
-   UIEffectContracts.cs
-   UIFadeEffectMB.cs
-   UIFallEffectMB.cs
-  GameLogic/
-   UIReloadMB.cs
-   UIShowReloadStateMB.cs
-   UIStageClearMB.cs
-  Setting/UISettingMB.cs
-  UIInteractionAnimationMB.cs
-  UITalkSystem/UITalkSystemMB.cs
- Utility/
-  BoolStore.cs
-  Motion/MovingPlatformMotionContracts.cs
-  ScalarManager.cs
-  SpriteAnimation/
-   AnimationSpriteClip.cs
-   AnimationSpriteClipAsset.cs
-   AnimationSpriteClipSource.cs
-   SpriteAnimationPlayerMB.cs
-  StateMachine.cs
-  ValueStore/
-   EntityValueStore.cs
-   KernelValueStoreService.cs
-   NumericModifierSet.cs
-   ValueKeyDropdownAttribute.cs
-   ValueKeyReference.cs
-   ValueKeyRegistry.cs
-   ValueKeys.cs
-   ValueSlot.cs
-   ValueStoreContracts.cs
-   ValueStoreMB.cs
-   ValueStoreScope.cs
-   ValueStoreService.cs
-   ValueStoreServiceContracts.cs
-   ValueWatchHandle.cs
-  Wiring/
-   EntityTargetResolver.cs
-   WiringAction.cs
-   WiringContext.cs
-   WiringSequence.cs
+  PlayerMoveController.cs
+  PlayerRagdollControllerMB.cs
+Assets/Scripts/Stage/Checkpoint/
+ StageCheckpointServiceMB.cs
+ StageSaveMarkMB.cs
+Assets/Scripts/Stage/
+ MapRuntimeMB.cs
+ StageRegistrySO.cs
+Assets/Scripts/UI/
+ Bomb/UIBombStateMB.cs
+ Carry/UICarryThrowMB.cs
+ Effect/
+  UIAnimationMB.cs
+  UIAnimationRuntime.cs
+  UIEffectContracts.cs
+  UIFadeEffectMB.cs
+  UIFallEffectMB.cs
+ GameLogic/
+  UIReloadMB.cs
+  UIShowReloadStateMB.cs
+  UIStageClearMB.cs
+ Setting/UISettingMB.cs
+ UIInteractionAnimationMB.cs
+ UITalkSystem/UITalkSystemMB.cs
+Assets/Scripts/Utility/
+ BoolStore.cs
+ Motion/MovingPlatformMotionContracts.cs
+ ScalarManager.cs
+ SpriteAnimation/
+  AnimationSpriteClip.cs
+  AnimationSpriteClipAsset.cs
+  AnimationSpriteClipSource.cs
+  SpriteAnimationPlayerMB.cs
+ StateMachine.cs
+ ValueStore/
+  EntityValueStore.cs
+  KernelValueStoreService.cs
+  NumericModifierSet.cs
+  ValueKeyDropdownAttribute.cs
+  ValueKeyReference.cs
+  ValueKeyRegistry.cs
+  ValueKeys.cs
+  ValueSlot.cs
+  ValueStoreContracts.cs
+  ValueStoreMB.cs
+  ValueStoreScope.cs
+  ValueStoreService.cs
+  ValueStoreServiceContracts.cs
+  ValueWatchHandle.cs
+ Wiring/
+  EntityTargetResolver.cs
+  WiringAction.cs
+  WiringContext.cs
+  WiringSequence.cs
 Assets/TutorialInfo/Scripts/Readme.cs
 Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 

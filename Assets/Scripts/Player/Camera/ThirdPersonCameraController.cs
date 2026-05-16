@@ -46,6 +46,8 @@ namespace BC.Camera
         private float defaultCameraDistance;
         private bool hasDefaultCameraDistance;
 
+        public Transform CameraTarget => cameraTarget;
+
         private void Reset()
         {
             cameraTarget = transform;
@@ -71,6 +73,7 @@ namespace BC.Camera
         private void OnEnable()
         {
             lookAction?.action?.Enable();
+            RegisterCameraTarget();
         }
 
         private void Update()
@@ -219,24 +222,28 @@ namespace BC.Camera
                 return;
             }
 
-            CinemachineCamera[] cameras = UnityEngine.Object.FindObjectsByType<CinemachineCamera>();
+            CameraManager manager = CameraManager.Instance;
+            CinemachineCamera candidate = manager != null ? manager.ThirdPersonCamera : null;
 
-            for (int i = 0; i < cameras.Length; i++)
+            if (candidate == null || candidate.Follow != cameraTarget)
+                return;
+
+            thirdPersonFollow = candidate.GetComponent<CinemachineThirdPersonFollow>();
+            rotateWithFollowTarget = candidate.GetComponent<CinemachineRotateWithFollowTarget>();
+
+            if (thirdPersonFollow != null)
             {
-                CinemachineCamera candidate = cameras[i];
-
-                if (candidate == null || candidate.Follow != cameraTarget)
-                    continue;
-
-                thirdPersonFollow = candidate.GetComponent<CinemachineThirdPersonFollow>();
-                rotateWithFollowTarget = candidate.GetComponent<CinemachineRotateWithFollowTarget>();
-
-                if (thirdPersonFollow != null)
-                {
-                    CacheRotateWithFollowTargetState();
-                    return;
-                }
+                CacheRotateWithFollowTargetState();
             }
+        }
+
+        private void RegisterCameraTarget()
+        {
+            if (cameraTarget == null)
+                return;
+
+            CameraManager.Instance?.RegisterThirdPersonTarget(cameraTarget);
+            ResolveThirdPersonFollow();
         }
 
         private void CacheRotateWithFollowTargetState()
@@ -273,6 +280,8 @@ namespace BC.Camera
 
             if (rotateWithFollowTarget != null && hasDefaultRotateWithFollowTargetEnabled)
                 rotateWithFollowTarget.enabled = defaultRotateWithFollowTargetEnabled;
+
+            CameraManager.Instance?.UnregisterThirdPersonTarget(cameraTarget);
         }
     }
 }

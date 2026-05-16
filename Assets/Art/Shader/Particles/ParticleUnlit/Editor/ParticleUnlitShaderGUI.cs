@@ -8,6 +8,25 @@ namespace BC.Rendering
     {
         private static int selectedPresetIndex;
         private static int selectedTierIndex = 1;
+        private static readonly string[] debugModeOptions =
+        {
+            "Final",
+            "Base RGB",
+            "Base Alpha",
+            "Vertex Color",
+            "Vertex Alpha",
+            "MaskMap R / Dissolve",
+            "MaskMap G / Emission",
+            "MaskMap B / Variation",
+            "MaskMap A / Shape",
+            "Noise",
+            "Dissolve Result",
+            "Emission Result",
+            "Soft Circle",
+            "Custom1",
+            "Custom2",
+            "UV"
+        };
 
         private readonly Dictionary<string, MaterialProperty> propertyLookup = new Dictionary<string, MaterialProperty>();
 
@@ -274,7 +293,7 @@ namespace BC.Rendering
         private void DrawDebugSection()
         {
             DrawSectionHeader("Debug");
-            DrawProperty("_DebugMode");
+            DrawDebugModeProperty();
 
             if (GetFloatValue("_DebugMode") > 0.5f)
             {
@@ -305,6 +324,25 @@ namespace BC.Rendering
             }
 
             materialEditor.ShaderProperty(property, property.displayName);
+        }
+
+        private void DrawDebugModeProperty()
+        {
+            if (!propertyLookup.TryGetValue("_DebugMode", out MaterialProperty property))
+            {
+                return;
+            }
+
+            int currentMode = Mathf.Clamp(Mathf.RoundToInt(property.floatValue), 0, debugModeOptions.Length - 1);
+            EditorGUI.showMixedValue = property.hasMixedValue;
+            EditorGUI.BeginChangeCheck();
+            int selectedMode = EditorGUILayout.Popup(property.displayName, currentMode, debugModeOptions);
+            EditorGUI.showMixedValue = false;
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.floatValue = selectedMode;
+            }
         }
 
         private void DrawTextureWithColor(string texturePropertyName, string colorPropertyName, string label)

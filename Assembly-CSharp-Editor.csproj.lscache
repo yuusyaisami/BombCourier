@@ -85,6 +85,7 @@ Assets/RealToon/Editor/
  RT_Welcome.cs
  SwapShaderToRealToon.cs
 Assets/Scripts/Editor/
+ CameraPathSequenceAuthoringMBEditor.cs
  EntityTagReferenceDrawer.cs
  SignalReferenceDrawer.cs
  ValueKeyReferenceDrawer.cs
