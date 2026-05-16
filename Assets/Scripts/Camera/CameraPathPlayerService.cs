@@ -53,7 +53,7 @@ namespace BC.Camera
                 return;
 
             int version = ++playVersion;
-            IReadOnlyList<CameraPathPointDefinition> points = request.Sequence.Points;
+            IReadOnlyList<CameraPathResolvedPoint> points = request.Sequence.Points;
 
             SetPriority(request.ReturnCamera, request.InactivePriority);
             SetPriority(request.PathCamera, request.PathPriority);
@@ -69,8 +69,8 @@ namespace BC.Camera
                 if (version != playVersion || request.PathCamera == null)
                     return;
 
-                CameraPathPointDefinition previous = points[index - 1];
-                CameraPathPointDefinition current = points[index];
+                CameraPathResolvedPoint previous = points[index - 1];
+                CameraPathResolvedPoint current = points[index];
 
                 await MoveToPointAsync(request.PathCamera, previous, current, version);
 
@@ -125,8 +125,8 @@ namespace BC.Camera
 
         private async UniTask MoveToPointAsync(
             CinemachineCamera camera,
-            CameraPathPointDefinition from,
-            CameraPathPointDefinition to,
+            CameraPathResolvedPoint from,
+            CameraPathResolvedPoint to,
             int version)
         {
             CameraPathTransitionSettings transition = to.TransitionFromPrevious;
@@ -171,7 +171,7 @@ namespace BC.Camera
             }
         }
 
-        private async UniTask ExecutePointActionAsync(CameraPathPointDefinition point, EntityRef actor)
+        private async UniTask ExecutePointActionAsync(CameraPathResolvedPoint point, EntityRef actor)
         {
             InlineAction inlineAction = point.OnArriveAction;
 
@@ -190,7 +190,7 @@ namespace BC.Camera
                 Debug.LogWarning($"{nameof(CameraPathPlayerService)}: camera path point action failed. {result.Message}");
         }
 
-        private static void ApplyPoint(CinemachineCamera camera, Transform cameraTransform, CameraPathPointDefinition point)
+        private static void ApplyPoint(CinemachineCamera camera, Transform cameraTransform, CameraPathResolvedPoint point)
         {
             cameraTransform.SetPositionAndRotation(point.Position, point.Rotation);
             ApplyLens(camera, point.Lens);
@@ -199,8 +199,8 @@ namespace BC.Camera
         private static void ApplyInterpolatedPoint(
             CinemachineCamera camera,
             Transform cameraTransform,
-            CameraPathPointDefinition from,
-            CameraPathPointDefinition to,
+            CameraPathResolvedPoint from,
+            CameraPathResolvedPoint to,
             float t)
         {
             cameraTransform.SetPositionAndRotation(

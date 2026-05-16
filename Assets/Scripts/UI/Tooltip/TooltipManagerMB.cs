@@ -117,7 +117,7 @@ namespace BC.Managers
 
         private void PositionTooltip(Vector3 worldPosition, Vector2 tooltipSize)
         {
-            Camera canvasCamera = GetCanvasCamera();
+            UnityEngine.Camera canvasCamera = GetCanvasCamera();
             Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(canvasCamera, worldPosition);
             screenPoint += screenOffset;
 
@@ -149,12 +149,12 @@ namespace BC.Managers
             tooltipRect.anchoredPosition = desiredLocalPoint;
         }
 
-        private Camera GetCanvasCamera()
+        private UnityEngine.Camera GetCanvasCamera()
         {
             if (tooltipCanvas == null || tooltipCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
                 return null;
 
-            return tooltipCanvas.worldCamera != null ? tooltipCanvas.worldCamera : Camera.main;
+            return tooltipCanvas.worldCamera != null ? tooltipCanvas.worldCamera : UnityEngine.Camera.main;
         }
     }
 }

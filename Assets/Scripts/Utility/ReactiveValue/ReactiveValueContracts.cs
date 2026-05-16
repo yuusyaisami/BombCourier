@@ -55,4 +55,41 @@ namespace BC.Base
 
         public EntityRef SelfEntity => ActorEntity;
     }
+
+    public static class ReactiveBindingPolicy
+    {
+        // Inspector does not author evaluation policy; runtime code selects it when binding.
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveFloatSourceKind sourceKind)
+        {
+            return sourceKind == ReactiveFloatSourceKind.EntityValueStore
+                ? ReactiveEvaluationMode.Watched
+                : ReactiveEvaluationMode.Snapshot;
+        }
+
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveIntSourceKind sourceKind)
+        {
+            return sourceKind == ReactiveIntSourceKind.EntityValueStore
+                ? ReactiveEvaluationMode.Watched
+                : ReactiveEvaluationMode.Snapshot;
+        }
+
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveBoolSourceKind sourceKind)
+        {
+            return sourceKind == ReactiveBoolSourceKind.EntityValueStore
+                ? ReactiveEvaluationMode.Watched
+                : ReactiveEvaluationMode.Snapshot;
+        }
+
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveVector3SourceKind sourceKind)
+        {
+            return ReactiveEvaluationMode.Snapshot;
+        }
+
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveEntitySourceKind sourceKind)
+        {
+            return sourceKind == ReactiveEntitySourceKind.EntityValueStore
+                ? ReactiveEvaluationMode.Watched
+                : ReactiveEvaluationMode.Snapshot;
+        }
+    }
 }

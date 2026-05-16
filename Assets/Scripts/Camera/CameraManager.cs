@@ -37,7 +37,13 @@ namespace BC.Camera
                 return UniTask.CompletedTask;
             }
 
-            return PlayPathAsync(new CameraPathSequenceDefinition(sequenceSource.BuildSequence()), actor);
+            if (!TryResolveSceneKernel(out SceneKernel resolvedSceneKernel))
+                return UniTask.CompletedTask;
+
+            if (!CameraPathSequenceDefinition.TryCreate(sequenceSource.BuildSequence(), resolvedSceneKernel, actor, out CameraPathSequenceDefinition sequence))
+                return UniTask.CompletedTask;
+
+            return PlayPathAsync(sequence, actor);
         }
 
         public UniTask PlayPathAsync(CameraPathSequenceDefinition sequence, EntityRef actor)

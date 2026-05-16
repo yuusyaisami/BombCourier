@@ -1,6 +1,6 @@
 // TooltipPrefabをアタッチするためのMonoBehaviour
 using DG.Tweening;
-using Febucci.TextAnimatorCore;
+using Febucci.TextAnimatorForUnity.TextMeshPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +9,7 @@ namespace BC.UI
     public sealed class TooltipAdapterMB : MonoBehaviour
     {
         [SerializeField] private Image backgroundImage; // ツールチップの背景イメージ
-        [SerializeField] private TextAnimator titleText; // タイトルテキスト
+        [SerializeField] private TextAnimator_TMP titleTextTMP; // TextMeshPro用のタイトルテキスト
         [SerializeField] private Vector3 hiddenScale = Vector3.zero; // 非表示状態のスケール
         [SerializeField] private float showDuration = 0.2f;
         [SerializeField] private float hideDuration = 0.15f;
@@ -79,14 +79,16 @@ namespace BC.UI
         {
             lastText = title;
 
-            if (titleText != null)
-                titleText.SetText(title);
+            if (titleTextTMP != null)
+                titleTextTMP.SetText(title);
 
             // タイトルテキストのサイズに合わせて背景イメージのサイズを調整する
-            if (backgroundImage != null && titleText != null)
+            if (backgroundImage != null && titleTextTMP != null)
             {
                 Canvas.ForceUpdateCanvases();
-                Vector2 textSize = titleText.GetPreferredSize();
+                Vector2 textSize = titleTextTMP.TMProComponent != null
+                    ? titleTextTMP.TMProComponent.GetPreferredValues(title)
+                    : Vector2.zero;
                 backgroundImage.rectTransform.sizeDelta = textSize + contentPadding;
                 LayoutRebuilder.ForceRebuildLayoutImmediate(backgroundImage.rectTransform);
             }

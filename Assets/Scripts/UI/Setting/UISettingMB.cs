@@ -1,4 +1,5 @@
 using BC.Managers;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,7 +22,11 @@ namespace BC.UI
         [Header("Performance Settings")]
         // ここにパフォーマンス設定のUI要素を追加していく
         [SerializeField] private Toggle vSyncToggle; // 垂直同期のオンオフを切り替えるトグル
-        [SerializeField] private Dropdown qualityLevelDropdown; // グラフィック品質のレベルを選択するドロップダウン
+        [SerializeField] private TMP_Dropdown qualityLevelDropdown; // グラフィック品質のレベルを選択するドロップダウン
+
+        private bool isInitialized = false;
+
+        private bool isShowing = false;
 
         private void Start()
         {
@@ -58,6 +63,29 @@ namespace BC.UI
                 sfxVolumeSlider.onValueChanged.RemoveListener(OnSFXVolumeSliderChanged);
         }
 
+        public async UniTask ShowPanelAsync()
+        {
+            // パネルを表示するアニメーションやエフェクトをここで実装することができます。
+            // 例えば、フェードインやスライドインなどの演出を追加できます。
+            // 現在は即座に表示するだけの実装ですが、将来的に拡張可能です。
+
+            // 例: フェードインアニメーションを待つ
+            // await FadeInAsync();
+            isShowing = true;
+            gameObject.SetActive(true);
+        }
+        public async UniTask HidePanelAsync()
+        {
+            // パネルを非表示にするアニメーションやエフェクトをここで実装することができます。
+            // 例えば、フェードアウトやスライドアウトなどの演出を追加できます。
+            // 現在は即座に非表示にするだけの実装ですが、将来的に拡張可能です。
+
+            // 例: フェードアウトアニメーションを待つ
+            // await FadeOutAsync();
+            isShowing = false;
+            gameObject.SetActive(false);
+        }
+
         private void LoadSettingsToUI()
         {
             // SettingManagerMBから現在の設定を取得してUIに反映させる
@@ -77,6 +105,8 @@ namespace BC.UI
 
             if (sfxVolumeSlider != null)
                 sfxVolumeSlider.value = sfxVolume;
+
+            isInitialized = true;
 
             UpdateCameraSensitivityValueText(cameraSensitivity);
         }

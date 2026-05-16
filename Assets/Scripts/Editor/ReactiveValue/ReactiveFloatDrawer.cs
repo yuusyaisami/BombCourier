@@ -12,14 +12,13 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveFloatSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
-                (int)ReactiveFloatSourceKind.KernelValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
 
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
-            return sourceKind == (int)ReactiveFloatSourceKind.EntityValueStore || sourceKind == (int)ReactiveFloatSourceKind.KernelValueStore
+            return sourceKind == (int)ReactiveFloatSourceKind.EntityValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -30,7 +29,6 @@ namespace BC.Editor
             {
                 (int)ReactiveFloatSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveFloatSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
-                (int)ReactiveFloatSourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 (int)ReactiveFloatSourceKind.Distance =>
                     GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("distance").FindPropertyRelative("fromEntity"), true)) +
                     GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("distance").FindPropertyRelative("toEntity"), true)),
@@ -47,9 +45,6 @@ namespace BC.Editor
                     break;
                 case ReactiveFloatSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(float));
-                    break;
-                case ReactiveFloatSourceKind.KernelValueStore:
-                    DrawReactiveKernelValueSource(ref position, property.FindPropertyRelative("kernelValue"), typeof(float));
                     break;
                 case ReactiveFloatSourceKind.Distance:
                     DrawPropertyField(ref position, property.FindPropertyRelative("distance").FindPropertyRelative("fromEntity"), "From");

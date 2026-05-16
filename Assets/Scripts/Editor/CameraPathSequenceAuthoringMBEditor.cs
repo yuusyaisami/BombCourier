@@ -1,4 +1,5 @@
 using BC.Camera;
+using BC.Base;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,6 +13,11 @@ namespace BC.CameraEditor
         private const string LabelFieldName = "label";
         private const string PositionFieldName = "position";
         private const string EulerAnglesFieldName = "eulerAngles";
+        private const string ReactiveSourceKindFieldName = "sourceKind";
+        private const string ReactiveEvaluationModeFieldName = "evaluationMode";
+        private const string ReactiveFailurePolicyFieldName = "failurePolicy";
+        private const string ReactiveLiteralFieldName = "literal";
+        private const string ReactiveFallbackValueFieldName = "fallbackValue";
         private const string HoldSecondsFieldName = "holdSeconds";
         private const string TransitionFieldName = "transitionFromPrevious";
         private const string LensFieldName = "lens";
@@ -41,7 +47,7 @@ namespace BC.CameraEditor
             EnsureSelectionInRange();
 
             EditorGUILayout.LabelField("Camera Path", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("位置と角度はScene Viewのハンドルで編集します。Pointを選択して、移動/回転ハンドルを操作してください。", MessageType.Info);
+            EditorGUILayout.HelpBox("Position と Euler Angles は ReactiveVector3 です。Literal な要素だけ Scene View で編集します。Position が Literal なら移動、Euler Angles が Literal なら回転を扱えます。", MessageType.Info);
 
             int removeIndex = -1;
             int insertAfterIndex = -1;
@@ -124,10 +130,18 @@ namespace BC.CameraEditor
 
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(labelProperty);
+                EditorGUILayout.PropertyField(pointProperty.FindPropertyRelative(PositionFieldName), true);
+                EditorGUILayout.PropertyField(pointProperty.FindPropertyRelative(EulerAnglesFieldName), true);
                 EditorGUILayout.PropertyField(pointProperty.FindPropertyRelative(HoldSecondsFieldName));
                 EditorGUILayout.PropertyField(pointProperty.FindPropertyRelative(TransitionFieldName), true);
                 EditorGUILayout.PropertyField(pointProperty.FindPropertyRelative(LensFieldName), true);
                 EditorGUILayout.PropertyField(pointProperty.FindPropertyRelative(OnArriveActionFieldName), true);
+
+                if (!HasLiteralPosition(pointProperty) && !HasLiteralRotation(pointProperty))
+                    EditorGUILayout.HelpBox("このポイントは Position/Euler Angles ともに Literal ではないため、Scene View のハンドル表示から除外されます。", MessageType.None);
+                else if (!HasLiteralPosition(pointProperty) || !HasLiteralRotation(pointProperty))
+                    EditorGUILayout.HelpBox("Literal な要素だけ Scene View で編集します。Position 非 Literal では回転のみ、Euler Angles 非 Literal では移動のみを扱います。", MessageType.None);
+
                 EditorGUI.indentLevel--;
             }
         }
@@ -140,8 +154,15 @@ namespace BC.CameraEditor
             for (int i = 0; i < pointsProperty.arraySize; i++)
             {
                 SerializedProperty pointProperty = pointsProperty.GetArrayElementAtIndex(i);
-                Vector3 position = pointProperty.FindPropertyRelative(PositionFieldName).vector3Value;
-                Quaternion rotation = Quaternion.Euler(pointProperty.FindPropertyRelative(EulerAnglesFieldName).vector3Value);
+                if (!TryGetLiteralPosition(pointProperty, out _, out Vector3 position))
+                {
+                    hasPrevious = false;
+                    continue;
+                }
+
+                bool hasLiteralRotation = TryGetLiteralRotation(pointProperty, out _, out Quaternion rotation);
+                Quaternion handleRotation = hasLiteralRotation ? rotation : Quaternion.identity;
+
                 float handleSize = HandleUtility.GetHandleSize(position);
                 bool selected = selectedPointIndexProperty.intValue == i;
 
@@ -152,13 +173,15 @@ namespace BC.CameraEditor
                 }
 
                 Handles.color = selected ? SelectedPointColor : PointColor;
-                if (Handles.Button(position, rotation, handleSize * 0.12f, handleSize * 0.18f, Handles.SphereHandleCap))
+                if (Handles.Button(position, handleRotation, handleSize * 0.12f, handleSize * 0.18f, Handles.SphereHandleCap))
                 {
                     selectedPointIndexProperty.intValue = i;
                     SceneView.RepaintAll();
                 }
 
-                Handles.ArrowHandleCap(0, position, rotation, handleSize * 0.55f, EventType.Repaint);
+                if (hasLiteralRotation)
+                    Handles.ArrowHandleCap(0, position, rotation, handleSize * 0.55f, EventType.Repaint);
+
                 Handles.Label(position + Vector3.up * handleSize * 0.18f, GetPointLabel(i, pointProperty));
 
                 previousPosition = position;
@@ -173,29 +196,40 @@ namespace BC.CameraEditor
             if (selectedIndex < 0 || selectedIndex >= pointsProperty.arraySize)
                 return;
 
+            CameraPathSequenceAuthoringMB sequence = (CameraPathSequenceAuthoringMB)target;
             SerializedProperty pointProperty = pointsProperty.GetArrayElementAtIndex(selectedIndex);
-            SerializedProperty positionProperty = pointProperty.FindPropertyRelative(PositionFieldName);
-            SerializedProperty eulerAnglesProperty = pointProperty.FindPropertyRelative(EulerAnglesFieldName);
-            Vector3 position = positionProperty.vector3Value;
-            Quaternion rotation = Quaternion.Euler(eulerAnglesProperty.vector3Value);
 
-            EditorGUI.BeginChangeCheck();
-            Vector3 movedPosition = Handles.PositionHandle(position, rotation);
-            if (EditorGUI.EndChangeCheck())
+            bool hasLiteralPosition = TryGetLiteralPosition(pointProperty, out SerializedProperty positionProperty, out Vector3 position);
+            bool hasLiteralRotation = TryGetLiteralRotation(pointProperty, out SerializedProperty eulerAnglesProperty, out Quaternion rotation);
+
+            if (!hasLiteralPosition && !hasLiteralRotation)
+                return;
+
+            if (hasLiteralPosition)
             {
-                Undo.RecordObject(target, "Move Camera Path Point");
-                positionProperty.vector3Value = movedPosition;
-                position = movedPosition;
-                EditorUtility.SetDirty(target);
+                EditorGUI.BeginChangeCheck();
+                Vector3 movedPosition = Handles.PositionHandle(position, hasLiteralRotation ? rotation : Quaternion.identity);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(target, "Move Camera Path Point");
+                    positionProperty.vector3Value = movedPosition;
+                    position = movedPosition;
+                    EditorUtility.SetDirty(target);
+                }
             }
 
-            EditorGUI.BeginChangeCheck();
-            Quaternion movedRotation = Handles.RotationHandle(rotation, position);
-            if (EditorGUI.EndChangeCheck())
+            if (hasLiteralRotation)
             {
-                Undo.RecordObject(target, "Rotate Camera Path Point");
-                eulerAnglesProperty.vector3Value = movedRotation.eulerAngles;
-                EditorUtility.SetDirty(target);
+                Vector3 rotationPivot = hasLiteralPosition ? position : sequence.transform.position;
+
+                EditorGUI.BeginChangeCheck();
+                Quaternion movedRotation = Handles.RotationHandle(rotation, rotationPivot);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(target, "Rotate Camera Path Point");
+                    eulerAnglesProperty.vector3Value = movedRotation.eulerAngles;
+                    EditorUtility.SetDirty(target);
+                }
             }
         }
 
@@ -240,16 +274,25 @@ namespace BC.CameraEditor
                 return;
 
             SerializedProperty sourcePoint = pointsProperty.GetArrayElementAtIndex(sourceIndex);
-            position = sourcePoint.FindPropertyRelative(PositionFieldName).vector3Value;
-            rotation = Quaternion.Euler(sourcePoint.FindPropertyRelative(EulerAnglesFieldName).vector3Value);
-            position += rotation * Vector3.forward * 2.0f;
+
+            bool hasLiteralPosition = TryGetLiteralPosition(sourcePoint, out _, out Vector3 sourcePosition);
+            bool hasLiteralRotation = TryGetLiteralRotation(sourcePoint, out _, out Quaternion sourceRotation);
+
+            if (hasLiteralPosition)
+                position = sourcePosition;
+
+            if (hasLiteralRotation)
+                rotation = sourceRotation;
+
+            if (hasLiteralPosition)
+                position += rotation * Vector3.forward * 2.0f;
         }
 
         private static void WriteDefaultPoint(SerializedProperty pointProperty, int index, Vector3 position, Quaternion rotation)
         {
             pointProperty.FindPropertyRelative(LabelFieldName).stringValue = $"Point {index + 1}";
-            pointProperty.FindPropertyRelative(PositionFieldName).vector3Value = position;
-            pointProperty.FindPropertyRelative(EulerAnglesFieldName).vector3Value = rotation.eulerAngles;
+            WriteLiteralReactiveVector3(pointProperty.FindPropertyRelative(PositionFieldName), position);
+            WriteLiteralReactiveVector3(pointProperty.FindPropertyRelative(EulerAnglesFieldName), rotation.eulerAngles);
             pointProperty.FindPropertyRelative(HoldSecondsFieldName).floatValue = 0.0f;
 
             SerializedProperty transitionProperty = pointProperty.FindPropertyRelative(TransitionFieldName);
@@ -280,6 +323,67 @@ namespace BC.CameraEditor
         {
             string label = pointProperty.FindPropertyRelative(LabelFieldName).stringValue;
             return string.IsNullOrWhiteSpace(label) ? $"Point {index + 1}" : $"{index + 1}: {label}";
+        }
+
+        private static bool HasLiteralPosition(SerializedProperty pointProperty)
+        {
+            return IsLiteralReactiveVector3(pointProperty.FindPropertyRelative(PositionFieldName));
+        }
+
+        private static bool HasLiteralRotation(SerializedProperty pointProperty)
+        {
+            return IsLiteralReactiveVector3(pointProperty.FindPropertyRelative(EulerAnglesFieldName));
+        }
+
+        private static bool TryGetLiteralPosition(
+            SerializedProperty pointProperty,
+            out SerializedProperty positionLiteralProperty,
+            out Vector3 position)
+        {
+            positionLiteralProperty = null;
+            position = Vector3.zero;
+
+            SerializedProperty positionProperty = pointProperty.FindPropertyRelative(PositionFieldName);
+
+            if (!IsLiteralReactiveVector3(positionProperty))
+                return false;
+
+            positionLiteralProperty = positionProperty.FindPropertyRelative(ReactiveLiteralFieldName);
+            position = positionLiteralProperty.vector3Value;
+            return true;
+        }
+
+        private static bool TryGetLiteralRotation(
+            SerializedProperty pointProperty,
+            out SerializedProperty eulerAnglesLiteralProperty,
+            out Quaternion rotation)
+        {
+            eulerAnglesLiteralProperty = null;
+            rotation = Quaternion.identity;
+
+            SerializedProperty eulerAnglesProperty = pointProperty.FindPropertyRelative(EulerAnglesFieldName);
+
+            if (!IsLiteralReactiveVector3(eulerAnglesProperty))
+                return false;
+
+            eulerAnglesLiteralProperty = eulerAnglesProperty.FindPropertyRelative(ReactiveLiteralFieldName);
+            rotation = Quaternion.Euler(eulerAnglesLiteralProperty.vector3Value);
+            return true;
+        }
+
+        private static bool IsLiteralReactiveVector3(SerializedProperty property)
+        {
+            SerializedProperty sourceKindProperty = property?.FindPropertyRelative(ReactiveSourceKindFieldName);
+            return sourceKindProperty != null && sourceKindProperty.enumValueIndex == (int)ReactiveVector3SourceKind.Literal;
+        }
+
+        private static void WriteLiteralReactiveVector3(SerializedProperty property, Vector3 value)
+        {
+            property.FindPropertyRelative(ReactiveSourceKindFieldName).enumValueIndex = (int)ReactiveVector3SourceKind.Literal;
+            property.FindPropertyRelative(ReactiveEvaluationModeFieldName).enumValueIndex = (int)ReactiveEvaluationMode.Snapshot;
+            property.FindPropertyRelative(ReactiveFailurePolicyFieldName).enumValueIndex = (int)ReactiveFailurePolicy.FailAction;
+            property.FindPropertyRelative(ReactiveLiteralFieldName).vector3Value = value;
+            property.FindPropertyRelative(ReactiveFallbackValueFieldName).vector3Value = value;
         }
     }
 }

@@ -1,5 +1,6 @@
 using BC.Base;
 using UnityEditor;
+using UnityEngine;
 
 namespace BC.Editor
 {
@@ -11,14 +12,13 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveEntitySourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
-                (int)ReactiveEntitySourceKind.KernelValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
 
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
-            return sourceKind == (int)ReactiveEntitySourceKind.EntityValueStore || sourceKind == (int)ReactiveEntitySourceKind.KernelValueStore
+            return sourceKind == (int)ReactiveEntitySourceKind.EntityValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -28,7 +28,6 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveEntitySourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
-                (int)ReactiveEntitySourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 (int)ReactiveEntitySourceKind.TargetReference => GetEntityTargetReferenceHeight(property.FindPropertyRelative("targetReference")),
                 _ => 0f,
             };
@@ -40,9 +39,6 @@ namespace BC.Editor
             {
                 case ReactiveEntitySourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(EntityRef));
-                    break;
-                case ReactiveEntitySourceKind.KernelValueStore:
-                    DrawReactiveKernelValueSource(ref position, property.FindPropertyRelative("kernelValue"), typeof(EntityRef));
                     break;
                 case ReactiveEntitySourceKind.TargetReference:
                     DrawEntityTargetReference(ref position, property.FindPropertyRelative("targetReference"));

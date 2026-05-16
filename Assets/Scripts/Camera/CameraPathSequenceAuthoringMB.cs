@@ -59,20 +59,35 @@ namespace BC.Camera
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            IReadOnlyList<CameraPathPointDefinition> points = BuildSequence();
+            if (points == null || points.Count == 0)
+                return;
 
             Gizmos.color = Color.green;
+
+            Vector3 previousPosition = Vector3.zero;
+            bool hasPrevious = false;
 
             for (int i = 0; i < points.Count; i++)
             {
                 CameraPathPointDefinition point = points[i];
-                Gizmos.DrawSphere(point.Position, 0.18f);
-                Gizmos.DrawLine(point.Position, point.Position + point.Rotation * Vector3.forward * 1.0f);
 
-                if (i < points.Count - 1)
+                // Position が動的なポイントは空間上に置けないため、可視セグメントは次のリテラル位置から再開されます。
+                if (!point.TryGetLiteralPosition(out Vector3 position))
                 {
-                    Gizmos.DrawLine(point.Position, points[i + 1].Position);
+                    hasPrevious = false;
+                    continue;
                 }
+
+                Gizmos.DrawSphere(position, 0.18f);
+
+                if (point.TryGetLiteralRotation(out Quaternion rotation))
+                    Gizmos.DrawLine(position, position + rotation * Vector3.forward * 1.0f);
+
+                if (hasPrevious)
+                    Gizmos.DrawLine(previousPosition, position);
+
+                previousPosition = position;
+                hasPrevious = true;
             }
         }
 #endif

@@ -5,6 +5,8 @@ namespace BC.Base
     public sealed class ReactiveBoolBinding : ReactiveBindingBase<bool>
     {
         private readonly ReactiveBool spec;
+        private readonly ReactiveEvaluationMode evaluationMode;
+        private readonly ReactiveFailurePolicy failurePolicy;
         private ValueWatchHandle<bool> watchedHandle;
         private ReactiveResult<bool> watchedResult;
         private int watchedVersion;
@@ -14,14 +16,26 @@ namespace BC.Base
             ReactiveValueResolverService resolver,
             in ReactiveEvalContext context,
             in ReactiveBool spec)
+            : this(resolver, context, spec, spec.EvaluationMode, spec.FailurePolicy)
+        {
+        }
+
+        public ReactiveBoolBinding(
+            ReactiveValueResolverService resolver,
+            in ReactiveEvalContext context,
+            in ReactiveBool spec,
+            ReactiveEvaluationMode evaluationMode,
+            ReactiveFailurePolicy failurePolicy)
             : base(resolver, context)
         {
             this.spec = spec;
+            this.evaluationMode = evaluationMode;
+            this.failurePolicy = failurePolicy;
         }
 
-        protected override ReactiveEvaluationMode EvaluationMode => spec.EvaluationMode;
+        protected override ReactiveEvaluationMode EvaluationMode => evaluationMode;
 
-        protected override ReactiveFailurePolicy FailurePolicy => spec.FailurePolicy;
+        protected override ReactiveFailurePolicy FailurePolicy => failurePolicy;
 
         public override bool IsDirty
         {

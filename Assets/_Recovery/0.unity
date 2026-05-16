@@ -6214,7 +6214,6 @@ GameObject:
   - component: {fileID: 755927262}
   - component: {fileID: 755927261}
   - component: {fileID: 755927260}
-  - component: {fileID: 755927264}
   m_Layer: 0
   m_Name: SceneKernel
   m_TagString: Untagged
@@ -6333,7 +6332,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cfb246091b5afd4f9e4c44a2366d681, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Manager.GameLogicManagerMB
-  introCameraSequenceRunner: {fileID: 755927264}
   playerPrefab: {fileID: 0}
   debugStageInstance: {fileID: 1803598893}
 --- !u!114 &755927261
@@ -6376,56 +6374,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageCheckpointServiceMB
   stageRoot: {fileID: 1923114517}
---- !u!114 &755927264
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 755927252}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f76435f4d399ff04a948d5d8e81b5289, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BombCourier.CameraIntro.IntroCameraSequenceRunner
-  introCamera: {fileID: 735970656}
-  gameplayCamera: {fileID: 2128248944}
-  introPriority: 100
-  gameplayPriority: 10
-  inactivePriority: 0
-  defaultEase:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  useUnscaledTime: 0
-  returnToGameplayInstantly: 1
-  returnToGameplayDuration: 0.5
-  inputLockChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  introCompleted:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1001 &757866892
 PrefabInstance:
   m_ObjectHideFlags: 0

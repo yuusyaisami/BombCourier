@@ -51,24 +51,25 @@ namespace BC.Base.Tests
         }
 
         [Test]
-        public void KernelValueStoreBoolAndEntityValueStoreEntityResolveCurrentValues()
+        public void EntityValueStoreBoolAndEntityValueStoreEntityResolveCurrentValues()
         {
             object sceneKernel = CreateConfiguredSceneKernel();
             object resolver = CreateResolver(sceneKernel);
             object actor = CreateEntityRef(30u, 2);
             object context = CreateEvalContext(sceneKernel, actor, CreateEntityRef(40u, 1));
 
-            object kernelBoolKey = GetStaticFieldValue("BC.Base.ValueKeys+Kernel+Gimmick", "GlobalEnabled");
-            object kernelBoolKeyReference = CreateValueKeyReference(typeof(bool), kernelBoolKey);
-            Assert.AreEqual(true, SetKernelStoreValue(sceneKernel, typeof(bool), kernelBoolKey, false));
+            object boolKey = GetStaticFieldValue("BC.Base.ValueKeys+Move", "CanMoveByInput");
+            object boolKeyReference = CreateValueKeyReference(typeof(bool), boolKey);
+            Assert.AreEqual(true, SetEntityStoreValue(sceneKernel, actor, typeof(bool), boolKey, false));
 
-            object kernelBoolSpec = InvokeStatic(
+            object boolSpec = InvokeStatic(
                 "BC.Base.ReactiveBool",
-                "KernelValueStore",
-                kernelBoolKeyReference,
+                "EntityValueStore",
+                InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
+                boolKeyReference,
                 GetReactiveEvaluationMode("Snapshot"));
-            object kernelBoolBinding = CreateInstance("BC.Base.ReactiveBoolBinding", resolver, context, kernelBoolSpec);
-            AssertSuccessfulResult(InvokeMethod(kernelBoolBinding, "Read"), false);
+            object boolBinding = CreateInstance("BC.Base.ReactiveBoolBinding", resolver, context, boolSpec);
+            AssertSuccessfulResult(InvokeMethod(boolBinding, "Read"), false);
 
             object entityKey = GetStaticFieldValue("BC.Base.ValueKeys+Runtime", "FocusEntity");
             object entityKeyReference = CreateValueKeyReference(GetTypeByFullName("BC.Base.EntityRef"), entityKey);
@@ -92,25 +93,28 @@ namespace BC.Base.Tests
             object trigger = CreateEntityRef(60u, 1);
             object floatKey = GetStaticFieldValue("BC.Base.ValueKeys+Move", "BaseSpeed");
             object floatKeyReference = CreateValueKeyReference(typeof(float), floatKey);
+            object self = InvokeStatic("BC.Base.ReactiveEntityRef", "Self");
+            object entityFloatSpec = InvokeStatic(
+                "BC.Base.ReactiveFloat",
+                "EntityValueStore",
+                self,
+                floatKeyReference,
+                GetReactiveEvaluationMode("Snapshot"));
 
             object missingKernelResolver = CreateResolver(null);
             object missingKernelContext = CreateEvalContext(null, actor, trigger);
-            object kernelFloatSpec = InvokeStatic(
-                "BC.Base.ReactiveFloat",
-                "KernelValueStore",
-                floatKeyReference,
-                GetReactiveEvaluationMode("Snapshot"));
-            AssertFailedResult(InvokeResolve(missingKernelResolver, "ResolveFloat", missingKernelContext, kernelFloatSpec), "MissingSceneKernel");
+            AssertFailedResult(InvokeResolve(missingKernelResolver, "ResolveFloat", missingKernelContext, entityFloatSpec), "MissingSceneKernel");
 
             object missingStoreKernel = CreateInstance("BC.Base.SceneKernel");
             object missingStoreResolver = CreateResolver(missingStoreKernel);
             object missingStoreContext = CreateEvalContext(missingStoreKernel, actor, trigger);
-            AssertFailedResult(InvokeResolve(missingStoreResolver, "ResolveFloat", missingStoreContext, kernelFloatSpec), "MissingValueStore");
+            AssertFailedResult(InvokeResolve(missingStoreResolver, "ResolveFloat", missingStoreContext, entityFloatSpec), "MissingValueStore");
 
             object unassignedKeyReference = Activator.CreateInstance(GetTypeByFullName("BC.Base.ValueKeyReference"));
             object unassignedKeySpec = InvokeStatic(
                 "BC.Base.ReactiveFloat",
-                "KernelValueStore",
+                "EntityValueStore",
+                self,
                 unassignedKeyReference,
                 GetReactiveEvaluationMode("Snapshot"));
             object configuredKernel = CreateConfiguredSceneKernel();
@@ -118,23 +122,18 @@ namespace BC.Base.Tests
             object configuredContext = CreateEvalContext(configuredKernel, actor, trigger);
             AssertFailedResult(InvokeResolve(configuredResolver, "ResolveFloat", configuredContext, unassignedKeySpec), "ValueKeyNotAssigned");
 
-            object boolKey = GetStaticFieldValue("BC.Base.ValueKeys+Kernel+Gimmick", "GlobalEnabled");
+            object boolKey = GetStaticFieldValue("BC.Base.ValueKeys+Move", "CanMoveByInput");
             object boolKeyReference = CreateValueKeyReference(typeof(bool), boolKey);
             object wrongTypeSpec = InvokeStatic(
                 "BC.Base.ReactiveFloat",
-                "KernelValueStore",
+                "EntityValueStore",
+                self,
                 boolKeyReference,
                 GetReactiveEvaluationMode("Snapshot"));
             AssertFailedResult(InvokeResolve(configuredResolver, "ResolveFloat", configuredContext, wrongTypeSpec), "ValueKeyTypeMismatch");
 
             object invalidActor = Activator.CreateInstance(GetTypeByFullName("BC.Base.EntityRef"));
             object invalidEntityContext = CreateEvalContext(configuredKernel, invalidActor, trigger);
-            object entityFloatSpec = InvokeStatic(
-                "BC.Base.ReactiveFloat",
-                "EntityValueStore",
-                InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
-                floatKeyReference,
-                GetReactiveEvaluationMode("Snapshot"));
             AssertFailedResult(InvokeResolve(configuredResolver, "ResolveFloat", invalidEntityContext, entityFloatSpec), "InvalidEntity");
         }
 
@@ -158,7 +157,7 @@ namespace BC.Base.Tests
                 floatKeyReference,
                 GetReactiveEvaluationMode("Continuous"));
 
-            AssertFailedResult(InvokeResolve(resolver, "ResolveFloat", context, invalidModeSpec), "UnsupportedEvaluationMode");
+            AssertSuccessfulResult(InvokeResolve(resolver, "ResolveFloat", context, invalidModeSpec), 6.0f);
 
             SetFieldValue(invalidModeSpec, "failurePolicy", GetReactiveFailurePolicy("UseFallback"));
             SetFieldValue(invalidModeSpec, "fallbackValue", 3.25f);
@@ -177,7 +176,8 @@ namespace BC.Base.Tests
             object entityKeyReference = CreateValueKeyReference(GetTypeByFullName("BC.Base.EntityRef"), entityKey);
             object nestedSelector = InvokeStatic(
                 "BC.Base.ReactiveEntityRef",
-                "KernelValueStore",
+                "EntityValueStore",
+                InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
                 entityKeyReference,
                 GetReactiveEvaluationMode("Snapshot"));
 
@@ -221,7 +221,6 @@ namespace BC.Base.Tests
         {
             object sceneKernel = CreateInstance("BC.Base.SceneKernel");
             SetPropertyValue(sceneKernel, "EntityValueStore", CreateInstance("BC.Base.ValueStoreService"));
-            SetPropertyValue(sceneKernel, "KernelValueStore", CreateInstance("BC.Base.KernelValueStoreService"));
             return sceneKernel;
         }
 
@@ -249,12 +248,6 @@ namespace BC.Base.Tests
         {
             object store = GetPropertyValue(sceneKernel, "EntityValueStore");
             return (bool)InvokeGenericMethod(store, "Set", valueType, entity, key, value);
-        }
-
-        private static bool SetKernelStoreValue(object sceneKernel, Type valueType, object key, object value)
-        {
-            object store = GetPropertyValue(sceneKernel, "KernelValueStore");
-            return (bool)InvokeGenericMethod(store, "Set", valueType, key, value);
         }
 
         private static object InvokeResolve(object resolver, string methodName, object context, object spec)

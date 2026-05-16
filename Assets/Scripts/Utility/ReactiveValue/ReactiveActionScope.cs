@@ -30,41 +30,81 @@ namespace BC.Base
         public EntityRef Trigger { get; }
 
         public ReactiveFloatBinding Bind(in ReactiveFloat value)
+            => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveFloatBinding Bind(in ReactiveFloat value, ReactiveEvaluationMode evaluationMode)
         {
             ThrowIfDisposed();
-            ReactiveFloatBinding binding = new ReactiveFloatBinding(resolver, CreateContext(), value);
+            ReactiveFloatBinding binding = new ReactiveFloatBinding(
+                resolver,
+                CreateContext(),
+                value,
+                evaluationMode,
+                ReactiveFailurePolicy.FailAction);
             bindings.Add(binding);
             return binding;
         }
 
         public ReactiveIntBinding Bind(in ReactiveInt value)
+            => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveIntBinding Bind(in ReactiveInt value, ReactiveEvaluationMode evaluationMode)
         {
             ThrowIfDisposed();
-            ReactiveIntBinding binding = new ReactiveIntBinding(resolver, CreateContext(), value);
+            ReactiveIntBinding binding = new ReactiveIntBinding(
+                resolver,
+                CreateContext(),
+                value,
+                evaluationMode,
+                ReactiveFailurePolicy.FailAction);
             bindings.Add(binding);
             return binding;
         }
 
         public ReactiveBoolBinding Bind(in ReactiveBool value)
+            => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveBoolBinding Bind(in ReactiveBool value, ReactiveEvaluationMode evaluationMode)
         {
             ThrowIfDisposed();
-            ReactiveBoolBinding binding = new ReactiveBoolBinding(resolver, CreateContext(), value);
+            ReactiveBoolBinding binding = new ReactiveBoolBinding(
+                resolver,
+                CreateContext(),
+                value,
+                evaluationMode,
+                ReactiveFailurePolicy.FailAction);
             bindings.Add(binding);
             return binding;
         }
 
         public ReactiveVector3Binding Bind(in ReactiveVector3 value)
+            => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveVector3Binding Bind(in ReactiveVector3 value, ReactiveEvaluationMode evaluationMode)
         {
             ThrowIfDisposed();
-            ReactiveVector3Binding binding = new ReactiveVector3Binding(resolver, CreateContext(), value);
+            ReactiveVector3Binding binding = new ReactiveVector3Binding(
+                resolver,
+                CreateContext(),
+                value,
+                evaluationMode,
+                ReactiveFailurePolicy.FailAction);
             bindings.Add(binding);
             return binding;
         }
 
         public ReactiveEntityRefBinding Bind(in ReactiveEntityRef value)
+            => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveEntityRefBinding Bind(in ReactiveEntityRef value, ReactiveEvaluationMode evaluationMode)
         {
             ThrowIfDisposed();
-            ReactiveEntityRefBinding binding = new ReactiveEntityRefBinding(resolver, CreateContext(), value);
+            ReactiveEntityRefBinding binding = new ReactiveEntityRefBinding(
+                resolver,
+                CreateContext(),
+                value,
+                evaluationMode,
+                ReactiveFailurePolicy.FailAction);
             bindings.Add(binding);
             return binding;
         }

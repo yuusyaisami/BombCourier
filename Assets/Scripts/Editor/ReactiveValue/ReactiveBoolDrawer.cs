@@ -1,5 +1,6 @@
 using BC.Base;
 using UnityEditor;
+using UnityEngine;
 
 namespace BC.Editor
 {
@@ -11,14 +12,13 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveBoolSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
-                (int)ReactiveBoolSourceKind.KernelValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
 
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
-            return sourceKind == (int)ReactiveBoolSourceKind.EntityValueStore || sourceKind == (int)ReactiveBoolSourceKind.KernelValueStore
+            return sourceKind == (int)ReactiveBoolSourceKind.EntityValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -29,7 +29,6 @@ namespace BC.Editor
             {
                 (int)ReactiveBoolSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveBoolSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
-                (int)ReactiveBoolSourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 (int)ReactiveBoolSourceKind.EntityAlive => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("entityAlive").FindPropertyRelative("entity"), true)),
                 (int)ReactiveBoolSourceKind.CompareFloat =>
                     GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("compareFloat").FindPropertyRelative("left"), true)) +
@@ -49,9 +48,6 @@ namespace BC.Editor
                     break;
                 case ReactiveBoolSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(bool));
-                    break;
-                case ReactiveBoolSourceKind.KernelValueStore:
-                    DrawReactiveKernelValueSource(ref position, property.FindPropertyRelative("kernelValue"), typeof(bool));
                     break;
                 case ReactiveBoolSourceKind.EntityAlive:
                     DrawPropertyField(ref position, property.FindPropertyRelative("entityAlive").FindPropertyRelative("entity"), "Entity");

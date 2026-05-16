@@ -26,18 +26,9 @@ namespace BC.Base
         {
             return value.SourceKind switch
             {
-                ReactiveFloatSourceKind.Literal => value.EvaluationMode == ReactiveEvaluationMode.Watched
-                    ? FailUnsupportedEvaluationMode<float>(nameof(ReactiveFloat), value.EvaluationMode, context)
-                    : ReactiveResult<float>.Ok(value.Literal),
-                ReactiveFloatSourceKind.EntityValueStore => value.EvaluationMode == ReactiveEvaluationMode.Continuous
-                    ? FailUnsupportedEvaluationMode<float>(nameof(ReactiveFloat), value.EvaluationMode, context)
-                    : ResolveEntityStoreValue<float>(context, value.EntityValue),
-                ReactiveFloatSourceKind.KernelValueStore => value.EvaluationMode == ReactiveEvaluationMode.Continuous
-                    ? FailUnsupportedEvaluationMode<float>(nameof(ReactiveFloat), value.EvaluationMode, context)
-                    : ResolveKernelStoreValue<float>(context, value.KernelValue),
-                ReactiveFloatSourceKind.Distance => value.EvaluationMode == ReactiveEvaluationMode.Watched
-                    ? FailUnsupportedEvaluationMode<float>(nameof(ReactiveFloat), value.EvaluationMode, context)
-                    : ResolveDistance(context, value.DistanceSource),
+                ReactiveFloatSourceKind.Literal => ReactiveResult<float>.Ok(value.Literal),
+                ReactiveFloatSourceKind.EntityValueStore => ResolveEntityStoreValue<float>(context, value.EntityValue),
+                ReactiveFloatSourceKind.Distance => ResolveDistance(context, value.DistanceSource),
                 _ => FailUnsupportedSource<float>(nameof(ReactiveFloat), value.SourceKind.ToString(), context),
             };
         }
@@ -46,15 +37,8 @@ namespace BC.Base
         {
             return value.SourceKind switch
             {
-                ReactiveIntSourceKind.Literal => value.EvaluationMode == ReactiveEvaluationMode.Watched
-                    ? FailUnsupportedEvaluationMode<int>(nameof(ReactiveInt), value.EvaluationMode, context)
-                    : ReactiveResult<int>.Ok(value.Literal),
-                ReactiveIntSourceKind.EntityValueStore => value.EvaluationMode == ReactiveEvaluationMode.Continuous
-                    ? FailUnsupportedEvaluationMode<int>(nameof(ReactiveInt), value.EvaluationMode, context)
-                    : ResolveEntityStoreValue<int>(context, value.EntityValue),
-                ReactiveIntSourceKind.KernelValueStore => value.EvaluationMode == ReactiveEvaluationMode.Continuous
-                    ? FailUnsupportedEvaluationMode<int>(nameof(ReactiveInt), value.EvaluationMode, context)
-                    : ResolveKernelStoreValue<int>(context, value.KernelValue),
+                ReactiveIntSourceKind.Literal => ReactiveResult<int>.Ok(value.Literal),
+                ReactiveIntSourceKind.EntityValueStore => ResolveEntityStoreValue<int>(context, value.EntityValue),
                 _ => FailUnsupportedSource<int>(nameof(ReactiveInt), value.SourceKind.ToString(), context),
             };
         }
@@ -63,30 +47,16 @@ namespace BC.Base
         {
             return value.SourceKind switch
             {
-                ReactiveBoolSourceKind.Literal => value.EvaluationMode == ReactiveEvaluationMode.Watched
-                    ? FailUnsupportedEvaluationMode<bool>(nameof(ReactiveBool), value.EvaluationMode, context)
-                    : ReactiveResult<bool>.Ok(value.Literal),
-                ReactiveBoolSourceKind.EntityValueStore => value.EvaluationMode == ReactiveEvaluationMode.Continuous
-                    ? FailUnsupportedEvaluationMode<bool>(nameof(ReactiveBool), value.EvaluationMode, context)
-                    : ResolveEntityStoreValue<bool>(context, value.EntityValue),
-                ReactiveBoolSourceKind.KernelValueStore => value.EvaluationMode == ReactiveEvaluationMode.Continuous
-                    ? FailUnsupportedEvaluationMode<bool>(nameof(ReactiveBool), value.EvaluationMode, context)
-                    : ResolveKernelStoreValue<bool>(context, value.KernelValue),
-                ReactiveBoolSourceKind.EntityAlive => value.EvaluationMode == ReactiveEvaluationMode.Watched
-                    ? FailUnsupportedEvaluationMode<bool>(nameof(ReactiveBool), value.EvaluationMode, context)
-                    : ResolveEntityAlive(context, value.EntityAliveSource),
-                ReactiveBoolSourceKind.CompareFloat => value.EvaluationMode == ReactiveEvaluationMode.Watched
-                    ? FailUnsupportedEvaluationMode<bool>(nameof(ReactiveBool), value.EvaluationMode, context)
-                    : ResolveCompareFloat(context, value.CompareFloatSource),
+                ReactiveBoolSourceKind.Literal => ReactiveResult<bool>.Ok(value.Literal),
+                ReactiveBoolSourceKind.EntityValueStore => ResolveEntityStoreValue<bool>(context, value.EntityValue),
+                ReactiveBoolSourceKind.EntityAlive => ResolveEntityAlive(context, value.EntityAliveSource),
+                ReactiveBoolSourceKind.CompareFloat => ResolveCompareFloat(context, value.CompareFloatSource),
                 _ => FailUnsupportedSource<bool>(nameof(ReactiveBool), value.SourceKind.ToString(), context),
             };
         }
 
         public ReactiveResult<Vector3> ResolveVector3(in ReactiveEvalContext context, in ReactiveVector3 value)
         {
-            if (value.EvaluationMode == ReactiveEvaluationMode.Watched)
-                return FailUnsupportedEvaluationMode<Vector3>(nameof(ReactiveVector3), value.EvaluationMode, context);
-
             return value.SourceKind switch
             {
                 ReactiveVector3SourceKind.Literal => ReactiveResult<Vector3>.Ok(value.Literal),
@@ -104,37 +74,19 @@ namespace BC.Base
             switch (value.SourceKind)
             {
                 case ReactiveEntitySourceKind.Self:
-                    if (value.EvaluationMode == ReactiveEvaluationMode.Watched)
-                        return FailUnsupportedEvaluationMode<EntityRef>(nameof(ReactiveEntityRef), value.EvaluationMode, context);
-
                     return context.ActorEntity.IsValid
                         ? ReactiveResult<EntityRef>.Ok(context.ActorEntity)
                         : ReactiveErrorUtility.Fail<EntityRef>(ReactiveErrorCode.InvalidEntity, "Self entity is invalid.", context);
 
                 case ReactiveEntitySourceKind.TriggerEntity:
-                    if (value.EvaluationMode == ReactiveEvaluationMode.Watched)
-                        return FailUnsupportedEvaluationMode<EntityRef>(nameof(ReactiveEntityRef), value.EvaluationMode, context);
-
                     return context.TriggerEntity.IsValid
                         ? ReactiveResult<EntityRef>.Ok(context.TriggerEntity)
                         : ReactiveErrorUtility.Fail<EntityRef>(ReactiveErrorCode.TargetNotFound, "Trigger entity is not available.", context);
 
                 case ReactiveEntitySourceKind.EntityValueStore:
-                    if (value.EvaluationMode == ReactiveEvaluationMode.Continuous)
-                        return FailUnsupportedEvaluationMode<EntityRef>(nameof(ReactiveEntityRef), value.EvaluationMode, context);
-
                     return ResolveEntityStoreValue<EntityRef>(context, value.EntityValue);
 
-                case ReactiveEntitySourceKind.KernelValueStore:
-                    if (value.EvaluationMode == ReactiveEvaluationMode.Continuous)
-                        return FailUnsupportedEvaluationMode<EntityRef>(nameof(ReactiveEntityRef), value.EvaluationMode, context);
-
-                    return ResolveKernelStoreValue<EntityRef>(context, value.KernelValue);
-
                 case ReactiveEntitySourceKind.TargetReference:
-                    if (value.EvaluationMode == ReactiveEvaluationMode.Watched)
-                        return FailUnsupportedEvaluationMode<EntityRef>(nameof(ReactiveEntityRef), value.EvaluationMode, context);
-
                     return ResolveTargetReferenceSingle(context, value.TargetReferenceValue);
 
                 default:
@@ -147,7 +99,6 @@ namespace BC.Base
             return value.SourceKind switch
             {
                 ReactiveFloatSourceKind.EntityValueStore => ResolveEntityStoreHandle<float>(context, value.EntityValue),
-                ReactiveFloatSourceKind.KernelValueStore => ResolveKernelStoreHandle<float>(context, value.KernelValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<float>>(nameof(ReactiveFloat), ReactiveEvaluationMode.Watched, context),
             };
         }
@@ -157,7 +108,6 @@ namespace BC.Base
             return value.SourceKind switch
             {
                 ReactiveIntSourceKind.EntityValueStore => ResolveEntityStoreHandle<int>(context, value.EntityValue),
-                ReactiveIntSourceKind.KernelValueStore => ResolveKernelStoreHandle<int>(context, value.KernelValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<int>>(nameof(ReactiveInt), ReactiveEvaluationMode.Watched, context),
             };
         }
@@ -167,7 +117,6 @@ namespace BC.Base
             return value.SourceKind switch
             {
                 ReactiveBoolSourceKind.EntityValueStore => ResolveEntityStoreHandle<bool>(context, value.EntityValue),
-                ReactiveBoolSourceKind.KernelValueStore => ResolveKernelStoreHandle<bool>(context, value.KernelValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<bool>>(nameof(ReactiveBool), ReactiveEvaluationMode.Watched, context),
             };
         }
@@ -177,7 +126,6 @@ namespace BC.Base
             return value.SourceKind switch
             {
                 ReactiveEntitySourceKind.EntityValueStore => ResolveEntityStoreHandle<EntityRef>(context, value.EntityValue),
-                ReactiveEntitySourceKind.KernelValueStore => ResolveKernelStoreHandle<EntityRef>(context, value.KernelValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<EntityRef>>(nameof(ReactiveEntityRef), ReactiveEvaluationMode.Watched, context),
             };
         }
@@ -360,38 +308,6 @@ namespace BC.Base
             }
         }
 
-        private ReactiveResult<T> ResolveKernelStoreValue<T>(
-            in ReactiveEvalContext context,
-            in ReactiveKernelValueSource source)
-        {
-            if (!TryResolveSceneKernel(context, out SceneKernel resolvedSceneKernel, out ReactiveError kernelError))
-                return ReactiveResult<T>.Fail(kernelError);
-
-            if (resolvedSceneKernel.KernelValueStore == null)
-            {
-                return ReactiveErrorUtility.Fail<T>(
-                    ReactiveErrorCode.MissingValueStore,
-                    "KernelValueStore is not available on the current SceneKernel.",
-                    context);
-            }
-
-            if (!TryResolveValueKey(source.Key, context, out ValueKey<T> key, out ReactiveError keyError))
-                return ReactiveResult<T>.Fail(keyError);
-
-            try
-            {
-                T resolvedValue = resolvedSceneKernel.KernelValueStore.Get(key);
-                return ReactiveResult<T>.Ok(resolvedValue);
-            }
-            catch (InvalidOperationException exception)
-            {
-                return ReactiveErrorUtility.Fail<T>(
-                    ReactiveErrorCode.ValueStoreReadFailed,
-                    exception.Message,
-                    context);
-            }
-        }
-
         private ReactiveResult<ValueWatchHandle<T>> ResolveEntityStoreHandle<T>(
             in ReactiveEvalContext context,
             in ReactiveEntityValueSource source)
@@ -418,38 +334,6 @@ namespace BC.Base
             try
             {
                 ValueWatchHandle<T> handle = resolvedSceneKernel.EntityValueStore.GetHandle(entityResult.Value, key);
-                return ReactiveResult<ValueWatchHandle<T>>.Ok(handle, handle.Version);
-            }
-            catch (InvalidOperationException exception)
-            {
-                return ReactiveErrorUtility.Fail<ValueWatchHandle<T>>(
-                    ReactiveErrorCode.ValueStoreReadFailed,
-                    exception.Message,
-                    context);
-            }
-        }
-
-        private ReactiveResult<ValueWatchHandle<T>> ResolveKernelStoreHandle<T>(
-            in ReactiveEvalContext context,
-            in ReactiveKernelValueSource source)
-        {
-            if (!TryResolveSceneKernel(context, out SceneKernel resolvedSceneKernel, out ReactiveError kernelError))
-                return ReactiveResult<ValueWatchHandle<T>>.Fail(kernelError);
-
-            if (resolvedSceneKernel.KernelValueStore == null)
-            {
-                return ReactiveErrorUtility.Fail<ValueWatchHandle<T>>(
-                    ReactiveErrorCode.MissingValueStore,
-                    "KernelValueStore is not available on the current SceneKernel.",
-                    context);
-            }
-
-            if (!TryResolveValueKey(source.Key, context, out ValueKey<T> key, out ReactiveError keyError))
-                return ReactiveResult<ValueWatchHandle<T>>.Fail(keyError);
-
-            try
-            {
-                ValueWatchHandle<T> handle = resolvedSceneKernel.KernelValueStore.GetHandle(key);
                 return ReactiveResult<ValueWatchHandle<T>>.Ok(handle, handle.Version);
             }
             catch (InvalidOperationException exception)
