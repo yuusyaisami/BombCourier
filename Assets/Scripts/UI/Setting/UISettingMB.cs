@@ -1,3 +1,8 @@
+using BC.Managers;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
 namespace BC.UI
 {
     // ゲームの設定画面を管理するクラス。
@@ -107,6 +112,14 @@ namespace BC.UI
             if (SettingManagerMB.Instance != null)
             {
                 SettingManagerMB.Instance.SetSFXVolume(value);
+            }
+        }
+
+        private void UpdateCameraSensitivityValueText(float value)
+        {
+            if (cameraSensitivityValueText != null)
+            {
+                cameraSensitivityValueText.text = value.ToString("0.00");
             }
         }
     }

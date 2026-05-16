@@ -349,7 +349,9 @@ Library/ScriptAssemblies/
  UnityEditor.UI.dll
  UnityEngine.UI.dll
 Packages/com.febucci.text-animator-unity/Libraries/Runtime/Febucci.TextAnimatorCore.dll
-Temp/bin/Debug/Febucci.TextAnimatorForUnity.Runtime.dll
+Temp/bin/Debug/
+ Febucci.Attributes.Runtime.dll
+ Febucci.TextAnimatorForUnity.Runtime.dll
 
 [analyzerReferences]
 ../../../Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/

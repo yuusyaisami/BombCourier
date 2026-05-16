@@ -14,6 +14,13 @@ BC/Particles/ParticleLit
 BC/Particles/ParticleDistortion
 ```
 
+M14 設計予約として、以下の future family 名も canonical 候補として固定する。
+
+```text
+BC/Particles/ParticleRingUnlit
+BC/Particles/ParticleGroundUnlit
+```
+
 `PartcleDistortion` は誤字として扱い、以後は `ParticleDistortion` に統一する。
 
 ---
@@ -22,6 +29,15 @@ BC/Particles/ParticleDistortion
 
 このリポジトリでは、Particle 系 Shader はすでに Trail 側で以下の実装規約を持っている。
 
+
+M10 実装注記:
+
+```text
+- material property は増やさず、ParticleSystem.customData の Custom1 と active vertex streams で制御する
+- shader は Custom1.xyzw を TEXCOORD1 で受け取り、Custom1.x/y を additive delta、Custom1.z を noise UV offset として扱う
+- Custom1.w は variant index 予約のまま 0 default を維持する
+- Debug View は 13=Custom1、15=UV まで実装し、14=Custom2 は予約のままとする
+```
 ```text
 - Shader 名は BC/ 接頭辞で統一する
 - アセット配置は Assets/Art/... を使う
@@ -171,6 +187,14 @@ BC/Particles/ParticleRingUnlit
 BC/Particles/ParticleGroundUnlit
 BC/Particles/ParticleUnlitLite
 BC/Particles/ParticleUnlitAdvanced
+```
+
+M14 実装注記:
+
+```text
+- ParticleRingUnlit は Shockwave / Magic Circle / Water Ripple / Landing Ring / Explosion Ring の ownership を持つ設計専用 family とする
+- ParticleGroundUnlit は Ground Smoke / Floor Mist / Dust Cloud / Magic Ground Aura / Creeping Fog の ownership を持つ設計専用 family とする
+- M14 では shader root や generated material を完成させず、docs / scaffold / source contract までを fixed scope とする
 ```
 
 ### 5.3 分離方針
@@ -473,6 +497,31 @@ _DistortionStrength
 _DistortionScale
 _DistortionScrollSpeed
 _DistortionAlphaInfluence
+
+_RingInnerRadius
+_RingOuterRadius
+_RingThickness
+_PolarScrollSpeed
+_RadialDissolveAmount
+_EdgeEmissionColor
+_EdgeEmissionStrength
+
+_WorldUvScale
+_WorldUvScroll
+_HeightFadeStart
+_HeightFadeEnd
+_GroundContactFade
+_DirectionalNoiseMap
+_DirectionalNoiseStrength
+_DirectionalNoiseScroll
+```
+
+M14 実装注記:
+
+```text
+- Ring / Ground 系の reserved property は命名だけ先に固定し、M14 では shader 実装しない
+- Ring shape mode を ParticleUnlit の `_ShapeMode` に押し戻さず、専用 family で扱う前提にする
+- Ground の world-space / contact fade は一般 billboard variation と切り分ける
 ```
 
 ---
@@ -808,6 +857,16 @@ M_Particle_Magic_Additive
 - Alpha Clip
 ```
 
+M12 実装注記:
+
+```text
+- 初回実装では BaseMap / BaseColor / Alpha / Vertex Color / NormalMap / NormalStrength / Smoothness / Metallic / LightInfluence / Emission に限定する
+- lighting は main light + minimal ambient + simple specular のみとし、Additional Lights、Rim Light、Alpha Clip、Dissolve はこの段階では入れない
+- Billboard validation は Raindrop / Bubble、Mesh validation は Debris で行い、validation scene は ParticleMaterialTestScene の Future Lit Test Area を再利用する
+- mesh particle 向け validation では ParticleSystemRenderer.renderMode = Mesh と cube mesh assignment を使い、ParticleUnlit family へ機能を逆流させない
+- normal map 用 validation texture は generated asset とし、editor validator は hidden blend/render-state property を含めて deterministic に正規化する
+```
+
 ---
 
 ## 15. ParticleDistortion Specification
@@ -848,6 +907,16 @@ M_Particle_Magic_Additive
 - Flow Map
 ```
 
+M13 実装注記:
+
+```text
+- ParticleDistortion は URP Opaque Texture を正規経路とし、DeclareOpaqueTexture.hlsl + SampleSceneColor で scene color をサンプリングする
+- M13 の実装範囲は DistortionMap / DistortionStrength / DistortionScale / DistortionScrollSpeed / Alpha / Edge Fade / Noise optional までに限定し、Depth Fade / Flow Map / GrabPass は入れない
+- editor authoring は ParticleDistortionShaderGUI / ParticleDistortionMaterialValidator / ParticleDistortionPresetUtility で構成し、Opaque Texture 依存 warning と高負荷 warning を inspector で出す
+- validation bootstrapper は generated distortion vector/noise texture、M_Particle_HeatHaze_Distortion / M_Particle_AirWarp_Distortion / M_Particle_MagicWarp_Distortion、FX_Particle_HeatHaze / FX_Particle_AirWarp / FX_Particle_MagicWarp を再生成し、ParticleMaterialTestScene の Future Distortion Test Area に validation anchor と prefab preview を置く
+- ParticleDistortion は標準 WebGL required set に入れず、WebGL standard unsupported の境界を docs / tests の両方で明示する
+```
+
 ---
 
 ## 16. Flipbook / Atlas Specification
@@ -858,6 +927,15 @@ M_Particle_Magic_Additive
 - Grid Flipbook
 - Random Start Frame
 - Frame over Time
+```
+
+M9 実装注記:
+
+```text
+- ParticleUnlit shader は UV0 sampling のまま維持し、flipbook frame の切替は Particle System の Texture Sheet Animation module 側で行う
+- `_FlipbookBlend` / `_FlipbookRows` / `_FlipbookColumns` / `_FlipbookMode` はこの時点では material property として未実装の予約値とする
+- generated validation atlas は 4x4 grid を基準にし、Smoke / Magic Burst / Explosion placeholder を用意する
+- flipbook atlas texture importer は sRGB on、Clamp、Bilinear、No Mipmap、Uncompressed を基準にする
 ```
 
 将来対応:
@@ -900,6 +978,8 @@ _IntersectionStrength
 _IntersectionColor
 ```
 
+M11 実装では Soft Particles と Camera Fade のみ先行対応し、shader keyword は増やさず runtime toggle で制御する。shipping material / prefab は default-off を維持し、validation scene では dedicated material で ON 状態を確認する。
+
 ### 17.3 Fake Lighting / Rim 予約
 
 ```csharp
@@ -928,6 +1008,23 @@ ParticleLit:
 ParticleDistortion:
   Billboard
   Horizontal Billboard optional
+
+ParticleRingUnlit:
+  Billboard
+  Horizontal Billboard
+  Mesh optional in future milestone
+
+ParticleGroundUnlit:
+  Horizontal Billboard
+  Billboard optional
+  Mesh optional in future milestone
+```
+
+M14 実装注記:
+
+```text
+- Ring / Ground は renderer mode 前提が強いため、ParticleUnlit の generic mode 拡張ではなく family 分離で扱う
+- Ground family は flat placement を前提にするため、Horizontal Billboard を primary に据える
 ```
 
 ---
@@ -991,6 +1088,22 @@ ParticleQuality.Ultra
 ```
 
 初期では `ParticleUnlit` のみでよい。ただし Quality Tier の概念は仕様として固定する。
+
+M14 実装注記:
+
+```text
+- ParticleRingUnlit / ParticleGroundUnlit は M14 時点では quality tier へ未配属の reserved family とする
+- 最初の機能 milestone で ParticleUnlit 相当か High 以上かを再評価する
+```
+
+M15 実装注記:
+
+```text
+- ParticleUnlit は hidden property `_QualityTier` を持ち、Low / Medium / High の authored tier を material に保持する
+- ParticleUnlitQualityTierUtility により authored / inferred tier を共通化し、ShaderGUI / MaterialValidator / BuildValidator / bootstrapper が同一 contract を参照する
+- standard WebGL path は Low / Medium までを許容し、High tier ParticleUnlit material は build validator で reject する
+- Ultra は family-level boundary として ParticleLit / ParticleDistortion 側に残し、ParticleUnlitLite / ParticleUnlitAdvanced の shader split は reserve のままとする
+```
 
 ---
 
@@ -1122,6 +1235,18 @@ ParticleMaterialTestScene.unity
 - 明るい背景・暗い背景の両方で破綻しない
 ```
 
+### 24.4 M16 Review Harness
+
+M16 では `ParticleMaterialTestScene` を manual review harness として使う。
+
+```text
+- Dust / Smoke / Glow / Spark / Magic preview は既存 marker を使う
+- Quality Tier Test Area は standalone review area として維持する
+- Future Lit Test Area / Future Distortion Test Area は family boundary review に使う
+- ParticleMaterialReviewHarness は bright/dark backdrop と Ring/Ground placeholder を置く standalone harness とする
+- M1 eight-marker contract を壊す scene object 追加は行わない
+```
+
 ---
 
 ## 25. Performance Policy
@@ -1148,6 +1273,14 @@ Lighting: なし
 - WebGL 標準で ParticleLit を大量使用する
 - Texture Sample を無制限に増やす
 - Shader Keyword を無秩序に増やす
+```
+
+M16 実装注記:
+
+```text
+- standard WebGL path は Low / Medium までを canonical とし、High-tier boundary feature は build validator で reject する
+- performance guide は `ParticleMaterialPerformanceGuide.md` に分離し、spec 側には contract のみ残す
+- optimization は property 削除より、source audit と drift prevention を優先する
 ```
 
 ---

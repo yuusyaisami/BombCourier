@@ -6,12 +6,10 @@ using UnityEngine;
 namespace BC.ActionSystem
 {
     [Serializable]
-    public sealed class SetActiveStepRuntime : IActionStepRuntime
+    public sealed class SetActiveStepRuntime : IActionNodeDefinition
     {
-        [SerializeField] private EntityTargetReference target;
-        [SerializeField] private bool active;
-
-        [NonSerialized] private List<EntityRef> resolvedTargets;
+        private readonly EntityTargetReference target;
+        private readonly bool active;
 
         public SetActiveStepRuntime(EntityTargetReference target, bool active)
         {
@@ -19,27 +17,44 @@ namespace BC.ActionSystem
             this.active = active;
         }
 
-        public bool Execute(in ActionExecutionContext context)
+        public IActionNodeRuntime CreateRuntime()
         {
-            if (context.SceneKernel == null || context.SceneKernel.EntityComponents == null)
-                return false;
+            return new Runtime(target, active);
+        }
 
-            resolvedTargets ??= new List<EntityRef>(4);
-            int count = ActionTargetResolver.Resolve(context, target, resolvedTargets);
-            bool handled = false;
+        private sealed class Runtime : IActionNodeRuntime
+        {
+            private readonly EntityTargetReference target;
+            private readonly bool active;
 
-            for (int i = 0; i < count; i++)
+            private List<EntityRef> resolvedTargets;
+
+            public Runtime(EntityTargetReference target, bool active)
             {
-                EntityRef entity = resolvedTargets[i];
-
-                if (!context.SceneKernel.EntityComponents.TryGetGameObject(entity, out GameObject targetObject))
-                    continue;
-
-                targetObject.SetActive(active);
-                handled = true;
+                this.target = target;
+                this.active = active;
             }
 
-            return handled;
+            public ActionNodeStatus Tick(in ActionExecutionContext context, ref int remainingOperations)
+            {
+                if (context.SceneKernel == null || context.SceneKernel.EntityComponents == null)
+                    return ActionNodeStatus.Failed;
+
+                resolvedTargets ??= new List<EntityRef>(4);
+                int count = ActionTargetResolver.Resolve(context, target, resolvedTargets);
+
+                for (int i = 0; i < count; i++)
+                {
+                    EntityRef entity = resolvedTargets[i];
+
+                    if (!context.SceneKernel.EntityComponents.TryGetGameObject(entity, out GameObject targetObject))
+                        continue;
+
+                    targetObject.SetActive(active);
+                }
+
+                return ActionNodeStatus.Continue;
+            }
         }
     }
 }

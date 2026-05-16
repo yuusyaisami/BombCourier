@@ -50,7 +50,15 @@ TemporaryDependencyNodeTargetIdentifier=netstandard2.1
 /warnaserror+:NU1605
 
 [sourceFiles]
-Assets/Tests/EditMode/Particles/TrailUnlitValidationTests.cs
+Assets/Tests/EditMode/Particles/
+ ParticleDistortionValidationTests.cs
+ ParticleLitValidationTests.cs
+ ParticleMaterialSystemM14DesignTests.cs
+ ParticleMaterialSystemM16HardeningTests.cs
+ ParticleMaterialSystemM1ScaffoldTests.cs
+ ParticleUnlitQualityTierValidationTests.cs
+ ParticleUnlitValidationTests.cs
+ TrailUnlitValidationTests.cs
 Temp/obj/BombCourier.Particles.EditorTests/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 
 [metadataReferences]
@@ -331,7 +339,13 @@ Temp/obj/BombCourier.Particles.EditorTests/.NETStandard,Version=v2.1.AssemblyAtt
  System.Transactions.dll
  System.Xml.dll
  System.Xml.Linq.dll
-Library/PackageCache/com.unity.ext.nunit@d8c07649098d/net40/unity-custom/nunit.framework.dll
+Library/
+ PackageCache/com.unity.ext.nunit@d8c07649098d/net40/unity-custom/nunit.framework.dll
+ ScriptAssemblies/
+  UnityEditor.TestRunner.dll
+  UnityEditor.UI.dll
+  UnityEngine.TestRunner.dll
+  UnityEngine.UI.dll
 
 [analyzerReferences]
 ../../../Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/

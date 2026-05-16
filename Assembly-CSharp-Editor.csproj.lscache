@@ -57,6 +57,22 @@ Assets/Art/Shader/EnvironmentStylizedLit/Editor/
  EnvironmentStylizedLitPresetUtility.cs
  EnvironmentStylizedLitShaderGUI.cs
  EnvironmentStylizedLitValidationBootstrapper.cs
+Assets/Art/Shader/Particles/ParticleDistortion/Editor/
+ ParticleDistortionMaterialValidator.cs
+ ParticleDistortionPresetUtility.cs
+ ParticleDistortionShaderGUI.cs
+Assets/Art/Shader/Particles/ParticleLit/Editor/
+ ParticleLitMaterialValidator.cs
+ ParticleLitPresetUtility.cs
+ ParticleLitShaderGUI.cs
+Assets/Art/Shader/Particles/ParticleUnlit/Editor/
+ ParticleUnlitBuildValidator.cs
+ ParticleUnlitMaterialValidator.cs
+ ParticleUnlitPresetUtility.cs
+ ParticleUnlitQualityTierUtility.cs
+ ParticleUnlitShaderGUI.cs
+ ParticleUnlitValidationBootstrapper.cs
+ ParticleUnlitWebGlBuildUtility.cs
 Assets/Art/Shader/Particles/TrailUnlit/Editor/
  TrailUnlitMaterialValidator.cs
  TrailUnlitPresetUtility.cs

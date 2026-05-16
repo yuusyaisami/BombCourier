@@ -59,13 +59,17 @@ Assets/RealToon/RealToon Tools/
  ShadowTSDFModeHelper.cs
  SmearEffectHelper.cs
  SmoothObjectNormalHelper.cs
-Assets/Scripts/Action/
- Authoring/SetActiveStepAuthoring.cs
- Core/
-  ActionRunnerMB.cs
-  ActionRuntimeContracts.cs
-  ActionStepAuthoringContracts.cs
-  SetActiveStepRuntime.cs
+Assets/Scripts/Action/Authoring/
+ SetActiveStepAuthoring.cs
+ SubActionStepAuthoring.cs
+ WaitFramesStepAuthoring.cs
+Assets/Scripts/Action/Core/
+ ActionRunnerMB.cs
+ ActionRuntimeContracts.cs
+ ActionStepAuthoringContracts.cs
+ SetActiveStepRuntime.cs
+ SubActionStepRuntime.cs
+ WaitFramesStepRuntime.cs
 Assets/Scripts/Base/Entity/
  EntityImpactResponseMB.cs
  EntityMB.cs
@@ -147,6 +151,7 @@ Assets/Scripts/Managers/
  GameLogicManagerMB.cs
  GameStateManagerMB.cs
  InputManagerMB.cs
+ SettingManagerMB.cs
  StageManagerMB.cs
  TalkSystemManagerMB.cs
 Assets/Scripts/
@@ -186,6 +191,7 @@ Assets/Scripts/
    UIReloadMB.cs
    UIShowReloadStateMB.cs
    UIStageClearMB.cs
+  Setting/UISettingMB.cs
   UIInteractionAnimationMB.cs
   UITalkSystem/UITalkSystemMB.cs
  Utility/

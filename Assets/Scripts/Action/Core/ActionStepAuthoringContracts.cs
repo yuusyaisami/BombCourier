@@ -57,6 +57,21 @@ namespace BC.ActionSystem
 
             return context.Build();
         }
+
+        public ActionBlockDefinition CompileBlock()
+        {
+            ActionCompileContext context = new();
+
+            if (_steps != null)
+            {
+                for (int i = 0; i < _steps.Count; i++)
+                {
+                    _steps[i]?.Compile(context);
+                }
+            }
+
+            return context.BuildBlock();
+        }
     }
     [Serializable]
     public abstract class ActionStepAuthoring

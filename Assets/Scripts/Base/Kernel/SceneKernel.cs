@@ -1,5 +1,7 @@
 namespace BC.Base
 {
+    using BC.ActionSystem;
+
     public sealed class SceneKernel : BaseKernel
     {
         public ScopedEntityRegistry EntitiesRegistry { get; set; }
@@ -13,6 +15,7 @@ namespace BC.Base
         public KernelValueStoreService KernelValueStore { get; set; }
         public EntitySpawnerService Spawner { get; set; }
         public EntityComponentResolverService EntityComponents { get; set; }
+        public ActionService Actions { get; set; }
 
         // 既存コード互換用。新規コードでは EntityValueStore / KernelValueStore を明示して使う。
         public ValueStoreService ValueStore
@@ -30,9 +33,11 @@ namespace BC.Base
         public SceneKernel()
         {
             EntityComponents = new EntityComponentResolverService(this);
+            Actions = new ActionService(this);
 
             Tickables = new ITickable[]
             {
+                Actions,
             };
         }
 
@@ -43,6 +48,7 @@ namespace BC.Base
             EntityValueStore?.Clear();
             KernelValueStore?.Clear();
             EntityComponents?.Clear();
+            Actions?.Clear();
         }
     }
 }

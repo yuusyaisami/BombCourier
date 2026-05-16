@@ -56,6 +56,7 @@ namespace BC.Base
             if (!removed)
                 return false;
 
+            kernel.Actions?.ClearEntity(entity);
             kernel.EntityComponents?.Unregister(entity);
             entityEvents.Publish(entity, new EntityUnregisteredEvent(entity));
             entityEvents.ClearEntity(entity);
