@@ -16,6 +16,7 @@ namespace BC.Base
         public KernelValueStoreService KernelValueStore { get; set; }
         public EntitySpawnerService Spawner { get; set; }
         public EntityComponentResolverService EntityComponents { get; set; }
+        public ReactiveValueResolverService ReactiveValues { get; set; }
         public ActionService Actions { get; set; }
         public CameraPathPlayerService CameraPaths { get; set; }
 
@@ -35,6 +36,7 @@ namespace BC.Base
         public SceneKernel()
         {
             EntityComponents = new EntityComponentResolverService(this);
+            ReactiveValues = new ReactiveValueResolverService(this);
             Actions = new ActionService(this);
             CameraPaths = new CameraPathPlayerService(this);
 
@@ -47,12 +49,13 @@ namespace BC.Base
 
         public void Dispose()
         {
-            Events?.Clear();
+            Actions?.Clear();
+            CameraPaths?.Cancel();
+            ReactiveValues?.Clear();
+            EntityComponents?.Clear();
             EntityValueStore?.Clear();
             KernelValueStore?.Clear();
-            EntityComponents?.Clear();
-            CameraPaths?.Cancel();
-            Actions?.Clear();
+            Events?.Clear();
         }
     }
 }

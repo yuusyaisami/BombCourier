@@ -151,6 +151,9 @@ Assets/Scripts/Gimmick/
   PressurePlateSurfaceMB.cs
 Assets/Scripts/Item/
  Bomb/BombMB.cs
+ BonusItem/
+  BonusItemData.cs
+  BonusObjectMB.cs
  Carry/CarryContracts.cs
  Effect/
   PickupOutlineRegistry.cs
@@ -205,7 +208,21 @@ Assets/Scripts/UI/
  UITalkSystem/UITalkSystemMB.cs
 Assets/Scripts/Utility/
  BoolStore.cs
+ MeshControl/MeshMaterialControllerMB.cs
  Motion/MovingPlatformMotionContracts.cs
+ ReactiveValue/
+  ReactiveActionScope.cs
+  ReactiveBindingBase.cs
+  ReactiveBindingContracts.cs
+  ReactiveBoolBinding.cs
+  ReactiveEntityRefBinding.cs
+  ReactiveFloatBinding.cs
+  ReactiveIntBinding.cs
+  ReactiveValueContracts.cs
+  ReactiveValueResolverService.cs
+  ReactiveValueResult.cs
+  ReactiveValueSources.cs
+  ReactiveVector3Binding.cs
  ScalarManager.cs
  SpriteAnimation/
   AnimationSpriteClip.cs

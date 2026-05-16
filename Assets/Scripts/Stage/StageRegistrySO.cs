@@ -9,6 +9,7 @@ namespace BC.Stage
         public string stageName; // ステージの名前
         public string stageDescription; // ステージの説明
         public int stageDifficulty; // ステージの難易度
+        public float clearTimeThreshold; // ゴールデータにクリアタイムの閾値がある場合はそれを使用し、ない場合はデフォルト値を返す
         public GameObject stagePrefab; // ステージのプレハブ
     }
     [CreateAssetMenu(fileName = "StageRegistry", menuName = "BombCourier/StageRegistry", order = 1)]

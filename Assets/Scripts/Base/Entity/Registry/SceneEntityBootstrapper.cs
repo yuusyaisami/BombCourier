@@ -24,9 +24,6 @@ namespace BC.Base
                 if (entityMb.HasEntity)
                     continue;
 
-                if (entityMb.RegistrationMode != EntityRegistrationMode.ScenePlaced)
-                    continue;
-
                 EntityRegistryRequest request = new EntityRegistryRequest(
                     entityMb.gameObject,
                     entityMb.transform,
@@ -35,7 +32,25 @@ namespace BC.Base
                 );
 
                 EntityRef entity = kernel.EntityLifecycle.Register(request);
-                entityMb.Bind(entity);
+                // SceneKernel 配下に最初からある Entity は実際の登録経路で ScenePlaced とみなす。
+                entityMb.Bind(entity, EntityRegistrationMode.ScenePlaced);
+            }
+        }
+
+        public void UnregisterSceneEntities()
+        {
+            EntityMB[] entities = searchRoot.GetComponentsInChildren<EntityMB>(true);
+
+            for (int i = entities.Length - 1; i >= 0; i--)
+            {
+                EntityMB entityMb = entities[i];
+
+                if (!entityMb.HasEntity)
+                    continue;
+
+                EntityRef entity = entityMb.Entity;
+                entityMb.Unbind(entity);
+                kernel.EntityLifecycle.Unregister(entity);
             }
         }
     }

@@ -22,7 +22,7 @@ namespace BC.Base
         [FormerlySerializedAs("tag")]
         [SerializeField, InspectorName("Tag"), EntityTagDropdown] private EntityTagReference tagReference;
         [SerializeField] private EntityFlags flags = EntityFlags.None;
-        [SerializeField] private EntityRegistrationMode registrationMode = EntityRegistrationMode.ScenePlaced;
+        private EntityRegistrationMode registrationMode = EntityRegistrationMode.Manual;
         public StateMachine<EntityState> EntityStateMachine = new StateMachine<EntityState>();
 
 
@@ -36,6 +36,11 @@ namespace BC.Base
 
         public void Bind(EntityRef entity)
         {
+            Bind(entity, EntityRegistrationMode.Manual);
+        }
+
+        public void Bind(EntityRef entity, EntityRegistrationMode mode)
+        {
             if (Entity.IsValid)
             {
                 Debug.LogError($"EntityMB is already bound. Current={Entity}, New={entity}", this);
@@ -43,6 +48,7 @@ namespace BC.Base
             }
 
             Entity = entity;
+            registrationMode = mode;
         }
 
         public void Unbind(EntityRef entity)
@@ -54,6 +60,7 @@ namespace BC.Base
             }
 
             Entity = default;
+            registrationMode = EntityRegistrationMode.Manual;
         }
 
         private void OnDestroy()

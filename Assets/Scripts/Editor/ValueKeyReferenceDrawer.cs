@@ -13,14 +13,20 @@ namespace BC.Editor
     {
         private static readonly Dictionary<string, AdvancedDropdownState> DropdownStates = new();
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        internal static float GetFilteredPropertyHeight()
         {
-            return TryGetRegistryError(out _) ?
-                (EditorGUIUtility.singleLineHeight * 2f) + EditorGUIUtility.standardVerticalSpacing :
-                EditorGUIUtility.singleLineHeight;
+            return TryGetRegistryError(out _)
+                ? (EditorGUIUtility.singleLineHeight * 2f) + EditorGUIUtility.standardVerticalSpacing
+                : EditorGUIUtility.singleLineHeight;
         }
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        internal static void DrawFilteredDropdown(
+            Rect position,
+            SerializedProperty property,
+            GUIContent label,
+            Type filterType,
+            string pathPrefix = null,
+            bool allowNone = true)
         {
             if (TryGetRegistryError(out string errorMessage))
             {
@@ -37,13 +43,6 @@ namespace BC.Editor
                 EditorGUI.LabelField(position, label.text, "ValueKeyReference fields are missing.");
                 return;
             }
-
-            ValueKeyDropdownAttribute dropdownAttribute =
-                fieldInfo?.GetCustomAttribute<ValueKeyDropdownAttribute>(true);
-
-            Type filterType = dropdownAttribute?.ValueType;
-            string pathPrefix = dropdownAttribute?.PathPrefix;
-            bool allowNone = dropdownAttribute?.AllowNone ?? true;
 
             IReadOnlyList<ValueKeyDescriptor> descriptors = ValueKeyRegistry.GetDescriptors(filterType, pathPrefix);
             bool hasResolvedDescriptor = TryResolveCurrentDescriptor(idProperty.intValue, pathProperty.stringValue, out ValueKeyDescriptor currentDescriptor);
@@ -76,6 +75,25 @@ namespace BC.Editor
                         pathPrefix);
                 }
             }
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            return GetFilteredPropertyHeight();
+        }
+
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            ValueKeyDropdownAttribute dropdownAttribute =
+                fieldInfo?.GetCustomAttribute<ValueKeyDropdownAttribute>(true);
+
+            DrawFilteredDropdown(
+                position,
+                property,
+                label,
+                dropdownAttribute?.ValueType,
+                dropdownAttribute?.PathPrefix,
+                dropdownAttribute?.AllowNone ?? true);
         }
 
         private static GUIContent BuildButtonContent(

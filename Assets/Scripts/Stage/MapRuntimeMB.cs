@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick;
+using BC.Item;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -17,6 +18,7 @@ namespace BC.Stage
         [SerializeField] private CameraPathSequenceAuthoringMB cameraPath;
         [SerializeField] private BreakableGateObjectMB goalGate;
         [SerializeField] private GoalData goalData;
+        [SerializeField] private BonusObjectMB bonusObject; // ステージ内のBonusObjectの参照 (スコア計算に使います。)
         [SerializeField] private List<BombMB> bombs = new List<BombMB>();
         [SerializeField] private List<PlayerSpawnPointMB> spawnPoints = new List<PlayerSpawnPointMB>();
         [SerializeField] private List<GodHandObjectMB> godHandObjects = new List<GodHandObjectMB>();
@@ -29,6 +31,7 @@ namespace BC.Stage
         public IReadOnlyList<BombMB> Bombs => bombs;
         public IReadOnlyList<PlayerSpawnPointMB> SpawnPoints => spawnPoints;
         public IReadOnlyList<GodHandObjectMB> GodHandObjects => godHandObjects;
+        public BonusObjectMB BonusObject => bonusObject;
 
         private void Awake()
         {
@@ -53,6 +56,7 @@ namespace BC.Stage
 
             goalGate = null;
             goalData = null;
+            bonusObject = GetComponentInChildren<BonusObjectMB>(true);
             BreakableGateObjectMB[] goalGates = GetComponentsInChildren<BreakableGateObjectMB>(true);
             for (int i = 0; i < goalGates.Length; i++)
             {

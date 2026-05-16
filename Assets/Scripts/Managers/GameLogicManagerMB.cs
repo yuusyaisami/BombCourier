@@ -6,6 +6,7 @@ using BC.Base;
 using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick;
+using BC.Item;
 using BC.Stage;
 using BC.UI;
 using Cysharp.Threading.Tasks;
@@ -44,11 +45,17 @@ namespace BC.Manager
         private EntityRef playerRef; // プレイヤーのEntityRef。プレイヤーの状態を管理するために使用する。
         public Action<PlayerMB> OnPlayerSpawned; // プレイヤーがスポーンしたときに呼び出されるイベント
         public Action<BombMB> OnCurrentBombChanged; // 現在の爆弾が変わったときに呼び出されるイベント
+        public Action<BombMB> OnStartBombFuse; // 爆弾のカウントダウンが開始されたときに呼び出されるイベント
+        public Action OnEndBombFuse; // 爆弾のカウントダウンが終了したときに呼び出されるイベント
         public Action ReloadState; // ステージをリロードする必要があるときに呼び出されるイベント
         public Action ExplodedState; // 爆弾が爆発したときに呼び出されるイベント
         public Action ExplodedBeforeGoalOpenedState; // 爆弾が爆発し、かつGoal Gateがまだ開いていないときに呼び出されるイベント
         private SceneKernel sceneKernel; // シーンカーネルの参照。シーン全体の状態を管理するために使用する。
-
+        private float timeSinceStartBomb; //爆弾のカウントダウンが開始してからの経過時間を管理するための変数
+        private float currentClearTimeThreshold = 60f; // 爆弾のカウントダウンが開始してからこの時間以内にゴールした場合、Fast Clear とみなすための閾値。必要に応じて調整してください。
+        private EntityRef gameLogicManagerRef; // GameLogicManager自身のEntityRef。シーンカーネルに登録している場合に使用する。
+        public EntityRef SelfEntityRef => gameLogicManagerRef; // GameLogicManagerのEntityRefを外部から参照できるようにするプロパティ
+        private BonusObjectMB currentBonusObject; // 現在のステージのBonusObjectへの参照。スコア計算などに使用する。
         private int currentGameStage;
 
         public BombMB CurrentBomb => currentBomb;
@@ -83,6 +90,7 @@ namespace BC.Manager
         {
             sceneKernel = transform.GetComponentInChildren<SceneKernelMB>().Kernel;
             GameStateManagerMB stateManager = GameStateManagerMB.Instance;
+            gameLogicManagerRef = GetComponent<EntityMB>() != null ? GetComponent<EntityMB>().Entity : default;
 
             if (stateManager == null)
             {
@@ -107,6 +115,13 @@ namespace BC.Manager
                 GameStateManagerMB.Instance.StateMachine.Unsubscribe(OnStageChanged);
             }
 
+        }
+        private void Update()
+        {
+            if (currentBomb != null && GameStateManagerMB.Instance.CurrentState == GameState.FusePlaying)
+            {
+                timeSinceStartBomb += Time.deltaTime;
+            }
         }
 
         public void OnStageChanged(GameState newState)
@@ -159,6 +174,19 @@ namespace BC.Manager
                 Debug.LogError("GameLogicManagerMB: currentGoalData.GoalCamera is not assigned.", this);
                 return;
             }
+            // Bombのカウントダウン時間をValueStoreに反映
+            if (sceneKernel != null && gameLogicManagerRef.IsValid)
+            {
+                sceneKernel.ValueStore.Set<float>(playerRef, ValueKeys.Kernel.Evaluation.CountdownTime, timeSinceStartBomb);
+                sceneKernel.ValueStore.Set<float>(playerRef, ValueKeys.Kernel.Evaluation.FastClearThreshold, currentClearTimeThreshold);
+            }
+            // スコア計算を行う
+            bool isFastClear = timeSinceStartBomb <= currentClearTimeThreshold;
+            sceneKernel.ValueStore.Set<bool>(playerRef, ValueKeys.Kernel.Evaluation.IsFastClear, isFastClear);
+            // アイテム取得はできたかどうか
+            bool isBonusItem = currentBonusObject != null && currentBonusObject.IsCollected;
+            sceneKernel.ValueStore.Set<bool>(playerRef, ValueKeys.Kernel.Evaluation.IsBonusItem, isBonusItem);
+
 
             PlayerMB resolvedPlayer = ResolvePlayerInstance();
             if (resolvedPlayer == null)
@@ -271,7 +299,9 @@ namespace BC.Manager
             // 現在のステージをリロードする処理
             if (stageInstance != null)
             {
+                UnregisterStageEntities(stageInstance);
                 Destroy(stageInstance);
+                stageInstance = null;
             }
             StageManagerMB.Instance.ReloadStage();
             playerInstance.ResetPlayer();
@@ -301,11 +331,15 @@ namespace BC.Manager
         {
             if (bomb != currentBomb) return; // currentBomb以外の爆弾が起爆した場合は無視する
             GameStateManagerMB.Instance.ChangeState(GameState.FusePlaying);
+            OnStartBombFuse?.Invoke(currentBomb); // 爆弾のカウントダウンが開始されたことを通知するイベントを発火する
+            timeSinceStartBomb = 0; // 爆弾のカウントダウン開始からの経過時間をリセットする
         }
         private void HandleCurrentBombExploded(BombMB bomb)
         {
             if (bomb != currentBomb) return; // currentBomb以外の爆弾が爆発した場合は無視する
             GameStateManagerMB.Instance.ChangeState(GameState.Exploded);
+            OnEndBombFuse?.Invoke(); // 爆弾のカウントダウンが終了したことを通知するイベントを発火する
+
             ExplodedState?.Invoke();
 
             if (!IsGoalGateOpened())
@@ -324,11 +358,19 @@ namespace BC.Manager
 
         public void LoadGameStage()
         {
+            if (stageInstance != null && debugStageInstance == null)
+            {
+                UnregisterStageEntities(stageInstance);
+                Destroy(stageInstance);
+                stageInstance = null;
+            }
+
             StageLoadResult result;
 
             if (debugStageInstance == null)
             {
                 result = StageManagerMB.Instance.LoadStage(currentGameStage);
+                RegisterStageEntities(result.stageInstance);
                 // playerをテレポートさせる
                 if (result.spawnPoints.Count > 0)
                 {
@@ -344,6 +386,7 @@ namespace BC.Manager
             else
             {
                 result = StageManagerMB.Instance.ResolveStageRuntime(debugStageInstance.gameObject);
+                RegisterStageEntities(result.stageInstance);
                 playerInstance = ResolvePlayerInstance();
                 OnPlayerSpawned?.Invoke(playerInstance);
                 playerRef = playerInstance != null ? playerInstance.GetComponent<EntityMB>().Entity : default;
@@ -358,13 +401,33 @@ namespace BC.Manager
             currentGoalData = result.goalData;
             currentCameraPath = result.cameraPath;
             currentGodHand = result.godHandObjects.Count > 0 ? result.godHandObjects[0] : null;
+            currentBonusObject = result.bonusObject;
             SetCurrentBomb(result.bombs.Count > 0 ? result.bombs[0] : null);
+            currentClearTimeThreshold = result.ClearTimeThreshold;
 
             if (currentGoalData == null) Debug.LogError("GameLogicManagerMB: GoalData is not resolved from the stage runtime.", this);
             if (currentCameraPath == null) Debug.LogError("GameLogicManagerMB: Camera path is not resolved from the stage runtime.", this);
 
 
             GameStateManagerMB.Instance.ChangeState(GameState.Intro);
+        }
+
+        private void RegisterStageEntities(GameObject rootObject)
+        {
+            if (sceneKernel == null || rootObject == null)
+                return;
+
+            var bootstrapper = new SceneEntityBootstrapper(sceneKernel, rootObject.transform);
+            bootstrapper.RegisterSceneEntities();
+        }
+
+        private void UnregisterStageEntities(GameObject rootObject)
+        {
+            if (sceneKernel == null || rootObject == null)
+                return;
+
+            var bootstrapper = new SceneEntityBootstrapper(sceneKernel, rootObject.transform);
+            bootstrapper.UnregisterSceneEntities();
         }
 
         private static PlayerMB ResolveSpawnedPlayer(GameObject rootObject)

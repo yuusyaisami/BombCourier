@@ -18,4 +18,5 @@
   <Project Path="Febucci.TextAnimator.Demo.Runtime.csproj" />
   <Project Path="Sirenix.OdinInspector.Modules.UnityMathematics.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.EditorTests.csproj" />
+  <Project Path="BombCourier.ReactiveValue.EditorTests.csproj" />
 </Solution>

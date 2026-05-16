@@ -12346,57 +12346,83 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbb63f36fd0626644b4af5989435ac23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Camera.CameraPathSequenceAuthoringMB
-  pointRoot: {fileID: 148462259173359045}
-  inlinePoints:
-  - rid: 30532709739135331
-  - rid: 30532709739135349
+  points:
+  - label: Point 1
+    position: {x: 1.1679205, y: 4.2710814, z: 1.8773162}
+    eulerAngles: {x: 25.658916, y: 168.69008, z: 1.1021016}
+    holdSeconds: 0
+    transitionFromPrevious:
+      kind: 0
+      duration: 0
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    lens:
+      overrideFieldOfView: 0
+      fieldOfView: 60
+    onArriveAction:
+      _steps: []
+  - label: Point 2
+    position: {x: 0.084530264, y: -1.4056585, z: -10.549002}
+    eulerAngles: {x: 13.253583, y: 59.922024, z: 14.248194}
+    holdSeconds: 0
+    transitionFromPrevious:
+      kind: 1
+      duration: 1
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    lens:
+      overrideFieldOfView: 0
+      fieldOfView: 60
+    onArriveAction:
+      _steps: []
+  selectedPointIndex: 1
   references:
     version: 2
-    RefIds:
-    - rid: 30532709739135331
-      type: {class: InlineCameraPathPointSource, ns: BC.Camera, asm: Assembly-CSharp}
-      data:
-        point:
-          label: a
-          position: {x: 0, y: 0, z: 0}
-          eulerAngles: {x: 0, y: 0, z: 0}
-          holdSeconds: 0
-          transitionFromPrevious:
-            kind: 0
-            duration: 0
-            ease:
-              serializedVersion: 2
-              m_Curve: []
-              m_PreInfinity: 2
-              m_PostInfinity: 2
-              m_RotationOrder: 4
-          lens:
-            overrideFieldOfView: 0
-            fieldOfView: 0
-          onArriveAction:
-            _steps: []
-    - rid: 30532709739135349
-      type: {class: InlineCameraPathPointSource, ns: BC.Camera, asm: Assembly-CSharp}
-      data:
-        point:
-          label: 
-          position: {x: 7.9, y: 0, z: 0}
-          eulerAngles: {x: 0, y: 0, z: 0}
-          holdSeconds: 0
-          transitionFromPrevious:
-            kind: 0
-            duration: 0
-            ease:
-              serializedVersion: 2
-              m_Curve: []
-              m_PreInfinity: 2
-              m_PostInfinity: 2
-              m_RotationOrder: 4
-          lens:
-            overrideFieldOfView: 0
-            fieldOfView: 0
-          onArriveAction:
-            _steps: []
+    RefIds: []
 --- !u!1 &3771689359121726179
 GameObject:
   m_ObjectHideFlags: 0
@@ -13875,8 +13901,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Base.EntityMB
   tagReference:
-    id: 0
-    path: 
+    id: 2001
+    path: Item.Bomb
   flags: 0
   registrationMode: 0
 --- !u!135 &4057658792753593509

@@ -207,6 +207,14 @@ namespace BC.Base
                     true,
                     ValueCompositionMode.BoolAnd
                 );
+
+            public static readonly ValueKey<EntityRef> FocusEntity =
+                new ValueKey<EntityRef>(
+                    new ValueKeyId(8015),
+                    "Runtime.FocusEntity",
+                    default,
+                    ValueCompositionMode.Raw
+                );
         }
 
         public static class Identity
@@ -257,6 +265,43 @@ namespace BC.Base
                         0.0f,
                         ValueCompositionMode.NumericAddMul
                     );
+            }
+
+            // 評価 (今回のプレイの評価を行います。)
+            public static class Evaluation
+            {
+                // 1点 : ゴール, 2点 : ゴール+ボーナスアイテム, 3点 : ゴール+特殊アイテム+早いクリア
+                public static readonly ValueKey<bool> IsBonusItem =
+                    new ValueKey<bool>(
+                        new ValueKeyId(11001),
+                        "Kernel.Evaluation.IsBonusItem",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+                // 早いクリア
+                public static readonly ValueKey<bool> IsFastClear =
+                    new ValueKey<bool>(
+                        new ValueKeyId(11002),
+                        "Kernel.Evaluation.IsFastClear",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+
+                public static readonly ValueKey<float> CountdownTime =
+                    new ValueKey<float>(
+                        new ValueKeyId(11003),
+                        "Kernel.Evaluation.CountdownTime",
+                        0.0f,
+                        ValueCompositionMode.NumericAddMul
+                    );
+                public static readonly ValueKey<float> FastClearThreshold =
+                    new ValueKey<float>(
+                        new ValueKeyId(11004),
+                        "Kernel.Evaluation.FastClearThreshold",
+                        60.0f,
+                        ValueCompositionMode.NumericAddMul
+                    );
+
             }
         }
     }

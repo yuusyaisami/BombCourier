@@ -11,5 +11,6 @@ namespace BC.Gimmick
         public Transform goalTransform; // GoalDataを持つオブジェクトのTransformキャッシュ
         public Vector3 Target => goalTransform != null ? goalTransform.position + playerTargetPoint : playerTargetPoint;
         public CinemachineCamera GoalCamera => goalCamera;
+
     }
 }

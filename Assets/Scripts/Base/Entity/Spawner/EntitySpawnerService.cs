@@ -50,25 +50,16 @@ namespace BC.Base
                     $"Spawned prefab does not have EntityMB. Prefab={request.Prefab.name}");
             }
 
-            EntityRegistryRequest registryRequest = new EntityRegistryRequest(
-                instance,
-                instance.transform,
-                entityMb.Tag,
-                entityMb.Flags
-            );
+            SpawnedEntityRecord record = RegisterSpawnedEntities(request.Prefab, instance, request.UsePool);
 
-            EntityRef entity = kernel.EntityLifecycle.Register(registryRequest);
-
-            entityMb.Bind(entity);
-
-            spawnedByEntityId.Add(
-                entity.EntityId,
-                new SpawnedEntityRecord(entity, request.Prefab, instance, request.UsePool)
-            );
+            for (int i = 0; i < record.Bindings.Length; i++)
+            {
+                spawnedByEntityId.Add(record.Bindings[i].Entity.EntityId, record);
+            }
 
             instance.SetActive(true);
 
-            return new EntitySpawnResult(entity, instance, instance.transform, entityMb);
+            return new EntitySpawnResult(record.Entity, instance, instance.transform, entityMb);
         }
 
         public bool Despawn(EntityRef entity)
@@ -76,19 +67,22 @@ namespace BC.Base
             if (!spawnedByEntityId.TryGetValue(entity.EntityId, out SpawnedEntityRecord record))
                 return false;
 
-            if (!record.Entity.Equals(entity))
-                return false;
-
-            spawnedByEntityId.Remove(entity.EntityId);
-
-            if (record.GameObject != null &&
-                record.GameObject.TryGetComponent(out EntityMB entityMb) &&
-                entityMb.HasEntity)
+            for (int i = 0; i < record.Bindings.Length; i++)
             {
-                entityMb.Unbind(entity);
+                spawnedByEntityId.Remove(record.Bindings[i].Entity.EntityId);
             }
 
-            kernel.EntityLifecycle.Unregister(entity);
+            for (int i = record.Bindings.Length - 1; i >= 0; i--)
+            {
+                RegisteredEntityBinding binding = record.Bindings[i];
+
+                if (binding.EntityMB != null && binding.EntityMB.HasEntity)
+                {
+                    binding.EntityMB.Unbind(binding.Entity);
+                }
+
+                kernel.EntityLifecycle.Unregister(binding.Entity);
+            }
 
             if (record.UsePool)
             {
@@ -100,6 +94,36 @@ namespace BC.Base
             }
 
             return true;
+        }
+
+        private SpawnedEntityRecord RegisterSpawnedEntities(GameObject prefab, GameObject instance, bool usePool)
+        {
+            EntityMB[] entityMbs = instance.GetComponentsInChildren<EntityMB>(true);
+            RegisteredEntityBinding[] bindings = new RegisteredEntityBinding[entityMbs.Length];
+
+            // Spawn された prefab 配下の Entity は子も含めて同じタイミングで登録する。
+            for (int i = 0; i < entityMbs.Length; i++)
+            {
+                EntityMB entityMb = entityMbs[i];
+                EntityRegistryRequest registryRequest = new EntityRegistryRequest(
+                    entityMb.gameObject,
+                    entityMb.transform,
+                    entityMb.Tag,
+                    entityMb.Flags
+                );
+
+                EntityRef entity = kernel.EntityLifecycle.Register(registryRequest);
+                entityMb.Bind(entity, EntityRegistrationMode.Spawned);
+                bindings[i] = new RegisteredEntityBinding(entity, entityMb);
+            }
+
+            if (!instance.TryGetComponent(out EntityMB rootEntityMb))
+            {
+                throw new InvalidOperationException(
+                    $"Spawned prefab does not have root EntityMB. Prefab={prefab.name}");
+            }
+
+            return new SpawnedEntityRecord(rootEntityMb.Entity, prefab, instance, bindings, usePool);
         }
 
         private GameObject GetFromPool(GameObject prefab)
@@ -119,22 +143,37 @@ namespace BC.Base
         }
     }
 
+    internal readonly struct RegisteredEntityBinding
+    {
+        public readonly EntityRef Entity;
+        public readonly EntityMB EntityMB;
+
+        public RegisteredEntityBinding(EntityRef entity, EntityMB entityMB)
+        {
+            Entity = entity;
+            EntityMB = entityMB;
+        }
+    }
+
     internal readonly struct SpawnedEntityRecord
     {
         public readonly EntityRef Entity;
         public readonly GameObject Prefab;
         public readonly GameObject GameObject;
+        public readonly RegisteredEntityBinding[] Bindings;
         public readonly bool UsePool;
 
         public SpawnedEntityRecord(
             EntityRef entity,
             GameObject prefab,
             GameObject gameObject,
+            RegisteredEntityBinding[] bindings,
             bool usePool)
         {
             Entity = entity;
             Prefab = prefab;
             GameObject = gameObject;
+            Bindings = bindings;
             UsePool = usePool;
         }
     }

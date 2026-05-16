@@ -5,6 +5,7 @@ using BC.Gimmick;
 using BC.Stage;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using BC.Item;
 namespace BC.Manager
 {
     public struct StageLoadResult
@@ -16,6 +17,8 @@ namespace BC.Manager
         public GameObject stageInstance; // ステージのインスタンス
         public List<GodHandObjectMB> godHandObjects; // ステージ内のGodHandオブジェクトのリスト
         public MapRuntimeMB mapRuntime; // ステージのRootで参照を集約するランタイム
+        public BonusObjectMB bonusObject; // ステージ内のBonusObjectの参照 (スコア計算に使います。)
+        public float ClearTimeThreshold; // ゴールデータにクリアタイムの閾値がある場合はそれを使用し、ない場合はデフォルト値を返す
     }
     public class StageManagerMB : MonoBehaviour
     {
@@ -46,10 +49,15 @@ namespace BC.Manager
 
             StageData data = stageData.StageData[stageIndex];
             GameObject stageInstance = Instantiate(data.stagePrefab, stageRoot);
-            return ResolveStageRuntime(stageInstance);
+            return ResolveStageRuntime(stageInstance, data);
         }
 
         public StageLoadResult ResolveStageRuntime(GameObject stageInstance)
+        {
+            return ResolveStageRuntime(stageInstance, new StageData());
+        }
+
+        public StageLoadResult ResolveStageRuntime(GameObject stageInstance, StageData data)
         {
             if (stageInstance == null)
             {
@@ -74,6 +82,8 @@ namespace BC.Manager
                 stageInstance = stageInstance,
                 godHandObjects = new List<GodHandObjectMB>(mapRuntime.GodHandObjects),
                 mapRuntime = mapRuntime,
+                ClearTimeThreshold = data.clearTimeThreshold, // ゴールデータにクリアタイムの閾値がある場合はそれを使用し、ない場合はデフォルト値を返す
+                bonusObject = mapRuntime.BonusObject, // ステージ内のBonusObjectの参照 (スコア計算に使います。)
             };
         }
         public void CaptureStageCheckpoint()

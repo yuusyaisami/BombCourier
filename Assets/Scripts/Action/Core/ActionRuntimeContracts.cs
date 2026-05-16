@@ -135,17 +135,20 @@ namespace BC.ActionSystem
         public readonly ActionService Actions;
         public readonly EntityRef ActorEntity;
         public readonly EntityRef TriggerEntity;
+        public readonly ReactiveActionScope Reactive;
 
         public ActionExecutionContext(
             SceneKernel sceneKernel,
             ActionService actions,
             EntityRef actorEntity,
-            EntityRef triggerEntity = default)
+            EntityRef triggerEntity = default,
+            ReactiveActionScope reactive = null)
         {
             SceneKernel = sceneKernel;
             Actions = actions;
             ActorEntity = actorEntity;
             TriggerEntity = triggerEntity;
+            Reactive = reactive;
         }
 
         public EntityComponentResolverService EntityComponents => SceneKernel?.EntityComponents;
@@ -482,8 +485,18 @@ namespace BC.ActionSystem
         private ActionExecution CreateExecution(EntityRef actor, EntityRef triggerEntity, CompiledAction definition)
         {
             ActionExecutionHandle handle = new(nextExecutionId++, actor);
-            ActionExecutionContext context = new(sceneKernel, this, actor, triggerEntity);
-            return new ActionExecution(handle, context, definition.CreateRuntime());
+            ReactiveActionScope reactiveScope = sceneKernel.ReactiveValues?.CreateActionScope(handle, actor, triggerEntity);
+            ActionExecutionContext context = new(sceneKernel, this, actor, triggerEntity, reactiveScope);
+
+            try
+            {
+                return new ActionExecution(handle, context, definition.CreateRuntime());
+            }
+            catch
+            {
+                reactiveScope?.Dispose();
+                throw;
+            }
         }
     }
 
@@ -599,7 +612,17 @@ namespace BC.ActionSystem
             if (remainingOperations <= 0 || IsFinished)
                 return;
 
-            ActionNodeStatus status = rootRuntime.Tick(Context, ref remainingOperations);
+            ActionNodeStatus status;
+
+            try
+            {
+                status = rootRuntime.Tick(Context, ref remainingOperations);
+            }
+            catch (Exception exception)
+            {
+                FailFromException("tick", exception);
+                return;
+            }
 
             if (status == ActionNodeStatus.Running)
                 return;
@@ -618,8 +641,15 @@ namespace BC.ActionSystem
             if (IsFinished)
                 return;
 
-            rootRuntime.Cancel(Context);
-            Complete(ActionExecutionResult.Canceled(reason));
+            try
+            {
+                rootRuntime.Cancel(Context);
+                Complete(ActionExecutionResult.Canceled(reason));
+            }
+            catch (Exception exception)
+            {
+                FailFromException("cancel", exception);
+            }
         }
 
         private void Complete(ActionExecutionResult result)
@@ -628,11 +658,18 @@ namespace BC.ActionSystem
                 return;
 
             IsFinished = true;
+            Context.Reactive?.Dispose();
 
             if (cancellationAttached)
                 cancellationRegistration.Dispose();
 
             completionSource.TrySetResult(result);
+        }
+
+        private void FailFromException(string phase, Exception exception)
+        {
+            Debug.LogException(exception);
+            Complete(ActionExecutionResult.Failed($"Action node threw during {phase}: {exception.Message}"));
         }
     }
 
