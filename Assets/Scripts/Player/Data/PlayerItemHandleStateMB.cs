@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 namespace BC.Player
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerItemHandleStateMB : MonoBehaviour, IEntityHandleItemAnimationSource, IPlayerInteractionSource
+    public sealed class PlayerItemHandleStateMB : MonoBehaviour, IEntityHandleItemAnimationSource, IInteractionSource
     {
         [Header("Detection")]
         [SerializeField] private float handleItemDistance = 1.5f;
@@ -41,6 +41,7 @@ namespace BC.Player
         [SerializeField] private Color trajectoryHitMarkerColor = new Color(1.0f, 0.82f, 0.24f, 0.95f);
 
         [Header("Runtime Debug")]
+    [SerializeField] private bool currentCanInteract = true;
         [SerializeField] private bool isHandlingItem;
 
 
@@ -56,6 +57,7 @@ namespace BC.Player
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
+        private ValueWatchHandle<bool> canInteractHandle;
         private ValueWatchHandle<bool> fatigueInteractHandle;
         private ICarryableItem currentlyHandledItem;
         private IEntityVelocitySource velocitySource;
@@ -72,16 +74,17 @@ namespace BC.Player
         private int lastConsumedInputPressSequence;
 
         public bool IsHandlingItem => isHandlingItem;
+        public bool CanInteract => currentCanInteract;
         public bool IsInputPressed => interactionController != null && interactionController.IsInputPressed;
         public float InputHoldDuration => interactionController != null ? interactionController.InputHoldDuration : 0f;
         public int InputPressSequence => interactionController != null ? interactionController.InputPressSequence : 0;
         public int InputReleaseSequence => interactionController != null ? interactionController.InputReleaseSequence : 0;
         public bool HasCandidate => interactionController != null && interactionController.HasCandidate;
-        public IPlayerInteractable CurrentBestInteractable => interactionController != null ? interactionController.CurrentBestInteractable : null;
-        public IPlayerInteractable ActiveInteractable => interactionController != null ? interactionController.ActiveInteractable : null;
+        public IInteractionTarget CurrentBestInteractable => interactionController != null ? interactionController.CurrentBestInteractable : null;
+        public IInteractionTarget ActiveInteractable => interactionController != null ? interactionController.ActiveInteractable : null;
         public float ActiveHoldProgress => interactionController != null ? interactionController.ActiveHoldProgress : 0f;
-        public IReadOnlyList<PlayerInteractionCandidate> Candidates =>
-            interactionController != null ? interactionController.Candidates : Array.Empty<PlayerInteractionCandidate>();
+        public IReadOnlyList<InteractionCandidate> Candidates =>
+            interactionController != null ? interactionController.Candidates : Array.Empty<InteractionCandidate>();
 
         // throw系の状態
         public bool IsThrowCharging => isThrowCharging || isEmptyHandThrowPreviewActive;
@@ -89,7 +92,7 @@ namespace BC.Player
         public float CurrentThrowChargeRatio => Mathf.Clamp01(throwForceChargeTimer / Mathf.Max(0.01f, throwForceChargeTime));
         public Action OnThrowChargeStart { get; set; }
         public Action OnThrowChargeEnd { get; set; }
-        public event Action<PlayerInteractionEventData> InteractionEvent
+        public event Action<InteractionEventData> InteractionEvent
         {
             add
             {
@@ -172,7 +175,15 @@ namespace BC.Player
             if (handleItemPoint == null || playerModel == null)
                 return;
 
-            interactionController?.Tick(Time.deltaTime, !isHandlingItem);
+            bool canInteract = RefreshInteractionGateDebugValue();
+            interactionController?.Tick(Time.deltaTime, canInteract && !isHandlingItem);
+
+            if (!canInteract)
+            {
+                CancelInputDrivenItemAction();
+                PublishRuntimeValues();
+                return;
+            }
 
             if (!isHandlingItem)
             {
@@ -715,9 +726,9 @@ namespace BC.Player
             HideTrajectoryHitMarker();
         }
 
-        private void HandleInteractionEvent(PlayerInteractionEventData eventData)
+        private void HandleInteractionEvent(InteractionEventData eventData)
         {
-            if (eventData.EventType != PlayerInteractionEventType.Completed)
+            if (eventData.EventType != InteractionEventType.Completed)
                 return;
 
             if (eventData.Interactable is not CarryableItemInteractableAdapter adapter)
@@ -744,6 +755,7 @@ namespace BC.Player
             valueStore.Set(entityRef, ValueKeys.Runtime.IsThrowPoseActive, IsThrowPoseActive());
             valueStore.Set(entityRef, ValueKeys.Runtime.IsItemThrowAiming, IsItemThrowAiming());
             valueStore.Set(entityRef, ValueKeys.Runtime.ThrowSequence, throwSequence);
+            valueStore.Set(entityRef, ValueKeys.Runtime.CanInteract, currentCanInteract);
         }
 
         private void ResolveRuntimeReferences(bool logMissingEntity)
@@ -770,6 +782,9 @@ namespace BC.Player
                 }
             }
 
+            if (canInteractHandle == null && valueStore != null && entityRef.IsValid)
+                canInteractHandle = valueStore.GetHandle(entityRef, ValueKeys.Interaction.CanInteract);
+
             if (fatigueInteractHandle == null && valueStore != null && entityRef.IsValid)
                 fatigueInteractHandle = valueStore.GetHandle(entityRef, ValueKeys.Runtime.IsFatigueInteracting);
         }
@@ -786,6 +801,26 @@ namespace BC.Player
         {
             ResolveRuntimeReferences(logMissingEntity: false);
             return fatigueInteractHandle != null && fatigueInteractHandle.CurrentValue;
+        }
+
+        private bool RefreshInteractionGateDebugValue()
+        {
+            ResolveRuntimeReferences(logMissingEntity: false);
+            currentCanInteract = canInteractHandle == null || canInteractHandle.CurrentValue;
+            return currentCanInteract;
+        }
+
+        private void CancelInputDrivenItemAction()
+        {
+            if (isThrowCharging)
+            {
+                isThrowCharging = false;
+                OnThrowChargeEnd?.Invoke();
+            }
+
+            throwForceChargeTimer = 0f;
+            ResetEmptyHandThrowPreview();
+            HideTrajectory();
         }
 
         private bool IsThrowPoseActive()

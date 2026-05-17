@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BC.Player
 {
-    public enum PlayerInteractionEventType
+    public enum InteractionEventType
     {
         Started = 1,
         Updated = 2,
@@ -13,7 +13,7 @@ namespace BC.Player
         Completed = 4
     }
 
-    public readonly struct PlayerInteractionQuery
+    public readonly struct InteractionQuery
     {
         public readonly Vector3 DetectionPosition;
         public readonly Vector3 FacingPosition;
@@ -23,7 +23,7 @@ namespace BC.Player
         public readonly float MaxAngle;
         public readonly Collider HitCollider;
 
-        public PlayerInteractionQuery(
+        public InteractionQuery(
             Vector3 detectionPosition,
             Vector3 facingPosition,
             Vector3 facingForward,
@@ -42,13 +42,13 @@ namespace BC.Player
         }
     }
 
-    public readonly struct PlayerInteractionCandidate
+    public readonly struct InteractionCandidate
     {
-        public readonly IPlayerInteractable Interactable;
+        public readonly IInteractionTarget Interactable;
         public readonly float Score;
         public readonly bool IsBest;
 
-        public PlayerInteractionCandidate(IPlayerInteractable interactable, float score, bool isBest)
+        public InteractionCandidate(IInteractionTarget interactable, float score, bool isBest)
         {
             Interactable = interactable;
             Score = score;
@@ -56,18 +56,18 @@ namespace BC.Player
         }
     }
 
-    public readonly struct PlayerInteractionEventData
+    public readonly struct InteractionEventData
     {
-        public readonly IPlayerInteractionSource Source;
-        public readonly IPlayerInteractable Interactable;
-        public readonly PlayerInteractionEventType EventType;
+        public readonly IInteractionSource Source;
+        public readonly IInteractionTarget Interactable;
+        public readonly InteractionEventType EventType;
         public readonly float HoldDuration;
         public readonly float HoldProgress;
 
-        public PlayerInteractionEventData(
-            IPlayerInteractionSource source,
-            IPlayerInteractable interactable,
-            PlayerInteractionEventType eventType,
+        public InteractionEventData(
+            IInteractionSource source,
+            IInteractionTarget interactable,
+            InteractionEventType eventType,
             float holdDuration,
             float holdProgress)
         {
@@ -79,31 +79,31 @@ namespace BC.Player
         }
     }
 
-    public interface IPlayerInteractionSource
+    public interface IInteractionSource
     {
         bool IsInputPressed { get; }
         float InputHoldDuration { get; }
         int InputPressSequence { get; }
         int InputReleaseSequence { get; }
         bool HasCandidate { get; }
-        IPlayerInteractable CurrentBestInteractable { get; }
-        IPlayerInteractable ActiveInteractable { get; }
+        IInteractionTarget CurrentBestInteractable { get; }
+        IInteractionTarget ActiveInteractable { get; }
         float ActiveHoldProgress { get; }
-        IReadOnlyList<PlayerInteractionCandidate> Candidates { get; }
+        IReadOnlyList<InteractionCandidate> Candidates { get; }
 
-        event Action<PlayerInteractionEventData> InteractionEvent;
+        event Action<InteractionEventData> InteractionEvent;
     }
 
-    public interface IPlayerInteractable
+    public interface IInteractionTarget
     {
         Transform InteractionTransform { get; }
         float RequiredHoldDuration { get; }
-        PickupOutlineTargetMB OutlineTarget { get; }
+        InteractionVisualTargetMB VisualTarget { get; }
 
-        bool TryGetCandidateScore(PlayerInteractionQuery query, out float score);
-        void OnInteractionStarted(PlayerInteractionEventData eventData);
-        void OnInteractionUpdated(PlayerInteractionEventData eventData);
-        void OnInteractionCanceled(PlayerInteractionEventData eventData);
-        void OnInteractionCompleted(PlayerInteractionEventData eventData);
+        bool TryGetCandidateScore(InteractionQuery query, out float score);
+        void OnInteractionStarted(InteractionEventData eventData);
+        void OnInteractionUpdated(InteractionEventData eventData);
+        void OnInteractionCanceled(InteractionEventData eventData);
+        void OnInteractionCompleted(InteractionEventData eventData);
     }
 }

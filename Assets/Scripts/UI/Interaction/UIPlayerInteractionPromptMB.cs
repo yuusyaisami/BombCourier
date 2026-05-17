@@ -39,7 +39,7 @@ namespace BC.UI
         [SerializeField] private Vector2 viewportPadding = new(24f, 24f);
 
         private RectTransform canvasRect;
-        private IPlayerInteractable lastInteractable;
+        private IInteractionTarget lastInteractable;
         private InputPromptDeviceKind lastDeviceKind = InputPromptDeviceKind.Unknown;
 
         private void Reset()
@@ -87,7 +87,7 @@ namespace BC.UI
                 return;
             }
 
-            IPlayerInteractable interactable = ResolveDisplayInteractable();
+            IInteractionTarget interactable = ResolveDisplayInteractable();
 
             if (interactable == null)
             {
@@ -96,7 +96,7 @@ namespace BC.UI
                 return;
             }
 
-            if (!PlayerInteractionPromptResolver.TryResolveWorldPosition(interactable, out Vector3 promptWorldPosition))
+            if (!InteractionPromptResolver.TryResolveWorldPosition(interactable, out Vector3 promptWorldPosition))
             {
                 Hide();
                 return;
@@ -133,7 +133,7 @@ namespace BC.UI
             HideImmediate();
         }
 
-        private IPlayerInteractable ResolveDisplayInteractable()
+        private IInteractionTarget ResolveDisplayInteractable()
         {
             // Hold中はActiveを優先する。
             // Hold開始後にBest候補が微妙に変わっても、UIが別対象へ飛ばないようにする。
@@ -223,7 +223,7 @@ namespace BC.UI
             actionIconImage.enabled = resolvedIcon != null;
         }
 
-        private void RefreshHold(IPlayerInteractable interactable)
+        private void RefreshHold(IInteractionTarget interactable)
         {
             if (holdRingImage == null)
                 return;

@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 49c2fa4a2a9b7ae4a85316ddf9e2d1b9, type: 3}
-  m_Name: PickupOutlineRendererFeature
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.PickupOutlineRendererFeature
+  m_Name: InteractionOutlineRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.InteractionOutlineRendererFeature
   m_Active: 1
   candidateOutlineMaterial: {fileID: 2100000, guid: 9fd6c435ccd03f747b0e5aced5758fda, type: 2}
   bestOutlineMaterial: {fileID: 2100000, guid: 3f30d4827b20d0d49944fd40b9eb3e44, type: 2}
@@ -84,8 +84,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 49c2fa4a2a9b7ae4a85316ddf9e2d1b9, type: 3}
-  m_Name: PickupOutlineRendererFeature
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.PickupOutlineRendererFeature
+  m_Name: InteractionOutlineRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.InteractionOutlineRendererFeature
   m_Active: 1
   candidateOutlineMaterial: {fileID: 2100000, guid: 9fd6c435ccd03f747b0e5aced5758fda, type: 2}
   bestOutlineMaterial: {fileID: 2100000, guid: 3f30d4827b20d0d49944fd40b9eb3e44, type: 2}

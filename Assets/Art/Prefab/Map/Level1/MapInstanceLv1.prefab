@@ -5068,7 +5068,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e314f8ef1b0e0184f98805fee1480d0b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.PickupOutlineTargetMB
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.InteractionVisualTargetMB
   renderers:
   - {fileID: 636190796154320482}
 --- !u!114 &6404186289544012310
@@ -15129,7 +15129,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e314f8ef1b0e0184f98805fee1480d0b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.PickupOutlineTargetMB
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.InteractionVisualTargetMB
   renderers:
   - {fileID: 6989132620833226069}
   - {fileID: 8179902506779043658}

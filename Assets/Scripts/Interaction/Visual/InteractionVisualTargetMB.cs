@@ -3,7 +3,7 @@ using UnityEngine;
 namespace BC.Rendering
 {
     [DisallowMultipleComponent]
-    public sealed class PickupOutlineTargetMB : MonoBehaviour
+    public sealed class InteractionVisualTargetMB : MonoBehaviour
     {
         [SerializeField] private Renderer[] renderers;
 
@@ -22,10 +22,10 @@ namespace BC.Rendering
 
         private void OnDisable()
         {
-            ClearOutline();
+            ClearHighlight();
         }
 
-        public void SetOutline(PickupOutlineKind kind)
+        public void SetHighlight(InteractionHighlightKind kind)
         {
             if (renderers == null)
                 return;
@@ -37,11 +37,11 @@ namespace BC.Rendering
                 if (renderer == null)
                     continue;
 
-                PickupOutlineRegistry.Set(renderer, kind);
+                InteractionHighlightRegistry.Set(renderer, kind);
             }
         }
 
-        public void ClearOutline()
+        public void ClearHighlight()
         {
             if (renderers == null)
                 return;
@@ -53,7 +53,7 @@ namespace BC.Rendering
                 if (renderer == null)
                     continue;
 
-                PickupOutlineRegistry.Remove(renderer);
+                InteractionHighlightRegistry.Remove(renderer);
             }
         }
 

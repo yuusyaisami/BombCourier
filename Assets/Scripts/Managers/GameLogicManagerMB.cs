@@ -139,6 +139,7 @@ namespace BC.Manager
             {
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, true);
+                sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, true);
             }
             else if (newState == GameState.FusePlaying)
             {
@@ -223,6 +224,7 @@ namespace BC.Manager
             {
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, false);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, false);
+                sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, false);
             }
 
             if (currentGodHand != null)
@@ -234,8 +236,8 @@ namespace BC.Manager
         }
         private async UniTask NextStageAsync()
         {
-            IPlayerAnimatorParameterController playerParameterController = playerInstance.GetComponent<IPlayerAnimatorParameterController>();
-            playerParameterController.SetBool(playerParameterController.IsNextStageParameter, true); // プレイヤーのアニメーションパラメーターを更新して、次のステージに進むためのアニメーションを再生する
+            PlayerAnimationMB playerAnimationController = playerInstance.GetComponentInChildren<PlayerAnimationMB>();
+            playerAnimationController?.SetNextStageActive(true); // プレイヤーのアニメーションパラメーターを更新して、次のステージに進むためのアニメーションを再生する
             currentGodHand.Catch(playerInstance); // プレイヤーをGodHandにつかまらせる
             // cinemachineCameraの方向を、Playerに向ける
             await LookAtAsync(currentGoalData.GoalCamera.transform, playerInstance.transform.position);
@@ -508,6 +510,7 @@ namespace BC.Manager
             }
             sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
             sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, false);
+            sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, false);
         }
         public EntitySpawnResult SpawnPlayer(EntityMB player, Vector3 position, Quaternion rotation)
         {

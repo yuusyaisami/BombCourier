@@ -3,36 +3,38 @@ using UnityEngine;
 
 namespace BC.Rendering
 {
-    public enum PickupOutlineKind
+    public enum InteractionHighlightKind
     {
         Candidate = 1,
         Best = 2
     }
-    public readonly struct PickupOutlineEntry
+
+    public readonly struct InteractionHighlightEntry
     {
         public readonly Renderer Renderer;
-        public readonly PickupOutlineKind Kind;
+        public readonly InteractionHighlightKind Kind;
 
-        public PickupOutlineEntry(Renderer renderer, PickupOutlineKind kind)
+        public InteractionHighlightEntry(Renderer renderer, InteractionHighlightKind kind)
         {
             Renderer = renderer;
             Kind = kind;
         }
     }
-    public static class PickupOutlineRegistry
+
+    public static class InteractionHighlightRegistry
     {
-        private static readonly Dictionary<Renderer, PickupOutlineKind> Entries = new(128);
+        private static readonly Dictionary<Renderer, InteractionHighlightKind> Entries = new(128);
         private static readonly List<Renderer> DeadRenderers = new(32);
 
-        public static void Set(Renderer renderer, PickupOutlineKind kind)
+        public static void Set(Renderer renderer, InteractionHighlightKind kind)
         {
             if (renderer == null)
                 return;
 
             // Best を Candidate で上書きしない。
-            if (Entries.TryGetValue(renderer, out var current))
+            if (Entries.TryGetValue(renderer, out InteractionHighlightKind current))
             {
-                if (current == PickupOutlineKind.Best && kind == PickupOutlineKind.Candidate)
+                if (current == InteractionHighlightKind.Best && kind == InteractionHighlightKind.Candidate)
                     return;
             }
 
@@ -52,11 +54,11 @@ namespace BC.Rendering
             Entries.Clear();
         }
 
-        public static PickupOutlineEntry[] CreateSnapshotArray()
+        public static InteractionHighlightEntry[] CreateSnapshotArray()
         {
             DeadRenderers.Clear();
 
-            foreach (var pair in Entries)
+            foreach (KeyValuePair<Renderer, InteractionHighlightKind> pair in Entries)
             {
                 Renderer renderer = pair.Key;
 
@@ -74,14 +76,14 @@ namespace BC.Rendering
             }
 
             if (Entries.Count == 0)
-                return System.Array.Empty<PickupOutlineEntry>();
+                return System.Array.Empty<InteractionHighlightEntry>();
 
-            var result = new PickupOutlineEntry[Entries.Count];
+            InteractionHighlightEntry[] result = new InteractionHighlightEntry[Entries.Count];
 
             int index = 0;
-            foreach (var pair in Entries)
+            foreach (KeyValuePair<Renderer, InteractionHighlightKind> pair in Entries)
             {
-                result[index++] = new PickupOutlineEntry(pair.Key, pair.Value);
+                result[index++] = new InteractionHighlightEntry(pair.Key, pair.Value);
             }
 
             return result;

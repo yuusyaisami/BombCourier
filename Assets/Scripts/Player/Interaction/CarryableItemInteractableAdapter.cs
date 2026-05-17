@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace BC.Player
 {
-    public sealed class CarryableItemInteractableAdapter : IPlayerInteractable, IPlayerInteractionPromptProvider
+    public sealed class CarryableItemInteractableAdapter : IInteractionTarget, IInteractionPromptProvider
     {
         private readonly MonoBehaviour owner;
         private readonly ICarryableItem carryableItem;
-        private PickupOutlineTargetMB outlineTarget;
+        private InteractionVisualTargetMB visualTarget;
 
         public CarryableItemInteractableAdapter(MonoBehaviour owner, ICarryableItem carryableItem)
         {
@@ -22,18 +22,18 @@ namespace BC.Player
         public Transform PromptAnchor => InteractionTransform;
         public Vector3 PromptWorldOffset => Vector3.up * 0.15f;
         public float RequiredHoldDuration => 0f;
-        public PickupOutlineTargetMB OutlineTarget
+        public InteractionVisualTargetMB VisualTarget
         {
             get
             {
-                if (outlineTarget == null && owner != null)
-                    outlineTarget = owner.GetComponentInParent<PickupOutlineTargetMB>();
+                if (visualTarget == null && owner != null)
+                    visualTarget = owner.GetComponentInParent<InteractionVisualTargetMB>();
 
-                return outlineTarget;
+                return visualTarget;
             }
         }
 
-        public bool TryGetCandidateScore(PlayerInteractionQuery query, out float score)
+        public bool TryGetCandidateScore(InteractionQuery query, out float score)
         {
             score = float.MaxValue;
 
@@ -49,47 +49,27 @@ namespace BC.Player
             if (itemTransform == null)
                 return false;
 
-            Vector3 toItem = itemTransform.position - query.FacingPosition;
-            toItem.y = 0f;
-
-            float sqrDistance = toItem.sqrMagnitude;
-
-            if (sqrDistance <= 0.0001f)
-                return false;
-
-            Vector3 facingForward = query.PlanarFacingForward;
-
-            if (facingForward.sqrMagnitude <= 0.0001f)
-                return false;
-
-            Vector3 directionToItem = toItem.normalized;
-            float angle = Vector3.Angle(facingForward, directionToItem);
-
-            if (angle > query.MaxAngle)
-                return false;
-
-            float maxDistance = Mathf.Max(0.01f, query.MaxDistance);
-
-            if (sqrDistance > maxDistance * maxDistance)
-                return false;
-
-            score = sqrDistance + angle * 0.05f;
-            return true;
+            return InteractionScoringUtility.TryGetPlanarFacingScore(
+                query,
+                itemTransform.position,
+                query.MaxDistance,
+                query.MaxAngle,
+                out score);
         }
 
-        public void OnInteractionStarted(PlayerInteractionEventData eventData)
+        public void OnInteractionStarted(InteractionEventData eventData)
         {
         }
 
-        public void OnInteractionUpdated(PlayerInteractionEventData eventData)
+        public void OnInteractionUpdated(InteractionEventData eventData)
         {
         }
 
-        public void OnInteractionCanceled(PlayerInteractionEventData eventData)
+        public void OnInteractionCanceled(InteractionEventData eventData)
         {
         }
 
-        public void OnInteractionCompleted(PlayerInteractionEventData eventData)
+        public void OnInteractionCompleted(InteractionEventData eventData)
         {
         }
     }

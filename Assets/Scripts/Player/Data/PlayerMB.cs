@@ -25,6 +25,7 @@ namespace BC.Base
         [SerializeField] private PlayerMoveController playerMoveController;
         [SerializeField] private ThirdPersonCameraController cameraController;
         [SerializeField] private EntityAnimationMB animationController;
+        [SerializeField] private PlayerAnimationMB playerAnimationController;
         [SerializeField] private Rigidbody bodyRigidbody;
 
         [Header("Impact Effect")]
@@ -46,6 +47,7 @@ namespace BC.Base
         public PlayerMoveController PlayerMoveController => playerMoveController != null ? playerMoveController : GetComponent<PlayerMoveController>();
         public ThirdPersonCameraController CameraController => cameraController != null ? cameraController : GetComponentInChildren<ThirdPersonCameraController>();
         public EntityAnimationMB AnimationController => animationController != null ? animationController : GetComponentInChildren<EntityAnimationMB>();
+        public PlayerAnimationMB PlayerAnimationController => playerAnimationController != null ? playerAnimationController : GetComponentInChildren<PlayerAnimationMB>();
         public bool CanBeCaughtByGodHand => enabled && gameObject.activeInHierarchy;
 
         private void Awake()
@@ -106,6 +108,11 @@ namespace BC.Base
             if (animationController == null)
             {
                 animationController = GetComponentInChildren<EntityAnimationMB>(true);
+            }
+
+            if (playerAnimationController == null)
+            {
+                playerAnimationController = GetComponentInChildren<PlayerAnimationMB>(true);
             }
 
             if (impactEffectEmitter == null)
@@ -211,12 +218,12 @@ namespace BC.Base
             modelRoot.DOKill();
             modelRoot.localPosition = targetLocalPosition + Vector3.up * 3.0f;
 
-            animationController.SetBool(animationController.IsSpawnParameter, true);
+            PlayerAnimationController?.SetSpawnActive(true);
             // 落す
             await modelRoot.DOLocalMoveY(targetLocalPosition.y, 0.5f).SetEase(Ease.OutBounce).AsyncWaitForCompletion();
             PlayShowLandingImpact();
-            animationController.SetTrigger(animationController.OnRaiseBodyParameter);
-            animationController.SetBool(animationController.IsSpawnParameter, false);
+            PlayerAnimationController?.PlayRaiseBody();
+            PlayerAnimationController?.SetSpawnActive(false);
             await UniTask.Delay(700); // アニメーションの完了を待つ
         }
 

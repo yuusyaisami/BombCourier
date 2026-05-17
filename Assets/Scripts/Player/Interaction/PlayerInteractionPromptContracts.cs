@@ -2,22 +2,22 @@ using UnityEngine;
 
 namespace BC.Player
 {
-    public interface IPlayerInteractionPromptProvider
+    public interface IInteractionPromptProvider
     {
         Transform PromptAnchor { get; }
         Vector3 PromptWorldOffset { get; }
     }
 
-    public static class PlayerInteractionPromptResolver
+    public static class InteractionPromptResolver
     {
         private static readonly Vector3 DefaultWorldOffset = new(0f, 0.1f, 0f);
 
-        public static Transform ResolveAnchor(IPlayerInteractable interactable)
+        public static Transform ResolveAnchor(IInteractionTarget interactable)
         {
             if (interactable == null)
                 return null;
 
-            if (interactable is IPlayerInteractionPromptProvider provider &&
+            if (interactable is IInteractionPromptProvider provider &&
                 provider.PromptAnchor != null)
             {
                 return provider.PromptAnchor;
@@ -26,28 +26,28 @@ namespace BC.Player
             if (interactable.InteractionTransform != null)
                 return interactable.InteractionTransform;
 
-            if (interactable.OutlineTarget != null)
-                return interactable.OutlineTarget.transform;
+            if (interactable.VisualTarget != null)
+                return interactable.VisualTarget.transform;
 
             return null;
         }
 
-        public static bool TryResolveWorldPosition(IPlayerInteractable interactable, out Vector3 worldPosition)
+        public static bool TryResolveWorldPosition(IInteractionTarget interactable, out Vector3 worldPosition)
         {
             worldPosition = default;
 
             if (interactable == null)
                 return false;
 
-            if (interactable is IPlayerInteractionPromptProvider provider &&
+            if (interactable is IInteractionPromptProvider provider &&
                 provider.PromptAnchor != null)
             {
                 worldPosition = provider.PromptAnchor.position + provider.PromptWorldOffset;
                 return true;
             }
 
-            if (interactable.OutlineTarget != null &&
-                interactable.OutlineTarget.TryGetWorldBounds(out Bounds bounds))
+            if (interactable.VisualTarget != null &&
+                interactable.VisualTarget.TryGetWorldBounds(out Bounds bounds))
             {
                 worldPosition = new Vector3(bounds.center.x, bounds.max.y, bounds.center.z) + DefaultWorldOffset;
                 return true;

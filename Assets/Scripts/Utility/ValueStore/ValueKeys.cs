@@ -102,6 +102,18 @@ namespace BC.Base
                     ValueCompositionMode.BoolAnd
                 );
         }
+
+        public static class Interaction
+        {
+            public static readonly ValueKey<bool> CanInteract =
+                new ValueKey<bool>(
+                    new ValueKeyId(5001),
+                    "Interaction.CanInteract",
+                    true,
+                    ValueCompositionMode.BoolAnd
+                );
+        }
+
         public static class Runtime
         {
             public static readonly ValueKey<EntityMoveState> MoveState =
@@ -214,6 +226,13 @@ namespace BC.Base
                     "Runtime.FocusEntity",
                     default,
                     ValueCompositionMode.Raw
+                );
+            public static readonly ValueKey<bool> CanInteract =
+                new ValueKey<bool>(
+                    new ValueKeyId(8016),
+                    "Runtime.CanInteract",
+                    true,
+                    ValueCompositionMode.BoolAnd
                 );
         }
 

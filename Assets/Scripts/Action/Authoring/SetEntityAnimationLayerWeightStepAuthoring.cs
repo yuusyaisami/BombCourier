@@ -1,0 +1,33 @@
+using System;
+using BC.Base;
+using UnityEngine;
+
+namespace BC.ActionSystem
+{
+    [Serializable]
+    public sealed class SetEntityAnimationLayerWeightStepAuthoring : ActionStepAuthoring
+    {
+        [SerializeField] private EntityTargetReference target = EntityTargetReference.Self();
+        [SerializeField] private string layerName;
+        [SerializeField, Range(0f, 1f)] private float weight = 1f;
+
+        public override void Validate(ActionValidationContext context)
+        {
+            context.ValidateEntityTarget(target);
+
+            if (string.IsNullOrWhiteSpace(layerName))
+                context.AddError("Animator layer name is not assigned.");
+
+            if (float.IsNaN(weight))
+                context.AddError("Animator layer weight is not a valid number.");
+        }
+
+        public override void Compile(ActionCompileContext context)
+        {
+            context.AddStep(new SetEntityAnimationLayerWeightStepRuntime(
+                target,
+                layerName,
+                weight));
+        }
+    }
+}

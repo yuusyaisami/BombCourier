@@ -1,26 +1,13 @@
 using System;
 using System.Collections.Generic;
 using BC.Item;
-using BC.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace BC.Player
 {
-    public sealed class PlayerInteractionController : IPlayerInteractionSource, IDisposable
+    public sealed class PlayerInteractionController : IInteractionSource, IDisposable
     {
-        private readonly struct OutlineState
-        {
-            public readonly int Revision;
-            public readonly PickupOutlineKind Kind;
-
-            public OutlineState(int revision, PickupOutlineKind kind)
-            {
-                Revision = revision;
-                Kind = kind;
-            }
-        }
-
         private const int MaxItemHits = 32;
 
         private readonly InputAction inputAction;
@@ -30,11 +17,10 @@ namespace BC.Player
         private readonly float interactionAngleThreshold;
         private readonly LayerMask interactionLayerMask;
         private readonly Collider[] interactionHits = new Collider[MaxItemHits];
-        private readonly List<PlayerInteractionCandidate> candidates = new(16);
+        private readonly List<InteractionCandidate> candidates = new(16);
         private readonly HashSet<UnityEngine.Object> candidateKeys = new();
         private readonly Dictionary<MonoBehaviour, CarryableItemInteractableAdapter> carryableAdapters = new();
-        private readonly Dictionary<PickupOutlineTargetMB, OutlineState> outlinedTargets = new();
-        private readonly List<PickupOutlineTargetMB> staleOutlinedTargets = new();
+        private readonly InteractionHighlightStateTracker highlightStateTracker = new();
 
         private bool isBound;
         private bool pendingPress;
@@ -43,9 +29,8 @@ namespace BC.Player
         private float inputHoldDuration;
         private int inputPressSequence;
         private int inputReleaseSequence;
-        private int outlineRevision;
-        private IPlayerInteractable currentBestInteractable;
-        private IPlayerInteractable activeInteractable;
+        private IInteractionTarget currentBestInteractable;
+        private IInteractionTarget activeInteractable;
         private float activeHoldDuration;
 
         public PlayerInteractionController(
@@ -69,12 +54,12 @@ namespace BC.Player
         public int InputPressSequence => inputPressSequence;
         public int InputReleaseSequence => inputReleaseSequence;
         public bool HasCandidate => currentBestInteractable != null;
-        public IPlayerInteractable CurrentBestInteractable => currentBestInteractable;
-        public IPlayerInteractable ActiveInteractable => activeInteractable;
+        public IInteractionTarget CurrentBestInteractable => currentBestInteractable;
+        public IInteractionTarget ActiveInteractable => activeInteractable;
         public float ActiveHoldProgress => CalculateHoldProgress(activeInteractable, activeHoldDuration);
-        public IReadOnlyList<PlayerInteractionCandidate> Candidates => candidates;
+        public IReadOnlyList<InteractionCandidate> Candidates => candidates;
 
-        public event Action<PlayerInteractionEventData> InteractionEvent;
+        public event Action<InteractionEventData> InteractionEvent;
 
         public void Bind()
         {
@@ -106,7 +91,7 @@ namespace BC.Player
             {
                 CancelActiveInteraction();
                 ClearCandidates();
-                ClearOutlines();
+                ClearHighlights();
                 pendingPress = false;
                 pendingRelease = false;
                 return;
@@ -139,7 +124,7 @@ namespace BC.Player
         public void ClearCandidateState()
         {
             ClearCandidates();
-            ClearOutlines();
+            ClearHighlights();
         }
 
         public void Dispose()
@@ -183,7 +168,7 @@ namespace BC.Player
                 if (hit == null)
                     continue;
 
-                IPlayerInteractable interactable = ResolveInteractable(hit);
+                IInteractionTarget interactable = ResolveInteractable(hit);
 
                 if (interactable == null)
                     continue;
@@ -193,7 +178,7 @@ namespace BC.Player
                 if (key == null || !candidateKeys.Add(key))
                     continue;
 
-                PlayerInteractionQuery query = new PlayerInteractionQuery(
+                InteractionQuery query = new InteractionQuery(
                     interactionPoint.position,
                     facingTransform.position,
                     facingTransform.forward,
@@ -213,20 +198,20 @@ namespace BC.Player
                     currentBestInteractable = interactable;
                 }
 
-                candidates.Add(new PlayerInteractionCandidate(interactable, score, false));
+                candidates.Add(new InteractionCandidate(interactable, score, false));
             }
 
             if (candidates.Count > 0)
             {
                 for (int i = 0; i < candidates.Count; i++)
                 {
-                    PlayerInteractionCandidate candidate = candidates[i];
+                    InteractionCandidate candidate = candidates[i];
                     bool isBest = ReferenceEquals(candidate.Interactable, currentBestInteractable);
-                    candidates[i] = new PlayerInteractionCandidate(candidate.Interactable, candidate.Score, isBest);
+                    candidates[i] = new InteractionCandidate(candidate.Interactable, candidate.Score, isBest);
                 }
             }
 
-            ApplyCandidateOutlines();
+            ApplyCandidateHighlights();
         }
 
         private void TickActiveInteraction(float deltaTime)
@@ -244,7 +229,7 @@ namespace BC.Player
             }
 
             activeHoldDuration += Mathf.Max(0f, deltaTime);
-            DispatchInteractionEvent(PlayerInteractionEventType.Updated, activeInteractable, activeHoldDuration);
+            DispatchInteractionEvent(InteractionEventType.Updated, activeInteractable, activeHoldDuration);
 
             if (activeInteractable.RequiredHoldDuration <= 0f ||
                 activeHoldDuration >= activeInteractable.RequiredHoldDuration)
@@ -261,7 +246,7 @@ namespace BC.Player
             activeInteractable = currentBestInteractable;
             activeHoldDuration = 0f;
 
-            DispatchInteractionEvent(PlayerInteractionEventType.Started, activeInteractable, activeHoldDuration);
+            DispatchInteractionEvent(InteractionEventType.Started, activeInteractable, activeHoldDuration);
 
             if (activeInteractable.RequiredHoldDuration <= 0f)
                 CompleteActiveInteraction();
@@ -272,13 +257,13 @@ namespace BC.Player
             if (activeInteractable == null)
                 return;
 
-            IPlayerInteractable completedInteractable = activeInteractable;
+            IInteractionTarget completedInteractable = activeInteractable;
             float completedHoldDuration = activeHoldDuration;
 
             activeInteractable = null;
             activeHoldDuration = 0f;
 
-            DispatchInteractionEvent(PlayerInteractionEventType.Completed, completedInteractable, completedHoldDuration);
+            DispatchInteractionEvent(InteractionEventType.Completed, completedInteractable, completedHoldDuration);
         }
 
         private void CancelActiveInteraction()
@@ -286,24 +271,24 @@ namespace BC.Player
             if (activeInteractable == null)
                 return;
 
-            IPlayerInteractable canceledInteractable = activeInteractable;
+            IInteractionTarget canceledInteractable = activeInteractable;
             float canceledHoldDuration = activeHoldDuration;
 
             activeInteractable = null;
             activeHoldDuration = 0f;
 
-            DispatchInteractionEvent(PlayerInteractionEventType.Canceled, canceledInteractable, canceledHoldDuration);
+            DispatchInteractionEvent(InteractionEventType.Canceled, canceledInteractable, canceledHoldDuration);
         }
 
         private void DispatchInteractionEvent(
-            PlayerInteractionEventType eventType,
-            IPlayerInteractable interactable,
+            InteractionEventType eventType,
+            IInteractionTarget interactable,
             float holdDuration)
         {
             if (interactable == null)
                 return;
 
-            PlayerInteractionEventData eventData = new PlayerInteractionEventData(
+            InteractionEventData eventData = new InteractionEventData(
                 this,
                 interactable,
                 eventType,
@@ -312,16 +297,16 @@ namespace BC.Player
 
             switch (eventType)
             {
-                case PlayerInteractionEventType.Started:
+                case InteractionEventType.Started:
                     interactable.OnInteractionStarted(eventData);
                     break;
-                case PlayerInteractionEventType.Updated:
+                case InteractionEventType.Updated:
                     interactable.OnInteractionUpdated(eventData);
                     break;
-                case PlayerInteractionEventType.Canceled:
+                case InteractionEventType.Canceled:
                     interactable.OnInteractionCanceled(eventData);
                     break;
-                case PlayerInteractionEventType.Completed:
+                case InteractionEventType.Completed:
                     interactable.OnInteractionCompleted(eventData);
                     break;
             }
@@ -338,58 +323,9 @@ namespace BC.Player
             return key != null && candidateKeys.Contains(key);
         }
 
-        private void ApplyCandidateOutlines()
+        private void ApplyCandidateHighlights()
         {
-            outlineRevision++;
-
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                PlayerInteractionCandidate candidate = candidates[i];
-                PickupOutlineTargetMB target = candidate.Interactable != null
-                    ? candidate.Interactable.OutlineTarget
-                    : null;
-
-                if (target == null)
-                    continue;
-
-                PickupOutlineKind kind = candidate.IsBest
-                    ? PickupOutlineKind.Best
-                    : PickupOutlineKind.Candidate;
-
-                if (outlinedTargets.TryGetValue(target, out OutlineState previousState) &&
-                    previousState.Revision == outlineRevision &&
-                    previousState.Kind >= kind)
-                {
-                    continue;
-                }
-
-                if (outlinedTargets.TryGetValue(target, out previousState) &&
-                    previousState.Kind != kind)
-                {
-                    target.ClearOutline();
-                }
-
-                target.SetOutline(kind);
-                outlinedTargets[target] = new OutlineState(outlineRevision, kind);
-            }
-
-            staleOutlinedTargets.Clear();
-
-            foreach (KeyValuePair<PickupOutlineTargetMB, OutlineState> pair in outlinedTargets)
-            {
-                if (pair.Value.Revision == outlineRevision)
-                    continue;
-
-                if (pair.Key != null)
-                    pair.Key.ClearOutline();
-
-                staleOutlinedTargets.Add(pair.Key);
-            }
-
-            for (int i = 0; i < staleOutlinedTargets.Count; i++)
-            {
-                outlinedTargets.Remove(staleOutlinedTargets[i]);
-            }
+            highlightStateTracker.Apply(candidates);
         }
 
         private void ClearCandidates()
@@ -399,21 +335,14 @@ namespace BC.Player
             currentBestInteractable = null;
         }
 
-        private void ClearOutlines()
+        private void ClearHighlights()
         {
-            foreach (KeyValuePair<PickupOutlineTargetMB, OutlineState> pair in outlinedTargets)
-            {
-                if (pair.Key != null)
-                    pair.Key.ClearOutline();
-            }
-
-            outlinedTargets.Clear();
-            staleOutlinedTargets.Clear();
+            highlightStateTracker.ClearHighlights();
         }
 
-        private IPlayerInteractable ResolveInteractable(Collider hit)
+        private IInteractionTarget ResolveInteractable(Collider hit)
         {
-            IPlayerInteractable interactable = hit.GetComponentInParent<IPlayerInteractable>();
+            IInteractionTarget interactable = hit.GetComponentInParent<IInteractionTarget>();
 
             if (interactable != null)
                 return interactable;
@@ -432,7 +361,7 @@ namespace BC.Player
             return adapter;
         }
 
-        private static UnityEngine.Object GetInteractableKey(IPlayerInteractable interactable)
+        private static UnityEngine.Object GetInteractableKey(IInteractionTarget interactable)
         {
             if (interactable is CarryableItemInteractableAdapter adapter)
                 return adapter.OwnerObject;
@@ -440,7 +369,7 @@ namespace BC.Player
             return interactable as UnityEngine.Object;
         }
 
-        private float CalculateHoldProgress(IPlayerInteractable interactable, float holdDuration)
+        private float CalculateHoldProgress(IInteractionTarget interactable, float holdDuration)
         {
             if (interactable == null)
                 return 0f;

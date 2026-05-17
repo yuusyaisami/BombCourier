@@ -5,16 +5,18 @@ using BC.Player;
 using BC.Rendering;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace BC.Character
 {
     [DisallowMultipleComponent]
-    public sealed class NPCObjectMB : MonoBehaviour, IPlayerInteractable, IPlayerInteractionPromptProvider
+    public sealed class NPCObjectMB : MonoBehaviour, IInteractionTarget, IInteractionPromptProvider
     {
         [Header("Interaction")]
         [SerializeField] private Transform interactionTransform;
         [SerializeField] private Transform promptAnchor;
-        [SerializeField] private PickupOutlineTargetMB outlineTarget;
+        [FormerlySerializedAs("outlineTarget")]
+        [SerializeField] private InteractionVisualTargetMB visualTarget;
         [SerializeField, Min(0.05f)] private float maxInteractionDistance = 2.5f;
         [SerializeField, Range(0f, 180f)] private float maxInteractionAngle = 65f;
         [SerializeField, Min(0f)] private float requiredHoldDuration;
@@ -31,7 +33,7 @@ namespace BC.Character
 
         public Transform InteractionTransform => interactionTransform != null ? interactionTransform : transform;
         public float RequiredHoldDuration => requiredHoldDuration;
-        public PickupOutlineTargetMB OutlineTarget => outlineTarget;
+        public InteractionVisualTargetMB VisualTarget => visualTarget;
         public Transform PromptAnchor => promptAnchor != null ? promptAnchor : InteractionTransform;
         public Vector3 PromptWorldOffset => promptWorldOffset;
 
@@ -39,7 +41,7 @@ namespace BC.Character
         {
             interactionTransform = transform;
             promptAnchor = transform;
-            outlineTarget = GetComponentInChildren<PickupOutlineTargetMB>(true);
+            visualTarget = GetComponentInChildren<InteractionVisualTargetMB>(true);
         }
 
         private void OnValidate()
@@ -54,11 +56,16 @@ namespace BC.Character
                 promptAnchor = interactionTransform;
             }
 
+            if (visualTarget == null)
+            {
+                visualTarget = GetComponentInChildren<InteractionVisualTargetMB>(true);
+            }
+
             maxInteractionDistance = Mathf.Max(0.05f, maxInteractionDistance);
             requiredHoldDuration = Mathf.Max(0f, requiredHoldDuration);
         }
 
-        public bool TryGetCandidateScore(PlayerInteractionQuery query, out float score)
+        public bool TryGetCandidateScore(InteractionQuery query, out float score)
         {
             score = float.MaxValue;
 
@@ -68,48 +75,27 @@ namespace BC.Character
                 return false;
             }
 
-            float allowedDistance = Mathf.Min(Mathf.Max(0.05f, maxInteractionDistance), Mathf.Max(0.05f, query.MaxDistance));
-            float allowedAngle = Mathf.Min(maxInteractionAngle, query.MaxAngle);
-
-            Vector3 toNpc = targetTransform.position - query.FacingPosition;
-            toNpc.y = 0f;
-
-            float sqrDistance = toNpc.sqrMagnitude;
-            if (sqrDistance <= 0.0001f || sqrDistance > allowedDistance * allowedDistance)
-            {
-                return false;
-            }
-
-            Vector3 planarFacingForward = query.PlanarFacingForward;
-            if (planarFacingForward.sqrMagnitude <= 0.0001f)
-            {
-                return false;
-            }
-
-            Vector3 directionToNpc = toNpc.normalized;
-            float angle = Vector3.Angle(planarFacingForward, directionToNpc);
-            if (angle > allowedAngle)
-            {
-                return false;
-            }
-
-            score = sqrDistance + angle * 0.05f;
-            return true;
+            return InteractionScoringUtility.TryGetPlanarFacingScore(
+                query,
+                targetTransform.position,
+                maxInteractionDistance,
+                maxInteractionAngle,
+                out score);
         }
 
-        public void OnInteractionStarted(PlayerInteractionEventData eventData)
+        public void OnInteractionStarted(InteractionEventData eventData)
         {
         }
 
-        public void OnInteractionUpdated(PlayerInteractionEventData eventData)
+        public void OnInteractionUpdated(InteractionEventData eventData)
         {
         }
 
-        public void OnInteractionCanceled(PlayerInteractionEventData eventData)
+        public void OnInteractionCanceled(InteractionEventData eventData)
         {
         }
 
-        public void OnInteractionCompleted(PlayerInteractionEventData eventData)
+        public void OnInteractionCompleted(InteractionEventData eventData)
         {
             if (logInteractionUntilTalkHooked)
             {

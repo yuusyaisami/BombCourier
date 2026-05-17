@@ -236,6 +236,7 @@ GameObject:
   - component: {fileID: 6039525701949762869}
   - component: {fileID: 1555075409952962939}
   - component: {fileID: 8616279206525780107}
+  - component: {fileID: 7130468073425802841}
   - component: {fileID: 4490053635938583149}
   - component: {fileID: 8542647148484008848}
   - component: {fileID: 6202589861902149464}
@@ -356,6 +357,7 @@ MonoBehaviour:
   playerMoveController: {fileID: 2360609143507810941}
   cameraController: {fileID: 8817058509509781318}
   animationController: {fileID: 8616279206525780107}
+  playerAnimationController: {fileID: 7130468073425802841}
   bodyRigidbody: {fileID: 32717569188310021}
   impactEffectEmitter: {fileID: 9190420324000731801}
   playShowLandingImpact: 1
@@ -372,8 +374,21 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0d1fa00a87f2e25418c6fa8688bd5951, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: '::'
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Animation.EntityAnimationMB
   animator: {fileID: 3328987866849961292}
+--- !u!114 &7130468073425802841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982850033400161385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a6d3f2b91c64f2e9a4d8c5b130e7f26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.PlayerAnimationMB
+  entityAnimation: {fileID: 8616279206525780107}
   moveSourceBehaviour: {fileID: 2360609143507810941}
   handleItemSourceBehaviour: {fileID: 4490053635938583149}
   useNormalizedSpeed: 1

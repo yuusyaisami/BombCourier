@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace BC.Rendering
 {
-    public sealed class PickupOutlineRendererFeature : ScriptableRendererFeature
+    public sealed class InteractionOutlineRendererFeature : ScriptableRendererFeature
     {
         [Header("Materials")]
         [SerializeField] private Material candidateOutlineMaterial;
@@ -14,11 +14,11 @@ namespace BC.Rendering
         [Header("Pass")]
         [SerializeField] private RenderPassEvent passEvent = RenderPassEvent.AfterRenderingTransparents;
 
-        private PickupOutlinePass pass;
+        private InteractionOutlinePass pass;
 
         public override void Create()
         {
-            pass = new PickupOutlinePass
+            pass = new InteractionOutlinePass
             {
                 renderPassEvent = passEvent
             };
@@ -29,7 +29,7 @@ namespace BC.Rendering
             if (candidateOutlineMaterial == null || bestOutlineMaterial == null)
                 return;
 
-            var cameraType = renderingData.cameraData.cameraType;
+            UnityEngine.CameraType cameraType = renderingData.cameraData.cameraType;
 
             if (cameraType != UnityEngine.CameraType.Game &&
                 cameraType != UnityEngine.CameraType.SceneView)
@@ -41,12 +41,12 @@ namespace BC.Rendering
             renderer.EnqueuePass(pass);
         }
 
-        private sealed class PickupOutlinePass : ScriptableRenderPass
+        private sealed class InteractionOutlinePass : ScriptableRenderPass
         {
-            private const string CandidateMaskPassName = "Pickup Outline Candidate Mask";
-            private const string BestMaskPassName = "Pickup Outline Best Mask";
-            private const string CandidateCompositePassName = "Pickup Outline Candidate Composite";
-            private const string BestCompositePassName = "Pickup Outline Best Composite";
+            private const string CandidateMaskPassName = "Interaction Outline Candidate Mask";
+            private const string BestMaskPassName = "Interaction Outline Best Mask";
+            private const string CandidateCompositePassName = "Interaction Outline Candidate Composite";
+            private const string BestCompositePassName = "Interaction Outline Best Composite";
 
             private static readonly int BlitTextureId = Shader.PropertyToID("_BlitTexture");
             private static readonly int BlitScaleBiasId = Shader.PropertyToID("_BlitScaleBias");
@@ -69,9 +69,9 @@ namespace BC.Rendering
             {
                 internal TextureHandle maskTexture;
                 internal TextureHandle activeDepthTexture;
-                internal PickupOutlineEntry[] entries;
+                internal InteractionHighlightEntry[] entries;
                 internal Material material;
-                internal PickupOutlineKind kind;
+                internal InteractionHighlightKind kind;
             }
 
             private sealed class CompositePassData
@@ -87,7 +87,7 @@ namespace BC.Rendering
                 if (candidateMaterial == null || bestMaterial == null)
                     return;
 
-                PickupOutlineEntry[] entries = PickupOutlineRegistry.CreateSnapshotArray();
+                InteractionHighlightEntry[] entries = InteractionHighlightRegistry.CreateSnapshotArray();
 
                 if (entries.Length == 0)
                     return;
@@ -103,8 +103,8 @@ namespace BC.Rendering
                 if (!activeColorTexture.IsValid() || !activeDepthTexture.IsValid())
                     return;
 
-                bool hasCandidate = ContainsKind(entries, PickupOutlineKind.Candidate);
-                bool hasBest = ContainsKind(entries, PickupOutlineKind.Best);
+                bool hasCandidate = ContainsKind(entries, InteractionHighlightKind.Candidate);
+                bool hasBest = ContainsKind(entries, InteractionHighlightKind.Best);
 
                 if (!hasCandidate && !hasBest)
                     return;
@@ -117,7 +117,7 @@ namespace BC.Rendering
 
                 if (hasCandidate)
                 {
-                    maskDesc.name = "_PickupOutlineCandidateMask";
+                    maskDesc.name = "_InteractionOutlineCandidateMask";
                     candidateMask = renderGraph.CreateTexture(maskDesc);
                     RecordMaskPass(
                         renderGraph,
@@ -126,14 +126,14 @@ namespace BC.Rendering
                         activeDepthTexture,
                         entries,
                         candidateMaterial,
-                        PickupOutlineKind.Candidate);
+                        InteractionHighlightKind.Candidate);
                 }
 
                 TextureHandle bestMask = TextureHandle.nullHandle;
 
                 if (hasBest)
                 {
-                    maskDesc.name = "_PickupOutlineBestMask";
+                    maskDesc.name = "_InteractionOutlineBestMask";
                     bestMask = renderGraph.CreateTexture(maskDesc);
                     RecordMaskPass(
                         renderGraph,
@@ -142,7 +142,7 @@ namespace BC.Rendering
                         activeDepthTexture,
                         entries,
                         bestMaterial,
-                        PickupOutlineKind.Best);
+                        InteractionHighlightKind.Best);
                 }
 
                 TextureDesc activeColorDesc = renderGraph.GetTextureDesc(activeColorTexture);
@@ -184,9 +184,9 @@ namespace BC.Rendering
                 string passName,
                 TextureHandle maskTexture,
                 TextureHandle activeDepthTexture,
-                PickupOutlineEntry[] entries,
+                InteractionHighlightEntry[] entries,
                 Material material,
-                PickupOutlineKind kind)
+                InteractionHighlightKind kind)
             {
                 using (var builder = renderGraph.AddUnsafePass<MaskPassData>(passName, out MaskPassData passData))
                 {
@@ -252,7 +252,7 @@ namespace BC.Rendering
 
                 for (int i = 0; i < data.entries.Length; i++)
                 {
-                    PickupOutlineEntry entry = data.entries[i];
+                    InteractionHighlightEntry entry = data.entries[i];
 
                     if (entry.Kind != data.kind)
                         continue;
@@ -313,7 +313,7 @@ namespace BC.Rendering
                     SharedPropertyBlock);
             }
 
-            private static bool ContainsKind(PickupOutlineEntry[] entries, PickupOutlineKind kind)
+            private static bool ContainsKind(InteractionHighlightEntry[] entries, InteractionHighlightKind kind)
             {
                 for (int i = 0; i < entries.Length; i++)
                 {
