@@ -57,6 +57,35 @@ namespace BC.Rendering
             }
         }
 
+        public bool TryGetWorldBounds(out Bounds bounds)
+        {
+            if (renderers == null || renderers.Length == 0)
+            {
+                CollectRenderers();
+            }
+
+            bounds = default;
+            bool hasBounds = false;
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer renderer = renderers[i];
+                if (renderer == null)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                    continue;
+                }
+
+                bounds.Encapsulate(renderer.bounds);
+            }
+
+            return hasBounds;
+        }
+
         private void CollectRenderers()
         {
             renderers = GetComponentsInChildren<Renderer>(true);

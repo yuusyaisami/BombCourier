@@ -159,8 +159,27 @@ namespace BC.Rendering
         private void DrawSurfaceSection()
         {
             DrawSectionHeader("Surface");
+            DrawProperty("_SurfaceMode");
             DrawProperty("_Cull");
             DrawProperty("_AlphaClip");
+
+            float surfaceMode = GetFloatValue("_SurfaceMode");
+
+            if (surfaceMode > 1.5f)
+            {
+                EditorGUILayout.HelpBox(
+                    "EdgeOnly mode requires barycentric UV4 data. Add MeshBarycentricEdgeMB to MeshFilter objects that should render edges.",
+                    MessageType.Info);
+                DrawProperty("_FaceAlpha");
+                DrawProperty("_EdgeColor");
+                DrawProperty("_EdgeWidth");
+            }
+            else if (surfaceMode > 0.5f)
+            {
+                EditorGUILayout.HelpBox(
+                    "Transparent mode uses Base Color alpha and Base Map alpha for fade blending.",
+                    MessageType.None);
+            }
 
             if (GetFloatValue("_AlphaClip") > 0.5f)
             {

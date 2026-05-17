@@ -16,24 +16,36 @@ namespace BC.Manager
         private Tween topPanelTween;
         private Tween bottomPanelTween;
 
-        public void ShowTopPanel(bool show)
+        public void ShowTopPanel(bool show, float duration = 0.5f)
         {
+            Debug.Log("ShowTopPanel: " + show);
             if (topPanel == null)
                 return;
 
             topPanelTween?.Kill();
             Vector3 targetPosition = show ? topPanelVisiblePosition : topPanelHiddenPosition;
-            topPanelTween = topPanel.DOAnchorPos(targetPosition, 0.5f).SetEase(Ease.OutCubic);
+            if (duration <= 0f)
+            {
+                topPanel.anchoredPosition = targetPosition;
+                return;
+            }
+            topPanelTween = topPanel.DOAnchorPos(targetPosition, duration).SetEase(Ease.OutCubic);
         }
 
-        public void ShowBottomPanel(bool show)
+        public void ShowBottomPanel(bool show, float duration = 0.5f)
         {
+            Debug.Log("ShowBottomPanel: " + show);
             if (bottomPanel == null)
                 return;
 
             bottomPanelTween?.Kill();
+            if (duration <= 0f)
+            {
+                bottomPanel.anchoredPosition = show ? bottomPanelVisiblePosition : bottomPanelHiddenPosition;
+                return;
+            }
             Vector3 targetPosition = show ? bottomPanelVisiblePosition : bottomPanelHiddenPosition;
-            bottomPanelTween = bottomPanel.DOAnchorPos(targetPosition, 0.5f).SetEase(Ease.OutCubic);
+            bottomPanelTween = bottomPanel.DOAnchorPos(targetPosition, duration).SetEase(Ease.OutCubic);
         }
     }
 }

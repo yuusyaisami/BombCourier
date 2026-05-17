@@ -34,6 +34,7 @@ namespace BC.UI
         // ゴール時に再生する UI パーティクル（Canvas 上で動作するパーティクルシステムを割り当てる）
         [SerializeField] private UIFallEffectMB goalParticle;
         [SerializeField] private RectTransform stageClearPanel;
+        [SerializeField] private Vector3 shakeStrength = new Vector3(10f, 10f, 0f); // シェイクの強さ
 
 
         [Header("Animation")]
@@ -120,6 +121,9 @@ namespace BC.UI
             returnToTitleButton.interactable = false;
             nextStageButton.interactable = false;
 
+            // starsを初期化
+            ResetStars();
+
             // Y スケールを 0 → 1 にアニメーション
             float elapsed = 0f;
             float duration = Mathf.Max(revealDuration, 0.001f);
@@ -148,7 +152,7 @@ namespace BC.UI
             clearStarTooltipTarget.TooltipText = "やりきることが大事！";
             await clearStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
             // 画面をシェイク
-            await stageClearPanel.DOShakePosition(0.5f, new Vector3(50f, 50f, 0f)).AsyncWaitForCompletion();
+            await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
             await UniTask.Delay(300, cancellationToken: _cts.Token); // 0.3秒待機
             // 3つ目の星は早くクリアするともらえます(スピード賞)
 
@@ -161,7 +165,7 @@ namespace BC.UI
                 bonusItemStarTooltipTarget.TooltipText = "ボーナスアイテムをゲット！";
 
                 await bonusItemStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
-                await stageClearPanel.DOShakePosition(0.5f, new Vector3(50f, 50f, 0f)).AsyncWaitForCompletion();
+                await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
                 await UniTask.Delay(300, cancellationToken: _cts.Token); // 0.3秒待機
             }
             else
@@ -186,7 +190,7 @@ namespace BC.UI
                 fastClearStarTooltipTarget.TooltipText = "爆弾のFuseタイムが短いともらえるスターです！\n今回のクリアタイム: " + clearTime.ToString("F2") + "秒\n早いクリアの条件: " + fastClearThreshold.ToString("F2") + "秒以下";
 
                 await fastClearStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
-                await stageClearPanel.DOShakePosition(0.5f, new Vector3(50f, 50f, 0f)).AsyncWaitForCompletion();
+                await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
                 await UniTask.Delay(300, cancellationToken: _cts.Token); // 0.3秒待機
             }
             else
@@ -245,6 +249,10 @@ namespace BC.UI
             nextStageButton.interactable = false;
 
             // 評価の星をリセット
+            ResetStars();
+        }
+        private void ResetStars()
+        {
             clearStar.sprite = TransparentSprite;
             clearStarTooltipTarget.TooltipText = "";
             bonusItemStar.sprite = TransparentSprite;

@@ -288,7 +288,8 @@ namespace BC.Manager
                 Debug.LogError("GameLogicManagerMB: Camera path is not resolved from MapRuntimeMB.", this);
                 return;
             }
-
+            uiGameSceneManagerMB.ShowTopPanel(false, 0f); // ゲームシーンのUIを表示する
+            uiGameSceneManagerMB.ShowBottomPanel(false, 0f); // ゲームシーンのUIを表示する
             await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
             await CameraManager.Instance.PlayPathAsync(currentCameraPath, playerRef, async () =>
             {
@@ -321,7 +322,7 @@ namespace BC.Manager
                 stageInstance = null;
             }
             StageManagerMB.Instance.ReloadStage();
-            playerInstance.ResetPlayer();
+            ResetPlayer(); // プレイヤーをリセットする
             ReloadState?.Invoke();
 
 
@@ -388,6 +389,7 @@ namespace BC.Manager
             {
                 result = StageManagerMB.Instance.LoadStage(currentGameStage);
                 RegisterStageEntities(result.stageInstance);
+                ResetPlayer(); // プレイヤーをリセットする (loadで古いステージは消えるのですが、PlayerはMap外に残っているので、こちらで明確に消す必要があります)
                 // playerをテレポートさせる
                 if (result.spawnPoints.Count > 0)
                 {
@@ -450,6 +452,16 @@ namespace BC.Manager
         private static PlayerMB ResolveSpawnedPlayer(GameObject rootObject)
         {
             return rootObject != null ? rootObject.GetComponentInChildren<PlayerMB>(true) : null;
+        }
+        private void ResetPlayer()
+        {
+            // プレイヤーを削除する
+            if (playerInstance != null)
+            {
+                sceneKernel.Spawner.Despawn(playerRef);
+                playerInstance = null;
+                playerRef = default;
+            }
         }
 
         // ゲーム内にプレイヤーがいた場合はTeleportのみ、いない場合はSpawnしてからTeleportする

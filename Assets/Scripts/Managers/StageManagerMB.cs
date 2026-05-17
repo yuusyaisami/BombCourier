@@ -34,7 +34,7 @@ namespace BC.Manager
             }
             Instance = this;
         }
-
+        private Transform stageInstance;
         [SerializeField] private StageRegistrySO stageData; // ステージデータのScriptableObject
         [SerializeField] private StageCheckpointServiceMB checkpointService; // チェックポイントサービス
         [SerializeField] private Transform stageRoot; // ステージの親オブジェクト
@@ -47,8 +47,15 @@ namespace BC.Manager
                 return CreateEmptyResult();
             }
 
+            // 前のステージのインスタンスを削除する
+            if (this.stageInstance != null)
+            {
+                Destroy(this.stageInstance.gameObject);
+            }
+
             StageData data = stageData.StageData[stageIndex];
             GameObject stageInstance = Instantiate(data.stagePrefab, stageRoot);
+            this.stageInstance = stageInstance.transform;
             return ResolveStageRuntime(stageInstance, data);
         }
 

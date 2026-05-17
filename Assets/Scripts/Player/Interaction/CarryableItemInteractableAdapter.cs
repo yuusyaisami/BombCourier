@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BC.Player
 {
-    public sealed class CarryableItemInteractableAdapter : IPlayerInteractable
+    public sealed class CarryableItemInteractableAdapter : IPlayerInteractable, IPlayerInteractionPromptProvider
     {
         private readonly MonoBehaviour owner;
         private readonly ICarryableItem carryableItem;
@@ -19,6 +19,8 @@ namespace BC.Player
         public Object OwnerObject => owner;
         public ICarryableItem CarryableItem => carryableItem;
         public Transform InteractionTransform => carryableItem != null ? carryableItem.ItemTransform : null;
+        public Transform PromptAnchor => InteractionTransform;
+        public Vector3 PromptWorldOffset => Vector3.up * 0.15f;
         public float RequiredHoldDuration => 0f;
         public PickupOutlineTargetMB OutlineTarget
         {

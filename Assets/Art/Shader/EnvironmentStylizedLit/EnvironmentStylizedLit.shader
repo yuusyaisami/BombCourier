@@ -2,12 +2,20 @@ Shader "BC/EnvironmentStylizedLit"
 {
     Properties
     {
+        [Enum(Opaque,0,Transparent,1,EdgeOnly,2)] _SurfaceMode ("Surface Mode", Float) = 0
         [Enum(Front,2,Back,1,Both,0)] _Cull ("Render Face", Float) = 2
         [Toggle] _AlphaClip ("Alpha Clip", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
 
+        [HideInInspector] _SrcBlend ("Src Blend", Float) = 1
+        [HideInInspector] _DstBlend ("Dst Blend", Float) = 0
+        [HideInInspector] _ZWrite ("Z Write", Float) = 1
+
         [MainTexture] _BaseMap ("Base Map", 2D) = "white" {}
         _BaseColor ("Base Color", Color) = (1, 1, 1, 1)
+        _FaceAlpha ("Face Alpha", Range(0, 1)) = 1
+        _EdgeColor ("Edge Color", Color) = (1, 1, 1, 1)
+        _EdgeWidth ("Edge Width", Range(0.25, 8)) = 1
 
         [Normal] _NormalMap ("Normal Map", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 2)) = 1
@@ -206,7 +214,8 @@ Shader "BC/EnvironmentStylizedLit"
             Tags { "LightMode" = "UniversalForward" }
 
             Cull [_Cull]
-            ZWrite On
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
             ZTest LEqual
 
             HLSLPROGRAM

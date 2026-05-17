@@ -4,10 +4,17 @@
 CBUFFER_START(UnityPerMaterial)
     float4 _BaseColor;
     float4 _BaseMap_ST;
+    float _FaceAlpha;
+    float4 _EdgeColor;
+    float _EdgeWidth;
 
+    float _SurfaceMode;
     float _AlphaClip;
     float _Cutoff;
     float _Cull;
+    float _SrcBlend;
+    float _DstBlend;
+    float _ZWrite;
 
     float _NormalScale;
 
@@ -105,5 +112,25 @@ SAMPLER(sampler_OcclusionMap);
 
 TEXTURE2D(_EmissionMap);
 SAMPLER(sampler_EmissionMap);
+
+bool ESL_IsTransparentSurfaceMode()
+{
+    return _SurfaceMode > 0.5 && _SurfaceMode < 1.5;
+}
+
+bool ESL_IsEdgeOnlySurfaceMode()
+{
+    return _SurfaceMode > 1.5;
+}
+
+bool ESL_IsBlendedSurfaceMode()
+{
+    return _SurfaceMode > 0.5;
+}
+
+bool ESL_IsOpaqueSurfaceMode()
+{
+    return !ESL_IsBlendedSurfaceMode();
+}
 
 #endif

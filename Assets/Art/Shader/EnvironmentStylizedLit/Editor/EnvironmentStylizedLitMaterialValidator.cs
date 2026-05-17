@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace BC.Rendering
 {
@@ -27,9 +28,12 @@ namespace BC.Rendering
             }
 
             bool changed = false;
+            changed |= ClampFloat(material, "_SurfaceMode", 0f, 2f, applyChanges, true);
             changed |= ClampFloat(material, "_Cull", 0f, 2f, applyChanges, true);
             changed |= ClampFloat(material, "_AlphaClip", 0f, 1f, applyChanges, true);
             changed |= ClampFloat(material, "_Cutoff", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_FaceAlpha", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_EdgeWidth", 0.25f, 8f, applyChanges);
 
             changed |= ClampFloat(material, "_NormalScale", 0f, 2f, applyChanges);
             changed |= ClampFloat(material, "_OcclusionStrength", 0f, 1f, applyChanges);
@@ -95,6 +99,7 @@ namespace BC.Rendering
             changed |= SyncKeyword(material, "_TriplanarBaseMapEnabled", TriplanarBaseKeyword, applyChanges);
             changed |= SyncKeyword(material, "_TriplanarNormalMapEnabled", TriplanarNormalKeyword, applyChanges);
             changed |= SyncKeyword(material, "_TriplanarNoiseEnabled", TriplanarNoiseKeyword, applyChanges);
+            changed |= SyncSurfaceState(material, applyChanges);
 
             return changed;
         }
@@ -258,6 +263,104 @@ namespace BC.Rendering
         private static bool IsEnabled(Material material, string propertyName)
         {
             return material.HasProperty(propertyName) && material.GetFloat(propertyName) > 0.5f;
+        }
+
+        private static bool SyncSurfaceState(Material material, bool applyChanges)
+        {
+            if (material == null || !material.HasProperty("_SurfaceMode"))
+            {
+                return false;
+            }
+
+            int surfaceMode = Mathf.RoundToInt(material.GetFloat("_SurfaceMode"));
+            bool isTransparent = surfaceMode == 1;
+            bool isEdgeOnly = surfaceMode == 2;
+            bool isBlended = isTransparent || isEdgeOnly;
+
+            float srcBlend = isBlended ? (float)BlendMode.SrcAlpha : (float)BlendMode.One;
+            float dstBlend = isBlended ? (float)BlendMode.OneMinusSrcAlpha : (float)BlendMode.Zero;
+            float zWrite = isBlended ? 0f : 1f;
+            int renderQueue = isBlended ? (int)RenderQueue.Transparent : (int)RenderQueue.Geometry;
+            string renderType = isBlended ? "Transparent" : "Opaque";
+
+            bool changed = false;
+            changed |= SetFloat(material, "_SrcBlend", srcBlend, applyChanges);
+            changed |= SetFloat(material, "_DstBlend", dstBlend, applyChanges);
+            changed |= SetFloat(material, "_ZWrite", zWrite, applyChanges);
+            changed |= SetRenderQueue(material, renderQueue, applyChanges);
+            changed |= SetOverrideTag(material, "RenderType", renderType, applyChanges);
+            changed |= SetOverrideTag(material, "Queue", isBlended ? "Transparent" : "Geometry", applyChanges);
+            changed |= SetShaderPassEnabled(material, "ShadowCaster", !isBlended, applyChanges);
+            changed |= SetShaderPassEnabled(material, "DepthOnly", !isBlended, applyChanges);
+            changed |= SetShaderPassEnabled(material, "DepthNormalsOnly", !isBlended, applyChanges);
+            return changed;
+        }
+
+        private static bool SetFloat(Material material, string propertyName, float targetValue, bool applyChanges)
+        {
+            if (!material.HasProperty(propertyName))
+            {
+                return false;
+            }
+
+            float currentValue = material.GetFloat(propertyName);
+            if (Mathf.Approximately(currentValue, targetValue))
+            {
+                return false;
+            }
+
+            if (applyChanges)
+            {
+                material.SetFloat(propertyName, targetValue);
+            }
+
+            return true;
+        }
+
+        private static bool SetRenderQueue(Material material, int renderQueue, bool applyChanges)
+        {
+            if (material.renderQueue == renderQueue)
+            {
+                return false;
+            }
+
+            if (applyChanges)
+            {
+                material.renderQueue = renderQueue;
+            }
+
+            return true;
+        }
+
+        private static bool SetOverrideTag(Material material, string tagName, string tagValue, bool applyChanges)
+        {
+            string currentTagValue = material.GetTag(tagName, false, string.Empty);
+            if (currentTagValue == tagValue)
+            {
+                return false;
+            }
+
+            if (applyChanges)
+            {
+                material.SetOverrideTag(tagName, tagValue);
+            }
+
+            return true;
+        }
+
+        private static bool SetShaderPassEnabled(Material material, string passName, bool enabled, bool applyChanges)
+        {
+            if (material.GetShaderPassEnabled(passName) == enabled)
+            {
+                return false;
+            }
+
+            if (applyChanges)
+            {
+                material.SetShaderPassEnabled(passName, enabled);
+            }
+
+            return true;
         }
 
         private static string GetDebugViewName(int debugView)

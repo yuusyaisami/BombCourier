@@ -17,6 +17,7 @@ struct ESL_Attributes
     float2 uv : TEXCOORD0;
 	float2 staticLightmapUV : TEXCOORD1;
 	float2 dynamicLightmapUV : TEXCOORD2;
+	float3 barycentric : TEXCOORD3;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -28,6 +29,7 @@ struct ESL_Varyings
     float4 tangentWS : TEXCOORD2;
     float2 uv : TEXCOORD3;
     float4 vertexColor : TEXCOORD9;
+    float3 barycentric : TEXCOORD10;
     #ifdef _ADDITIONAL_LIGHTS_VERTEX
     half4 fogFactorAndVertexLight : TEXCOORD4;
     #else
@@ -132,6 +134,7 @@ ESL_Varyings ESL_Vertex(ESL_Attributes input)
     output.tangentWS = float4(normalInputs.tangentWS, input.tangentOS.w * GetOddNegativeScale());
     output.uv = input.uv;
     output.vertexColor = input.color;
+    output.barycentric = input.barycentric;
     half fogFactor = ComputeFogFactor(output.positionHCS.z);
     #ifdef _ADDITIONAL_LIGHTS_VERTEX
     output.fogFactorAndVertexLight = half4(fogFactor, VertexLighting(positionInputs.positionWS, normalInputs.normalWS));
@@ -145,6 +148,35 @@ ESL_Varyings ESL_Vertex(ESL_Attributes input)
 	#endif
 	OUTPUT_SH4(positionInputs.positionWS, output.normalWS.xyz, GetWorldSpaceNormalizeViewDir(positionInputs.positionWS), output.vertexSH, output.probeOcclusion);
     return output;
+}
+
+half ESL_EvaluateEdgeMask(float3 barycentric)
+{
+    float barycentricSum = barycentric.x + barycentric.y + barycentric.z;
+    if (abs(barycentricSum - 1.0) > 0.25)
+    {
+        return 0.0h;
+    }
+
+    float3 derivative = max(fwidth(barycentric), 1e-5.xxx);
+    float3 smoothed = smoothstep(0.0.xxx, derivative * max(_EdgeWidth, 0.25), barycentric);
+    return saturate(1.0 - min(smoothed.x, min(smoothed.y, smoothed.z)));
+}
+
+half4 ESL_ComposeFaceAndEdge(half3 faceColor, half faceAlpha, half3 edgeColor, half edgeAlpha)
+{
+    half clampedFaceAlpha = saturate(faceAlpha);
+    half clampedEdgeAlpha = saturate(edgeAlpha);
+    half finalAlpha = clampedEdgeAlpha + clampedFaceAlpha * (1.0h - clampedEdgeAlpha);
+
+    if (finalAlpha <= 1e-4h)
+    {
+        return half4(0.0h, 0.0h, 0.0h, 0.0h);
+    }
+
+    half3 premultipliedColor = edgeColor * clampedEdgeAlpha
+        + faceColor * clampedFaceAlpha * (1.0h - clampedEdgeAlpha);
+    return half4(premultipliedColor / finalAlpha, finalAlpha);
 }
 
 half4 ESL_Fragment(ESL_Varyings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_Target
@@ -168,6 +200,13 @@ half4 ESL_Fragment(ESL_Varyings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMAN
     if (!ESL_IsDebugViewActive())
     {
         color = MixFog(color, inputData.fogFactor);
+    }
+
+    if (ESL_IsEdgeOnlySurfaceMode())
+    {
+        half faceAlpha = surfaceData.alpha * saturate(_FaceAlpha);
+        half edgeMask = ESL_EvaluateEdgeMask(abs(input.barycentric));
+        return ESL_ComposeFaceAndEdge(color, faceAlpha, _EdgeColor.rgb, edgeMask * _EdgeColor.a);
     }
 
     return half4(color, surfaceData.alpha);
