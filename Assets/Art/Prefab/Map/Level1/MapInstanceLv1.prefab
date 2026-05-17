@@ -4934,6 +4934,7 @@ GameObject:
   - component: {fileID: 670072199909329836}
   - component: {fileID: 7764026757048309295}
   - component: {fileID: 6721551280174016489}
+  - component: {fileID: 6404186289544012310}
   m_Layer: 6
   m_Name: Cushion
   m_TagString: Untagged
@@ -5070,6 +5071,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.PickupOutlineTargetMB
   renderers:
   - {fileID: 636190796154320482}
+--- !u!114 &6404186289544012310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 162446659333554695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0e4c181ef3e4bc4a59c7d8722c0de31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Effects.Impact.ImpactEffectEmitterMB
+  impactManager: {fileID: 0}
+  fallbackParticlePrefab: {fileID: 0}
+  defaultColor: {r: 0.78, g: 0.72, b: 0.62, a: 0.75}
+  playOnStrongCollision: 1
+  minAutoImpactStrength: 6
+  referenceImpactStrength: 12
+  autoCooldownSeconds: 0.12
+  defaultExternalImpactStrength: 8
+  contactForgetSeconds: 0.25
+  probeLayerMask:
+    serializedVersion: 2
+    m_Bits: 119
+  probeRadius: 0.2
+  probeDistance: 2
+  probeTriggerInteraction: 1
 --- !u!1 &293320723984360074
 GameObject:
   m_ObjectHideFlags: 0
@@ -6618,13 +6646,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1426730238486600855}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.5, y: 1, z: -2.5}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 1.75, y: 1, z: -1.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4342909843559958858}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &2195357677041616176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12352,7 +12380,7 @@ MonoBehaviour:
       sourceKind: 0
       evaluationMode: 0
       failurePolicy: 0
-      literal: {x: 1.25, y: 4.63, z: 2.25}
+      literal: {x: 1.0681483, y: 4.438168, z: 2.8017128}
       transformValue:
         sourceKind: 0
         entity:
@@ -12361,11 +12389,6 @@ MonoBehaviour:
           failurePolicy: 0
           entityValue:
             entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          kernelValue:
             key:
               id: 0
               path: 
@@ -12386,11 +12409,6 @@ MonoBehaviour:
             failurePolicy: 0
             entityValue:
               entitySourceKind: 0
-              key:
-                id: 0
-                path: 
-                valueTypeName: 
-            kernelValue:
               key:
                 id: 0
                 path: 
@@ -12414,11 +12432,6 @@ MonoBehaviour:
               id: 0
               path: 
               valueTypeName: 
-          kernelValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
           targetReference:
             mode: 0
             selection: 0
@@ -12436,11 +12449,6 @@ MonoBehaviour:
               id: 0
               path: 
               valueTypeName: 
-          kernelValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
           targetReference:
             mode: 0
             selection: 0
@@ -12450,10 +12458,10 @@ MonoBehaviour:
           fallbackKind: 0
       fallbackValue: {x: 0, y: 0, z: 0}
     eulerAngles:
-      sourceKind: 5
+      sourceKind: 0
       evaluationMode: 0
       failurePolicy: 0
-      literal: {x: 15.000004, y: 150, z: 0.00000044194576}
+      literal: {x: 28.879095, y: 162.80789, z: 351.50122}
       transformValue:
         sourceKind: 0
         entity:
@@ -12462,11 +12470,6 @@ MonoBehaviour:
           failurePolicy: 0
           entityValue:
             entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          kernelValue:
             key:
               id: 0
               path: 
@@ -12487,11 +12490,6 @@ MonoBehaviour:
             failurePolicy: 0
             entityValue:
               entitySourceKind: 0
-              key:
-                id: 0
-                path: 
-                valueTypeName: 
-            kernelValue:
               key:
                 id: 0
                 path: 
@@ -12515,11 +12513,6 @@ MonoBehaviour:
               id: 0
               path: 
               valueTypeName: 
-          kernelValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
           targetReference:
             mode: 0
             selection: 0
@@ -12537,11 +12530,6 @@ MonoBehaviour:
               id: 0
               path: 
               valueTypeName: 
-          kernelValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
           targetReference:
             mode: 2
             selection: 0
@@ -12550,10 +12538,10 @@ MonoBehaviour:
               path: Actor.Player
           fallbackKind: 0
       fallbackValue: {x: 0, y: 0, z: 0}
-    holdSeconds: 0
+    holdSeconds: 2
     transitionFromPrevious:
-      kind: 0
-      duration: 0
+      kind: 1
+      duration: 1
       ease:
         serializedVersion: 2
         m_Curve:
@@ -12588,7 +12576,7 @@ MonoBehaviour:
       sourceKind: 0
       evaluationMode: 0
       failurePolicy: 0
-      literal: {x: 0.41000003, y: 0.22, z: -6.25}
+      literal: {x: 6.66, y: 3.72, z: 0.25}
       transformValue:
         sourceKind: 1
         entity:
@@ -12597,11 +12585,6 @@ MonoBehaviour:
           failurePolicy: 0
           entityValue:
             entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          kernelValue:
             key:
               id: 0
               path: 
@@ -12626,11 +12609,6 @@ MonoBehaviour:
                 id: 0
                 path: 
                 valueTypeName: 
-            kernelValue:
-              key:
-                id: 0
-                path: 
-                valueTypeName: 
             targetReference:
               mode: 0
               selection: 0
@@ -12646,11 +12624,6 @@ MonoBehaviour:
           failurePolicy: 0
           entityValue:
             entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          kernelValue:
             key:
               id: 0
               path: 
@@ -12672,11 +12645,6 @@ MonoBehaviour:
               id: 0
               path: 
               valueTypeName: 
-          kernelValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
           targetReference:
             mode: 0
             selection: 0
@@ -12686,10 +12654,10 @@ MonoBehaviour:
           fallbackKind: 0
       fallbackValue: {x: 0, y: 0, z: 0}
     eulerAngles:
-      sourceKind: 5
+      sourceKind: 0
       evaluationMode: 0
       failurePolicy: 0
-      literal: {x: 0, y: 0, z: 0}
+      literal: {x: 15.000001, y: 194.99997, z: -0.00000044194576}
       transformValue:
         sourceKind: 0
         entity:
@@ -12698,11 +12666,6 @@ MonoBehaviour:
           failurePolicy: 0
           entityValue:
             entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          kernelValue:
             key:
               id: 0
               path: 
@@ -12727,11 +12690,6 @@ MonoBehaviour:
                 id: 0
                 path: 
                 valueTypeName: 
-            kernelValue:
-              key:
-                id: 0
-                path: 
-                valueTypeName: 
             targetReference:
               mode: 0
               selection: 0
@@ -12747,11 +12705,6 @@ MonoBehaviour:
           failurePolicy: 0
           entityValue:
             entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          kernelValue:
             key:
               id: 0
               path: 
@@ -12773,7 +12726,198 @@ MonoBehaviour:
               id: 0
               path: 
               valueTypeName: 
-          kernelValue:
+          targetReference:
+            mode: 2
+            selection: 0
+            tag:
+              id: 2001
+              path: Item.Bomb
+          fallbackKind: 0
+      fallbackValue: {x: 0, y: 0, z: 0}
+    holdSeconds: 1
+    transitionFromPrevious:
+      kind: 1
+      duration: 0
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    lens:
+      overrideFieldOfView: 0
+      fieldOfView: 60
+    onArriveAction:
+      _steps: []
+  - label: Point 3
+    position:
+      sourceKind: 0
+      evaluationMode: 0
+      failurePolicy: 0
+      literal: {x: 7.7297144, y: 1.1514696, z: -6.9606667}
+      transformValue:
+        sourceKind: 1
+        entity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      addSource:
+        baseValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addend: {x: 0, y: 0, z: 0}
+      directionSource:
+        fromEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+        toEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      fallbackValue: {x: 6.160001, y: 3.2023618, z: -1.6160259}
+    eulerAngles:
+      sourceKind: 0
+      evaluationMode: 0
+      failurePolicy: 0
+      literal: {x: 36.515125, y: 263.9367, z: 16.193975}
+      transformValue:
+        sourceKind: 0
+        entity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      addSource:
+        baseValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addend: {x: 0, y: 0, z: 0}
+      directionSource:
+        fromEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+        toEntity:
+          sourceKind: 4
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
             key:
               id: 0
               path: 
@@ -12785,7 +12929,7 @@ MonoBehaviour:
               id: 2001
               path: Item.Bomb
           fallbackKind: 0
-      fallbackValue: {x: 0, y: 0, z: 0}
+      fallbackValue: {x: 15.000002, y: 194.99997, z: -0.00000044194576}
     holdSeconds: 0
     transitionFromPrevious:
       kind: 1
@@ -12819,7 +12963,595 @@ MonoBehaviour:
       fieldOfView: 60
     onArriveAction:
       _steps: []
-  selectedPointIndex: 1
+  - label: Point 4
+    position:
+      sourceKind: 0
+      evaluationMode: 0
+      failurePolicy: 0
+      literal: {x: 5.0686293, y: 0.34770814, z: -11.525215}
+      transformValue:
+        sourceKind: 1
+        entity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      addSource:
+        baseValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addend: {x: 0, y: 0, z: 0}
+      directionSource:
+        fromEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+        toEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      fallbackValue: {x: 5.9068832, y: 0.4014694, z: -7.299467}
+    eulerAngles:
+      sourceKind: 0
+      evaluationMode: 0
+      failurePolicy: 0
+      literal: {x: 40.702045, y: 324.15323, z: 5.5835476}
+      transformValue:
+        sourceKind: 0
+        entity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      addSource:
+        baseValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addend: {x: 0, y: 0, z: 0}
+      directionSource:
+        fromEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+        toEntity:
+          sourceKind: 4
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 2
+            selection: 0
+            tag:
+              id: 2001
+              path: Item.Bomb
+          fallbackKind: 0
+      fallbackValue: {x: 22.024319, y: 259.4709, z: 13.992122}
+    holdSeconds: 0
+    transitionFromPrevious:
+      kind: 1
+      duration: 1
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    lens:
+      overrideFieldOfView: 0
+      fieldOfView: 60
+    onArriveAction:
+      _steps: []
+  - label: Point 5
+    position:
+      sourceKind: 0
+      evaluationMode: 0
+      failurePolicy: 0
+      literal: {x: 4.1807003, y: -0.95654285, z: -10.796186}
+      transformValue:
+        sourceKind: 1
+        entity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      addSource:
+        baseValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addend: {x: 0, y: 0, z: 0}
+      directionSource:
+        fromEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+        toEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      fallbackValue: {x: 4.1807003, y: -0.95654285, z: -10.296186}
+    eulerAngles:
+      sourceKind: 0
+      evaluationMode: 0
+      failurePolicy: 0
+      literal: {x: -0, y: 180, z: -0}
+      transformValue:
+        sourceKind: 0
+        entity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      addSource:
+        baseValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addend: {x: 0, y: 0, z: 0}
+      directionSource:
+        fromEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+        toEntity:
+          sourceKind: 4
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 2
+            selection: 0
+            tag:
+              id: 2001
+              path: Item.Bomb
+          fallbackKind: 0
+      fallbackValue: {x: 40.702045, y: 324.15323, z: 5.5835505}
+    holdSeconds: 0
+    transitionFromPrevious:
+      kind: 0
+      duration: 0
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    lens:
+      overrideFieldOfView: 0
+      fieldOfView: 60
+    onArriveAction:
+      _steps: []
+  - label: Point 6
+    position:
+      sourceKind: 0
+      evaluationMode: 0
+      failurePolicy: 0
+      literal: {x: 4.180701, y: -0.95654285, z: -10.046186}
+      transformValue:
+        sourceKind: 1
+        entity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      addSource:
+        baseValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addend: {x: 0, y: 0, z: 0}
+      directionSource:
+        fromEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+        toEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      fallbackValue: {x: 4.1807003, y: -0.95654285, z: -12.796186}
+    eulerAngles:
+      sourceKind: 0
+      evaluationMode: 0
+      failurePolicy: 0
+      literal: {x: -0, y: 180, z: -0}
+      transformValue:
+        sourceKind: 0
+        entity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+      addSource:
+        baseValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addend: {x: 0, y: 0, z: 0}
+      directionSource:
+        fromEntity:
+          sourceKind: 0
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 0
+            selection: 0
+            tag:
+              id: 0
+              path: 
+          fallbackKind: 0
+        toEntity:
+          sourceKind: 4
+          evaluationMode: 0
+          failurePolicy: 0
+          entityValue:
+            entitySourceKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+          targetReference:
+            mode: 2
+            selection: 0
+            tag:
+              id: 2001
+              path: Item.Bomb
+          fallbackKind: 0
+      fallbackValue: {x: -0, y: 180, z: 0}
+    holdSeconds: 0
+    transitionFromPrevious:
+      kind: 1
+      duration: 2.5
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    lens:
+      overrideFieldOfView: 1
+      fieldOfView: 92.1
+    onArriveAction:
+      _steps: []
+  selectedPointIndex: 2
   references:
     version: 2
     RefIds: []
@@ -14264,6 +14996,7 @@ GameObject:
   - component: {fileID: 6012897533619356174}
   - component: {fileID: 4550703494803832738}
   - component: {fileID: 471484773860579850}
+  - component: {fileID: 8306317779053146122}
   m_Layer: 6
   m_Name: BombEntity
   m_TagString: Untagged
@@ -14280,7 +15013,7 @@ Transform:
   m_GameObject: {fileID: 4385595651897393643}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.75, y: -4.5, z: -6.75}
+  m_LocalPosition: {x: 1.5, y: -4.5, z: -7.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -14398,6 +15131,33 @@ MonoBehaviour:
   renderers:
   - {fileID: 6989132620833226069}
   - {fileID: 8179902506779043658}
+--- !u!114 &8306317779053146122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4385595651897393643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0e4c181ef3e4bc4a59c7d8722c0de31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Effects.Impact.ImpactEffectEmitterMB
+  impactManager: {fileID: 0}
+  fallbackParticlePrefab: {fileID: 0}
+  defaultColor: {r: 0.78, g: 0.72, b: 0.62, a: 0.75}
+  playOnStrongCollision: 1
+  minAutoImpactStrength: 6
+  referenceImpactStrength: 12
+  autoCooldownSeconds: 0.12
+  defaultExternalImpactStrength: 8
+  contactForgetSeconds: 0.25
+  probeLayerMask:
+    serializedVersion: 2
+    m_Bits: 119
+  probeRadius: 0.2
+  probeDistance: 2
+  probeTriggerInteraction: 1
 --- !u!1 &4402934267824765331
 GameObject:
   m_ObjectHideFlags: 0

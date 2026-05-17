@@ -17,6 +17,7 @@ namespace BC.Camera
         public readonly int PathPriority;
         public readonly int ReturnPriority;
         public readonly int InactivePriority;
+        public readonly Func<UniTask> OnCompletedBeforeCameraReset;
 
         public CameraPathPlayRequest(
             CinemachineCamera pathCamera,
@@ -25,7 +26,8 @@ namespace BC.Camera
             EntityRef actor,
             int pathPriority,
             int returnPriority,
-            int inactivePriority)
+            int inactivePriority,
+            Func<UniTask> onCompletedBeforeCameraReset = null)
         {
             PathCamera = pathCamera;
             ReturnCamera = returnCamera;
@@ -34,6 +36,7 @@ namespace BC.Camera
             PathPriority = pathPriority;
             ReturnPriority = returnPriority;
             InactivePriority = inactivePriority;
+            OnCompletedBeforeCameraReset = onCompletedBeforeCameraReset;
         }
     }
 
@@ -80,6 +83,11 @@ namespace BC.Camera
                 await ExecutePointActionAsync(current, request.Actor);
                 await HoldAsync(current.HoldSeconds, version);
             }
+
+            if (version != playVersion)
+                return;
+
+            await AwaitBeforeCameraResetAsync(request);
 
             if (version != playVersion)
                 return;
@@ -188,6 +196,21 @@ namespace BC.Camera
 
             if (result.IsFailed)
                 Debug.LogWarning($"{nameof(CameraPathPlayerService)}: camera path point action failed. {result.Message}");
+        }
+
+        private static async UniTask AwaitBeforeCameraResetAsync(CameraPathPlayRequest request)
+        {
+            if (request?.OnCompletedBeforeCameraReset == null)
+                return;
+
+            try
+            {
+                await request.OnCompletedBeforeCameraReset.Invoke();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
         }
 
         private static void ApplyPoint(CinemachineCamera camera, Transform cameraTransform, CameraPathResolvedPoint point)

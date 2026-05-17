@@ -3,6 +3,7 @@ using BC.Base;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
+using System;
 
 namespace BC.Camera
 {
@@ -29,7 +30,7 @@ namespace BC.Camera
         public CinemachineCamera IntroCamera => pathCamera;
         public CinemachineCamera ThirdPersonCamera => thirdPersonCamera;
 
-        public UniTask PlayPathAsync(ICameraPathSequenceSource sequenceSource, EntityRef actor)
+        public UniTask PlayPathAsync(ICameraPathSequenceSource sequenceSource, EntityRef actor, Func<UniTask> onCompletedBeforeCameraReset = null)
         {
             if (sequenceSource == null)
             {
@@ -43,10 +44,10 @@ namespace BC.Camera
             if (!CameraPathSequenceDefinition.TryCreate(sequenceSource.BuildSequence(), resolvedSceneKernel, actor, out CameraPathSequenceDefinition sequence))
                 return UniTask.CompletedTask;
 
-            return PlayPathAsync(sequence, actor);
+            return PlayPathAsync(sequence, actor, onCompletedBeforeCameraReset);
         }
 
-        public UniTask PlayPathAsync(CameraPathSequenceDefinition sequence, EntityRef actor)
+        public UniTask PlayPathAsync(CameraPathSequenceDefinition sequence, EntityRef actor, Func<UniTask> onCompletedBeforeCameraReset = null)
         {
             if (!TryResolveSceneKernel(out SceneKernel resolvedSceneKernel))
                 return UniTask.CompletedTask;
@@ -58,7 +59,8 @@ namespace BC.Camera
                 actor,
                 pathPriority,
                 thirdPersonPriority,
-                inactivePriority);
+                inactivePriority,
+                onCompletedBeforeCameraReset);
 
             return resolvedSceneKernel.CameraPaths.PlayAsync(request);
         }
@@ -122,7 +124,7 @@ namespace BC.Camera
             SceneKernelMB kernelMB = GetComponentInParent<SceneKernelMB>();
 
             if (kernelMB == null)
-                kernelMB = Object.FindAnyObjectByType<SceneKernelMB>();
+                kernelMB = UnityEngine.Object.FindAnyObjectByType<SceneKernelMB>();
 
             sceneKernel = kernelMB != null ? kernelMB.Kernel : null;
             resolvedSceneKernel = sceneKernel;

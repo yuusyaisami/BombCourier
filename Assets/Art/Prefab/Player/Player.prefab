@@ -243,6 +243,7 @@ GameObject:
   - component: {fileID: 32717569188310021}
   - component: {fileID: 3708313365766186370}
   - component: {fileID: 8351279134957612125}
+  - component: {fileID: 9190420324000731801}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -337,7 +338,6 @@ MonoBehaviour:
     id: 1001
     path: Actor.Player
   flags: 0
-  registrationMode: 1
 --- !u!114 &1555075409952962939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,7 +355,12 @@ MonoBehaviour:
   moveController: {fileID: 8351279134957612125}
   playerMoveController: {fileID: 2360609143507810941}
   cameraController: {fileID: 8817058509509781318}
+  animationController: {fileID: 8616279206525780107}
   bodyRigidbody: {fileID: 32717569188310021}
+  impactEffectEmitter: {fileID: 9190420324000731801}
+  playShowLandingImpact: 1
+  showLandingImpactStrength: 10
+  showLandingProbeDistance: 4
 --- !u!114 &8616279206525780107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -381,6 +386,8 @@ MonoBehaviour:
   isIdleThrowParameter: IsIdleThrow
   onThrowParameter: OnThrow
   isNextStageParameter: IsNextStage
+  isSpawnParameter: IsSpawn
+  onRaiseBodyParameter: OnRaiseBody
   upperBodyLayerName: UpperBody
 --- !u!114 &4490053635938583149
 MonoBehaviour:
@@ -590,6 +597,33 @@ MonoBehaviour:
   minContactPushSpeed: 0.1
   currentCanMoveByInput: 0
   currentCanMoveBySystem: 0
+--- !u!114 &9190420324000731801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982850033400161385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0e4c181ef3e4bc4a59c7d8722c0de31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Effects.Impact.ImpactEffectEmitterMB
+  impactManager: {fileID: 0}
+  fallbackParticlePrefab: {fileID: 0}
+  defaultColor: {r: 0.78, g: 0.72, b: 0.62, a: 0.75}
+  playOnStrongCollision: 1
+  minAutoImpactStrength: 6
+  referenceImpactStrength: 12
+  autoCooldownSeconds: 0.12
+  defaultExternalImpactStrength: 8
+  contactForgetSeconds: 0.25
+  probeLayerMask:
+    serializedVersion: 2
+    m_Bits: 119
+  probeRadius: 0.2
+  probeDistance: 2
+  probeTriggerInteraction: 1
 --- !u!1 &8098859386636133588
 GameObject:
   m_ObjectHideFlags: 0

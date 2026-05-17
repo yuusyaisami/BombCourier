@@ -38,11 +38,18 @@ namespace BC.Base
         private SceneKernel sceneKernel;
         private EntityRef entity;
         private ValueWatchHandle<bool> throwPoseHandle;
+        private Vector3 modelInitialPosition;
 
         public EntityMoveMotorMB MoveMotor => ResolveMoveMotor(addIfMissing: Application.isPlaying);
         public Vector3 CurrentVelocity => moveMotor != null ? moveMotor.CurrentVelocity : Vector3.zero;
         public bool CanMoveByInput => moveMotor != null && moveMotor.CanMoveByInput;
         public bool CanMoveBySystem => moveMotor != null && moveMotor.CanMoveBySystem;
+        public Transform ModelRoot => modelRoot != null ? modelRoot : transform;
+        public Vector3 ModelInitialPosition
+        {
+            get => modelInitialPosition;
+            set => modelInitialPosition = value;
+        }
 
         private void Awake()
         {
@@ -167,7 +174,7 @@ namespace BC.Base
 
         private void UpdateModelRotation(float dt)
         {
-            if (modelRoot == null)
+            if (ModelRoot == null)
                 return;
 
             float t = 1.0f - Mathf.Exp(-modelTurnSharpness * dt);
@@ -295,9 +302,11 @@ namespace BC.Base
             cameraController = cameraControllerSource as ICameraController;
             ragdollController = GetComponent<IPlayerRagdollController>();
 
+
+
             if (modelRoot == null)
                 modelRoot = transform;
-
+            modelInitialPosition = modelRoot.localPosition;
             ResolveRuntimeReferences(logMissing: false);
 
             if (Application.isPlaying && cameraController == null)

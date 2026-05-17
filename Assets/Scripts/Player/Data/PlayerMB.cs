@@ -1,7 +1,12 @@
+using System;
+using BC.Animation;
 using BC.Camera;
+using BC.Effects.Impact;
 using BC.Gimmick;
 using BC.Manager;
 using BC.Utility;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 namespace BC.Base
 {
@@ -19,7 +24,14 @@ namespace BC.Base
         [SerializeField] private EntityMoveMotorMB moveController;
         [SerializeField] private PlayerMoveController playerMoveController;
         [SerializeField] private ThirdPersonCameraController cameraController;
+        [SerializeField] private EntityAnimationMB animationController;
         [SerializeField] private Rigidbody bodyRigidbody;
+
+        [Header("Impact Effect")]
+        [SerializeField] private ImpactEffectEmitterMB impactEffectEmitter;
+        [SerializeField] private bool playShowLandingImpact = true;
+        [SerializeField, Min(0.0f)] private float showLandingImpactStrength = 10.0f;
+        [SerializeField, Min(0.01f)] private float showLandingProbeDistance = 4.0f;
 
         private Transform godHandCatchTransform;
         private bool isCaughtByGodHand;
@@ -33,6 +45,7 @@ namespace BC.Base
         public EntityMoveMotorMB MoveController => moveController != null ? moveController : GetComponent<EntityMoveMotorMB>();
         public PlayerMoveController PlayerMoveController => playerMoveController != null ? playerMoveController : GetComponent<PlayerMoveController>();
         public ThirdPersonCameraController CameraController => cameraController != null ? cameraController : GetComponentInChildren<ThirdPersonCameraController>();
+        public EntityAnimationMB AnimationController => animationController != null ? animationController : GetComponentInChildren<EntityAnimationMB>();
         public bool CanBeCaughtByGodHand => enabled && gameObject.activeInHierarchy;
 
         private void Awake()
@@ -89,6 +102,15 @@ namespace BC.Base
             if (bodyRigidbody == null)
             {
                 bodyRigidbody = GetComponent<Rigidbody>();
+            }
+            if (animationController == null)
+            {
+                animationController = GetComponentInChildren<EntityAnimationMB>(true);
+            }
+
+            if (impactEffectEmitter == null)
+            {
+                impactEffectEmitter = GetComponent<ImpactEffectEmitterMB>();
             }
         }
 
@@ -174,6 +196,51 @@ namespace BC.Base
             cachedRigidbodyIsKinematic = bodyRigidbody.isKinematic;
             cachedRigidbodyUseGravity = bodyRigidbody.useGravity;
             cachedRigidbodyDetectCollisions = bodyRigidbody.detectCollisions;
+        }
+        public async UniTask ShowPlayerAsync(bool intro)
+        {
+            gameObject.SetActive(true);
+            ResolveReferences();
+
+            Transform modelRoot = PlayerMoveController.ModelRoot;
+            Vector3 targetLocalPosition = PlayerMoveController.ModelInitialPosition;
+
+            Debug.Log($"ModelInitialPosition: {targetLocalPosition}");
+
+            // 親を持つ modelRoot は local 座標で演出しないと、world 座標 tween で着地点がずれる。
+            modelRoot.DOKill();
+            modelRoot.localPosition = targetLocalPosition + Vector3.up * 3.0f;
+
+            animationController.SetBool(animationController.IsSpawnParameter, true);
+            // 落す
+            await modelRoot.DOLocalMoveY(targetLocalPosition.y, 0.5f).SetEase(Ease.OutBounce).AsyncWaitForCompletion();
+            PlayShowLandingImpact();
+            animationController.SetTrigger(animationController.OnRaiseBodyParameter);
+            animationController.SetBool(animationController.IsSpawnParameter, false);
+            await UniTask.Delay(700); // アニメーションの完了を待つ
+        }
+
+        private void PlayShowLandingImpact()
+        {
+            if (!playShowLandingImpact)
+                return;
+
+            ResolveReferences();
+
+            if (impactEffectEmitter == null)
+                return;
+
+            Transform modelRoot = PlayerMoveController.ModelRoot;
+            Vector3 origin = (modelRoot != null ? modelRoot.position : transform.position) + Vector3.up * 0.25f;
+
+            if (impactEffectEmitter.TryPlayFromProbe(origin, Vector3.down, showLandingProbeDistance, showLandingImpactStrength))
+                return;
+
+            impactEffectEmitter.PlayAt(origin, Vector3.up, null, showLandingImpactStrength);
+        }
+        public void HidePlayer()
+        {
+            gameObject.SetActive(false);
         }
         public void TeleportToSpawnPoint(Vector3 position = default, Quaternion rotation = default)
         {

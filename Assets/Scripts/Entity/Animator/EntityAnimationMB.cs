@@ -14,6 +14,8 @@ namespace BC.Animation
     {
         // Player特有のパラメーター制御があればここに追加
         public string IsNextStageParameter { get; }
+        public string IsSpawnParameter { get; }
+        public string OnRaiseBodyParameter { get; }
     }
     [DisallowMultipleComponent]
     public sealed class EntityAnimationMB : MonoBehaviour, IPlayerAnimatorParameterController
@@ -43,6 +45,8 @@ namespace BC.Animation
         [SerializeField] private string isIdleThrowParameter = "IsIdleThrow";
         [SerializeField] private string onThrowParameter = "OnThrow";
         [SerializeField] private string isNextStageParameter = "IsNextStage";
+        [SerializeField] private string isSpawnParameter = "IsSpawn";
+        [SerializeField] private string onRaiseBodyParameter = "OnRaiseBody";
 
         [Header("Layer")]
         [SerializeField] private string upperBodyLayerName = "UpperBody";
@@ -70,6 +74,8 @@ namespace BC.Animation
         private bool hasLastDebugExpression;
 
         public string IsNextStageParameter => isNextStageParameter;
+        public string IsSpawnParameter => isSpawnParameter;
+        public string OnRaiseBodyParameter => onRaiseBodyParameter;
 
         private void Reset()
         {

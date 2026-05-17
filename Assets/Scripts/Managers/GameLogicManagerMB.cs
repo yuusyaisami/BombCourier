@@ -31,6 +31,7 @@ namespace BC.Manager
         }
         [Header("References")]
         [SerializeField] private UIFadeEffectMB uiFadeEffectMB; // UIのフェードエフェクトを管理するクラス。シーン全体のフェードイン・フェードアウトなどを担当する。
+        [SerializeField] private UIGameSceneManagerMB uiGameSceneManagerMB; // ゲームシーンのUIを管理するクラス。ステージ選択画面やゲームオーバー画面などのUIを担当する。
         [SerializeField] private EntityMB playerPrefab; // プレイヤーのプレハブ
         [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用のステージインスタンス。エディタで直接割り当てることができます。
         // 爆弾Ref
@@ -212,6 +213,10 @@ namespace BC.Manager
             CinemachineCamera goalCamera = currentGoalData.GoalCamera;
             goalCamera.Priority = 100; // カメラの優先度を上げて切り替える
 
+            // UIを非表示にする
+            uiGameSceneManagerMB.ShowTopPanel(false); // ゲームシーンのUIを非表示にする
+            uiGameSceneManagerMB.ShowBottomPanel(false); // ゲームシーンのUIを非表示にする
+
             // Playerを止める
             await moveController.MoveToAsync(currentGoalData.Target, 0.1f);
             if (sceneKernel != null && playerRef.IsValid)
@@ -239,7 +244,6 @@ namespace BC.Manager
             await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードアウトさせる
             // 次のステージに進むための処理
             await LoadStageAsync(currentGameStage + 1);
-            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
         }
         private async UniTask LookAtAsync(Transform origin, Vector3 targetPosition, float duration = 1f)
         {
@@ -285,14 +289,27 @@ namespace BC.Manager
                 return;
             }
 
-            await CameraManager.Instance.PlayPathAsync(currentCameraPath, playerRef);
+            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
+            await CameraManager.Instance.PlayPathAsync(currentCameraPath, playerRef, async () =>
+            {
+                // カメラパスの再生が完了した後の処理
+                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードインさせる
+            });
             PlayerMB resolvedPlayer = ResolvePlayerInstance();
             if (resolvedPlayer != null)
             {
                 resolvedPlayer.PlayRespawnEffect(); // プレイヤーのスポーンエフェクトを再生する
             }
+            // 少し待つ
+            await UniTask.Delay(800);
+            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0f, 0.5f); // フェードインさせる
+
+            await UniTask.Delay(200);
+            await resolvedPlayer.ShowPlayerAsync(true); // プレイヤーを表示する
+            uiGameSceneManagerMB.ShowTopPanel(true); // ゲームシーンのUIを表示する
+            uiGameSceneManagerMB.ShowBottomPanel(true); // ゲームシーンのUIを表示する
             GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
-            Debug.Log("Intro camera sequence completed. Changing state to SetupPlaying.");
+
         }
         private async UniTask ReloadStageAsync()
         {
@@ -470,6 +487,12 @@ namespace BC.Manager
             if (!playerRef.IsValid)
             {
                 Debug.LogError("GameLogicManagerMB: PlayerRef is not valid.", this);
+            }
+            // いったんプレイヤーを無効にする。既存再利用時だけでなく新規 spawn 時にも隠す。
+            if (playerInstance != null)
+            {
+                Debug.Log("Hiding player during spawn/teleport.");
+                playerInstance.HidePlayer();
             }
             sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
             sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, false);

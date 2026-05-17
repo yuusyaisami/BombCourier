@@ -1,5 +1,6 @@
 using BC.Managers;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,8 @@ namespace BC.UI
     // 画面上のUI要素と、ゲーム全体の設定を同期させる役割を持つ。
     public class UISettingMB : MonoBehaviour
     {
+        [Header("General")]
+        [SerializeField] private CanvasGroup canvasGroup; // パネル全体のCanvasGroupコンポーネント（フェードイン/アウト用）
         [Header("Mouse Settings")]
         [SerializeField] private Toggle invertYAxisToggle; // Y軸反転のオンオフを切り替えるトグル
         [SerializeField] private Slider cameraSensitivitySlider; // カメラ感度を調整するスライダー
@@ -27,6 +30,13 @@ namespace BC.UI
         private bool isInitialized = false;
 
         private bool isShowing = false;
+        private void Awake()
+        {
+            // パネルを初期状態で非表示にする
+            canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            gameObject.SetActive(false);
+        }
 
         private void Start()
         {
@@ -66,24 +76,18 @@ namespace BC.UI
         public async UniTask ShowPanelAsync()
         {
             // パネルを表示するアニメーションやエフェクトをここで実装することができます。
-            // 例えば、フェードインやスライドインなどの演出を追加できます。
-            // 現在は即座に表示するだけの実装ですが、将来的に拡張可能です。
-
-            // 例: フェードインアニメーションを待つ
-            // await FadeInAsync();
-            isShowing = true;
+            canvasGroup.alpha = 1f; // フェードインの例
+            canvasGroup.interactable = true;
             gameObject.SetActive(true);
+            isShowing = true;
+
         }
         public async UniTask HidePanelAsync()
         {
-            // パネルを非表示にするアニメーションやエフェクトをここで実装することができます。
-            // 例えば、フェードアウトやスライドアウトなどの演出を追加できます。
-            // 現在は即座に非表示にするだけの実装ですが、将来的に拡張可能です。
-
-            // 例: フェードアウトアニメーションを待つ
-            // await FadeOutAsync();
             isShowing = false;
-            gameObject.SetActive(false);
+            canvasGroup.interactable = false;
+            await canvasGroup.DOFade(0f, 0.1f).OnComplete(() => gameObject.SetActive(false)); // フェードアウトの例
+
         }
 
         private void LoadSettingsToUI()

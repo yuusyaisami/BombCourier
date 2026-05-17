@@ -3096,8 +3096,9 @@ GameObject:
   - component: {fileID: 523509232}
   - component: {fileID: 523509234}
   - component: {fileID: 523509233}
+  - component: {fileID: 523509235}
   m_Layer: 0
-  m_Name: Star1 (2)
+  m_Name: Star3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3160,6 +3161,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 523509231}
   m_CullTransparentMesh: 1
+--- !u!114 &523509235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 523509231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f46678ab0021eba49a43d47b26e418ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.TooltipTargetMB
+  defaultTooltipText: 
 --- !u!1 &571892192
 GameObject:
   m_ObjectHideFlags: 0
@@ -3171,8 +3185,9 @@ GameObject:
   - component: {fileID: 571892193}
   - component: {fileID: 571892195}
   - component: {fileID: 571892194}
+  - component: {fileID: 571892196}
   m_Layer: 0
-  m_Name: Star1 (1)
+  m_Name: Star2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3235,6 +3250,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 571892192}
   m_CullTransparentMesh: 1
+--- !u!114 &571892196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 571892192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f46678ab0021eba49a43d47b26e418ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.TooltipTargetMB
+  defaultTooltipText: 
 --- !u!1 &596770631
 GameObject:
   m_ObjectHideFlags: 0
@@ -3376,7 +3404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -3840,7 +3868,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 114.65125}
   m_SizeDelta: {x: 0, y: 332.0208}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &729088844
@@ -3940,18 +3968,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.UIStageClearMB
   returnToTitleButton: {fileID: 1118282211}
   nextStageButton: {fileID: 1002868707}
-  clearStar: {fileID: 0}
-  clearStarSprite: {fileID: 0}
-  clearStarTooltipTarget: {fileID: 0}
-  bonusItemStar: {fileID: 0}
-  bonusItemStarSprite: {fileID: 0}
-  bonusItemStarTooltipTarget: {fileID: 0}
-  fastClearStar: {fileID: 0}
-  fastClearStarSprite: {fileID: 0}
-  fastClearStarTooltipTarget: {fileID: 0}
-  TransparentSprite: {fileID: 0}
+  clearStar: {fileID: 765483974}
+  clearStarSprite: {fileID: -1576168481, guid: 892fb2cade019ca459cebe46522b277b, type: 3}
+  clearStarTooltipTarget: {fileID: 765483976}
+  bonusItemStar: {fileID: 571892194}
+  bonusItemStarSprite: {fileID: 298663488, guid: 892fb2cade019ca459cebe46522b277b, type: 3}
+  bonusItemStarTooltipTarget: {fileID: 571892196}
+  fastClearStar: {fileID: 523509233}
+  fastClearStarSprite: {fileID: -1326504317, guid: 892fb2cade019ca459cebe46522b277b, type: 3}
+  fastClearStarTooltipTarget: {fileID: 523509235}
+  TransparentSprite: {fileID: -4698600402995417950, guid: c4ce9e579dd9eac4caec44774da7f3c1, type: 3}
   goalParticle: {fileID: 1683695756}
-  stageClearPanel: {fileID: 0}
+  stageClearPanel: {fileID: 729088845}
   revealDuration: 0.1
   delayShowDuration: 2.5
 --- !u!223 &729088849
@@ -4092,6 +4120,7 @@ GameObject:
   - component: {fileID: 755927265}
   - component: {fileID: 755927266}
   - component: {fileID: 755927267}
+  - component: {fileID: 755927269}
   - component: {fileID: 755927268}
   m_Layer: 0
   m_Name: SceneKernel
@@ -4312,6 +4341,25 @@ MonoBehaviour:
     id: 1
     path: System.SceneKernel
   flags: 0
+--- !u!114 &755927269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755927252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b513f44c3b9d4b16a77833e888c211e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Effects.Impact.ImpactParticleManagerMB
+  impactParticlePrefab: {fileID: 7214938845271652391, guid: 8b007d7659a75904bb4fc9666ba710c5, type: 3}
+  poolRoot: {fileID: 318590201}
+  defaultCapacity: 16
+  maxPoolSize: 96
+  surfaceOffset: 0.015
+  minSpeedMultiplier: 0.75
+  maxSpeedMultiplier: 2.25
 --- !u!1 &765483972
 GameObject:
   m_ObjectHideFlags: 0
@@ -4323,6 +4371,7 @@ GameObject:
   - component: {fileID: 765483973}
   - component: {fileID: 765483975}
   - component: {fileID: 765483974}
+  - component: {fileID: 765483976}
   m_Layer: 0
   m_Name: Star1
   m_TagString: Untagged
@@ -4387,6 +4436,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 765483972}
   m_CullTransparentMesh: 1
+--- !u!114 &765483976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765483972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f46678ab0021eba49a43d47b26e418ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.TooltipTargetMB
+  defaultTooltipText: 
 --- !u!1 &766506000
 GameObject:
   m_ObjectHideFlags: 0
@@ -8588,7 +8650,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -8684,7 +8746,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 44.031975}
+  m_AnchoredPosition: {x: 0, y: -113.16043}
   m_SizeDelta: {x: 0, y: -226.3209}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1723956706
@@ -9609,8 +9671,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1501740001}
   m_HandleRect: {fileID: 1501740000}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.6546879
+  m_Value: -0.0000037264983
+  m_Size: 0.6546837
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -10242,6 +10304,7 @@ GameObject:
   - component: {fileID: 2048740734}
   - component: {fileID: 2048740733}
   - component: {fileID: 2048740732}
+  - component: {fileID: 2048740735}
   m_Layer: 0
   m_Name: SettingPanel
   m_TagString: Untagged
@@ -10281,13 +10344,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e99b649d1903edd478bbd1b39a5ea34a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.UISettingMB
-  invertYAxisToggle: {fileID: 0}
-  cameraSensitivitySlider: {fileID: 0}
+  canvasGroup: {fileID: 2048740735}
+  invertYAxisToggle: {fileID: 1081259941}
+  cameraSensitivitySlider: {fileID: 397165953}
   cameraSensitivityValueText: {fileID: 0}
-  musicVolumeSlider: {fileID: 0}
-  sfxVolumeSlider: {fileID: 0}
-  vSyncToggle: {fileID: 0}
-  qualityLevelDropdown: {fileID: 0}
+  musicVolumeSlider: {fileID: 701918015}
+  sfxVolumeSlider: {fileID: 815895811}
+  vSyncToggle: {fileID: 940504542}
+  qualityLevelDropdown: {fileID: 156088721}
 --- !u!114 &2048740733
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10326,6 +10390,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2048740730}
   m_CullTransparentMesh: 1
+--- !u!225 &2048740735
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2048740730}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2060705667
 GameObject:
   m_ObjectHideFlags: 0
