@@ -41,7 +41,7 @@ namespace BC.Player
         [SerializeField] private Color trajectoryHitMarkerColor = new Color(1.0f, 0.82f, 0.24f, 0.95f);
 
         [Header("Runtime Debug")]
-    [SerializeField] private bool currentCanInteract = true;
+        [SerializeField] private bool currentCanInteract = true;
         [SerializeField] private bool isHandlingItem;
 
 
