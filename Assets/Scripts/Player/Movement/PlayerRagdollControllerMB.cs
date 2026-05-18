@@ -3,10 +3,15 @@ using UnityEngine;
 
 namespace BC.Manager
 {
-    public interface IPlayerRagdollController
+    public interface IEntityRagdollController
     {
+        bool IsRagdollActive { get; }
         void EnterRagdoll(Vector3 impulse);
         void ExitRagdoll();
+    }
+
+    public interface IPlayerRagdollController : IEntityRagdollController
+    {
     }
 
     public sealed class PlayerRagdollControllerMB : MonoBehaviour, IPlayerRagdollController
@@ -14,26 +19,33 @@ namespace BC.Manager
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody movementRigidbody;
         [SerializeField] private Collider movementCollider;
-        [SerializeField] private EntityMoveMotorMB moveMotor;
+        [SerializeField] private Behaviour movementControllerBehaviour;
         [SerializeField] private PlayerMoveController playerMoveController;
 
         [Header("Ragdoll Parts Only")]
         [SerializeField] private Rigidbody[] ragdollRigidbodies;
         [SerializeField] private Collider[] ragdollColliders;
         [SerializeField] private Rigidbody impulseBody;
+        [SerializeField] private Rigidbody recoveryAnchorBody;
+        [SerializeField] private bool snapRootToRecoveryAnchor = true;
+        [SerializeField] private bool alignRootYawToAnchor = true;
 
         [Header("Safety")]
         [SerializeField] private float maxImpulse = 12f;
 
         private bool isRagdoll;
+        private Vector3 recoveryAnchorLocalPosition;
+
+        public bool IsRagdollActive => isRagdoll;
 
         private void Reset()
         {
             animator = GetComponentInChildren<Animator>();
             movementRigidbody = GetComponent<Rigidbody>();
             movementCollider = GetComponent<Collider>();
-            moveMotor = GetComponent<EntityMoveMotorMB>();
             playerMoveController = GetComponent<PlayerMoveController>();
+            movementControllerBehaviour = playerMoveController != null ? playerMoveController.MoveMotor : null;
+            recoveryAnchorBody = impulseBody;
 
             // 注意：
             // ここで自動収集したものをそのまま信用しない。
@@ -81,6 +93,7 @@ namespace BC.Manager
             ResolveMovementBody();
             SetRagdollEnabled(false);
             IgnoreSelfCollisions();
+            CacheRecoveryAnchorLocalPosition();
         }
 
         public void EnterRagdoll(Vector3 impulse)
@@ -93,8 +106,8 @@ namespace BC.Manager
             if (playerMoveController != null)
                 playerMoveController.enabled = false;
 
-            if (moveMotor != null)
-                moveMotor.enabled = false;
+            if (movementControllerBehaviour != null)
+                movementControllerBehaviour.enabled = false;
 
             ResolveMovementBody();
 
@@ -132,6 +145,7 @@ namespace BC.Manager
             isRagdoll = false;
 
             SetRagdollEnabled(false);
+            SnapRootToRecoveryAnchor();
 
             if (animator != null)
                 animator.enabled = true;
@@ -150,8 +164,8 @@ namespace BC.Manager
                 movementRigidbody.angularVelocity = Vector3.zero;
             }
 
-            if (moveMotor != null)
-                moveMotor.enabled = true;
+            if (movementControllerBehaviour != null)
+                movementControllerBehaviour.enabled = true;
 
             if (playerMoveController != null)
                 playerMoveController.enabled = true;
@@ -159,14 +173,11 @@ namespace BC.Manager
 
         private void ResolveMovementBody()
         {
-            if (moveMotor == null)
-                moveMotor = GetComponent<EntityMoveMotorMB>();
-
             if (playerMoveController == null)
                 playerMoveController = GetComponent<PlayerMoveController>();
 
-            if (moveMotor == null && playerMoveController != null)
-                moveMotor = playerMoveController.MoveMotor;
+            if (movementControllerBehaviour == null && playerMoveController != null)
+                movementControllerBehaviour = playerMoveController.MoveMotor;
 
             if (movementRigidbody == null)
                 movementRigidbody = GetComponent<Rigidbody>();
@@ -176,6 +187,39 @@ namespace BC.Manager
 
             if (movementCollider == null)
                 movementCollider = GetComponent<Collider>();
+
+            if (recoveryAnchorBody == null)
+                recoveryAnchorBody = impulseBody != null ? impulseBody : FindFirstValidRagdollBody();
+        }
+
+        private void CacheRecoveryAnchorLocalPosition()
+        {
+            ResolveMovementBody();
+
+            if (recoveryAnchorBody == null)
+                return;
+
+            recoveryAnchorLocalPosition = transform.InverseTransformPoint(recoveryAnchorBody.position);
+        }
+
+        private void SnapRootToRecoveryAnchor()
+        {
+            if (!snapRootToRecoveryAnchor || recoveryAnchorBody == null)
+                return;
+
+            Vector3 desiredForward = transform.forward;
+
+            if (alignRootYawToAnchor)
+            {
+                Vector3 anchorForward = Vector3.ProjectOnPlane(recoveryAnchorBody.transform.forward, Vector3.up);
+
+                if (anchorForward.sqrMagnitude > 0.0001f)
+                    desiredForward = anchorForward.normalized;
+            }
+
+            Quaternion desiredRotation = Quaternion.LookRotation(desiredForward, Vector3.up);
+            Vector3 desiredPosition = recoveryAnchorBody.position - desiredRotation * recoveryAnchorLocalPosition;
+            transform.SetPositionAndRotation(desiredPosition, desiredRotation);
         }
 
         private void SetRagdollEnabled(bool enabled)

@@ -30,6 +30,18 @@ namespace BC.Gimmick.Cushion
         [Tooltip("停止時の貼り付け先に使う Transform です。未指定ならこのオブジェクト自身を使います。")]
         [SerializeField] private Transform attachPoint;
 
+        [Header("Landing")]
+        [Tooltip("true の時、対象タグの高所落下リアクションをこのクッション上で無効化します。")]
+        [SerializeField] private bool suppressHardLanding = true;
+        [Tooltip("高所落下リアクションの無効化でタグ判定を無視し、すべての対象を受け付けるかを指定します。")]
+        [SerializeField] private bool acceptAnyHardLandingTag = true;
+        [Tooltip("高所落下リアクションを無効化する EntityTag の一覧です。acceptAnyHardLandingTag が true の時は参照しません。")]
+        [SerializeField, EntityTagDropdown]
+        private EntityTagReference[] hardLandingTargetTags =
+        {
+            EntityTagReference.From(EntityTags.Actor.Player)
+        };
+
         public bool TryEvaluate(CushionImpactData impactData, out CushionImpactResult result)
         {
             result = CushionImpactResult.NotHandled;
@@ -50,6 +62,17 @@ namespace BC.Gimmick.Cushion
             Vector3 direction = ResolveBounceDirection(impactData);
             result = CushionImpactResult.Bounce(direction * bounceSpeed * bounceRate);
             return true;
+        }
+
+        public bool TryEvaluateHardLandingSuppression(EntityTagId sourceTag, Transform sourceRoot)
+        {
+            if (!suppressHardLanding)
+                return false;
+
+            if (ShouldIgnoreSelfImpact(sourceRoot))
+                return false;
+
+            return MatchesTag(sourceTag, acceptAnyHardLandingTag, hardLandingTargetTags);
         }
 
         private CushionImpactResult BuildStopResult(CushionImpactData impactData)
@@ -86,15 +109,20 @@ namespace BC.Gimmick.Cushion
 
         private bool MatchesTargetTag(EntityTagId sourceTag)
         {
-            if (acceptAnyTag)
+            return MatchesTag(sourceTag, acceptAnyTag, targetTags);
+        }
+
+        private static bool MatchesTag(EntityTagId sourceTag, bool acceptAny, EntityTagReference[] tags)
+        {
+            if (acceptAny)
                 return true;
 
-            if (!sourceTag.IsValid || targetTags == null || targetTags.Length == 0)
+            if (!sourceTag.IsValid || tags == null || tags.Length == 0)
                 return false;
 
-            for (int i = 0; i < targetTags.Length; i++)
+            for (int i = 0; i < tags.Length; i++)
             {
-                if (targetTags[i].Matches(sourceTag))
+                if (tags[i].Matches(sourceTag))
                     return true;
             }
 

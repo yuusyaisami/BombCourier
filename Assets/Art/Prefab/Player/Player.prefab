@@ -244,6 +244,7 @@ GameObject:
   - component: {fileID: 32717569188310021}
   - component: {fileID: 3708313365766186370}
   - component: {fileID: 8351279134957612125}
+  - component: {fileID: 1469540994083200100}
   - component: {fileID: 9190420324000731801}
   m_Layer: 0
   m_Name: Player
@@ -363,6 +364,45 @@ MonoBehaviour:
   playShowLandingImpact: 1
   showLandingImpactStrength: 10
   showLandingProbeDistance: 4
+--- !u!114 &1469540994083200100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982850033400161385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93947725166af1fdc709537a31ae5f66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.EntityLandingImpactMB
+  moveMotor: {fileID: 8351279134957612125}
+  entityMB: {fileID: 6039525701949762869}
+  bodyRigidbody: {fileID: 32717569188310021}
+  bodyCollider: {fileID: 3708313365766186370}
+  ragdollControllerSource: {fileID: 8542647148484008848}
+  animatorControllerSource: {fileID: 8616279206525780107}
+  playerItemHandleState: {fileID: 4490053635938583149}
+  minimumDownwardImpactSpeed: 12
+  minimumFallDistance: 3
+  reactionCooldown: 0.2
+  suppressReactionOnCushion: 1
+  enableRagdollReaction: 0
+  ragdollHorizontalImpulseMultiplier: 0.15
+  ragdollRecoveryDelay: 2
+  getUpTriggerParameter: OnRaiseBody
+  triggerLandingAnimation: 1
+  landingTriggerParameter: OnRaiseBody
+  applyMoveSpeedPenalty: 1
+  moveSpeedMultiplier: 0.45
+  applyJumpPenalty: 1
+  jumpHeightMultiplier: 0.65
+  penaltyDuration: 1
+  dropHeldItemOnHardLanding: 1
+  additionalDropVelocityLocal: {x: 0, y: 0, z: 0}
+  lastLandingDownwardSpeed: 0
+  lastLandingFallDistance: 0
+  lastLandingSuppressedByCushion: 0
 --- !u!114 &8616279206525780107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -458,8 +498,8 @@ MonoBehaviour:
   animator: {fileID: 3328987866849961292}
   movementRigidbody: {fileID: 32717569188310021}
   movementCollider: {fileID: 3708313365766186370}
-  moveMotor: {fileID: 0}
-  playerMoveController: {fileID: 0}
+  movementControllerBehaviour: {fileID: 8351279134957612125}
+  playerMoveController: {fileID: 2360609143507810941}
   ragdollRigidbodies:
   - {fileID: 387994680632199285}
   - {fileID: 4767940158064442703}
@@ -481,6 +521,9 @@ MonoBehaviour:
   - {fileID: 8197190410012957507}
   - {fileID: 956912116812979022}
   impulseBody: {fileID: 0}
+  recoveryAnchorBody: {fileID: 0}
+  snapRootToRecoveryAnchor: 1
+  alignRootYawToAnchor: 1
   maxImpulse: 12
 --- !u!114 &6202589861902149464
 MonoBehaviour:
