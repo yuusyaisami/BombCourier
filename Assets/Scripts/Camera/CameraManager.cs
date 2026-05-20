@@ -20,6 +20,11 @@ namespace BC.Camera
         [SerializeField] private int thirdPersonPriority = 10;
         [SerializeField] private int inactivePriority = 0;
 
+        [Header("Talk Camera")]
+        [SerializeField, Min(0.0f)] private float talkOcclusionProbeRadius = 0.18f;
+        [SerializeField] private LayerMask talkOcclusionMask = ~0;
+        [SerializeField, Min(0.01f)] private float talkFacingSharpness = 20.0f;
+
         private Transform currentThirdPersonTarget;
         private SceneKernel sceneKernel;
 
@@ -29,6 +34,13 @@ namespace BC.Camera
         [System.Obsolete("Use PathCamera instead.")]
         public CinemachineCamera IntroCamera => pathCamera;
         public CinemachineCamera ThirdPersonCamera => thirdPersonCamera;
+        public Transform CurrentThirdPersonTarget => currentThirdPersonTarget;
+        public int PresentationPriority => pathPriority;
+        public int ThirdPersonPriority => thirdPersonPriority;
+        public int InactivePriority => inactivePriority;
+        public float TalkOcclusionProbeRadius => talkOcclusionProbeRadius;
+        public LayerMask TalkOcclusionMask => talkOcclusionMask;
+        public float TalkFacingSharpness => talkFacingSharpness;
 
         public UniTask PlayPathAsync(ICameraPathSequenceSource sequenceSource, EntityRef actor, Func<UniTask> onCompletedBeforeCameraReset = null)
         {
@@ -111,6 +123,19 @@ namespace BC.Camera
             thirdPersonCamera.Follow = null;
             thirdPersonCamera.LookAt = null;
             currentThirdPersonTarget = null;
+        }
+
+        public bool TryGetThirdPersonRig(out CinemachineThirdPersonFollow thirdPersonFollow, out CinemachineRotateWithFollowTarget rotateWithFollowTarget)
+        {
+            thirdPersonFollow = null;
+            rotateWithFollowTarget = null;
+
+            if (thirdPersonCamera == null)
+                return false;
+
+            thirdPersonFollow = thirdPersonCamera.GetComponent<CinemachineThirdPersonFollow>();
+            rotateWithFollowTarget = thirdPersonCamera.GetComponent<CinemachineRotateWithFollowTarget>();
+            return thirdPersonFollow != null;
         }
 
         private bool TryResolveSceneKernel(out SceneKernel resolvedSceneKernel)

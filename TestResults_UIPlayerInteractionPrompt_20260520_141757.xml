@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="3" result="Passed" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.2688043">
+  <test-suite type="TestSuite" id="1048" name="BombCourier" fullname="BombCourier" runstate="Runnable" testcasecount="23" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.268804" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1025" name="BombCourier.Gameplay.PlayModeTests.dll" fullname="C:/Users/macar/BombCourier/Library/ScriptAssemblies/BombCourier.Gameplay.PlayModeTests.dll" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.250242" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="56256" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1026" name="BC" fullname="BC" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.247639" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1027" name="Gameplay" fullname="BC.Gameplay" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.245493" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1028" name="PlayModeTests" fullname="BC.Gameplay.PlayModeTests" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.243606" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1021" name="UIPlayerInteractionPromptPlayModeTests" fullname="BC.Gameplay.PlayModeTests.UIPlayerInteractionPromptPlayModeTests" classname="BC.Gameplay.PlayModeTests.UIPlayerInteractionPromptPlayModeTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.240497" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1022" name="BombInteractable_DisplaysCountdownDetailText" fullname="BC.Gameplay.PlayModeTests.UIPlayerInteractionPromptPlayModeTests.BombInteractable_DisplaysCountdownDetailText" methodname="BombInteractable_DisplaysCountdownDetailText" classname="BC.Gameplay.PlayModeTests.UIPlayerInteractionPromptPlayModeTests" runstate="Runnable" seed="2112723794" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.202823" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[PlayerItemHandleStateMB: EntityMB is not found or not bound.
+]]></output>
+              </test-case>
+              <test-case id="1024" name="StaticItemDetailTextComponent_ResolvesConfiguredText" fullname="BC.Gameplay.PlayModeTests.UIPlayerInteractionPromptPlayModeTests.StaticItemDetailTextComponent_ResolvesConfiguredText" methodname="StaticItemDetailTextComponent_ResolvesConfiguredText" classname="BC.Gameplay.PlayModeTests.UIPlayerInteractionPromptPlayModeTests" runstate="Runnable" seed="1640378811" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.007071" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1023" name="SwitchingToNonBomb_ClearsExistingDetailText" fullname="BC.Gameplay.PlayModeTests.UIPlayerInteractionPromptPlayModeTests.SwitchingToNonBomb_ClearsExistingDetailText" methodname="SwitchingToNonBomb_ClearsExistingDetailText" classname="BC.Gameplay.PlayModeTests.UIPlayerInteractionPromptPlayModeTests" runstate="Runnable" seed="2045687970" result="Passed" start-time="2026-05-20 05:18:31Z" end-time="2026-05-20 05:18:31Z" duration="0.005969" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[PlayerItemHandleStateMB: EntityMB is not found or not bound.
+Saving results to: C:/Users/macar/AppData/LocalLow/DefaultCompany/BombCourier\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

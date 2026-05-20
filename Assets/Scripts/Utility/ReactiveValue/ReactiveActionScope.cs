@@ -9,6 +9,7 @@ namespace BC.Base
         private readonly ReactiveValueResolverService resolver;
         private readonly SceneKernel sceneKernel;
         private readonly ActionExecutionHandle executionHandle;
+        private readonly ILocalValueStoreService localValueStore;
         private readonly List<IReactiveBinding> bindings = new();
         private bool isDisposed;
 
@@ -17,11 +18,13 @@ namespace BC.Base
             SceneKernel sceneKernel,
             ActionExecutionHandle executionHandle,
             EntityRef actor,
-            EntityRef trigger)
+            EntityRef trigger,
+            ILocalValueStoreService localValueStore)
         {
             this.resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
             this.sceneKernel = sceneKernel;
             this.executionHandle = executionHandle;
+            this.localValueStore = localValueStore;
             Actor = actor;
             Trigger = trigger;
         }
@@ -109,6 +112,54 @@ namespace BC.Base
             return binding;
         }
 
+        public ReactiveStringBinding Bind(in ReactiveString value)
+            => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveStringBinding Bind(in ReactiveString value, ReactiveEvaluationMode evaluationMode)
+        {
+            ThrowIfDisposed();
+            ReactiveStringBinding binding = new ReactiveStringBinding(
+                resolver,
+                CreateContext(),
+                value,
+                evaluationMode,
+                ReactiveFailurePolicy.FailAction);
+            bindings.Add(binding);
+            return binding;
+        }
+
+        public ReactiveFaceExpressionIdBinding Bind(in ReactiveFaceExpressionId value)
+            => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveFaceExpressionIdBinding Bind(in ReactiveFaceExpressionId value, ReactiveEvaluationMode evaluationMode)
+        {
+            ThrowIfDisposed();
+            ReactiveFaceExpressionIdBinding binding = new ReactiveFaceExpressionIdBinding(
+                resolver,
+                CreateContext(),
+                value,
+                evaluationMode,
+                ReactiveFailurePolicy.FailAction);
+            bindings.Add(binding);
+            return binding;
+        }
+
+        public ReactiveEntityMoveStateBinding Bind(in ReactiveEntityMoveState value)
+            => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveEntityMoveStateBinding Bind(in ReactiveEntityMoveState value, ReactiveEvaluationMode evaluationMode)
+        {
+            ThrowIfDisposed();
+            ReactiveEntityMoveStateBinding binding = new ReactiveEntityMoveStateBinding(
+                resolver,
+                CreateContext(),
+                value,
+                evaluationMode,
+                ReactiveFailurePolicy.FailAction);
+            bindings.Add(binding);
+            return binding;
+        }
+
         public void Dispose()
         {
             if (isDisposed)
@@ -126,7 +177,7 @@ namespace BC.Base
 
         private ReactiveEvalContext CreateContext()
         {
-            return new ReactiveEvalContext(sceneKernel, Actor, Trigger);
+            return new ReactiveEvalContext(sceneKernel, Actor, Trigger, localValueStore);
         }
 
         private void ThrowIfDisposed()

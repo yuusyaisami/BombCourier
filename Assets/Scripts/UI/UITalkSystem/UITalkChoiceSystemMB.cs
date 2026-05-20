@@ -1,0 +1,279 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using BC.Managers;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
+
+namespace BC.UI
+{
+    [DisallowMultipleComponent]
+    public sealed class UITalkChoiceSystemMB : MonoBehaviour
+    {
+        [SerializeField] private RectTransform choiceRoot;
+        [SerializeField] private UITalkChoiceItemMB choiceItemPrefab;
+        [SerializeField] private InputActionReference moveSelectionInputAction;
+        [SerializeField] private InputActionReference submitChoiceInputAction;
+        [SerializeField, Min(0f)] private float itemSpacing = 10f;
+        [SerializeField, Range(0.1f, 1f)] private float navigationDeadZone = 0.5f;
+
+        private readonly List<UITalkChoiceItemMB> activeItems = new();
+        private VerticalLayoutGroup verticalLayoutGroup;
+        private ContentSizeFitter contentSizeFitter;
+        private UITalkChoiceItemMB runtimeChoiceTemplate;
+        private bool navigationHeld;
+
+        private RectTransform ChoiceRoot => choiceRoot != null ? choiceRoot : transform as RectTransform;
+
+        private void Awake()
+        {
+            EnsureStructure();
+            ClearChoicesImmediate();
+        }
+
+        private void OnEnable()
+        {
+            moveSelectionInputAction?.action.Enable();
+            submitChoiceInputAction?.action.Enable();
+        }
+
+        private void OnDisable()
+        {
+            moveSelectionInputAction?.action.Disable();
+            submitChoiceInputAction?.action.Disable();
+            navigationHeld = false;
+        }
+
+        private void OnDestroy()
+        {
+            moveSelectionInputAction?.action.Disable();
+            submitChoiceInputAction?.action.Disable();
+            ClearChoicesImmediate();
+        }
+
+        private void OnValidate()
+        {
+            EnsureStructure();
+        }
+
+        private void Reset()
+        {
+            EnsureStructure();
+        }
+
+        public async UniTask<TalkChoiceSelectionResult> ShowChoicesAsync(
+            TalkChoiceRequestData requestData,
+            InputAction fallbackSubmitAction,
+            CancellationToken cancellationToken)
+        {
+            if (!requestData.HasOptions)
+                return TalkChoiceSelectionResult.None;
+
+            EnsureStructure();
+            ClearChoicesImmediate();
+
+            int selectedIndex = CreateItems(requestData);
+            if (activeItems.Count == 0)
+                return TalkChoiceSelectionResult.None;
+
+            UpdateSelectionVisuals(selectedIndex);
+
+            try
+            {
+                // 会話送りに使った同一フレームの入力をそのまま選択確定へ流さないようにする。
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+                navigationHeld = IsNavigationActuated();
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    int navigationStep = ReadNavigationStep();
+                    if (navigationStep != 0)
+                    {
+                        selectedIndex = MoveSelection(selectedIndex, navigationStep, requestData.WrapSelection);
+                        UpdateSelectionVisuals(selectedIndex);
+                    }
+
+                    if (WasSubmitPressed(fallbackSubmitAction))
+                    {
+                        TalkChoiceOptionRequestData option = requestData.Options[selectedIndex];
+                        return new TalkChoiceSelectionResult(selectedIndex, option.DisplayText ?? string.Empty);
+                    }
+
+                    await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+                }
+            }
+            finally
+            {
+                ClearChoicesImmediate();
+            }
+
+            throw new OperationCanceledException(cancellationToken);
+        }
+
+        public void ClearChoicesImmediate()
+        {
+            for (int i = 0; i < activeItems.Count; i++)
+            {
+                if (activeItems[i] != null)
+                    Destroy(activeItems[i].gameObject);
+            }
+
+            activeItems.Clear();
+            navigationHeld = false;
+        }
+
+        private void EnsureStructure()
+        {
+            if (choiceRoot == null)
+                choiceRoot = transform as RectTransform;
+
+            if (choiceRoot == null)
+                return;
+
+            verticalLayoutGroup = choiceRoot.GetComponent<VerticalLayoutGroup>();
+            if (verticalLayoutGroup == null)
+                verticalLayoutGroup = choiceRoot.gameObject.AddComponent<VerticalLayoutGroup>();
+
+            contentSizeFitter = choiceRoot.GetComponent<ContentSizeFitter>();
+            if (contentSizeFitter == null)
+                contentSizeFitter = choiceRoot.gameObject.AddComponent<ContentSizeFitter>();
+
+            verticalLayoutGroup.spacing = Mathf.Max(0f, itemSpacing);
+            verticalLayoutGroup.childAlignment = TextAnchor.LowerCenter;
+            verticalLayoutGroup.childControlWidth = true;
+            verticalLayoutGroup.childControlHeight = true;
+            verticalLayoutGroup.childForceExpandWidth = true;
+            verticalLayoutGroup.childForceExpandHeight = false;
+
+            contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
+
+        private int CreateItems(TalkChoiceRequestData requestData)
+        {
+            UITalkChoiceItemMB template = EnsureChoiceTemplate();
+            if (template == null)
+                return 0;
+
+            TalkChoiceOptionRequestData[] options = requestData.Options;
+            for (int i = 0; i < options.Length; i++)
+            {
+                UITalkChoiceItemMB item = Instantiate(template, ChoiceRoot, false);
+                item.gameObject.name = $"TalkChoiceItem_{i}";
+                item.gameObject.SetActive(true);
+                item.Apply(options[i].DisplayText);
+                activeItems.Add(item);
+            }
+
+            if (activeItems.Count == 0)
+                return 0;
+
+            return Mathf.Clamp(requestData.DefaultSelectionIndex, 0, activeItems.Count - 1);
+        }
+
+        private UITalkChoiceItemMB EnsureChoiceTemplate()
+        {
+            if (choiceItemPrefab != null)
+                return choiceItemPrefab;
+
+            if (runtimeChoiceTemplate != null)
+                return runtimeChoiceTemplate;
+
+            if (ChoiceRoot == null)
+                return null;
+
+            Transform existingTemplate = ChoiceRoot.Find("TalkChoiceItemTemplate");
+            if (existingTemplate != null)
+                runtimeChoiceTemplate = existingTemplate.GetComponent<UITalkChoiceItemMB>();
+
+            if (runtimeChoiceTemplate == null)
+            {
+                GameObject templateObject = new GameObject("TalkChoiceItemTemplate", typeof(RectTransform), typeof(Image), typeof(UITalkChoiceItemMB));
+                templateObject.transform.SetParent(ChoiceRoot, false);
+                runtimeChoiceTemplate = templateObject.GetComponent<UITalkChoiceItemMB>();
+            }
+
+            runtimeChoiceTemplate.ConfigureRuntimeTemplate();
+            runtimeChoiceTemplate.gameObject.SetActive(false);
+            return runtimeChoiceTemplate;
+        }
+
+        private int MoveSelection(int currentIndex, int navigationStep, bool wrapSelection)
+        {
+            if (activeItems.Count == 0)
+                return 0;
+
+            int nextIndex = currentIndex + navigationStep;
+
+            if (wrapSelection)
+            {
+                if (nextIndex < 0)
+                    nextIndex = activeItems.Count - 1;
+                else if (nextIndex >= activeItems.Count)
+                    nextIndex = 0;
+            }
+            else
+            {
+                nextIndex = Mathf.Clamp(nextIndex, 0, activeItems.Count - 1);
+            }
+
+            return nextIndex;
+        }
+
+        private void UpdateSelectionVisuals(int selectedIndex)
+        {
+            for (int i = 0; i < activeItems.Count; i++)
+            {
+                if (activeItems[i] != null)
+                    activeItems[i].SetSelected(i == selectedIndex);
+            }
+        }
+
+        private int ReadNavigationStep()
+        {
+            InputAction action = moveSelectionInputAction?.action;
+            if (action == null)
+                return 0;
+
+            Vector2 input = action.ReadValue<Vector2>();
+            float verticalMagnitude = Mathf.Abs(input.y);
+            float horizontalMagnitude = Mathf.Abs(input.x);
+
+            int direction = 0;
+            if (verticalMagnitude >= navigationDeadZone)
+                direction = input.y > 0f ? -1 : 1;
+            else if (horizontalMagnitude >= navigationDeadZone)
+                direction = input.x > 0f ? 1 : -1;
+
+            if (direction == 0)
+            {
+                navigationHeld = false;
+                return 0;
+            }
+
+            if (navigationHeld)
+                return 0;
+
+            navigationHeld = true;
+            return direction;
+        }
+
+        private bool IsNavigationActuated()
+        {
+            InputAction action = moveSelectionInputAction?.action;
+            if (action == null)
+                return false;
+
+            Vector2 input = action.ReadValue<Vector2>();
+            return Mathf.Abs(input.x) >= navigationDeadZone || Mathf.Abs(input.y) >= navigationDeadZone;
+        }
+
+        private bool WasSubmitPressed(InputAction fallbackSubmitAction)
+        {
+            InputAction submitAction = submitChoiceInputAction?.action ?? fallbackSubmitAction;
+            return submitAction != null && submitAction.WasPressedThisFrame();
+        }
+    }
+}

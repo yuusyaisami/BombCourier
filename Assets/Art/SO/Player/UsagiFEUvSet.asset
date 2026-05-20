@@ -10,36 +10,48 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eb806ef07afd19747abceef3f18a6611, type: 3}
-  m_Name: FaceExpressionUvSet
+  m_Name: UsagiFEUvSet
   m_EditorClassIdentifier: Assembly-CSharp::BC.Character.FaceExpressionUvSet
-  atlasTexture: {fileID: 2800000, guid: 3d1d3eaae7a53e844a0bf19d869892a4, type: 3}
+  atlasTexture: {fileID: 2800000, guid: a520db9b36e5a37498cc404937d3b455, type: 3}
   pixelRectUsesTopLeftOrigin: 1
   entries:
   - expression: 0
     pixelRect:
       serializedVersion: 2
-      x: 15
-      y: 16
-      width: 20
-      height: 16
+      x: 0
+      y: 0
+      width: 22
+      height: 15
+    blink:
+      enabled: 1
+      blinkExpression: 6
   - expression: 4
     pixelRect:
       serializedVersion: 2
-      x: 16
-      y: 36
+      x: 32
+      y: 32
       width: 20
       height: 16
-  - expression: 7
+    blink:
+      enabled: 0
+      blinkExpression: 0
+  - expression: 1
     pixelRect:
       serializedVersion: 2
-      x: 37
-      y: 15
-      width: 16
-      height: 19
+      x: 0
+      y: 32
+      width: 22
+      height: 15
+    blink:
+      enabled: 0
+      blinkExpression: 0
   - expression: 6
     pixelRect:
       serializedVersion: 2
-      x: 37
-      y: 15
-      width: 16
-      height: 19
+      x: 0
+      y: 53
+      width: 22
+      height: 15
+    blink:
+      enabled: 0
+      blinkExpression: 0

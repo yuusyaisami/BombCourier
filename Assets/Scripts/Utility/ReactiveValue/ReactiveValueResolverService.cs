@@ -17,9 +17,10 @@ namespace BC.Base
         public ReactiveActionScope CreateActionScope(
             ActionExecutionHandle handle,
             EntityRef actor,
-            EntityRef trigger)
+            EntityRef trigger,
+            ILocalValueStoreService localValueStore)
         {
-            return new ReactiveActionScope(this, sceneKernel, handle, actor, trigger);
+            return new ReactiveActionScope(this, sceneKernel, handle, actor, trigger, localValueStore);
         }
 
         public ReactiveResult<float> ResolveFloat(in ReactiveEvalContext context, in ReactiveFloat value)
@@ -28,6 +29,7 @@ namespace BC.Base
             {
                 ReactiveFloatSourceKind.Literal => ReactiveResult<float>.Ok(value.Literal),
                 ReactiveFloatSourceKind.EntityValueStore => ResolveEntityStoreValue<float>(context, value.EntityValue),
+                ReactiveFloatSourceKind.LocalValueStore => ResolveLocalStoreValue<float>(context, value.LocalValue),
                 ReactiveFloatSourceKind.Distance => ResolveDistance(context, value.DistanceSource),
                 _ => FailUnsupportedSource<float>(nameof(ReactiveFloat), value.SourceKind.ToString(), context),
             };
@@ -39,6 +41,7 @@ namespace BC.Base
             {
                 ReactiveIntSourceKind.Literal => ReactiveResult<int>.Ok(value.Literal),
                 ReactiveIntSourceKind.EntityValueStore => ResolveEntityStoreValue<int>(context, value.EntityValue),
+                ReactiveIntSourceKind.LocalValueStore => ResolveLocalStoreValue<int>(context, value.LocalValue),
                 _ => FailUnsupportedSource<int>(nameof(ReactiveInt), value.SourceKind.ToString(), context),
             };
         }
@@ -49,6 +52,7 @@ namespace BC.Base
             {
                 ReactiveBoolSourceKind.Literal => ReactiveResult<bool>.Ok(value.Literal),
                 ReactiveBoolSourceKind.EntityValueStore => ResolveEntityStoreValue<bool>(context, value.EntityValue),
+                ReactiveBoolSourceKind.LocalValueStore => ResolveLocalStoreValue<bool>(context, value.LocalValue),
                 ReactiveBoolSourceKind.EntityAlive => ResolveEntityAlive(context, value.EntityAliveSource),
                 ReactiveBoolSourceKind.CompareFloat => ResolveCompareFloat(context, value.CompareFloatSource),
                 _ => FailUnsupportedSource<bool>(nameof(ReactiveBool), value.SourceKind.ToString(), context),
@@ -86,6 +90,9 @@ namespace BC.Base
                 case ReactiveEntitySourceKind.EntityValueStore:
                     return ResolveEntityStoreValue<EntityRef>(context, value.EntityValue);
 
+                case ReactiveEntitySourceKind.LocalValueStore:
+                    return ResolveLocalStoreValue<EntityRef>(context, value.LocalValue);
+
                 case ReactiveEntitySourceKind.TargetReference:
                     return ResolveTargetReferenceSingle(context, value.TargetReferenceValue);
 
@@ -94,11 +101,45 @@ namespace BC.Base
             }
         }
 
+        public ReactiveResult<string> ResolveString(in ReactiveEvalContext context, in ReactiveString value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveStringSourceKind.Literal => ReactiveResult<string>.Ok(value.Literal),
+                ReactiveStringSourceKind.EntityValueStore => ResolveEntityStoreValue<string>(context, value.EntityValue),
+                ReactiveStringSourceKind.LocalValueStore => ResolveLocalStoreValue<string>(context, value.LocalValue),
+                _ => FailUnsupportedSource<string>(nameof(ReactiveString), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<FaceExpressionId> ResolveFaceExpressionId(in ReactiveEvalContext context, in ReactiveFaceExpressionId value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveFaceExpressionIdSourceKind.Literal => ReactiveResult<FaceExpressionId>.Ok(value.Literal),
+                ReactiveFaceExpressionIdSourceKind.EntityValueStore => ResolveEntityStoreValue<FaceExpressionId>(context, value.EntityValue),
+                ReactiveFaceExpressionIdSourceKind.LocalValueStore => ResolveLocalStoreValue<FaceExpressionId>(context, value.LocalValue),
+                _ => FailUnsupportedSource<FaceExpressionId>(nameof(ReactiveFaceExpressionId), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<EntityMoveState> ResolveEntityMoveState(in ReactiveEvalContext context, in ReactiveEntityMoveState value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveEntityMoveStateSourceKind.Literal => ReactiveResult<EntityMoveState>.Ok(value.Literal),
+                ReactiveEntityMoveStateSourceKind.EntityValueStore => ResolveEntityStoreValue<EntityMoveState>(context, value.EntityValue),
+                ReactiveEntityMoveStateSourceKind.LocalValueStore => ResolveLocalStoreValue<EntityMoveState>(context, value.LocalValue),
+                _ => FailUnsupportedSource<EntityMoveState>(nameof(ReactiveEntityMoveState), value.SourceKind.ToString(), context),
+            };
+        }
+
         internal ReactiveResult<ValueWatchHandle<float>> ResolveFloatWatch(in ReactiveEvalContext context, in ReactiveFloat value)
         {
             return value.SourceKind switch
             {
                 ReactiveFloatSourceKind.EntityValueStore => ResolveEntityStoreHandle<float>(context, value.EntityValue),
+                ReactiveFloatSourceKind.LocalValueStore => ResolveLocalStoreHandle<float>(context, value.LocalValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<float>>(nameof(ReactiveFloat), ReactiveEvaluationMode.Watched, context),
             };
         }
@@ -108,6 +149,7 @@ namespace BC.Base
             return value.SourceKind switch
             {
                 ReactiveIntSourceKind.EntityValueStore => ResolveEntityStoreHandle<int>(context, value.EntityValue),
+                ReactiveIntSourceKind.LocalValueStore => ResolveLocalStoreHandle<int>(context, value.LocalValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<int>>(nameof(ReactiveInt), ReactiveEvaluationMode.Watched, context),
             };
         }
@@ -117,6 +159,7 @@ namespace BC.Base
             return value.SourceKind switch
             {
                 ReactiveBoolSourceKind.EntityValueStore => ResolveEntityStoreHandle<bool>(context, value.EntityValue),
+                ReactiveBoolSourceKind.LocalValueStore => ResolveLocalStoreHandle<bool>(context, value.LocalValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<bool>>(nameof(ReactiveBool), ReactiveEvaluationMode.Watched, context),
             };
         }
@@ -126,7 +169,38 @@ namespace BC.Base
             return value.SourceKind switch
             {
                 ReactiveEntitySourceKind.EntityValueStore => ResolveEntityStoreHandle<EntityRef>(context, value.EntityValue),
+                ReactiveEntitySourceKind.LocalValueStore => ResolveLocalStoreHandle<EntityRef>(context, value.LocalValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<EntityRef>>(nameof(ReactiveEntityRef), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
+        internal ReactiveResult<ValueWatchHandle<string>> ResolveStringWatch(in ReactiveEvalContext context, in ReactiveString value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveStringSourceKind.EntityValueStore => ResolveEntityStoreHandle<string>(context, value.EntityValue),
+                ReactiveStringSourceKind.LocalValueStore => ResolveLocalStoreHandle<string>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<string>>(nameof(ReactiveString), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
+        internal ReactiveResult<ValueWatchHandle<FaceExpressionId>> ResolveFaceExpressionIdWatch(in ReactiveEvalContext context, in ReactiveFaceExpressionId value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveFaceExpressionIdSourceKind.EntityValueStore => ResolveEntityStoreHandle<FaceExpressionId>(context, value.EntityValue),
+                ReactiveFaceExpressionIdSourceKind.LocalValueStore => ResolveLocalStoreHandle<FaceExpressionId>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<FaceExpressionId>>(nameof(ReactiveFaceExpressionId), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
+        internal ReactiveResult<ValueWatchHandle<EntityMoveState>> ResolveEntityMoveStateWatch(in ReactiveEvalContext context, in ReactiveEntityMoveState value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveEntityMoveStateSourceKind.EntityValueStore => ResolveEntityStoreHandle<EntityMoveState>(context, value.EntityValue),
+                ReactiveEntityMoveStateSourceKind.LocalValueStore => ResolveLocalStoreHandle<EntityMoveState>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<EntityMoveState>>(nameof(ReactiveEntityMoveState), ReactiveEvaluationMode.Watched, context),
             };
         }
 
@@ -334,6 +408,64 @@ namespace BC.Base
             try
             {
                 ValueWatchHandle<T> handle = resolvedSceneKernel.EntityValueStore.GetHandle(entityResult.Value, key);
+                return ReactiveResult<ValueWatchHandle<T>>.Ok(handle, handle.Version);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return ReactiveErrorUtility.Fail<ValueWatchHandle<T>>(
+                    ReactiveErrorCode.ValueStoreReadFailed,
+                    exception.Message,
+                    context);
+            }
+        }
+
+        private static ReactiveResult<T> ResolveLocalStoreValue<T>(
+            in ReactiveEvalContext context,
+            in ReactiveLocalValueSource source)
+        {
+            if (context.LocalValueStore == null)
+            {
+                return ReactiveErrorUtility.Fail<T>(
+                    ReactiveErrorCode.MissingValueStore,
+                    "LocalValueStore is not available in the current ActionExecution.",
+                    context);
+            }
+
+            if (!TryResolveValueKey(source.Key, context, out ValueKey<T> key, out ReactiveError keyError))
+                return ReactiveResult<T>.Fail(keyError);
+
+            try
+            {
+                T resolvedValue = context.LocalValueStore.Get(key);
+                return ReactiveResult<T>.Ok(resolvedValue);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return ReactiveErrorUtility.Fail<T>(
+                    ReactiveErrorCode.ValueStoreReadFailed,
+                    exception.Message,
+                    context);
+            }
+        }
+
+        private static ReactiveResult<ValueWatchHandle<T>> ResolveLocalStoreHandle<T>(
+            in ReactiveEvalContext context,
+            in ReactiveLocalValueSource source)
+        {
+            if (context.LocalValueStore == null)
+            {
+                return ReactiveErrorUtility.Fail<ValueWatchHandle<T>>(
+                    ReactiveErrorCode.MissingValueStore,
+                    "LocalValueStore is not available in the current ActionExecution.",
+                    context);
+            }
+
+            if (!TryResolveValueKey(source.Key, context, out ValueKey<T> key, out ReactiveError keyError))
+                return ReactiveResult<ValueWatchHandle<T>>.Fail(keyError);
+
+            try
+            {
+                ValueWatchHandle<T> handle = context.LocalValueStore.GetHandle(key);
                 return ReactiveResult<ValueWatchHandle<T>>.Ok(handle, handle.Version);
             }
             catch (InvalidOperationException exception)

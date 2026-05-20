@@ -1,6 +1,8 @@
 using BC.Base;
 using BC.Bomb;
+using BC.Item;
 using BC.Manager;
+using BC.Player;
 using UnityEngine;
 using UnityEngine.UI;
 namespace BC.UI
@@ -17,6 +19,8 @@ namespace BC.UI
         [SerializeField] private SpriteAnimationPlayerMB timerIconAnimationPlayer;
 
         private BombMB bomb;
+        private GameLogicManagerMB gameLogicManager;
+        private PlayerItemHandleStateMB itemHandleState;
         private bool isFuseStarted;
         private bool hadBombLastFrame;
         private float displayedImpactExplosionRatio;
@@ -24,18 +28,19 @@ namespace BC.UI
 
         private void OnEnable()
         {
-            if (GameLogicManagerMB.Instance == null)
-                return;
-
-            GameLogicManagerMB.Instance.OnCurrentBombChanged += HandleCurrentBombChanged;
-            HandleCurrentBombChanged(GameLogicManagerMB.Instance.CurrentBomb);
+            TryBindGameLogic();
         }
+
         private void OnDisable()
         {
-            if (GameLogicManagerMB.Instance == null)
-                return;
+            UnbindGameLogic();
+            UnbindItemHandleState();
+        }
 
-            GameLogicManagerMB.Instance.OnCurrentBombChanged -= HandleCurrentBombChanged;
+        private void OnDestroy()
+        {
+            UnbindGameLogic();
+            UnbindItemHandleState();
         }
 
         private void HandleCurrentBombChanged(BombMB newBomb)
@@ -54,6 +59,9 @@ namespace BC.UI
 
         private void Update()
         {
+            if (gameLogicManager == null)
+                TryBindGameLogic();
+
             if (bomb == null)
             {
                 if (hadBombLastFrame)
@@ -106,6 +114,95 @@ namespace BC.UI
             // 爆発範囲設定
             displayedImpactExplosionRatio = bomb.ImpactExplosionRatio;
             bombImpactExplosionSlider.value = displayedImpactExplosionRatio;
+        }
+
+        private void HandlePlayerSpawned(PlayerMB player)
+        {
+            BindItemHandleState(player != null ? player.GetComponent<PlayerItemHandleStateMB>() : null);
+        }
+
+        private void HandleCurrentHandledItemChanged(ICarryableItem handledItem)
+        {
+            HandleCurrentBombChanged(ResolveBombFromHandledItem(handledItem));
+        }
+
+        private void BindItemHandleState(PlayerItemHandleStateMB newItemHandleState)
+        {
+            if (ReferenceEquals(itemHandleState, newItemHandleState))
+            {
+                HandleCurrentHandledItemChanged(itemHandleState != null ? itemHandleState.CurrentHandledItem : null);
+                return;
+            }
+
+            UnbindItemHandleState();
+            itemHandleState = newItemHandleState;
+
+            if (itemHandleState != null)
+                itemHandleState.CurrentHandledItemChanged += HandleCurrentHandledItemChanged;
+
+            HandleCurrentHandledItemChanged(itemHandleState != null ? itemHandleState.CurrentHandledItem : null);
+        }
+
+        private void UnbindItemHandleState()
+        {
+            if (itemHandleState != null)
+                itemHandleState.CurrentHandledItemChanged -= HandleCurrentHandledItemChanged;
+
+            itemHandleState = null;
+        }
+
+        private void TryBindGameLogic()
+        {
+            GameLogicManagerMB manager = GameLogicManagerMB.Instance;
+
+            if (manager == null)
+                return;
+
+            if (ReferenceEquals(gameLogicManager, manager))
+            {
+                HandlePlayerSpawned(gameLogicManager.PlayerInstance);
+                return;
+            }
+
+            UnbindGameLogic();
+            gameLogicManager = manager;
+            gameLogicManager.OnPlayerSpawned += HandlePlayerSpawned;
+            HandlePlayerSpawned(gameLogicManager.PlayerInstance);
+        }
+
+        private void UnbindGameLogic()
+        {
+            if (gameLogicManager != null)
+                gameLogicManager.OnPlayerSpawned -= HandlePlayerSpawned;
+
+            gameLogicManager = null;
+        }
+
+        private static BombMB ResolveBombFromHandledItem(ICarryableItem handledItem)
+        {
+            if (handledItem == null)
+                return null;
+
+            if (handledItem is BombMB handledBomb)
+                return handledBomb;
+
+            if (handledItem is Component handledComponent)
+            {
+                if (handledComponent.TryGetComponent(out BombMB componentBomb))
+                    return componentBomb;
+
+                return handledComponent.GetComponentInParent<BombMB>();
+            }
+
+            Transform itemTransform = handledItem.ItemTransform;
+
+            if (itemTransform == null)
+                return null;
+
+            if (itemTransform.TryGetComponent(out BombMB itemTransformBomb))
+                return itemTransformBomb;
+
+            return itemTransform.GetComponentInParent<BombMB>();
         }
 
         private void HoldCurrentImpactGauge()

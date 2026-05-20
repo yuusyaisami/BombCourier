@@ -40,16 +40,23 @@ namespace BC.Base
         public readonly SceneKernel SceneKernel;
         public readonly EntityRef ActorEntity;
         public readonly EntityRef TriggerEntity;
+        public readonly ILocalValueStoreService LocalValueStore;
 
         public ReactiveEvalContext(SceneKernel sceneKernel, EntityRef actorEntity, EntityRef triggerEntity)
+            : this(sceneKernel, actorEntity, triggerEntity, null)
+        {
+        }
+
+        public ReactiveEvalContext(SceneKernel sceneKernel, EntityRef actorEntity, EntityRef triggerEntity, ILocalValueStoreService localValueStore)
         {
             SceneKernel = sceneKernel;
             ActorEntity = actorEntity;
             TriggerEntity = triggerEntity;
+            LocalValueStore = localValueStore;
         }
 
         public ReactiveEvalContext(in ActionExecutionContext actionContext)
-            : this(actionContext.SceneKernel, actionContext.ActorEntity, actionContext.TriggerEntity)
+            : this(actionContext.SceneKernel, actionContext.ActorEntity, actionContext.TriggerEntity, actionContext.LocalValueStore)
         {
         }
 
@@ -61,21 +68,24 @@ namespace BC.Base
         // Inspector does not author evaluation policy; runtime code selects it when binding.
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveFloatSourceKind sourceKind)
         {
-            return sourceKind == ReactiveFloatSourceKind.EntityValueStore
+            return sourceKind == ReactiveFloatSourceKind.EntityValueStore ||
+                   sourceKind == ReactiveFloatSourceKind.LocalValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
 
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveIntSourceKind sourceKind)
         {
-            return sourceKind == ReactiveIntSourceKind.EntityValueStore
+            return sourceKind == ReactiveIntSourceKind.EntityValueStore ||
+                   sourceKind == ReactiveIntSourceKind.LocalValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
 
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveBoolSourceKind sourceKind)
         {
-            return sourceKind == ReactiveBoolSourceKind.EntityValueStore
+            return sourceKind == ReactiveBoolSourceKind.EntityValueStore ||
+                   sourceKind == ReactiveBoolSourceKind.LocalValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -87,7 +97,32 @@ namespace BC.Base
 
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveEntitySourceKind sourceKind)
         {
-            return sourceKind == ReactiveEntitySourceKind.EntityValueStore
+            return sourceKind == ReactiveEntitySourceKind.EntityValueStore ||
+                   sourceKind == ReactiveEntitySourceKind.LocalValueStore
+                ? ReactiveEvaluationMode.Watched
+                : ReactiveEvaluationMode.Snapshot;
+        }
+
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveStringSourceKind sourceKind)
+        {
+            return sourceKind == ReactiveStringSourceKind.EntityValueStore ||
+                   sourceKind == ReactiveStringSourceKind.LocalValueStore
+                ? ReactiveEvaluationMode.Watched
+                : ReactiveEvaluationMode.Snapshot;
+        }
+
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveFaceExpressionIdSourceKind sourceKind)
+        {
+            return sourceKind == ReactiveFaceExpressionIdSourceKind.EntityValueStore ||
+                   sourceKind == ReactiveFaceExpressionIdSourceKind.LocalValueStore
+                ? ReactiveEvaluationMode.Watched
+                : ReactiveEvaluationMode.Snapshot;
+        }
+
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveEntityMoveStateSourceKind sourceKind)
+        {
+            return sourceKind == ReactiveEntityMoveStateSourceKind.EntityValueStore ||
+                   sourceKind == ReactiveEntityMoveStateSourceKind.LocalValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }

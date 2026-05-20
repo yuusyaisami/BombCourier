@@ -1,0 +1,36 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-macar" at "2026-05-20T04:47:53.3674435Z"
+Built from '6000.4/staging' branch; Version is '6000.4.6f1 (0b051c2e5d54) revision 722204'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) Core' Language: 'ja' Physical Memory: 49074 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-05-20T04:47:53Z
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 52524, path: "C:/Program Files/Unity/Hub/Editor/6000.4.6f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.1+9fbee8e
+  Session Id:              32e3c7282f094bd497acd5bd2c084cfa
+  Correlation Id:          bef439ef8a1a167c5ad7a6fe4aff6ae5
+  External correlation Id: 1912471799836415037
+  Machine Id:              wZy5JA3FomZqDA6xOB5B4r6W+BE=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-macar" (connect: 0.00s, validation: 0.00s, handshake: 0.06s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-macar-notifications" at "2026-05-20T04:47:53.4344208Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.4.6f1\Editor\Unity.exe
+-batchmode
+-accept-apiupdate
+-projectPath
+.
+-runTests
+-testPlatform
+EditMode
+-testSelection
+BC.Base.Tests.MovingPlatformRailRoutingTests
+-logFile
+stdout
+Successfully changed project path to: C:/Users/macar/BombCourier
+C:/Users/macar/BombCourier
+Exiting without the bug reporter. Application will terminate with return code 1

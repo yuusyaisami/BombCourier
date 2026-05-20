@@ -7,6 +7,7 @@ using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick;
 using BC.Item;
+using BC.Player;
 using BC.Stage;
 using BC.UI;
 using Cysharp.Threading.Tasks;
@@ -15,6 +16,13 @@ using Unity.Cinemachine;
 using UnityEngine;
 namespace BC.Manager
 {
+    public enum RetryActionMode
+    {
+        None,
+        ResetStage,
+        ReloadCheckpoint,
+    }
+
     public class GameLogicManagerMB : UnityEngine.MonoBehaviour
     {
         // ゲームのロジックを管理するクラス
@@ -58,9 +66,82 @@ namespace BC.Manager
         public EntityRef SelfEntityRef => gameLogicManagerRef; // GameLogicManagerのEntityRefを外部から参照できるようにするプロパティ
         private BonusObjectMB currentBonusObject; // 現在のステージのBonusObjectへの参照。スコア計算などに使用する。
         private int currentGameStage;
+        private readonly Stack<RetryCheckpointSnapshot> retryCheckpointStack = new();
+        private bool resetArmed;
 
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
+        public RetryActionMode CurrentRetryActionMode => ResolveRetryActionMode();
+
+        public bool TryGetRetryActionMode(out RetryActionMode mode)
+        {
+            mode = RetryActionMode.None;
+
+            if (!IsRetryActionAvailable())
+                return false;
+
+            mode = ResolveRetryActionMode();
+            return mode != RetryActionMode.None;
+        }
+
+        private RetryActionMode ResolveRetryActionMode()
+        {
+            if (retryCheckpointStack.Count > 0)
+                return RetryActionMode.ReloadCheckpoint;
+
+            return resetArmed ? RetryActionMode.ResetStage : RetryActionMode.None;
+        }
+
+        public bool IsRetryActionAvailable()
+        {
+            GameStateManagerMB stateManager = GameStateManagerMB.Instance;
+            if (stateManager == null)
+                return false;
+
+            return stateManager.CurrentState == GameState.SetupPlaying ||
+                   stateManager.CurrentState == GameState.FusePlaying ||
+                   stateManager.CurrentState == GameState.Exploded;
+        }
+
+        public void RequestRetryAction()
+        {
+            if (!TryGetRetryActionMode(out RetryActionMode mode) || GameStateManagerMB.Instance == null)
+                return;
+
+            GameStateManagerMB.Instance.ChangeState(
+                mode == RetryActionMode.ReloadCheckpoint
+                    ? GameState.Reload
+                    : GameState.ResetStage);
+        }
+
+        public void CaptureRetryCheckpointBeforeBombPickup(BombMB bomb)
+        {
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            StageManagerMB stageManager = StageManagerMB.Instance;
+            BombMB targetBomb = bomb != null ? bomb : currentBomb;
+
+            if (resolvedPlayer == null || stageManager == null || targetBomb == null)
+            {
+                Debug.LogError($"{nameof(GameLogicManagerMB)}: retry checkpoint capture prerequisites are missing.", this);
+                return;
+            }
+
+            StageCheckpointSnapshot stageCheckpoint = stageManager.CaptureStageCheckpointSnapshot();
+            if (!stageCheckpoint.IsValid)
+            {
+                Debug.LogError($"{nameof(GameLogicManagerMB)}: stage checkpoint snapshot capture failed.", this);
+                return;
+            }
+
+            retryCheckpointStack.Push(new RetryCheckpointSnapshot(
+                stageCheckpoint,
+                resolvedPlayer.transform.position,
+                resolvedPlayer.transform.rotation,
+                targetBomb));
+
+            resetArmed = false;
+            SetCurrentBomb(targetBomb);
+        }
 
         private PlayerMB ResolvePlayerInstance()
         {
@@ -137,13 +218,13 @@ namespace BC.Manager
             }
             else if (newState == GameState.SetupPlaying)
             {
+                sceneKernel.Cameras?.EndGoalPresentation();
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, true);
             }
             else if (newState == GameState.FusePlaying)
             {
-                StageManagerMB.Instance.CaptureStageCheckpoint(); // チェックポイントを保存する
             }
             else if (newState == GameState.Exploded)
             {
@@ -153,6 +234,10 @@ namespace BC.Manager
             {
                 ReloadStageAsync().Forget(); // ステージをリロードする
 
+            }
+            else if (newState == GameState.ResetStage)
+            {
+                ResetStageAsync().Forget();
             }
             else if (newState == GameState.Goaling)
             {
@@ -209,10 +294,9 @@ namespace BC.Manager
                 return;
             }
 
-            //一時体にCinemaCameraを切り替える。
+            // ゴール演出中のカメラ切り替えは scene camera service に一本化する。
             Debug.Log("Switching to goal camera: " + currentGoalData.GoalCamera.name);
-            CinemachineCamera goalCamera = currentGoalData.GoalCamera;
-            goalCamera.Priority = 100; // カメラの優先度を上げて切り替える
+            sceneKernel.Cameras?.BeginGoalPresentation(currentGoalData.GoalCamera, playerRef);
 
             // UIを非表示にする
             uiGameSceneManagerMB.ShowTopPanel(false); // ゲームシーンのUIを非表示にする
@@ -270,10 +354,10 @@ namespace BC.Manager
 
             await UniTask.CompletedTask;
         }
-        private async UniTask LoadStageAsync(int stageIndex)
+        private async UniTask LoadStageAsync(int stageIndex, bool playIntro = true)
         {
             currentGameStage = stageIndex;
-            LoadGameStage();
+            LoadGameStage(playIntro);
 
             await UniTask.CompletedTask;
         }
@@ -316,20 +400,69 @@ namespace BC.Manager
         }
         private async UniTask ReloadStageAsync()
         {
-            // 現在のステージをリロードする処理
-            if (stageInstance != null)
+            if (retryCheckpointStack.Count == 0)
             {
-                UnregisterStageEntities(stageInstance);
-                Destroy(stageInstance);
-                stageInstance = null;
+                if (resetArmed)
+                    GameStateManagerMB.Instance?.ChangeState(GameState.ResetStage);
+                else
+                    GameStateManagerMB.Instance?.ChangeState(GameState.SetupPlaying);
+
+                return;
             }
-            StageManagerMB.Instance.ReloadStage();
-            ResetPlayer(); // プレイヤーをリセットする
+
+            RetryCheckpointSnapshot retryCheckpoint = retryCheckpointStack.Pop();
+
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            PlayerItemHandleStateMB itemHandleState = resolvedPlayer != null
+                ? resolvedPlayer.GetComponent<PlayerItemHandleStateMB>()
+                : null;
+            itemHandleState?.RestoreRetryCheckpointState();
+
+            StageManagerMB.Instance.ReloadStage(retryCheckpoint.StageCheckpoint);
+
+            if (resolvedPlayer != null)
+            {
+                resolvedPlayer.ResetPlayer();
+                resolvedPlayer.TeleportToSpawnPoint(retryCheckpoint.PlayerPosition, retryCheckpoint.PlayerRotation);
+            }
+
+            BombMB retryBomb = ResolveRetryBomb(retryCheckpoint.Bomb);
+
+            SetCurrentBomb(retryBomb);
+            timeSinceStartBomb = 0f;
+            resetArmed = retryCheckpointStack.Count == 0;
             ReloadState?.Invoke();
 
-
-
             await UniTask.CompletedTask;
+            GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
+        }
+
+        private async UniTask ResetStageAsync()
+        {
+            LoadGameStage(playIntro: false);
+            await UniTask.CompletedTask;
+        }
+
+        private BombMB ResolveDefaultCurrentBomb()
+        {
+            if (currentMapRuntime == null || currentMapRuntime.Bombs == null || currentMapRuntime.Bombs.Count == 0)
+                return null;
+
+            for (int i = 0; i < currentMapRuntime.Bombs.Count; i++)
+            {
+                if (currentMapRuntime.Bombs[i] != null)
+                    return currentMapRuntime.Bombs[i];
+            }
+
+            return null;
+        }
+
+        private BombMB ResolveRetryBomb(BombMB preferredBomb)
+        {
+            if (preferredBomb != null)
+                return preferredBomb;
+
+            return ResolveDefaultCurrentBomb();
         }
 
         public void SetCurrentBomb(BombMB bomb)
@@ -376,8 +509,10 @@ namespace BC.Manager
             return currentMapRuntime.GoalGate.IsBroken;
         }
 
-        public void LoadGameStage()
+        public void LoadGameStage(bool playIntro = true)
         {
+            sceneKernel?.Cameras?.ResetPresentationState();
+
             if (stageInstance != null && debugStageInstance == null)
             {
                 UnregisterStageEntities(stageInstance);
@@ -411,6 +546,7 @@ namespace BC.Manager
                 playerInstance = ResolvePlayerInstance();
                 OnPlayerSpawned?.Invoke(playerInstance);
                 playerRef = playerInstance != null ? playerInstance.GetComponent<EntityMB>().Entity : default;
+                sceneKernel.Cameras?.SetPlayerEntity(playerRef);
 
                 // デバッグ用
                 if (!playerRef.IsValid) Debug.LogError("GameLogicManagerMB: PlayerRef is not valid.", this);
@@ -425,12 +561,20 @@ namespace BC.Manager
             currentBonusObject = result.bonusObject;
             SetCurrentBomb(result.bombs.Count > 0 ? result.bombs[0] : null);
             currentClearTimeThreshold = result.ClearTimeThreshold;
+            ResetRetryActionContext();
 
             if (currentGoalData == null) Debug.LogError("GameLogicManagerMB: GoalData is not resolved from the stage runtime.", this);
             if (currentCameraPath == null) Debug.LogError("GameLogicManagerMB: Camera path is not resolved from the stage runtime.", this);
 
 
-            GameStateManagerMB.Instance.ChangeState(GameState.Intro);
+            if (playIntro)
+            {
+                GameStateManagerMB.Instance.ChangeState(GameState.Intro);
+            }
+            else
+            {
+                StartGameplayWithoutIntroAsync().Forget();
+            }
         }
 
         private void RegisterStageEntities(GameObject rootObject)
@@ -464,6 +608,32 @@ namespace BC.Manager
                 playerInstance = null;
                 playerRef = default;
             }
+
+            sceneKernel?.Cameras?.SetPlayerEntity(default);
+        }
+
+        private async UniTask StartGameplayWithoutIntroAsync()
+        {
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            if (resolvedPlayer == null)
+            {
+                Debug.LogError("GameLogicManagerMB: PlayerInstance is not resolved for retry reset.", this);
+                return;
+            }
+
+            resolvedPlayer.PlayRespawnEffect();
+            await resolvedPlayer.ShowPlayerAsync(false);
+            uiGameSceneManagerMB.ShowTopPanel(true);
+            uiGameSceneManagerMB.ShowBottomPanel(true);
+            GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
+        }
+
+        private void ResetRetryActionContext()
+        {
+            retryCheckpointStack.Clear();
+            resetArmed = false;
+            timeSinceStartBomb = 0f;
+            StageManagerMB.Instance?.ClearStageCheckpoint();
         }
 
         // ゲーム内にプレイヤーがいた場合はTeleportのみ、いない場合はSpawnしてからTeleportする
@@ -482,6 +652,7 @@ namespace BC.Manager
                 playerInstance = existingPlayer;
                 OnPlayerSpawned?.Invoke(playerInstance);
                 playerRef = existingPlayer.GetComponent<EntityMB>().Entity;
+                sceneKernel.Cameras?.SetPlayerEntity(playerRef);
             }
             else
             {
@@ -496,6 +667,7 @@ namespace BC.Manager
 
                 OnPlayerSpawned?.Invoke(playerInstance);
                 playerRef = result.Entity;
+                sceneKernel.Cameras?.SetPlayerEntity(playerRef);
             }
             // 一時的にPlayerの動きを止める
             if (!playerRef.IsValid)
@@ -531,5 +703,25 @@ namespace BC.Manager
 
 
 
+    }
+
+    internal readonly struct RetryCheckpointSnapshot
+    {
+        public RetryCheckpointSnapshot(
+            StageCheckpointSnapshot stageCheckpoint,
+            Vector3 playerPosition,
+            Quaternion playerRotation,
+            BombMB bomb)
+        {
+            StageCheckpoint = stageCheckpoint;
+            PlayerPosition = playerPosition;
+            PlayerRotation = playerRotation;
+            Bomb = bomb;
+        }
+
+        public StageCheckpointSnapshot StageCheckpoint { get; }
+        public Vector3 PlayerPosition { get; }
+        public Quaternion PlayerRotation { get; }
+        public BombMB Bomb { get; }
     }
 }

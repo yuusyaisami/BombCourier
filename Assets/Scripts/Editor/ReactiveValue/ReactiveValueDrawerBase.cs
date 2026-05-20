@@ -101,13 +101,13 @@ namespace BC.Editor
             return ValueKeyReferenceDrawer.GetFilteredPropertyHeight();
         }
 
-        protected static void DrawFilteredValueKey(ref Rect position, SerializedProperty property, string label, Type valueType)
+        protected static void DrawFilteredValueKey(ref Rect position, SerializedProperty property, string label, Type valueType, string pathPrefix = null)
         {
             if (property == null)
                 return;
 
             Rect rowRect = new(position.x, position.y, position.width, ValueKeyReferenceDrawer.GetFilteredPropertyHeight());
-            ValueKeyReferenceDrawer.DrawFilteredDropdown(rowRect, property, new GUIContent(label), valueType);
+            ValueKeyReferenceDrawer.DrawFilteredDropdown(rowRect, property, new GUIContent(label), valueType, pathPrefix);
             position.y += rowRect.height + Spacing;
         }
 
@@ -120,6 +120,16 @@ namespace BC.Editor
         {
             DrawPropertyField(ref position, property.FindPropertyRelative("entitySourceKind"), "Entity Source");
             DrawFilteredValueKey(ref position, property.FindPropertyRelative("key"), "Key", valueType);
+        }
+
+        protected static float GetReactiveLocalValueSourceHeight()
+        {
+            return GetControlDelta(GetValueKeyHeight());
+        }
+
+        protected static void DrawReactiveLocalValueSource(ref Rect position, SerializedProperty property, Type valueType)
+        {
+            DrawFilteredValueKey(ref position, property.FindPropertyRelative("key"), "Key", valueType, "Local");
         }
 
         protected static float GetEntityTargetReferenceHeight(SerializedProperty property)

@@ -19,6 +19,7 @@ namespace BC.Base
         public ReactiveValueResolverService ReactiveValues { get; set; }
         public ActionService Actions { get; set; }
         public CameraPathPlayerService CameraPaths { get; set; }
+        public SceneCameraService Cameras { get; set; }
 
         // 既存コード互換用。新規コードでは EntityValueStore / KernelValueStore を明示して使う。
         public ValueStoreService ValueStore
@@ -39,10 +40,12 @@ namespace BC.Base
             ReactiveValues = new ReactiveValueResolverService(this);
             Actions = new ActionService(this);
             CameraPaths = new CameraPathPlayerService(this);
+            Cameras = new SceneCameraService(this);
 
             Tickables = new ITickable[]
             {
                 Actions,
+                Cameras,
             };
         }
 
@@ -51,6 +54,7 @@ namespace BC.Base
         {
             Actions?.Clear();
             CameraPaths?.Cancel();
+            Cameras?.Dispose();
             ReactiveValues?.Clear();
             EntityComponents?.Clear();
             EntityValueStore?.Clear();

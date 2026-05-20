@@ -19,8 +19,14 @@ namespace BC.Gimmick.Cushion
         [Header("Response")]
         [Tooltip("跳ね返し強度の割合です。0 の場合は跳ね返さず受け止めます。")]
         [SerializeField, Range(0.0f, 1.0f)] private float bounceRate;
-        [Tooltip("跳ね返す時の基準速度です。")]
+        [Tooltip("跳ね返す時の基準速度です。入力速度が小さい時はこの値を下限として使います。")]
         [SerializeField, Min(0.0f)] private float bounceSpeed = 8.0f;
+        [Tooltip("通常 bounce の最低速度です。0 なら下限を設けません。")]
+        [SerializeField, Min(0.0f)] private float minBounceSpeed;
+        [Tooltip("通常 bounce の最高速度です。0 なら上限を設けません。")]
+        [SerializeField, Min(0.0f)] private float maxBounceSpeed = 12.0f;
+        [Tooltip("Player が high jump を成立させた時に許可する追加倍率です。")]
+        [SerializeField, Min(1.0f)] private float highJumpSpeedMultiplier = 1.5f;
         [Tooltip("跳ね返す方向の決め方です。")]
         [SerializeField] private CushionBounceDirectionMode bounceDirectionMode = CushionBounceDirectionMode.LocalUp;
         [Tooltip("BounceDirectionMode が CustomLocalDirection の時に使うローカル方向です。")]
@@ -48,7 +54,11 @@ namespace BC.Gimmick.Cushion
             }
 
             Vector3 direction = ResolveBounceDirection(impactData);
-            result = CushionImpactResult.Bounce(direction * bounceSpeed * bounceRate);
+            float bounceVelocityMagnitude = ResolveBounceSpeed(impactData, direction);
+            result = CushionImpactResult.Bounce(
+                direction * bounceVelocityMagnitude,
+                ResolveBounceSpeedLimit(bounceVelocityMagnitude),
+                highJumpSpeedMultiplier);
             return true;
         }
 
@@ -82,6 +92,29 @@ namespace BC.Gimmick.Cushion
                 direction = transform.up;
 
             return direction.normalized;
+        }
+
+        private float ResolveBounceSpeed(CushionImpactData impactData, Vector3 bounceDirection)
+        {
+            // 入力速度のうち、bounce 方向へ向かっていた成分を優先して拾う。
+            float directionalIncomingSpeed = Mathf.Max(0f, Vector3.Dot(-impactData.IncomingVelocity, bounceDirection));
+            float rawBounceSpeed = Mathf.Max(bounceSpeed, directionalIncomingSpeed) * bounceRate;
+
+            if (minBounceSpeed > 0f)
+                rawBounceSpeed = Mathf.Max(minBounceSpeed, rawBounceSpeed);
+
+            if (maxBounceSpeed > 0f)
+                rawBounceSpeed = Mathf.Min(Mathf.Max(minBounceSpeed, maxBounceSpeed), rawBounceSpeed);
+
+            return Mathf.Max(0f, rawBounceSpeed);
+        }
+
+        private float ResolveBounceSpeedLimit(float resolvedBounceSpeed)
+        {
+            if (maxBounceSpeed > 0f)
+                return Mathf.Max(minBounceSpeed, maxBounceSpeed);
+
+            return Mathf.Max(0f, resolvedBounceSpeed);
         }
 
         private bool MatchesTargetTag(EntityTagId sourceTag)

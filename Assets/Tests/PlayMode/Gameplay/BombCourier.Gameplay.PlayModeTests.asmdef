@@ -1,0 +1,22 @@
+{
+    "name": "BombCourier.Gameplay.PlayModeTests",
+    "rootNamespace": "BC.Gameplay.PlayModeTests",
+    "references": [
+        "Unity.InputSystem",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

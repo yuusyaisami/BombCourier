@@ -18,6 +18,7 @@ namespace BC.Base
         [Header("References")]
         [SerializeField] private EntityMoveMotorMB moveMotor;
         [SerializeField] private Transform modelRoot;
+        [SerializeField] private EntityFacingControllerMB facingController;
         [SerializeField] private MonoBehaviour cameraControllerSource;
 
         [Header("Input")]
@@ -88,6 +89,8 @@ namespace BC.Base
             jumpInputAction?.action?.Disable();
             sprintInputAction?.action?.Disable();
             moveMotor?.ClearMoveIntent();
+            ResolveFacingController()?.ClearFacing(EntityFacingChannels.Movement);
+            ResolveFacingController()?.ClearFacing(EntityFacingChannels.ThrowPose);
         }
 
         private void Update()
@@ -143,7 +146,12 @@ namespace BC.Base
                                jumpInputAction.action != null &&
                                jumpInputAction.action.WasPressedThisFrame();
 
-            moveMotor.SetMoveIntent(BuildCameraRelativeMoveDirection(moveInput), sprintHeld, jumpPressed, dt);
+            bool jumpHeld = canReceiveInput &&
+                            jumpInputAction != null &&
+                            jumpInputAction.action != null &&
+                            jumpInputAction.action.IsPressed();
+
+            moveMotor.SetMoveIntent(BuildCameraRelativeMoveDirection(moveInput), sprintHeld, jumpPressed, jumpHeld, dt);
         }
 
         private Vector3 BuildCameraRelativeMoveDirection(Vector2 input)
@@ -177,6 +185,55 @@ namespace BC.Base
             if (ModelRoot == null)
                 return;
 
+            EntityFacingControllerMB resolvedFacingController = ResolveFacingController();
+
+            if (resolvedFacingController == null)
+            {
+                ApplyDirectModelRotation(dt);
+                return;
+            }
+
+            if (IsThrowPoseActive())
+            {
+                Vector3 cameraAlignedForward = (cameraController != null
+                    ? cameraController.GetYawRotation()
+                    : transform.rotation) * Vector3.forward;
+
+                resolvedFacingController.SetFacingDirection(
+                    EntityFacingChannels.ThrowPose,
+                    cameraAlignedForward,
+                    EntityFacingPriorities.ThrowPose,
+                    modelTurnSharpness);
+                resolvedFacingController.ClearFacing(EntityFacingChannels.Movement);
+                return;
+            }
+
+            resolvedFacingController.ClearFacing(EntityFacingChannels.ThrowPose);
+
+            Vector3 horizontalVelocity = moveMotor != null
+                ? moveMotor.ControlledPlanarVelocity
+                : Vector3.zero;
+
+            horizontalVelocity.y = 0.0f;
+
+            if (horizontalVelocity.magnitude < minModelTurnSpeed)
+            {
+                resolvedFacingController.ClearFacing(EntityFacingChannels.Movement);
+                return;
+            }
+
+            resolvedFacingController.SetFacingDirection(
+                EntityFacingChannels.Movement,
+                horizontalVelocity,
+                EntityFacingPriorities.Movement,
+                modelTurnSharpness);
+        }
+
+        private void ApplyDirectModelRotation(float dt)
+        {
+            if (ModelRoot == null)
+                return;
+
             float t = 1.0f - Mathf.Exp(-modelTurnSharpness * dt);
 
             if (IsThrowPoseActive())
@@ -200,6 +257,14 @@ namespace BC.Base
 
             Quaternion targetRotation = Quaternion.LookRotation(horizontalVelocity.normalized, Vector3.up);
             modelRoot.rotation = Quaternion.Slerp(modelRoot.rotation, targetRotation, t);
+        }
+
+        private EntityFacingControllerMB ResolveFacingController()
+        {
+            if (facingController == null)
+                facingController = GetComponent<EntityFacingControllerMB>();
+
+            return facingController;
         }
 
         private bool IsThrowPoseActive()
@@ -301,6 +366,9 @@ namespace BC.Base
 
             cameraController = cameraControllerSource as ICameraController;
             ragdollController = GetComponent<IPlayerRagdollController>();
+
+            if (facingController == null)
+                facingController = GetComponent<EntityFacingControllerMB>();
 
 
 

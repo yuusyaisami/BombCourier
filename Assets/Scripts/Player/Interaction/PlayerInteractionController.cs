@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BC.Base;
 using BC.Item;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,6 +14,7 @@ namespace BC.Player
         private readonly InputAction inputAction;
         private readonly Transform interactionPoint;
         private readonly Transform facingTransform;
+        private readonly Func<EntityRef> sourceEntityProvider;
         private readonly float interactionDistance;
         private readonly float interactionAngleThreshold;
         private readonly LayerMask interactionLayerMask;
@@ -37,6 +39,7 @@ namespace BC.Player
             InputAction inputAction,
             Transform interactionPoint,
             Transform facingTransform,
+            Func<EntityRef> sourceEntityProvider,
             float interactionDistance,
             float interactionAngleThreshold,
             LayerMask interactionLayerMask)
@@ -44,6 +47,7 @@ namespace BC.Player
             this.inputAction = inputAction;
             this.interactionPoint = interactionPoint;
             this.facingTransform = facingTransform;
+            this.sourceEntityProvider = sourceEntityProvider;
             this.interactionDistance = interactionDistance;
             this.interactionAngleThreshold = interactionAngleThreshold;
             this.interactionLayerMask = interactionLayerMask;
@@ -290,6 +294,8 @@ namespace BC.Player
 
             InteractionEventData eventData = new InteractionEventData(
                 this,
+                sourceEntityProvider != null ? sourceEntityProvider() : default,
+                facingTransform,
                 interactable,
                 eventType,
                 holdDuration,

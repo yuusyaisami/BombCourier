@@ -5,65 +5,154 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 namespace BC.UI
 {
-    // 爆弾が爆発して、プレイヤーにリロードを促すためのUI
+    // Retry の種類に応じて Reload / Reset を案内する UI。
     public class UIShowReloadStateMB : MonoBehaviour
     {
-        [SerializeField][SerializeReference] private IAnimationSpriteClipSource RetryTextAnimClipSource; // 爆発アニメーションのクリップソース
-        [SerializeField] private SpriteAnimationPlayerMB spriteAnimationPlayer; // 爆発アニメーションを再生するためのコンポーネント
-        [SerializeField] private InputActionReference reloadInputActionReference; // リロードの入力アクションリファレンス
-        [SerializeField] private Slider reloadProgressSlider; // リロードの進行状況を表示するスライダー
-        [SerializeField] private CanvasGroup canvasGroup; // UI全体のCanvasGroupコンポーネント
-        private float reloadInputHoldTime; // リロード入力のホールド時間
-        private float requiredHoldTime = 1.5f; // リロード入力をホールドする必要がある時間
+        [SerializeField][SerializeReference] private IAnimationSpriteClipSource reloadTextAnimClipSource;
+        [SerializeField][SerializeReference] private IAnimationSpriteClipSource resetTextAnimClipSource;
+        [SerializeField] private SpriteAnimationPlayerMB spriteAnimationPlayer;
+        [SerializeField] private InputActionReference reloadInputActionReference;
+        [SerializeField] private Slider reloadProgressSlider;
+        [SerializeField] private CanvasGroup canvasGroup;
+        [SerializeField, Min(0f)] private float stationarySpeedThreshold = 0.05f;
+        [SerializeField, Min(0f)] private float stationaryGraceTime = 0.2f;
+        [SerializeField, Min(0.01f)] private float requiredHoldTime = 1.5f;
+
+        private PlayerMoveController playerMoveController;
+        private RetryActionMode shownRetryMode = RetryActionMode.None;
+        private float reloadInputHoldTime;
+        private float stationaryTimer;
+        private bool isVisible;
+        private bool isBoundToGameLogic;
+
         private void Start()
         {
-            // 最初は非表示にしておく
-            gameObject.SetActive(false);
-            // Goalがまだ開いていない爆発時だけ、リロードUIを出す。
-            GameLogicManagerMB.Instance.ExplodedBeforeGoalOpenedState += OnExplodedBeforeGoalOpenedState;
+            SetVisible(false, RetryActionMode.None, forceRefresh: true);
+            TryBindGameLogic();
         }
 
         private void OnDestroy()
         {
-            if (GameLogicManagerMB.Instance != null)
+            if (isBoundToGameLogic && GameLogicManagerMB.Instance != null)
             {
-                GameLogicManagerMB.Instance.ExplodedBeforeGoalOpenedState -= OnExplodedBeforeGoalOpenedState;
+                GameLogicManagerMB.Instance.OnPlayerSpawned -= HandlePlayerSpawned;
             }
         }
 
-        public void OnExplodedBeforeGoalOpenedState()
+        private void HandlePlayerSpawned(PlayerMB player)
         {
-            // Goalがまだ開いていない状態で爆発したときにUIを表示する
-            reloadInputHoldTime = 0f;
-            gameObject.SetActive(true);
-            // 爆発アニメーションを再生する
-            spriteAnimationPlayer.Play(RetryTextAnimClipSource, SpriteAnimationPlayMode.Once);
+            playerMoveController = player != null ? player.PlayerMoveController : null;
+            stationaryTimer = 0f;
         }
+
         private void Update()
         {
-            // 入力があったときにリロードする
-            if (gameObject.activeSelf)
+            TryBindGameLogic();
+
+            GameLogicManagerMB gameLogic = GameLogicManagerMB.Instance;
+            if (gameLogic == null || !gameLogic.TryGetRetryActionMode(out RetryActionMode retryMode))
             {
-                if (reloadInputActionReference.action.IsPressed())
+                reloadInputHoldTime = 0f;
+                stationaryTimer = 0f;
+                SetVisible(false, RetryActionMode.None);
+                UpdateProgress();
+                return;
+            }
+
+            bool isInputPressed = reloadInputActionReference != null &&
+                                  reloadInputActionReference.action != null &&
+                                  reloadInputActionReference.action.IsPressed();
+
+            bool isStationary = IsPlayerStationary();
+            stationaryTimer = isStationary ? stationaryTimer + Time.deltaTime : 0f;
+
+            bool shouldShow = stationaryTimer >= stationaryGraceTime || isInputPressed || reloadInputHoldTime > 0f;
+            SetVisible(shouldShow, retryMode);
+
+            if (!isVisible)
+            {
+                reloadInputHoldTime = 0f;
+                UpdateProgress();
+                return;
+            }
+
+            if (isInputPressed)
+            {
+                reloadInputHoldTime += Time.deltaTime;
+                if (reloadInputHoldTime >= requiredHoldTime)
                 {
-                    reloadInputHoldTime += Time.deltaTime;
-                    if (reloadInputHoldTime >= requiredHoldTime)
-                    {
-                        GameStateManagerMB.Instance.ChangeState(GameState.Reload);
-                    }
-                }
-                else
-                {
-                    reloadInputHoldTime = 0f; // 入力が離されたらホールド時間をリセットする
-                }
-                // リロードの進行状況をスライダーに反映する
-                if (reloadProgressSlider != null)
-                {
-                    float progress = Mathf.Clamp01(reloadInputHoldTime / requiredHoldTime);
-                    float displayProgress = Mathf.SmoothStep(0f, 1f, progress); // スムースステップで進行状況を計算する
-                    reloadProgressSlider.value = displayProgress;
+                    reloadInputHoldTime = 0f;
+                    UpdateProgress();
+                    gameLogic.RequestRetryAction();
+                    SetVisible(false, RetryActionMode.None, forceRefresh: true);
+                    return;
                 }
             }
+            else
+            {
+                reloadInputHoldTime = 0f;
+            }
+
+            UpdateProgress();
+        }
+
+        private bool IsPlayerStationary()
+        {
+            if (playerMoveController == null)
+                return false;
+
+            return playerMoveController.CurrentVelocity.sqrMagnitude <= stationarySpeedThreshold * stationarySpeedThreshold;
+        }
+
+        private void SetVisible(bool visible, RetryActionMode retryMode, bool forceRefresh = false)
+        {
+            if (!forceRefresh && isVisible == visible && shownRetryMode == retryMode)
+                return;
+
+            isVisible = visible;
+            shownRetryMode = visible ? retryMode : RetryActionMode.None;
+
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = visible ? 1f : 0f;
+                canvasGroup.interactable = visible;
+                canvasGroup.blocksRaycasts = visible;
+            }
+
+            if (visible)
+            {
+                PlayPromptAnimation(retryMode);
+            }
+        }
+
+        private void PlayPromptAnimation(RetryActionMode retryMode)
+        {
+            if (spriteAnimationPlayer == null)
+                return;
+
+            IAnimationSpriteClipSource clipSource = retryMode == RetryActionMode.ReloadCheckpoint
+                ? reloadTextAnimClipSource
+                : resetTextAnimClipSource;
+            spriteAnimationPlayer.Play(clipSource, SpriteAnimationPlayMode.Once);
+        }
+
+        private void UpdateProgress()
+        {
+            if (reloadProgressSlider == null)
+                return;
+
+            float progress = Mathf.Clamp01(reloadInputHoldTime / requiredHoldTime);
+            reloadProgressSlider.value = Mathf.SmoothStep(0f, 1f, progress);
+        }
+
+        private void TryBindGameLogic()
+        {
+            if (isBoundToGameLogic || GameLogicManagerMB.Instance == null)
+                return;
+
+            GameLogicManagerMB.Instance.OnPlayerSpawned += HandlePlayerSpawned;
+            HandlePlayerSpawned(GameLogicManagerMB.Instance.PlayerInstance);
+            isBoundToGameLogic = true;
         }
     }
 }

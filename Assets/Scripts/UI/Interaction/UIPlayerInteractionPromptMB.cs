@@ -3,6 +3,7 @@ using BC.Inputs;
 using BC.Manager;
 using BC.Player;
 using Sirenix.OdinInspector;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -30,6 +31,7 @@ namespace BC.UI
 
         [Header("Visuals")]
         [SerializeField] private Image actionIconImage;
+        [SerializeField] private TMP_Text actionDetailText;
 
         [Header("Hold")]
         [SerializeField] private Image holdRingImage;
@@ -47,11 +49,15 @@ namespace BC.UI
             canvas = GetComponentInParent<Canvas>();
             root = transform as RectTransform;
             canvasGroup = GetComponent<CanvasGroup>();
+
+            if (actionDetailText == null)
+                actionDetailText = GetComponentInChildren<TMP_Text>(true);
         }
 
         private void Awake()
         {
             ResolveCanvasReferences();
+            EnsureActionDetailText();
 
             if (worldCamera == null)
                 worldCamera = UnityEngine.Camera.main;
@@ -83,6 +89,7 @@ namespace BC.UI
         {
             if (interactionSource == null)
             {
+                ClearActionDetailText();
                 Hide();
                 return;
             }
@@ -92,18 +99,21 @@ namespace BC.UI
             if (interactable == null)
             {
                 lastInteractable = null;
+                ClearActionDetailText();
                 Hide();
                 return;
             }
 
             if (!InteractionPromptResolver.TryResolveWorldPosition(interactable, out Vector3 promptWorldPosition))
             {
+                ClearActionDetailText();
                 Hide();
                 return;
             }
 
             if (!TryUpdatePosition(promptWorldPosition))
             {
+                ClearActionDetailText();
                 Hide();
                 return;
             }
@@ -117,6 +127,7 @@ namespace BC.UI
                 RefreshIcon();
             }
 
+            RefreshDetailText(interactable);
             RefreshHold(interactable);
             lastInteractable = interactable;
             lastDeviceKind = currentDeviceKind;
@@ -130,6 +141,7 @@ namespace BC.UI
                 : null;
 
             lastInteractable = null;
+            ClearActionDetailText();
             HideImmediate();
         }
 
@@ -210,10 +222,6 @@ namespace BC.UI
             }
 
             InputManagerMB inputManager = InputManagerMB.Instance;
-            InputPromptDeviceKind deviceKind = inputManager != null
-                ? inputManager.ResolvePromptDeviceKind(interactAction != null ? interactAction.action : null)
-                : InputPromptDeviceKind.Unknown;
-
             Sprite resolvedIcon = InputPromptIconResolver.ResolveIcon(inputManager, interactAction, fallbackActionIcon);
             if (!ReferenceEquals(actionIconImage.sprite, resolvedIcon))
             {
@@ -221,6 +229,29 @@ namespace BC.UI
             }
 
             actionIconImage.enabled = resolvedIcon != null;
+        }
+
+        private void RefreshDetailText(IInteractionTarget interactable)
+        {
+            EnsureActionDetailText();
+
+            if (actionDetailText == null)
+                return;
+
+            string detailText = InteractionPromptResolver.ResolveDetailText(interactable);
+            bool hasDetailText = !string.IsNullOrEmpty(detailText);
+
+            if (!hasDetailText)
+            {
+                ClearActionDetailText();
+                return;
+            }
+
+            if (!actionDetailText.gameObject.activeSelf)
+                actionDetailText.gameObject.SetActive(true);
+
+            if (actionDetailText.text != detailText)
+                actionDetailText.text = detailText;
         }
 
         private void RefreshHold(IInteractionTarget interactable)
@@ -274,12 +305,71 @@ namespace BC.UI
         private void HideImmediate()
         {
             Hide();
+            ClearActionDetailText();
 
             if (holdRingImage != null)
             {
                 holdRingImage.fillAmount = 0f;
                 holdRingImage.enabled = false;
             }
+        }
+
+        private void ClearActionDetailText()
+        {
+            if (actionDetailText == null)
+                return;
+
+            if (!string.IsNullOrEmpty(actionDetailText.text))
+                actionDetailText.text = string.Empty;
+
+            if (actionDetailText.gameObject.activeSelf)
+                actionDetailText.gameObject.SetActive(false);
+        }
+
+        private void EnsureActionDetailText()
+        {
+            if (actionDetailText != null)
+                return;
+
+            ResolveCanvasReferences();
+
+            RectTransform iconParent = actionIconImage != null
+                ? actionIconImage.rectTransform.parent as RectTransform
+                : null;
+            RectTransform parentRect = iconParent != null ? iconParent : root;
+
+            if (parentRect == null)
+                return;
+
+            GameObject detailTextObject = new GameObject("ActionDetailText", typeof(RectTransform));
+            RectTransform detailTextRect = detailTextObject.GetComponent<RectTransform>();
+            detailTextRect.SetParent(parentRect, false);
+            detailTextRect.anchorMin = new Vector2(0.5f, 0.5f);
+            detailTextRect.anchorMax = new Vector2(0.5f, 0.5f);
+            detailTextRect.pivot = new Vector2(0.5f, 1f);
+
+            Vector2 iconAnchoredPosition = actionIconImage != null
+                ? actionIconImage.rectTransform.anchoredPosition
+                : Vector2.zero;
+            float iconHeight = actionIconImage != null
+                ? Mathf.Max(24f, actionIconImage.rectTransform.rect.height)
+                : 32f;
+
+            detailTextRect.anchoredPosition = iconAnchoredPosition + new Vector2(0f, -(iconHeight * 0.5f + 8f));
+            detailTextRect.sizeDelta = new Vector2(180f, 32f);
+
+            TextMeshProUGUI detailText = detailTextObject.AddComponent<TextMeshProUGUI>();
+            detailText.alignment = TextAlignmentOptions.Center;
+            detailText.enableAutoSizing = true;
+            detailText.fontSize = 18f;
+            detailText.fontSizeMin = 12f;
+            detailText.fontSizeMax = 18f;
+            detailText.raycastTarget = false;
+            detailText.color = Color.white;
+            detailText.text = string.Empty;
+
+            actionDetailText = detailText;
+            detailTextObject.SetActive(false);
         }
 
         private void ResolveCanvasReferences()

@@ -199,6 +199,177 @@ namespace BC.Base.Tests
             }
         }
 
+        [Test]
+        public void SetValueStoreValueStepRuntimeWritesEntityFaceExpressionWithAutoKind()
+        {
+            object sceneKernel = CreateConfiguredSceneKernel();
+
+            try
+            {
+                object actor = CreateEntityRef(60u, 1);
+                object trigger = CreateEntityRef(61u, 1);
+                Type faceExpressionType = GetTypeByFullName("BC.Base.FaceExpressionId");
+                object faceExpressionKey = GetStaticFieldValue("BC.Base.ValueKeys+Runtime", "FaceExpression");
+                object faceExpressionKeyReference = InvokeGenericStatic("BC.Base.ValueKeyReference", "From", faceExpressionType, faceExpressionKey);
+                object definition = CreateInstance(
+                    "BC.ActionSystem.SetValueStoreValueStepRuntime",
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteStoreScope"), "Entity"),
+                    InvokeStatic("BC.Base.EntityTargetReference", "Self"),
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteValueKind"), "Auto"),
+                    faceExpressionKeyReference,
+                    InvokeStatic("BC.Base.ReactiveBool", "LiteralValue", false),
+                    InvokeStatic("BC.Base.ReactiveInt", "LiteralValue", 0),
+                    InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 0f),
+                    InvokeStatic("BC.Base.ReactiveString", "LiteralValue", string.Empty),
+                    InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
+                    InvokeStatic("BC.Base.ReactiveFaceExpressionId", "LiteralValue", Enum.Parse(faceExpressionType, "Happy")),
+                    InvokeStatic("BC.Base.ReactiveEntityMoveState", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")));
+
+                object runtime = InvokeMethod(definition, "CreateRuntime");
+                object context = CreateInstance("BC.ActionSystem.ActionExecutionContext", sceneKernel, GetPropertyValue(sceneKernel, "Actions"), actor, trigger);
+                object status = InvokeMethod(runtime, "Tick", context, 8);
+
+                Assert.AreEqual("Continue", status.ToString());
+                object entityValueStore = GetPropertyValue(sceneKernel, "EntityValueStore");
+                Assert.AreEqual(
+                    Enum.Parse(faceExpressionType, "Happy"),
+                    InvokeGenericMethod(entityValueStore, "Get", faceExpressionType, actor, faceExpressionKey));
+            }
+            finally
+            {
+                InvokeMethod(sceneKernel, "Dispose");
+            }
+        }
+
+        [Test]
+        public void SetValueStoreValueStepRuntimeWritesKernelIntWithExplicitKind()
+        {
+            object sceneKernel = CreateConfiguredSceneKernel();
+
+            try
+            {
+                object actor = CreateEntityRef(62u, 1);
+                object kernelIntKey = GetStaticFieldValue("BC.Base.ValueKeys+Kernel+Gimmick", "SequenceIndex");
+                object kernelIntKeyReference = InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), kernelIntKey);
+                object definition = CreateInstance(
+                    "BC.ActionSystem.SetValueStoreValueStepRuntime",
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteStoreScope"), "Kernel"),
+                    InvokeStatic("BC.Base.EntityTargetReference", "Self"),
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteValueKind"), "Int"),
+                    kernelIntKeyReference,
+                    InvokeStatic("BC.Base.ReactiveBool", "LiteralValue", false),
+                    InvokeStatic("BC.Base.ReactiveInt", "LiteralValue", 42),
+                    InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 0f),
+                    InvokeStatic("BC.Base.ReactiveString", "LiteralValue", string.Empty),
+                    InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
+                    InvokeStatic("BC.Base.ReactiveFaceExpressionId", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.FaceExpressionId"), "Neutral")),
+                    InvokeStatic("BC.Base.ReactiveEntityMoveState", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")));
+
+                object runtime = InvokeMethod(definition, "CreateRuntime");
+                object context = CreateInstance("BC.ActionSystem.ActionExecutionContext", sceneKernel, GetPropertyValue(sceneKernel, "Actions"), actor);
+                object status = InvokeMethod(runtime, "Tick", context, 8);
+
+                Assert.AreEqual("Continue", status.ToString());
+                object kernelValueStore = GetPropertyValue(sceneKernel, "KernelValueStore");
+                Assert.AreEqual(42, InvokeGenericMethod(kernelValueStore, "Get", typeof(int), kernelIntKey));
+            }
+            finally
+            {
+                InvokeMethod(sceneKernel, "Dispose");
+            }
+        }
+
+        [Test]
+        public void ActionExecutionInjectsLocalValueStoreAndClearsItOnCompletion()
+        {
+            object sceneKernel = CreateConfiguredSceneKernel();
+
+            try
+            {
+                object actionService = GetPropertyValue(sceneKernel, "Actions");
+                object actor = CreateEntityRef(70u, 1);
+                object handle = InvokeMethod(actionService, "Execute", actor, CreateWaitFramesAction(1));
+
+                Assert.IsTrue(TryGetExecution(actionService, handle, out object execution));
+
+                object context = GetPropertyValue(execution, "Context");
+                object localValueStore = GetFieldValue(context, "LocalValueStore");
+                object localIntKey = GetStaticFieldValue("BC.Base.ValueKeys+Local+Values", "Int0");
+
+                Assert.IsNotNull(localValueStore);
+                Assert.AreEqual(true, InvokeGenericMethod(localValueStore, "Set", typeof(int), localIntKey, 27));
+                Assert.AreEqual(27, InvokeGenericMethod(localValueStore, "Get", typeof(int), localIntKey));
+
+                InvokeMethod(actionService, "Tick", 0f);
+                InvokeMethod(actionService, "Tick", 0f);
+
+                Assert.IsFalse(TryGetExecution(actionService, handle, out _));
+                Assert.AreEqual(0, InvokeGenericMethod(localValueStore, "Get", typeof(int), localIntKey));
+            }
+            finally
+            {
+                InvokeMethod(sceneKernel, "Dispose");
+            }
+        }
+
+        [Test]
+        public void SetValueStoreValueStepRuntimeWritesLocalIntAndReactiveBindingReadsIt()
+        {
+            object sceneKernel = CreateConfiguredSceneKernel();
+
+            try
+            {
+                object actionService = GetPropertyValue(sceneKernel, "Actions");
+                object actor = CreateEntityRef(71u, 1);
+                object handle = InvokeMethod(actionService, "Execute", actor, CreateWaitFramesAction(2));
+
+                Assert.IsTrue(TryGetExecution(actionService, handle, out object execution));
+
+                object context = GetPropertyValue(execution, "Context");
+                object localIntKey = GetStaticFieldValue("BC.Base.ValueKeys+Local+Values", "Int0");
+                object localIntKeyReference = InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), localIntKey);
+                object definition = CreateInstance(
+                    "BC.ActionSystem.SetValueStoreValueStepRuntime",
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteStoreScope"), "Local"),
+                    InvokeStatic("BC.Base.EntityTargetReference", "Self"),
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteValueKind"), "Int"),
+                    localIntKeyReference,
+                    InvokeStatic("BC.Base.ReactiveBool", "LiteralValue", false),
+                    InvokeStatic("BC.Base.ReactiveInt", "LiteralValue", 42),
+                    InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 0f),
+                    InvokeStatic("BC.Base.ReactiveString", "LiteralValue", string.Empty),
+                    InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
+                    InvokeStatic("BC.Base.ReactiveFaceExpressionId", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.FaceExpressionId"), "Neutral")),
+                    InvokeStatic("BC.Base.ReactiveEntityMoveState", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")));
+
+                object runtime = InvokeMethod(definition, "CreateRuntime");
+                object status = InvokeMethod(runtime, "Tick", context, 8);
+
+                Assert.AreEqual("Continue", status.ToString());
+
+                object localValueStore = GetFieldValue(context, "LocalValueStore");
+                Assert.AreEqual(42, InvokeGenericMethod(localValueStore, "Get", typeof(int), localIntKey));
+
+                object localReactive = InvokeStatic("BC.Base.ReactiveInt", "LocalValueStore", localIntKeyReference);
+                object scope = GetReactiveScope(execution);
+                object binding = InvokeMethod(scope, "Bind", localReactive);
+
+                AssertSuccessfulResult(InvokeMethod(binding, "Read"), 42);
+            }
+            finally
+            {
+                InvokeMethod(sceneKernel, "Dispose");
+            }
+        }
+
+        private static object CreateConfiguredSceneKernel()
+        {
+            object sceneKernel = CreateInstance("BC.Base.SceneKernel");
+            SetPropertyValue(sceneKernel, "EntityValueStore", CreateInstance("BC.Base.ValueStoreService"));
+            SetPropertyValue(sceneKernel, "KernelValueStore", CreateInstance("BC.Base.KernelValueStoreService"));
+            return sceneKernel;
+        }
+
         private static object CreateEntityRef(uint entityId, int version)
         {
             return CreateInstance("BC.Base.EntityRef", entityId, version);
@@ -283,6 +454,21 @@ namespace BC.Base.Tests
             return method.Invoke(instance, BuildInvokeArguments(method.GetParameters(), arguments));
         }
 
+        private static object InvokeGenericStatic(string fullTypeName, string methodName, Type genericType, params object[] arguments)
+        {
+            Type type = GetTypeByFullName(fullTypeName);
+            MethodInfo method = FindGenericMethod(type, methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic, genericType, arguments);
+            Assert.IsNotNull(method, $"Expected generic static method: {fullTypeName}.{methodName}<{genericType.Name}>");
+            return method.Invoke(null, BuildInvokeArguments(method.GetParameters(), arguments));
+        }
+
+        private static object InvokeGenericMethod(object instance, string methodName, Type genericType, params object[] arguments)
+        {
+            MethodInfo method = FindGenericMethod(instance.GetType(), methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, genericType, arguments);
+            Assert.IsNotNull(method, $"Expected generic method: {instance.GetType().FullName}.{methodName}<{genericType.Name}>");
+            return method.Invoke(instance, BuildInvokeArguments(method.GetParameters(), arguments));
+        }
+
         private static object CreateInstance(string fullTypeName, params object[] arguments)
         {
             Type type = GetTypeByFullName(fullTypeName);
@@ -310,6 +496,21 @@ namespace BC.Base.Tests
             PropertyInfo property = instance.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.IsNotNull(property, $"Expected property: {propertyName}");
             return property.GetValue(instance);
+        }
+
+        private static object GetStaticFieldValue(string fullTypeName, string fieldName)
+        {
+            Type type = GetTypeByFullName(fullTypeName);
+            FieldInfo field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, $"Expected static field: {fullTypeName}.{fieldName}");
+            return field.GetValue(null);
+        }
+
+        private static void SetPropertyValue(object instance, string propertyName, object value)
+        {
+            PropertyInfo property = instance.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(property, $"Expected property: {propertyName}");
+            property.SetValue(instance, value);
         }
 
         private static Type BuildThrowingActionDefinitionType()
@@ -494,6 +695,30 @@ namespace BC.Base.Tests
                 ConstructorInfo ctor = constructors[index];
                 if (CanAcceptArguments(ctor.GetParameters(), arguments))
                     return ctor;
+            }
+
+            return null;
+        }
+
+        private static MethodInfo FindGenericMethod(
+            Type ownerType,
+            string methodName,
+            BindingFlags bindingFlags,
+            Type genericType,
+            object[] arguments)
+        {
+            MethodInfo[] methods = ownerType.GetMethods(bindingFlags);
+
+            for (int index = 0; index < methods.Length; index++)
+            {
+                MethodInfo method = methods[index];
+                if (method.Name != methodName || !method.IsGenericMethodDefinition || method.GetGenericArguments().Length != 1)
+                    continue;
+
+                MethodInfo closedMethod = method.MakeGenericMethod(genericType);
+
+                if (CanAcceptArguments(closedMethod.GetParameters(), arguments))
+                    return closedMethod;
             }
 
             return null;

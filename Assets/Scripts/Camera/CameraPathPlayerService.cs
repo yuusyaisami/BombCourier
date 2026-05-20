@@ -57,44 +57,41 @@ namespace BC.Camera
 
             int version = ++playVersion;
             IReadOnlyList<CameraPathResolvedPoint> points = request.Sequence.Points;
+            sceneKernel.Cameras?.BeginPathPlayback(request, version);
 
-            SetPriority(request.ReturnCamera, request.InactivePriority);
-            SetPriority(request.PathCamera, request.PathPriority);
-            request.PathCamera.Prioritize();
-
-            Transform cameraTransform = request.PathCamera.transform;
-            ApplyPoint(request.PathCamera, cameraTransform, points[0]);
-            await ExecutePointActionAsync(points[0], request.Actor);
-            await HoldAsync(points[0].HoldSeconds, version);
-
-            for (int index = 1; index < points.Count; index++)
+            try
             {
-                if (version != playVersion || request.PathCamera == null)
-                    return;
+                Transform cameraTransform = request.PathCamera.transform;
+                ApplyPoint(request.PathCamera, cameraTransform, points[0]);
+                await ExecutePointActionAsync(points[0], request.Actor);
+                await HoldAsync(points[0].HoldSeconds, version);
 
-                CameraPathResolvedPoint previous = points[index - 1];
-                CameraPathResolvedPoint current = points[index];
+                for (int index = 1; index < points.Count; index++)
+                {
+                    if (version != playVersion || request.PathCamera == null)
+                        return;
 
-                await MoveToPointAsync(request.PathCamera, previous, current, version);
+                    CameraPathResolvedPoint previous = points[index - 1];
+                    CameraPathResolvedPoint current = points[index];
+
+                    await MoveToPointAsync(request.PathCamera, previous, current, version);
+
+                    if (version != playVersion)
+                        return;
+
+                    await ExecutePointActionAsync(current, request.Actor);
+                    await HoldAsync(current.HoldSeconds, version);
+                }
 
                 if (version != playVersion)
                     return;
 
-                await ExecutePointActionAsync(current, request.Actor);
-                await HoldAsync(current.HoldSeconds, version);
+                await AwaitBeforeCameraResetAsync(request);
             }
-
-            if (version != playVersion)
-                return;
-
-            await AwaitBeforeCameraResetAsync(request);
-
-            if (version != playVersion)
-                return;
-
-            SetPriority(request.PathCamera, request.InactivePriority);
-            SetPriority(request.ReturnCamera, request.ReturnPriority);
-            request.ReturnCamera?.Prioritize();
+            finally
+            {
+                sceneKernel.Cameras?.EndPathPlayback(version);
+            }
         }
 
         public void Cancel()
@@ -260,17 +257,6 @@ namespace BC.Camera
             float toFieldOfView = to.OverrideFieldOfView ? to.FieldOfView : fromFieldOfView;
             lens.FieldOfView = Mathf.Lerp(fromFieldOfView, toFieldOfView, t);
             camera.Lens = lens;
-        }
-
-        private static void SetPriority(CinemachineCamera camera, int priority)
-        {
-            if (camera == null)
-                return;
-
-            PrioritySettings settings = camera.Priority;
-            settings.Enabled = true;
-            settings.Value = priority;
-            camera.Priority = settings;
         }
     }
 }

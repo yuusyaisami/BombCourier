@@ -10,6 +10,7 @@ namespace BC.ActionSystem
         [SerializeField] private EntityTargetReference target = EntityTargetReference.Self();
         [SerializeField] private string layerName;
         [SerializeField, Range(0f, 1f)] private float weight = 1f;
+        [SerializeField, Min(0f)] private float duration;
 
         public override void Validate(ActionValidationContext context)
         {
@@ -20,6 +21,9 @@ namespace BC.ActionSystem
 
             if (float.IsNaN(weight))
                 context.AddError("Animator layer weight is not a valid number.");
+
+            if (float.IsNaN(duration) || duration < 0f)
+                context.AddError("Animator layer weight duration must be zero or greater.");
         }
 
         public override void Compile(ActionCompileContext context)
@@ -27,7 +31,8 @@ namespace BC.ActionSystem
             context.AddStep(new SetEntityAnimationLayerWeightStepRuntime(
                 target,
                 layerName,
-                weight));
+                weight,
+                duration));
         }
     }
 }

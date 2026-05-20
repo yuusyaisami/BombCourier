@@ -22,6 +22,7 @@ namespace BC.Base
         [FormerlySerializedAs("tag")]
         [SerializeField, InspectorName("Tag"), EntityTagDropdown] private EntityTagReference tagReference;
         [SerializeField] private EntityFlags flags = EntityFlags.None;
+        [SerializeField] private bool autoInstallRigidbodySupportRiders = true;
         private EntityRegistrationMode registrationMode = EntityRegistrationMode.Manual;
         public StateMachine<EntityState> EntityStateMachine = new StateMachine<EntityState>();
 
@@ -33,6 +34,11 @@ namespace BC.Base
         public EntityFlags Flags => flags;
 
         public bool HasEntity => Entity.IsValid;
+
+        private void Awake()
+        {
+            EnsureRigidbodySupportRiders();
+        }
 
         public void Bind(EntityRef entity)
         {
@@ -67,6 +73,33 @@ namespace BC.Base
         {
             // 原則、Spawner / Lifecycle からDespawnされる前提。
             // ただし外部Destroy対策を入れるなら、ここでLifecycleへ通知する。
+        }
+
+        private void EnsureRigidbodySupportRiders()
+        {
+            if (!autoInstallRigidbodySupportRiders || !Application.isPlaying)
+                return;
+
+            Rigidbody[] rigidbodies = GetComponentsInChildren<Rigidbody>(true);
+
+            for (int i = 0; i < rigidbodies.Length; i++)
+            {
+                Rigidbody targetRigidbody = rigidbodies[i];
+
+                if (targetRigidbody == null || ShouldSkipSupportRider(targetRigidbody))
+                    continue;
+
+                if (targetRigidbody.GetComponent<RigidbodySupportRiderMB>() == null)
+                    targetRigidbody.gameObject.AddComponent<RigidbodySupportRiderMB>();
+            }
+        }
+
+        private static bool ShouldSkipSupportRider(Rigidbody targetRigidbody)
+        {
+            if (targetRigidbody.GetComponentInParent<EntityMoveMotorMB>() != null)
+                return true;
+
+            return targetRigidbody.GetComponentInParent<ISupportMotionSource>() != null;
         }
     }
 }

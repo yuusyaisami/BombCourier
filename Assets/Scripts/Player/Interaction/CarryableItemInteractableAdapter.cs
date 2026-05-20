@@ -4,11 +4,13 @@ using UnityEngine;
 
 namespace BC.Player
 {
-    public sealed class CarryableItemInteractableAdapter : IInteractionTarget, IInteractionPromptProvider
+    public sealed class CarryableItemInteractableAdapter : IInteractionTarget, IInteractionPromptProvider, IInteractionPromptDetailTextProvider
     {
         private readonly MonoBehaviour owner;
         private readonly ICarryableItem carryableItem;
         private InteractionVisualTargetMB visualTarget;
+        private IInteractionPromptDetailTextProvider promptDetailTextProvider;
+        private bool promptDetailTextProviderResolved;
 
         public CarryableItemInteractableAdapter(MonoBehaviour owner, ICarryableItem carryableItem)
         {
@@ -21,6 +23,7 @@ namespace BC.Player
         public Transform InteractionTransform => carryableItem != null ? carryableItem.ItemTransform : null;
         public Transform PromptAnchor => InteractionTransform;
         public Vector3 PromptWorldOffset => Vector3.up * 0.15f;
+        public string PromptDetailText => ResolvePromptDetailText();
         public float RequiredHoldDuration => 0f;
         public InteractionVisualTargetMB VisualTarget
         {
@@ -71,6 +74,41 @@ namespace BC.Player
 
         public void OnInteractionCompleted(InteractionEventData eventData)
         {
+        }
+
+        private string ResolvePromptDetailText()
+        {
+            IInteractionPromptDetailTextProvider provider = ResolvePromptDetailTextProvider();
+            return provider != null ? provider.PromptDetailText ?? string.Empty : string.Empty;
+        }
+
+        private IInteractionPromptDetailTextProvider ResolvePromptDetailTextProvider()
+        {
+            if (promptDetailTextProviderResolved)
+                return promptDetailTextProvider;
+
+            promptDetailTextProviderResolved = true;
+
+            if (carryableItem is IInteractionPromptDetailTextProvider carryableProvider)
+            {
+                promptDetailTextProvider = carryableProvider;
+                return promptDetailTextProvider;
+            }
+
+            if (owner == null)
+                return null;
+
+            MonoBehaviour[] ownerBehaviours = owner.GetComponents<MonoBehaviour>();
+            for (int i = 0; i < ownerBehaviours.Length; i++)
+            {
+                if (ownerBehaviours[i] is IInteractionPromptDetailTextProvider provider)
+                {
+                    promptDetailTextProvider = provider;
+                    break;
+                }
+            }
+
+            return promptDetailTextProvider;
         }
     }
 }

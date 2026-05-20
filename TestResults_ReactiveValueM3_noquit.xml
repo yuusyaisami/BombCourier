@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="8" result="Failed(Child)" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.1772997">
+  <test-suite type="TestSuite" id="1000" name="BombCourier" fullname="BombCourier" runstate="Runnable" testcasecount="209" result="Failed" site="Child" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.177300" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1210" name="BombCourier.ReactiveValue.EditorTests.dll" fullname="C:/Users/macar/BombCourier/Library/ScriptAssemblies/BombCourier.ReactiveValue.EditorTests.dll" runstate="Runnable" testcasecount="38" result="Failed" site="Child" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.160688" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="18748" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1211" name="BC" fullname="BC" runstate="Runnable" testcasecount="38" result="Failed" site="Child" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.159081" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1212" name="Base" fullname="BC.Base" runstate="Runnable" testcasecount="38" result="Failed" site="Child" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.158316" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1213" name="Tests" fullname="BC.Base.Tests" runstate="Runnable" testcasecount="38" result="Failed" site="Child" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.157402" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1177" name="ReactiveValueM3ValueStoreTests" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" testcasecount="8" result="Failed" site="Child" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.154196" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1183" name="ContinuousValueStoreBindingsCanUseFallback" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests.ContinuousValueStoreBindingsCanUseFallback" methodname="ContinuousValueStoreBindingsCanUseFallback" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" seed="703626874" result="Failed" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.058348" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Expected: 3.25f
+  But was:  6.0f
+]]></message>
+                  <stack-trace><![CDATA[at BC.Base.Tests.ReactiveValueM3ValueStoreTests.AssertSuccessfulResult (System.Object result, System.Object expectedValue) [0x0002c] in C:\Users\macar\BombCourier\Assets\Tests\EditMode\ReactiveValue\ReactiveValueM3ValueStoreTests.cs:396
+at BC.Base.Tests.ReactiveValueM3ValueStoreTests.ContinuousValueStoreBindingsCanUseFallback () [0x00123] in C:\Users\macar\BombCourier\Assets\Tests\EditMode\ReactiveValue\ReactiveValueM3ValueStoreTests.cs:254
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1179" name="EntityValueStoreBoolAndEntityValueStoreEntityResolveCurrentValues" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests.EntityValueStoreBoolAndEntityValueStoreEntityResolveCurrentValues" methodname="EntityValueStoreBoolAndEntityValueStoreEntityResolveCurrentValues" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" seed="2005302740" result="Passed" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.018175" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1185" name="EntityValueStoreEntityBindingCanFallbackToTriggerEntity" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests.EntityValueStoreEntityBindingCanFallbackToTriggerEntity" methodname="EntityValueStoreEntityBindingCanFallbackToTriggerEntity" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" seed="500994418" result="Failed" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.005204" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Expected: Entity(91:2)
+  But was:  Entity(0:0)
+]]></message>
+                  <stack-trace><![CDATA[at BC.Base.Tests.ReactiveValueM3ValueStoreTests.AssertSuccessfulResult (System.Object result, System.Object expectedValue) [0x0002c] in C:\Users\macar\BombCourier\Assets\Tests\EditMode\ReactiveValue\ReactiveValueM3ValueStoreTests.cs:396
+at BC.Base.Tests.ReactiveValueM3ValueStoreTests.EntityValueStoreEntityBindingCanFallbackToTriggerEntity () [0x000df] in C:\Users\macar\BombCourier\Assets\Tests\EditMode\ReactiveValue\ReactiveValueM3ValueStoreTests.cs:304
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1184" name="EntityValueStoreFactoryRejectsNestedStoreSelectors" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests.EntityValueStoreFactoryRejectsNestedStoreSelectors" methodname="EntityValueStoreFactoryRejectsNestedStoreSelectors" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" seed="1368149377" result="Passed" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.003127" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1178" name="EntityValueStoreSnapshotAndWatchedFloatBindingsObserveStoreChanges" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests.EntityValueStoreSnapshotAndWatchedFloatBindingsObserveStoreChanges" methodname="EntityValueStoreSnapshotAndWatchedFloatBindingsObserveStoreChanges" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" seed="1170584422" result="Passed" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.009074" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1181" name="EntityValueStoreSpecialEnumWatchedBindingObservesStoreChanges" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests.EntityValueStoreSpecialEnumWatchedBindingObservesStoreChanges" methodname="EntityValueStoreSpecialEnumWatchedBindingObservesStoreChanges" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" seed="1540299207" result="Failed" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.005262" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+                  <stack-trace><![CDATA[at BC.Base.Tests.ReactiveValueM3ValueStoreTests.EntityValueStoreSpecialEnumWatchedBindingObservesStoreChanges () [0x00080] in C:\Users\macar\BombCourier\Assets\Tests\EditMode\ReactiveValue\ReactiveValueM3ValueStoreTests.cs:156
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1180" name="EntityValueStoreStringAndSpecialEnumBindingsResolveCurrentValues" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests.EntityValueStoreStringAndSpecialEnumBindingsResolveCurrentValues" methodname="EntityValueStoreStringAndSpecialEnumBindingsResolveCurrentValues" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" seed="1961997475" result="Passed" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.022752" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1182" name="ValueStoreResolverReportsExplicitConfigurationFailures" fullname="BC.Base.Tests.ReactiveValueM3ValueStoreTests.ValueStoreResolverReportsExplicitConfigurationFailures" methodname="ValueStoreResolverReportsExplicitConfigurationFailures" classname="BC.Base.Tests.ReactiveValueM3ValueStoreTests" runstate="Runnable" seed="727769153" result="Passed" start-time="2026-05-20 02:53:43Z" end-time="2026-05-20 02:53:43Z" duration="0.009675" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: C:/Users/macar/AppData/LocalLow/DefaultCompany/BombCourier\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

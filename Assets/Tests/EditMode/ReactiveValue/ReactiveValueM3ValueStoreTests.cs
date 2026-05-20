@@ -87,6 +87,89 @@ namespace BC.Base.Tests
         }
 
         [Test]
+        public void EntityValueStoreStringAndSpecialEnumBindingsResolveCurrentValues()
+        {
+            object sceneKernel = CreateConfiguredSceneKernel();
+            object resolver = CreateResolver(sceneKernel);
+            object actor = CreateEntityRef(35u, 1);
+            object context = CreateEvalContext(sceneKernel, actor, CreateEntityRef(45u, 1));
+            object self = InvokeStatic("BC.Base.ReactiveEntityRef", "Self");
+
+            object displayNameKey = GetStaticFieldValue("BC.Base.ValueKeys+Identity", "DisplayName");
+            object displayNameKeyReference = CreateValueKeyReference(typeof(string), displayNameKey);
+            Assert.AreEqual(true, SetEntityStoreValue(sceneKernel, actor, typeof(string), displayNameKey, "Courier"));
+
+            object stringSpec = InvokeStatic(
+                "BC.Base.ReactiveString",
+                "EntityValueStore",
+                self,
+                displayNameKeyReference,
+                GetReactiveEvaluationMode("Snapshot"));
+            object stringBinding = CreateInstance("BC.Base.ReactiveStringBinding", resolver, context, stringSpec);
+            AssertSuccessfulResult(InvokeMethod(stringBinding, "Read"), "Courier");
+
+            Type faceExpressionType = GetTypeByFullName("BC.Base.FaceExpressionId");
+            object faceExpressionKey = GetStaticFieldValue("BC.Base.ValueKeys+Runtime", "FaceExpression");
+            object faceExpressionKeyReference = CreateValueKeyReference(faceExpressionType, faceExpressionKey);
+            object happyExpression = Enum.Parse(faceExpressionType, "Happy");
+            Assert.AreEqual(true, SetEntityStoreValue(sceneKernel, actor, faceExpressionType, faceExpressionKey, happyExpression));
+
+            object faceExpressionSpec = InvokeStatic(
+                "BC.Base.ReactiveFaceExpressionId",
+                "EntityValueStore",
+                self,
+                faceExpressionKeyReference,
+                GetReactiveEvaluationMode("Snapshot"));
+            object faceExpressionBinding = CreateInstance("BC.Base.ReactiveFaceExpressionIdBinding", resolver, context, faceExpressionSpec);
+            AssertSuccessfulResult(InvokeMethod(faceExpressionBinding, "Read"), happyExpression);
+
+            Type moveStateType = GetTypeByFullName("BC.Base.EntityMoveState");
+            object moveStateKey = GetStaticFieldValue("BC.Base.ValueKeys+Runtime", "MoveState");
+            object moveStateKeyReference = CreateValueKeyReference(moveStateType, moveStateKey);
+            object fallingState = Enum.Parse(moveStateType, "Falling");
+            Assert.AreEqual(true, SetEntityStoreValue(sceneKernel, actor, moveStateType, moveStateKey, fallingState));
+
+            object moveStateSpec = InvokeStatic(
+                "BC.Base.ReactiveEntityMoveState",
+                "EntityValueStore",
+                self,
+                moveStateKeyReference,
+                GetReactiveEvaluationMode("Snapshot"));
+            object moveStateBinding = CreateInstance("BC.Base.ReactiveEntityMoveStateBinding", resolver, context, moveStateSpec);
+            AssertSuccessfulResult(InvokeMethod(moveStateBinding, "Read"), fallingState);
+        }
+
+        [Test]
+        public void EntityValueStoreSpecialEnumWatchedBindingObservesStoreChanges()
+        {
+            object sceneKernel = CreateConfiguredSceneKernel();
+            object resolver = CreateResolver(sceneKernel);
+            object actor = CreateEntityRef(36u, 1);
+            object context = CreateEvalContext(sceneKernel, actor, CreateEntityRef(46u, 1));
+            object self = InvokeStatic("BC.Base.ReactiveEntityRef", "Self");
+            Type faceExpressionType = GetTypeByFullName("BC.Base.FaceExpressionId");
+            object faceExpressionKey = GetStaticFieldValue("BC.Base.ValueKeys+Runtime", "FaceExpression");
+            object faceExpressionKeyReference = CreateValueKeyReference(faceExpressionType, faceExpressionKey);
+            object neutralExpression = Enum.Parse(faceExpressionType, "Neutral");
+            object angryExpression = Enum.Parse(faceExpressionType, "Angry");
+
+            object watchedSpec = InvokeStatic(
+                "BC.Base.ReactiveFaceExpressionId",
+                "EntityValueStore",
+                self,
+                faceExpressionKeyReference,
+                GetReactiveEvaluationMode("Watched"));
+            object watchedBinding = CreateInstance("BC.Base.ReactiveFaceExpressionIdBinding", resolver, context, watchedSpec);
+
+            AssertSuccessfulResult(InvokeMethod(watchedBinding, "Read"), neutralExpression);
+
+            Assert.AreEqual(true, SetEntityStoreValue(sceneKernel, actor, faceExpressionType, faceExpressionKey, angryExpression));
+
+            object watchedResult = InvokeMethod(watchedBinding, "Read");
+            AssertSuccessfulResult(watchedResult, angryExpression);
+        }
+
+        [Test]
         public void ValueStoreResolverReportsExplicitConfigurationFailures()
         {
             object actor = CreateEntityRef(50u, 1);

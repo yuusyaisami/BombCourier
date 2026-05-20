@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using BC.Base;
+using BC.Bomb;
 using BC.Item;
+using BC.Manager;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,10 +22,17 @@ namespace BC.Player
         [Header("Input")]
         [SerializeField] private InputActionReference handleItemAction;
 
+        [Header("Interaction Facing")]
+        [SerializeField] private bool faceInteractionTargetOnStart = true;
+        [SerializeField] private EntityFacingControllerMB facingController;
+
         [Header("Throw")]
         [SerializeField] private float maxThrowForce = 12f;
         [SerializeField] private float minThrowForce = 4f;
+        [SerializeField, Min(0.01f)] private float throwChargeActivationHoldTime = 0.1f;
         [SerializeField] private float throwForceChargeTime = 1.5f;
+        [SerializeField, Min(0f)] private float dropForwardVelocity = 0.75f;
+        [SerializeField, Range(0f, 1f)] private float dropCarrierPlanarVelocityFactor = 0.35f;
         [SerializeField, Min(0f)] private float emptyHandThrowPreviewHoldTime = 0.2f;
         [SerializeField, Range(0f, 30f)] private float throwUpwardCompensationAngle = 8f;
 
@@ -49,8 +58,10 @@ namespace BC.Player
         private const int MaxTrajectoryHits = 16;
         // アイテムを拾った後、プレイヤーが入力を離すまで次のアイテムを拾えないようにするためのフラグ。これがないと、例えば爆弾を投げた瞬間にもう一度掴んでしまう。
         private bool waitForPickupInputRelease;
+        private bool isThrowChargePending;
         private bool isThrowCharging;
         private bool carryJumpPenaltyApplied;
+        private bool activeInteractionFacingOwnsChannel;
 
         private readonly RaycastHit[] trajectoryHits = new RaycastHit[MaxTrajectoryHits];
         private readonly Collider[] trajectoryOverlapHits = new Collider[MaxTrajectoryHits];
@@ -63,6 +74,7 @@ namespace BC.Player
         private IEntityVelocitySource velocitySource;
         private PlayerInteractionController interactionController;
         private float emptyHandThrowPreviewTimer;
+        private float throwChargePendingTimer;
         private float throwForceChargeTimer;
         private Vector3[] trajectoryPoints = new Vector3[32];
         private Material ownedTrajectoryMaterial;
@@ -73,6 +85,7 @@ namespace BC.Player
         private int throwSequence;
         private int lastConsumedInputPressSequence;
 
+        public ICarryableItem CurrentHandledItem => currentlyHandledItem;
         public bool IsHandlingItem => isHandlingItem;
         public bool CanInteract => currentCanInteract;
         public bool IsInputPressed => interactionController != null && interactionController.IsInputPressed;
@@ -92,6 +105,7 @@ namespace BC.Player
         public float CurrentThrowChargeRatio => Mathf.Clamp01(throwForceChargeTimer / Mathf.Max(0.01f, throwForceChargeTime));
         public Action OnThrowChargeStart { get; set; }
         public Action OnThrowChargeEnd { get; set; }
+        public event Action<ICarryableItem> CurrentHandledItemChanged;
         public event Action<InteractionEventData> InteractionEvent
         {
             add
@@ -108,6 +122,8 @@ namespace BC.Player
 
         private void Awake()
         {
+            ResolveFacingController();
+
             if (handleItemPoint == null)
                 Debug.LogError($"{nameof(PlayerItemHandleStateMB)}: handleItemPoint is not assigned.", this);
 
@@ -121,6 +137,7 @@ namespace BC.Player
                 handleItemAction != null ? handleItemAction.action : null,
                 handleItemPoint,
                 playerModel != null ? playerModel.transform : transform,
+                () => entityRef,
                 handleItemDistance,
                 handleItemAngleThreshold,
                 itemLayerMask);
@@ -137,12 +154,23 @@ namespace BC.Player
 
         private void OnDisable()
         {
+            ClearInteractionFacing(force: true);
             interactionController?.ResetRuntimeState();
             interactionController?.Unbind();
             handleItemAction?.action?.Disable();
             HideTrajectory();
             RemoveCarryJumpPenalty();
             ResetEmptyHandThrowPreview();
+        }
+
+        private void Reset()
+        {
+            ResolveFacingController();
+        }
+
+        private void OnValidate()
+        {
+            ResolveFacingController();
         }
 
         private void OnDestroy()
@@ -225,7 +253,9 @@ namespace BC.Player
 
         private void TickThrow()
         {
-            if (currentlyHandledItem == null)
+            if (currentlyHandledItem == null ||
+                currentlyHandledItem.ItemTransform == null ||
+                !currentlyHandledItem.ItemTransform.gameObject.activeInHierarchy)
             {
                 ClearHeldState();
                 return;
@@ -245,18 +275,36 @@ namespace BC.Player
                 return;
             }
 
-            // まだ投げチャージしていない。
-            // 2回目の押下で初めてチャージ開始。
+            // 2回目の押下直後はまだ「置く」か「投げる」か確定していないので、
+            // 短い保持猶予を経てから初めて投げチャージへ遷移する。
+            if (isThrowChargePending)
+            {
+                HideTrajectory();
+
+                if (!IsInputPressed)
+                {
+                    ReleaseCurrentItem(HeldItemReleaseKind.Drop);
+                    return;
+                }
+
+                throwChargePendingTimer += Time.deltaTime;
+                float activationHoldTime = Mathf.Max(0.01f, throwChargeActivationHoldTime);
+                if (throwChargePendingTimer < activationHoldTime)
+                    return;
+
+                StartThrowCharge(throwChargePendingTimer - activationHoldTime);
+                return;
+            }
+
+            // まだ投げチャージに入っていない。
+            // 2回目の押下でまず pending に入り、短押しならドロップ、長押しで投げに切り替わる。
             if (!isThrowCharging)
             {
                 HideTrajectory();
 
                 if (ConsumeInputPress())
                 {
-                    isThrowCharging = true;
-                    OnThrowChargeStart?.Invoke();
-                    throwForceChargeTimer = 0f;
-                    UpdateThrowTrajectory();
+                    BeginThrowChargePending();
                 }
 
                 return;
@@ -271,23 +319,55 @@ namespace BC.Player
             }
 
             // チャージ後に離したら投げる。
-            if (isThrowCharging)
-            {
-                isThrowCharging = false;
-                OnThrowChargeEnd?.Invoke();
-            }
-
-            ReleaseCurrentItem();
+            EndThrowCharge();
+            ReleaseCurrentItem(HeldItemReleaseKind.Throw);
         }
+
+        private void BeginThrowChargePending()
+        {
+            isThrowChargePending = true;
+            throwChargePendingTimer = 0f;
+            throwForceChargeTimer = 0f;
+        }
+
+        private void StartThrowCharge(float initialChargeTime)
+        {
+            isThrowChargePending = false;
+            throwChargePendingTimer = 0f;
+
+            if (isThrowCharging)
+                return;
+
+            isThrowCharging = true;
+            throwForceChargeTimer = Mathf.Max(0f, initialChargeTime);
+            OnThrowChargeStart?.Invoke();
+            UpdateThrowTrajectory();
+        }
+
+        private void EndThrowCharge()
+        {
+            if (!isThrowCharging)
+                return;
+
+            isThrowCharging = false;
+            OnThrowChargeEnd?.Invoke();
+        }
+
         private void HandleItem(ICarryableItem item)
         {
             if (item == null || item.ItemTransform == null)
                 return;
 
+            if (item is BombMB bomb && GameLogicManagerMB.Instance != null)
+            {
+                // Bomb を持つ直前の状態を retry checkpoint として確定する。
+                GameLogicManagerMB.Instance.CaptureRetryCheckpointBeforeBombPickup(bomb);
+            }
+
             interactionController?.ClearCandidateState();
             ResetEmptyHandThrowPreview();
 
-            currentlyHandledItem = item;
+            SetCurrentHandledItem(item);
 
             isHandlingItem = true;
             throwForceChargeTimer = 0f;
@@ -298,7 +378,9 @@ namespace BC.Player
 
             // 拾った時の押下を、投げチャージに流用させない。
             waitForPickupInputRelease = true;
+            isThrowChargePending = false;
             isThrowCharging = false;
+            throwChargePendingTimer = 0f;
 
             item.OnHandle(handleItemPoint);
             ApplyCarryJumpPenaltyIfNeeded(item);
@@ -306,7 +388,7 @@ namespace BC.Player
             PublishRuntimeValues();
         }
 
-        private void ReleaseCurrentItem()
+        private void ReleaseCurrentItem(HeldItemReleaseKind releaseKind)
         {
             if (currentlyHandledItem == null)
             {
@@ -314,18 +396,26 @@ namespace BC.Player
                 return;
             }
 
-            currentlyHandledItem.OnRelease(BuildThrowVelocity());
-            throwSequence++;
+            Vector3 releaseVelocity = releaseKind == HeldItemReleaseKind.Throw
+                ? BuildThrowVelocity()
+                : BuildDropVelocity();
+
+            currentlyHandledItem.OnRelease(releaseVelocity);
+
+            if (releaseKind == HeldItemReleaseKind.Throw)
+                throwSequence++;
 
             ClearHeldState();
         }
 
         private void ClearHeldState()
         {
-            currentlyHandledItem = null;
+            SetCurrentHandledItem(null);
 
             isHandlingItem = false;
+            isThrowChargePending = false;
             throwForceChargeTimer = 0f;
+            throwChargePendingTimer = 0f;
             waitForPickupInputRelease = false;
             isThrowCharging = false;
 
@@ -333,6 +423,22 @@ namespace BC.Player
             HideTrajectory();
             RemoveCarryJumpPenalty();
             PublishRuntimeValues();
+        }
+
+        public void RestoreRetryCheckpointState()
+        {
+            // Retry 復帰では item 側の transform / rigidbody を checkpoint restore に任せる。
+            // Player 側は所持状態と throw 入力状態だけを安全に初期化する。
+            ClearHeldState();
+        }
+
+        private void SetCurrentHandledItem(ICarryableItem item)
+        {
+            if (EqualityComparer<ICarryableItem>.Default.Equals(currentlyHandledItem, item))
+                return;
+
+            currentlyHandledItem = item;
+            CurrentHandledItemChanged?.Invoke(currentlyHandledItem);
         }
 
         private float CalculateThrowForce()
@@ -344,6 +450,15 @@ namespace BC.Player
         private Vector3 BuildThrowVelocity()
         {
             return BuildThrowDirection() * CalculateThrowForce() + GetCarrierVelocity();
+        }
+
+        private Vector3 BuildDropVelocity()
+        {
+            Vector3 carrierVelocity = GetCarrierVelocity();
+            carrierVelocity.y = 0f;
+            carrierVelocity *= Mathf.Clamp01(dropCarrierPlanarVelocityFactor);
+
+            return BuildDropDirection() * Mathf.Max(0f, dropForwardVelocity) + carrierVelocity;
         }
 
         private Vector3 GetCarrierVelocity()
@@ -393,6 +508,26 @@ namespace BC.Player
                 fallbackDirection,
                 transform.right,
                 throwUpwardCompensationAngle);
+        }
+
+        private Vector3 BuildDropDirection()
+        {
+            Vector3 forward = playerModel != null
+                ? playerModel.transform.forward
+                : transform.forward;
+
+            forward.y = 0f;
+
+            if (forward.sqrMagnitude <= 0.0001f)
+            {
+                forward = transform.forward;
+                forward.y = 0f;
+            }
+
+            if (forward.sqrMagnitude <= 0.0001f)
+                return Vector3.forward;
+
+            return forward.normalized;
         }
 
         private static Vector3 ApplyThrowUpwardCompensation(Vector3 forward, Vector3 rightAxis, float upwardCompensationAngle)
@@ -728,13 +863,61 @@ namespace BC.Player
 
         private void HandleInteractionEvent(InteractionEventData eventData)
         {
-            if (eventData.EventType != InteractionEventType.Completed)
+            switch (eventData.EventType)
+            {
+                case InteractionEventType.Started:
+                    TryApplyInteractionFacing(eventData);
+                    break;
+
+                case InteractionEventType.Canceled:
+                    ClearInteractionFacing(force: false);
+                    break;
+
+                case InteractionEventType.Completed:
+                    activeInteractionFacingOwnsChannel = false;
+
+                    if (eventData.Interactable is CarryableItemInteractableAdapter adapter)
+                        HandleItem(adapter.CarryableItem);
+                    break;
+            }
+        }
+
+        private void TryApplyInteractionFacing(InteractionEventData eventData)
+        {
+            if (!faceInteractionTargetOnStart)
                 return;
 
-            if (eventData.Interactable is not CarryableItemInteractableAdapter adapter)
+            if (eventData.Interactable is not IInteractionFacingTarget facingTarget || !facingTarget.AllowInteractionSourceFacing)
                 return;
 
-            HandleItem(adapter.CarryableItem);
+            Transform targetTransform = facingTarget.InteractionFacingTransform;
+            EntityFacingControllerMB resolvedFacingController = ResolveFacingController();
+
+            if (resolvedFacingController == null || targetTransform == null)
+                return;
+
+            resolvedFacingController.SetFacingTargetTransform(
+                EntityFacingChannels.Interaction,
+                targetTransform,
+                EntityFacingPriorities.Interaction);
+            activeInteractionFacingOwnsChannel = true;
+        }
+
+        private void ClearInteractionFacing(bool force)
+        {
+            if (!force && !activeInteractionFacingOwnsChannel)
+                return;
+
+            activeInteractionFacingOwnsChannel = false;
+            ResolveFacingController()?.ClearFacing(EntityFacingChannels.Interaction);
+        }
+
+        private EntityFacingControllerMB ResolveFacingController()
+        {
+            if (facingController == null)
+                facingController = GetComponentInParent<EntityFacingControllerMB>();
+
+            return facingController;
         }
 
         private ICarryableItem GetCurrentBestCarryableItem()
@@ -812,11 +995,9 @@ namespace BC.Player
 
         private void CancelInputDrivenItemAction()
         {
-            if (isThrowCharging)
-            {
-                isThrowCharging = false;
-                OnThrowChargeEnd?.Invoke();
-            }
+            isThrowChargePending = false;
+            throwChargePendingTimer = 0f;
+            EndThrowCharge();
 
             throwForceChargeTimer = 0f;
             ResetEmptyHandThrowPreview();
@@ -848,6 +1029,12 @@ namespace BC.Player
 
             lastConsumedInputPressSequence = currentSequence;
             return true;
+        }
+
+        private enum HeldItemReleaseKind
+        {
+            Drop,
+            Throw
         }
     }
 }

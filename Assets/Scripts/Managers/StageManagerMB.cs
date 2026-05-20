@@ -103,6 +103,18 @@ namespace BC.Manager
 
             checkpointService.Capture();
         }
+
+        public StageCheckpointSnapshot CaptureStageCheckpointSnapshot()
+        {
+            if (checkpointService == null)
+            {
+                Debug.LogError($"{nameof(StageManagerMB)}: checkpointService is not assigned.", this);
+                return default;
+            }
+
+            return checkpointService.CaptureSnapshot();
+        }
+
         // ステージをリロードする (注意: これはStageSaveが入った後に呼び出すこと, またReloadはSaveの一番最新の状態で呼ぶこと)
         public void ReloadStage()
         {
@@ -114,6 +126,22 @@ namespace BC.Manager
 
             checkpointService.Restore();
 
+        }
+
+        public void ReloadStage(StageCheckpointSnapshot snapshot)
+        {
+            if (checkpointService == null)
+            {
+                Debug.LogError($"{nameof(StageManagerMB)}: checkpointService is not assigned.", this);
+                return;
+            }
+
+            checkpointService.RestoreSnapshot(snapshot);
+        }
+
+        public void ClearStageCheckpoint()
+        {
+            checkpointService?.Clear();
         }
 
         private static StageLoadResult CreateEmptyResult(GameObject stageInstance = null)

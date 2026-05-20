@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BC.Base;
 using BC.Rendering;
 using UnityEngine;
 
@@ -59,6 +60,8 @@ namespace BC.Player
     public readonly struct InteractionEventData
     {
         public readonly IInteractionSource Source;
+        public readonly EntityRef SourceEntity;
+        public readonly Transform SourceFacingTransform;
         public readonly IInteractionTarget Interactable;
         public readonly InteractionEventType EventType;
         public readonly float HoldDuration;
@@ -66,12 +69,16 @@ namespace BC.Player
 
         public InteractionEventData(
             IInteractionSource source,
+            EntityRef sourceEntity,
+            Transform sourceFacingTransform,
             IInteractionTarget interactable,
             InteractionEventType eventType,
             float holdDuration,
             float holdProgress)
         {
             Source = source;
+            SourceEntity = sourceEntity;
+            SourceFacingTransform = sourceFacingTransform;
             Interactable = interactable;
             EventType = eventType;
             HoldDuration = holdDuration;
@@ -105,5 +112,11 @@ namespace BC.Player
         void OnInteractionUpdated(InteractionEventData eventData);
         void OnInteractionCanceled(InteractionEventData eventData);
         void OnInteractionCompleted(InteractionEventData eventData);
+    }
+
+    public interface IInteractionFacingTarget
+    {
+        bool AllowInteractionSourceFacing { get; }
+        Transform InteractionFacingTransform { get; }
     }
 }

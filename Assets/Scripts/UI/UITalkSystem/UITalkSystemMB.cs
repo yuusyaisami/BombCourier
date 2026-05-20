@@ -22,6 +22,8 @@ namespace BC.UI
         [SerializeField] private InputActionReference nextTalkInputAction; // 次の会話に進む入力アクション
         private bool isShowingTalk; // 会話UIが表示されているかどうかのフラグ
 
+        public InputAction NextTalkInputAction => nextTalkInputAction != null ? nextTalkInputAction.action : null;
+
         private void Awake()
         {
             // 起動時は会話UIを閉じた状態にしておく。

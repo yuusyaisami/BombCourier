@@ -8,6 +8,11 @@ namespace BC.Player
         Vector3 PromptWorldOffset { get; }
     }
 
+    public interface IInteractionPromptDetailTextProvider
+    {
+        string PromptDetailText { get; }
+    }
+
     public static class InteractionPromptResolver
     {
         private static readonly Vector3 DefaultWorldOffset = new(0f, 0.1f, 0f);
@@ -60,5 +65,21 @@ namespace BC.Player
             worldPosition = anchor.position + DefaultWorldOffset;
             return true;
         }
+
+        public static string ResolveDetailText(IInteractionTarget interactable)
+        {
+            if (interactable is not IInteractionPromptDetailTextProvider provider)
+                return string.Empty;
+
+            return provider.PromptDetailText ?? string.Empty;
+        }
+    }
+
+    [DisallowMultipleComponent]
+    public sealed class InteractionPromptDetailTextMB : MonoBehaviour, IInteractionPromptDetailTextProvider
+    {
+        [SerializeField, TextArea] private string promptDetailText = string.Empty;
+
+        public string PromptDetailText => promptDetailText ?? string.Empty;
     }
 }

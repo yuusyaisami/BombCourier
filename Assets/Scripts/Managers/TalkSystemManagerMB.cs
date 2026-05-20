@@ -2,9 +2,9 @@ using System;
 using System.Threading;
 using BC.ActionSystem;
 using BC.Base;
+using BC.Camera;
 using BC.UI;
 using Cysharp.Threading.Tasks;
-using Unity.Cinemachine;
 using UnityEngine;
 
 namespace BC.Managers
@@ -20,13 +20,58 @@ namespace BC.Managers
     public struct TalkRequestData
     {
         public string speakerName;
+        [TextArea]
         public string dialogueText;
-        public CinemachineCamera changeCinemachineCamera;
 
         public TextEffectData textEffectData;
         public bool isWaitingActionCompleted; // action の完了を待つかどうか
         public InlineAction onStartTalkAction; // 会話開始時に実行する action
         public InlineAction onCompleteTalkAction; // 会話終了時に実行する action
+    }
+
+    public readonly struct TalkChoiceOptionRequestData
+    {
+        public readonly string DisplayText;
+
+        public TalkChoiceOptionRequestData(string displayText)
+        {
+            DisplayText = displayText ?? string.Empty;
+        }
+    }
+
+    public readonly struct TalkChoiceRequestData
+    {
+        public readonly TalkChoiceOptionRequestData[] Options;
+        public readonly int DefaultSelectionIndex;
+        public readonly bool WrapSelection;
+
+        public TalkChoiceRequestData(
+            TalkChoiceOptionRequestData[] options,
+            int defaultSelectionIndex,
+            bool wrapSelection)
+        {
+            Options = options ?? Array.Empty<TalkChoiceOptionRequestData>();
+            DefaultSelectionIndex = defaultSelectionIndex;
+            WrapSelection = wrapSelection;
+        }
+
+        public bool HasOptions => Options != null && Options.Length > 0;
+    }
+
+    public readonly struct TalkChoiceSelectionResult
+    {
+        public static readonly TalkChoiceSelectionResult None = new TalkChoiceSelectionResult(-1, string.Empty);
+
+        public readonly int SelectedIndex;
+        public readonly string SelectedText;
+
+        public TalkChoiceSelectionResult(int selectedIndex, string selectedText)
+        {
+            SelectedIndex = selectedIndex;
+            SelectedText = selectedText ?? string.Empty;
+        }
+
+        public bool HasSelection => SelectedIndex >= 0;
     }
 
     [Serializable]
@@ -40,16 +85,16 @@ namespace BC.Managers
         public static TalkSystemManagerMB Instance { get; private set; }
 
         [SerializeField] private UITalkSystemMB talkSystemUIManagerMB;
-
-        // 会話中だけ前面に出すカメラと、通常時に戻すための優先度。
-        [SerializeField] private int talkCameraPriority = 100;
-        [SerializeField] private int inactiveCameraPriority = 0;
+        [SerializeField] private UITalkChoiceSystemMB talkChoiceUIManagerMB;
 
         private CancellationTokenSource cancellationTokenSource;
-        private CinemachineCamera activeTalkCamera;
+        private SceneKernel sceneKernel;
 
         private void Awake()
         {
+            talkSystemUIManagerMB ??= GetComponentInChildren<UITalkSystemMB>(true);
+            talkChoiceUIManagerMB ??= GetComponentInChildren<UITalkChoiceSystemMB>(true);
+
             if (Instance == null)
             {
                 Instance = this;
@@ -69,8 +114,7 @@ namespace BC.Managers
                 cancellationTokenSource = null;
             }
 
-            SetCameraPriority(activeTalkCamera, inactiveCameraPriority);
-            activeTalkCamera = null;
+            ReleaseTalkPresentation();
 
             if (Instance == this)
             {
@@ -79,7 +123,7 @@ namespace BC.Managers
         }
 
         // 重複命令が入った場合は cancel して新しい命令を実行する。
-        public async UniTask ShowTalk(EntityRef actor, TalkRequestData talkRequestData)
+        public async UniTask ShowTalk(EntityRef actor, EntityRef viewer, TalkRequestData talkRequestData)
         {
             if (talkSystemUIManagerMB == null)
             {
@@ -96,13 +140,11 @@ namespace BC.Managers
             cancellationTokenSource = new CancellationTokenSource();
             CancellationTokenSource currentTalkCancellation = cancellationTokenSource;
 
-            // 会話用カメラを前面に出してから UI を表示する。
-            SetCameraPriority(activeTalkCamera, inactiveCameraPriority);
-            activeTalkCamera = talkRequestData.changeCinemachineCamera;
-            SetCameraPriority(activeTalkCamera, talkCameraPriority);
+            BeginTalkPresentation(actor, viewer);
 
             await ExecuteInlineActionAsync(
                 actor,
+                viewer,
                 talkRequestData.onStartTalkAction,
                 talkRequestData.isWaitingActionCompleted,
                 currentTalkCancellation.Token,
@@ -113,6 +155,7 @@ namespace BC.Managers
                 return;
             }
 
+            talkChoiceUIManagerMB?.ClearChoicesImmediate();
             await talkSystemUIManagerMB.ShowTalk(talkRequestData, currentTalkCancellation.Token);
 
             if (currentTalkCancellation.IsCancellationRequested)
@@ -122,6 +165,7 @@ namespace BC.Managers
 
             await ExecuteInlineActionAsync(
                 actor,
+                viewer,
                 talkRequestData.onCompleteTalkAction,
                 talkRequestData.isWaitingActionCompleted,
                 currentTalkCancellation.Token,
@@ -144,26 +188,41 @@ namespace BC.Managers
                 await talkSystemUIManagerMB.HideTalk(duration);
             }
 
-            SetCameraPriority(activeTalkCamera, inactiveCameraPriority);
-            activeTalkCamera = null;
+            talkChoiceUIManagerMB?.ClearChoicesImmediate();
+
+            ReleaseTalkPresentation();
         }
 
-        private static void SetCameraPriority(CinemachineCamera camera, int priority)
+        public async UniTask<TalkChoiceSelectionResult> ShowChoicesAsync(
+            TalkChoiceRequestData requestData,
+            CancellationToken cancellationToken = default)
         {
-            if (camera == null)
-            {
-                return;
-            }
+            if (talkChoiceUIManagerMB == null || !requestData.HasOptions)
+                return TalkChoiceSelectionResult.None;
 
-            // Cinemachine 3系の PrioritySettings を使って優先度だけ差し替える。
-            PrioritySettings settings = camera.Priority;
-            settings.Enabled = true;
-            settings.Value = priority;
-            camera.Priority = settings;
+            cancellationTokenSource ??= new CancellationTokenSource();
+
+            using CancellationTokenSource linkedCancellation = cancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token, cancellationToken)
+                : CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token);
+
+            return await talkChoiceUIManagerMB.ShowChoicesAsync(
+                requestData,
+                talkSystemUIManagerMB != null ? talkSystemUIManagerMB.NextTalkInputAction : null,
+                linkedCancellation.Token);
+        }
+
+        private void BeginTalkPresentation(EntityRef actor, EntityRef viewer)
+        {
+            ReleaseTalkPresentation();
+
+            if (TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) && resolvedSceneKernel.Cameras != null)
+                resolvedSceneKernel.Cameras.BeginTalk(new TalkCameraContext(actor, viewer));
         }
 
         private UniTask ExecuteInlineActionAsync(
             EntityRef actor,
+            EntityRef viewer,
             InlineAction inlineAction,
             bool waitForCompletion,
             CancellationToken cancellationToken,
@@ -176,25 +235,50 @@ namespace BC.Managers
 
             if (!waitForCompletion)
             {
-                InlineActionExecutionUtility.ExecuteAndForget(this, actor, inlineAction, default, $"Talk {phaseLabel}");
+                InlineActionExecutionUtility.ExecuteAndForget(this, actor, inlineAction, viewer, $"Talk {phaseLabel}");
                 return UniTask.CompletedTask;
             }
 
-            return ExecuteInlineActionAwaitedAsync(actor, inlineAction, cancellationToken, phaseLabel);
+            return ExecuteInlineActionAwaitedAsync(actor, viewer, inlineAction, cancellationToken, phaseLabel);
         }
 
         private async UniTask ExecuteInlineActionAwaitedAsync(
             EntityRef actor,
+            EntityRef viewer,
             InlineAction inlineAction,
             CancellationToken cancellationToken,
             string phaseLabel)
         {
-            ActionExecutionResult result = await InlineActionExecutionUtility.ExecuteAsync(this, actor, inlineAction, default, cancellationToken);
+            ActionExecutionResult result = await InlineActionExecutionUtility.ExecuteAsync(this, actor, inlineAction, viewer, cancellationToken);
 
             if (result.IsFailed)
             {
                 Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: failed to execute {phaseLabel} talk action. {result.Message}", this);
             }
+        }
+
+        private void ReleaseTalkPresentation()
+        {
+            if (TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) && resolvedSceneKernel.Cameras != null)
+                resolvedSceneKernel.Cameras.EndTalk();
+        }
+
+        private bool TryResolveSceneKernel(out SceneKernel resolvedSceneKernel)
+        {
+            if (sceneKernel != null)
+            {
+                resolvedSceneKernel = sceneKernel;
+                return true;
+            }
+
+            SceneKernelMB kernelMB = GetComponentInParent<SceneKernelMB>();
+
+            if (kernelMB == null)
+                kernelMB = UnityEngine.Object.FindAnyObjectByType<SceneKernelMB>();
+
+            sceneKernel = kernelMB != null ? kernelMB.Kernel : null;
+            resolvedSceneKernel = sceneKernel;
+            return resolvedSceneKernel != null;
         }
     }
 }

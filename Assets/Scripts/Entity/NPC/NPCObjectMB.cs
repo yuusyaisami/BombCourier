@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 namespace BC.Character
 {
     [DisallowMultipleComponent]
-    public sealed class NPCObjectMB : MonoBehaviour, IInteractionTarget, IInteractionPromptProvider
+    public sealed class NPCObjectMB : MonoBehaviour, IInteractionTarget, IInteractionPromptProvider, IInteractionFacingTarget
     {
         [Header("Interaction")]
         [SerializeField] private Transform interactionTransform;
@@ -22,12 +22,19 @@ namespace BC.Character
         [SerializeField, Min(0f)] private float requiredHoldDuration;
         [SerializeField] private Vector3 promptWorldOffset = new(0f, 1.5f, 0f);
 
+        [Header("Facing")]
+        [SerializeField] private bool requestInteractorToFaceTarget = true;
+        [SerializeField] private bool faceInteractorOnInteraction = true;
+        [SerializeField] private EntityFacingControllerMB facingController;
+
         [Header("Action")]
         [SerializeField] private InlineAction interactionAction;
 
         [Header("Debug")]
         [SerializeField] private bool logInteractionUntilTalkHooked = true;
         [SerializeField] private UnityEvent interactionCompleted;
+
+        private bool activeInteractionFacingOwnsChannel;
 
         public event Action<NPCObjectMB> Interacted;
 
@@ -36,12 +43,15 @@ namespace BC.Character
         public InteractionVisualTargetMB VisualTarget => visualTarget;
         public Transform PromptAnchor => promptAnchor != null ? promptAnchor : InteractionTransform;
         public Vector3 PromptWorldOffset => promptWorldOffset;
+        public bool AllowInteractionSourceFacing => requestInteractorToFaceTarget;
+        public Transform InteractionFacingTransform => InteractionTransform;
 
         private void Reset()
         {
             interactionTransform = transform;
             promptAnchor = transform;
             visualTarget = GetComponentInChildren<InteractionVisualTargetMB>(true);
+            facingController = GetComponentInParent<EntityFacingControllerMB>();
         }
 
         private void OnValidate()
@@ -59,6 +69,11 @@ namespace BC.Character
             if (visualTarget == null)
             {
                 visualTarget = GetComponentInChildren<InteractionVisualTargetMB>(true);
+            }
+
+            if (facingController == null)
+            {
+                facingController = GetComponentInParent<EntityFacingControllerMB>();
             }
 
             maxInteractionDistance = Mathf.Max(0.05f, maxInteractionDistance);
@@ -85,6 +100,18 @@ namespace BC.Character
 
         public void OnInteractionStarted(InteractionEventData eventData)
         {
+            if (!faceInteractorOnInteraction)
+                return;
+
+            EntityFacingControllerMB resolvedFacingController = ResolveFacingController();
+            if (resolvedFacingController == null || eventData.SourceFacingTransform == null)
+                return;
+
+            resolvedFacingController.SetFacingTargetTransform(
+                EntityFacingChannels.Interaction,
+                eventData.SourceFacingTransform,
+                EntityFacingPriorities.Interaction);
+            activeInteractionFacingOwnsChannel = true;
         }
 
         public void OnInteractionUpdated(InteractionEventData eventData)
@@ -93,6 +120,7 @@ namespace BC.Character
 
         public void OnInteractionCanceled(InteractionEventData eventData)
         {
+            ClearInteractionFacing(force: false);
         }
 
         public void OnInteractionCompleted(InteractionEventData eventData)
@@ -105,15 +133,39 @@ namespace BC.Character
             if (TryGetSelfEntity(out EntityRef selfEntity))
             {
                 // Interact 完了から action を起動して、会話などの振る舞いを差し込めるようにする。
-                InlineActionExecutionUtility.ExecuteAndForget(this, selfEntity, interactionAction, default, $"NPC interact '{name}'");
+                InlineActionExecutionUtility.ExecuteAndForget(this, selfEntity, interactionAction, eventData.SourceEntity, $"NPC interact '{name}'");
             }
             else if (interactionAction != null)
             {
                 Debug.LogWarning($"{nameof(NPCObjectMB)}: interaction action was skipped because EntityMB is missing or not bound.", this);
             }
 
+            activeInteractionFacingOwnsChannel = false;
+
             Interacted?.Invoke(this);
             interactionCompleted?.Invoke();
+        }
+
+        private void OnDisable()
+        {
+            ClearInteractionFacing(force: true);
+        }
+
+        private EntityFacingControllerMB ResolveFacingController()
+        {
+            if (facingController == null)
+                facingController = GetComponentInParent<EntityFacingControllerMB>();
+
+            return facingController;
+        }
+
+        private void ClearInteractionFacing(bool force)
+        {
+            if (!force && !activeInteractionFacingOwnsChannel)
+                return;
+
+            activeInteractionFacingOwnsChannel = false;
+            ResolveFacingController()?.ClearFacing(EntityFacingChannels.Interaction);
         }
 
         private bool TryGetSelfEntity(out EntityRef selfEntity)

@@ -63,6 +63,8 @@ namespace BC.Gimmick.Cushion
             bool isHandled,
             CushionResponseKind responseKind,
             Vector3 bounceVelocity,
+            float bounceSpeedLimit,
+            float highJumpSpeedMultiplier,
             Transform attachParent,
             bool useAttachPose,
             Vector3 attachPosition,
@@ -72,6 +74,8 @@ namespace BC.Gimmick.Cushion
             IsHandled = isHandled;
             ResponseKind = responseKind;
             BounceVelocity = bounceVelocity;
+            BounceSpeedLimit = bounceSpeedLimit;
+            HighJumpSpeedMultiplier = highJumpSpeedMultiplier;
             AttachParent = attachParent;
             UseAttachPose = useAttachPose;
             AttachPosition = attachPosition;
@@ -82,6 +86,8 @@ namespace BC.Gimmick.Cushion
         public bool IsHandled { get; }
         public CushionResponseKind ResponseKind { get; }
         public Vector3 BounceVelocity { get; }
+        public float BounceSpeedLimit { get; }
+        public float HighJumpSpeedMultiplier { get; }
         public Transform AttachParent { get; }
         public bool UseAttachPose { get; }
         public Vector3 AttachPosition { get; }
@@ -89,11 +95,11 @@ namespace BC.Gimmick.Cushion
         public bool SuppressExplosion { get; }
 
         public static CushionImpactResult NotHandled =>
-            new CushionImpactResult(false, CushionResponseKind.None, Vector3.zero, null, false, Vector3.zero, Quaternion.identity, false);
+            new CushionImpactResult(false, CushionResponseKind.None, Vector3.zero, 0f, 1f, null, false, Vector3.zero, Quaternion.identity, false);
 
         public static CushionImpactResult Stop(bool suppressExplosion = true)
         {
-            return new CushionImpactResult(true, CushionResponseKind.Stop, Vector3.zero, null, false, Vector3.zero, Quaternion.identity, suppressExplosion);
+            return new CushionImpactResult(true, CushionResponseKind.Stop, Vector3.zero, 0f, 1f, null, false, Vector3.zero, Quaternion.identity, suppressExplosion);
         }
 
         public static CushionImpactResult StopAndAttach(
@@ -107,6 +113,8 @@ namespace BC.Gimmick.Cushion
                 true,
                 CushionResponseKind.StopAndAttach,
                 Vector3.zero,
+                0f,
+                1f,
                 attachParent,
                 useAttachPose,
                 attachPosition,
@@ -114,9 +122,23 @@ namespace BC.Gimmick.Cushion
                 suppressExplosion);
         }
 
-        public static CushionImpactResult Bounce(Vector3 bounceVelocity, bool suppressExplosion = true)
+        public static CushionImpactResult Bounce(
+            Vector3 bounceVelocity,
+            float bounceSpeedLimit,
+            float highJumpSpeedMultiplier = 1f,
+            bool suppressExplosion = true)
         {
-            return new CushionImpactResult(true, CushionResponseKind.Bounce, bounceVelocity, null, false, Vector3.zero, Quaternion.identity, suppressExplosion);
+            return new CushionImpactResult(
+                true,
+                CushionResponseKind.Bounce,
+                bounceVelocity,
+                Mathf.Max(0f, bounceSpeedLimit),
+                Mathf.Max(1f, highJumpSpeedMultiplier),
+                null,
+                false,
+                Vector3.zero,
+                Quaternion.identity,
+                suppressExplosion);
         }
     }
 

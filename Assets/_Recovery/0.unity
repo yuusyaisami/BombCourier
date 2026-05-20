@@ -20378,6 +20378,7 @@ GameObject:
   - component: {fileID: 2038659205}
   - component: {fileID: 2038659204}
   - component: {fileID: 2038659207}
+  - component: {fileID: 2038659219}
   - component: {fileID: 2038659201}
   - component: {fileID: 2038659209}
   - component: {fileID: 2038659208}
@@ -20387,6 +20388,7 @@ GameObject:
   - component: {fileID: 2038659214}
   - component: {fileID: 2038659213}
   - component: {fileID: 2038659215}
+  - component: {fileID: 2038659218}
   - component: {fileID: 2038659217}
   - component: {fileID: 2038659216}
   m_Layer: 0
@@ -20457,6 +20459,7 @@ MonoBehaviour:
   playerRigidbody: {fileID: 2038659217}
   playerCollider: {fileID: 2038659216}
   modelRoot: {fileID: 979411833}
+  facingController: {fileID: 2038659219}
   cameraControllerSource: {fileID: 2038659201}
   moveInputAction: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   jumpInputAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -20498,6 +20501,21 @@ MonoBehaviour:
   minContactPushSpeed: 0.1
   modelTurnSharpness: 16
   minModelTurnSpeed: 0.1
+--- !u!114 &2038659219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038659200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1df4b4227f04b29878ca66db387d81f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.EntityFacingControllerMB
+  facingRoot: {fileID: 979411833}
+  defaultTurnSharpness: 16
+  usePlanarYawOnly: 1
 --- !u!114 &2038659208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20572,6 +20590,8 @@ MonoBehaviour:
   handleItemPoint: {fileID: 1905889926}
   playerModel: {fileID: 1106097473}
   handleItemAction: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  faceInteractionTargetOnStart: 1
+  facingController: {fileID: 2038659219}
   maxThrowForce: 12
   minThrowForce: 4
   throwForceChargeTime: 1.5
@@ -20673,10 +20693,28 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2e49a1fec2a155641b83b301fc53c6a0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.FaceMeshExpressionPresenterMB
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.MeshUvRectRemapperMB
   skinnedMeshRenderer: {fileID: 510887132}
   meshFilter: {fileID: 0}
+--- !u!114 &2038659218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038659200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d596b20ab2141d1b2a856c3e782ba99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.FaceExpressionUvControllerMB
+  remapper: {fileID: 2038659215}
   uvSet: {fileID: 11400000, guid: cf3b0ddd26f78034c8ff7247a1fe332c, type: 2}
+  bindToRuntimeFaceExpression: 1
+  enableBlink: 1
+  minBlinkInterval: 2.5
+  maxBlinkInterval: 5
+  blinkDuration: 0.08
 --- !u!136 &2038659216
 CapsuleCollider:
   m_ObjectHideFlags: 0

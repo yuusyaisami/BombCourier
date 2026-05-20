@@ -114,6 +114,17 @@ namespace BC.Base
                 );
         }
 
+        public static class Camera
+        {
+            public static readonly ValueKey<bool> CanLookByInput =
+                new ValueKey<bool>(
+                    new ValueKeyId(6001),
+                    "Camera.CanLookByInput",
+                    true,
+                    ValueCompositionMode.BoolAnd
+                );
+        }
+
         public static class Runtime
         {
             public static readonly ValueKey<EntityMoveState> MoveState =
@@ -234,6 +245,14 @@ namespace BC.Base
                     true,
                     ValueCompositionMode.BoolAnd
                 );
+
+            public static readonly ValueKey<bool> CanLookByInput =
+                new ValueKey<bool>(
+                    new ValueKeyId(8017),
+                    "Runtime.CanLookByInput",
+                    true,
+                    ValueCompositionMode.BoolAnd
+                );
         }
 
         public static class Identity
@@ -321,6 +340,131 @@ namespace BC.Base
                         ValueCompositionMode.NumericAddMul
                     );
 
+            }
+        }
+
+        public static class Local
+        {
+            // ActionExecution 内だけで使う一時キー。ValueKeyRegistry を通して型安全に扱う。
+            public static class Choice
+            {
+                public static readonly ValueKey<bool> HasSelection =
+                    new ValueKey<bool>(
+                        new ValueKeyId(12001),
+                        "Local.Choice.HasSelection",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+
+                public static readonly ValueKey<int> SelectedIndex =
+                    new ValueKey<int>(
+                        new ValueKeyId(12002),
+                        "Local.Choice.SelectedIndex",
+                        -1,
+                        ValueCompositionMode.Raw
+                    );
+
+                public static readonly ValueKey<string> SelectedText =
+                    new ValueKey<string>(
+                        new ValueKeyId(12003),
+                        "Local.Choice.SelectedText",
+                        "",
+                        ValueCompositionMode.Raw
+                    );
+            }
+
+            public static class Flags
+            {
+                public static readonly ValueKey<bool> Flag0 =
+                    new ValueKey<bool>(
+                        new ValueKeyId(12004),
+                        "Local.Flags.Flag0",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+
+                public static readonly ValueKey<bool> Flag1 =
+                    new ValueKey<bool>(
+                        new ValueKeyId(12005),
+                        "Local.Flags.Flag1",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+            }
+
+            public static class Values
+            {
+                public static readonly ValueKey<int> Int0 =
+                    new ValueKey<int>(
+                        new ValueKeyId(12006),
+                        "Local.Values.Int0",
+                        0,
+                        ValueCompositionMode.Raw
+                    );
+
+                public static readonly ValueKey<int> Int1 =
+                    new ValueKey<int>(
+                        new ValueKeyId(12007),
+                        "Local.Values.Int1",
+                        0,
+                        ValueCompositionMode.Raw
+                    );
+
+                public static readonly ValueKey<float> Float0 =
+                    new ValueKey<float>(
+                        new ValueKeyId(12008),
+                        "Local.Values.Float0",
+                        0f,
+                        ValueCompositionMode.NumericAddMul
+                    );
+
+                public static readonly ValueKey<float> Float1 =
+                    new ValueKey<float>(
+                        new ValueKeyId(12009),
+                        "Local.Values.Float1",
+                        0f,
+                        ValueCompositionMode.NumericAddMul
+                    );
+
+                public static readonly ValueKey<string> String0 =
+                    new ValueKey<string>(
+                        new ValueKeyId(12010),
+                        "Local.Values.String0",
+                        "",
+                        ValueCompositionMode.Raw
+                    );
+
+                public static readonly ValueKey<string> String1 =
+                    new ValueKey<string>(
+                        new ValueKeyId(12011),
+                        "Local.Values.String1",
+                        "",
+                        ValueCompositionMode.Raw
+                    );
+
+                public static readonly ValueKey<EntityRef> Entity0 =
+                    new ValueKey<EntityRef>(
+                        new ValueKeyId(12012),
+                        "Local.Values.Entity0",
+                        default,
+                        ValueCompositionMode.Raw
+                    );
+
+                public static readonly ValueKey<FaceExpressionId> FaceExpression0 =
+                    new ValueKey<FaceExpressionId>(
+                        new ValueKeyId(12013),
+                        "Local.Values.FaceExpression0",
+                        FaceExpressionId.Neutral,
+                        ValueCompositionMode.Raw
+                    );
+
+                public static readonly ValueKey<EntityMoveState> MoveState0 =
+                    new ValueKey<EntityMoveState>(
+                        new ValueKeyId(12014),
+                        "Local.Values.MoveState0",
+                        EntityMoveState.Idle,
+                        ValueCompositionMode.Raw
+                    );
             }
         }
     }

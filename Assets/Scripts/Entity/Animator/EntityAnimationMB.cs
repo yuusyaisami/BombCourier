@@ -117,6 +117,17 @@ namespace BC.Animation
             return true;
         }
 
+        public bool TryGetLayerWeight(string layerName, out float weight)
+        {
+            weight = 0f;
+
+            if (!TryGetLayerIndex(layerName, out int layerIndex))
+                return false;
+
+            weight = animator.GetLayerWeight(layerIndex);
+            return true;
+        }
+
         public bool TryGetBool(string parameterName, out bool value)
         {
             if (TryGetParameterHash(parameterName, AnimatorControllerParameterType.Bool, out int parameterHash))

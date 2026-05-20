@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using BC.Base;
+using Sirenix.OdinInspector;
 
 namespace BC.Character
 {
@@ -20,14 +21,44 @@ namespace BC.Character
 
 #pragma warning disable CS0649
         [Serializable]
+        private struct BlinkSettings
+        {
+            public bool enabled;
+            [ShowIf(nameof(enabled))]
+            public FaceExpressionId blinkExpression;
+        }
+
+        [Serializable]
         private struct Entry
         {
             public FaceExpressionId expression;
             public Rect pixelRect;
+            public BlinkSettings blink;
         }
 #pragma warning restore CS0649
 
         public bool TryGetExpressionUvRect(FaceExpressionId expression, out Rect uvRect)
+        {
+            if (TryGetEntry(expression, out Entry entry))
+                return TryConvertPixelRect(entry.pixelRect, out uvRect);
+
+            uvRect = default;
+            return false;
+        }
+
+        public bool TryGetBlinkExpression(FaceExpressionId expression, out FaceExpressionId blinkExpression)
+        {
+            if (TryGetEntry(expression, out Entry entry) && entry.blink.enabled)
+            {
+                blinkExpression = entry.blink.blinkExpression;
+                return true;
+            }
+
+            blinkExpression = default;
+            return false;
+        }
+
+        private bool TryGetEntry(FaceExpressionId expression, out Entry entry)
         {
             if (entries != null)
             {
@@ -35,12 +66,13 @@ namespace BC.Character
                 {
                     if (entries[i].expression == expression)
                     {
-                        return TryConvertPixelRect(entries[i].pixelRect, out uvRect);
+                        entry = entries[i];
+                        return true;
                     }
                 }
             }
 
-            uvRect = default;
+            entry = default;
             return false;
         }
 

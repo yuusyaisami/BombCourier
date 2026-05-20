@@ -68,7 +68,7 @@ namespace BC.ActionSystem
                     }
 
                     cancellationTokenSource = new CancellationTokenSource();
-                    RunAsync(talkSystemManager, context.ActorEntity, cancellationTokenSource.Token).Forget();
+                    RunAsync(talkSystemManager, context.ActorEntity, context.TriggerEntity, cancellationTokenSource.Token).Forget();
                 }
 
                 return ActionNodeStatus.Running;
@@ -82,11 +82,12 @@ namespace BC.ActionSystem
             private async UniTaskVoid RunAsync(
                 TalkSystemManagerMB talkSystemManager,
                 EntityRef actor,
+                EntityRef viewer,
                 CancellationToken cancellationToken)
             {
                 try
                 {
-                    await talkSystemManager.ShowTalk(actor, talkRequestData).AttachExternalCancellation(cancellationToken);
+                    await talkSystemManager.ShowTalk(actor, viewer, talkRequestData).AttachExternalCancellation(cancellationToken);
                     completed = true;
                 }
                 catch (OperationCanceledException)

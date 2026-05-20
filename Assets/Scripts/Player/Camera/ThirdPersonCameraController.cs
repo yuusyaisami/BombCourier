@@ -1,7 +1,6 @@
 using BC.Base;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Unity.Cinemachine;
 namespace BC.Camera
 {
     public interface ICameraController
@@ -29,24 +28,22 @@ namespace BC.Camera
         [SerializeField] private bool invertY;
 
         [Header("Throw Camera")]
-        [SerializeField] private CinemachineThirdPersonFollow thirdPersonFollow;
         [SerializeField] private Vector3 throwShoulderOffset = new(0.85f, 0.15f, 0.0f);
         [SerializeField, Min(0.0f)] private float throwShoulderOffsetBlendSharpness = 12.0f;
+
+        [Header("Runtime Debug")]
+        [SerializeField] private bool currentCanLookByInput = true;
 
         private float yaw;
         private float pitch;
         private ValueStoreService valueStore;
         private EntityRef entityRef;
-        private ValueWatchHandle<bool> throwPoseHandle;
-        private CinemachineRotateWithFollowTarget rotateWithFollowTarget;
-        private bool defaultRotateWithFollowTargetEnabled;
-        private bool hasDefaultRotateWithFollowTargetEnabled;
-        private Vector3 defaultShoulderOffset;
-        private bool hasDefaultShoulderOffset;
-        private float defaultCameraDistance;
-        private bool hasDefaultCameraDistance;
+        private ValueWatchHandle<bool> canLookByInputHandle;
 
         public Transform CameraTarget => cameraTarget;
+        public Vector3 ThrowShoulderOffset => throwShoulderOffset;
+        public float ThrowShoulderOffsetBlendSharpness => throwShoulderOffsetBlendSharpness;
+        public bool CanLookByInput => currentCanLookByInput;
 
         private void Reset()
         {
@@ -65,8 +62,6 @@ namespace BC.Camera
             Vector3 euler = cameraTarget.rotation.eulerAngles;
             yaw = euler.y;
             pitch = NormalizeAngle(euler.x);
-
-            ResolveThirdPersonFollow();
             ApplyCameraOrientation();
         }
 
@@ -78,6 +73,11 @@ namespace BC.Camera
 
         private void Update()
         {
+            RefreshLookGateDebugValue();
+
+            if (!currentCanLookByInput)
+                return;
+
             if (lookAction == null || lookAction.action == null)
                 return;
 
@@ -109,7 +109,6 @@ namespace BC.Camera
             pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
             ApplyCameraOrientation();
-            UpdateThrowShoulderOffset();
         }
 
         public Quaternion GetYawRotation()
@@ -132,61 +131,9 @@ namespace BC.Camera
             return Quaternion.Euler(pitch, 0f, 0f);
         }
 
-        private void UpdateThrowShoulderOffset()
-        {
-            ResolveRuntimeReferences();
-            ResolveThirdPersonFollow();
-
-            if (thirdPersonFollow == null)
-                return;
-
-            if (!hasDefaultShoulderOffset)
-            {
-                defaultShoulderOffset = thirdPersonFollow.ShoulderOffset;
-                hasDefaultShoulderOffset = true;
-            }
-
-            if (!hasDefaultCameraDistance)
-            {
-                defaultCameraDistance = thirdPersonFollow.CameraDistance;
-                hasDefaultCameraDistance = true;
-            }
-
-            Vector3 targetOffset = IsThrowPoseActive()
-                ? new Vector3(throwShoulderOffset.x, throwShoulderOffset.y, defaultShoulderOffset.z)
-                : defaultShoulderOffset;
-
-            float targetCameraDistance = IsThrowPoseActive()
-                ? Mathf.Max(0.0f, defaultCameraDistance - throwShoulderOffset.z)
-                : defaultCameraDistance;
-
-            float t = throwShoulderOffsetBlendSharpness <= 0.0f
-                ? 1.0f
-                : 1.0f - Mathf.Exp(-throwShoulderOffsetBlendSharpness * Time.deltaTime);
-
-            thirdPersonFollow.ShoulderOffset = Vector3.Lerp(
-                thirdPersonFollow.ShoulderOffset,
-                targetOffset,
-                t);
-
-            thirdPersonFollow.CameraDistance = Mathf.Lerp(
-                thirdPersonFollow.CameraDistance,
-                targetCameraDistance,
-                t);
-        }
-
         private void ApplyCameraOrientation()
         {
             cameraTarget.rotation = Quaternion.Euler(pitch, yaw, 0f);
-            UpdateAimRotationMode();
-        }
-
-        private bool IsThrowPoseActive()
-        {
-            if (throwPoseHandle == null)
-                return false;
-
-            return throwPoseHandle.CurrentValue;
         }
 
         private void ResolveRuntimeReferences()
@@ -207,34 +154,18 @@ namespace BC.Camera
                     entityRef = entityMB.Entity;
             }
 
-            if (throwPoseHandle == null && valueStore != null && entityRef.IsValid)
-                throwPoseHandle = valueStore.GetHandle(entityRef, ValueKeys.Runtime.IsThrowPoseActive);
+            if (canLookByInputHandle == null && valueStore != null && entityRef.IsValid)
+                canLookByInputHandle = valueStore.GetHandle(entityRef, ValueKeys.Camera.CanLookByInput);
         }
 
-        private void ResolveThirdPersonFollow()
+        private void RefreshLookGateDebugValue()
         {
-            if (cameraTarget == null)
-                return;
+            ResolveRuntimeReferences();
 
-            if (thirdPersonFollow != null)
-            {
-                CacheRotateWithFollowTargetState();
-                return;
-            }
+            currentCanLookByInput = canLookByInputHandle == null || canLookByInputHandle.CurrentValue;
 
-            CameraManager manager = CameraManager.Instance;
-            CinemachineCamera candidate = manager != null ? manager.ThirdPersonCamera : null;
-
-            if (candidate == null || candidate.Follow != cameraTarget)
-                return;
-
-            thirdPersonFollow = candidate.GetComponent<CinemachineThirdPersonFollow>();
-            rotateWithFollowTarget = candidate.GetComponent<CinemachineRotateWithFollowTarget>();
-
-            if (thirdPersonFollow != null)
-            {
-                CacheRotateWithFollowTargetState();
-            }
+            if (valueStore != null && entityRef.IsValid)
+                valueStore.Set(entityRef, ValueKeys.Runtime.CanLookByInput, currentCanLookByInput);
         }
 
         private void RegisterCameraTarget()
@@ -243,43 +174,11 @@ namespace BC.Camera
                 return;
 
             CameraManager.Instance?.RegisterThirdPersonTarget(cameraTarget);
-            ResolveThirdPersonFollow();
-        }
-
-        private void CacheRotateWithFollowTargetState()
-        {
-            if (rotateWithFollowTarget == null || hasDefaultRotateWithFollowTargetEnabled)
-                return;
-
-            defaultRotateWithFollowTargetEnabled = rotateWithFollowTarget.enabled;
-            hasDefaultRotateWithFollowTargetEnabled = true;
-        }
-
-        private void UpdateAimRotationMode()
-        {
-            ResolveThirdPersonFollow();
-
-            if (rotateWithFollowTarget == null)
-                return;
-
-            bool shouldEnable = !IsThrowPoseActive();
-
-            if (rotateWithFollowTarget.enabled != shouldEnable)
-                rotateWithFollowTarget.enabled = shouldEnable;
         }
 
         private void OnDisable()
         {
             lookAction?.action?.Disable();
-
-            if (thirdPersonFollow != null && hasDefaultShoulderOffset)
-                thirdPersonFollow.ShoulderOffset = defaultShoulderOffset;
-
-            if (thirdPersonFollow != null && hasDefaultCameraDistance)
-                thirdPersonFollow.CameraDistance = defaultCameraDistance;
-
-            if (rotateWithFollowTarget != null && hasDefaultRotateWithFollowTargetEnabled)
-                rotateWithFollowTarget.enabled = defaultRotateWithFollowTargetEnabled;
 
             CameraManager.Instance?.UnregisterThirdPersonTarget(cameraTarget);
         }

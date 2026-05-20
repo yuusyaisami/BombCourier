@@ -135,6 +135,7 @@ namespace BC.ActionSystem
         public readonly ActionService Actions;
         public readonly EntityRef ActorEntity;
         public readonly EntityRef TriggerEntity;
+        public readonly ILocalValueStoreService LocalValueStore;
         public readonly ReactiveActionScope Reactive;
 
         public ActionExecutionContext(
@@ -143,11 +144,23 @@ namespace BC.ActionSystem
             EntityRef actorEntity,
             EntityRef triggerEntity = default,
             ReactiveActionScope reactive = null)
+            : this(sceneKernel, actions, actorEntity, triggerEntity, null, reactive)
+        {
+        }
+
+        public ActionExecutionContext(
+            SceneKernel sceneKernel,
+            ActionService actions,
+            EntityRef actorEntity,
+            EntityRef triggerEntity,
+            ILocalValueStoreService localValueStore,
+            ReactiveActionScope reactive = null)
         {
             SceneKernel = sceneKernel;
             Actions = actions;
             ActorEntity = actorEntity;
             TriggerEntity = triggerEntity;
+            LocalValueStore = localValueStore;
             Reactive = reactive;
         }
 
@@ -485,8 +498,9 @@ namespace BC.ActionSystem
         private ActionExecution CreateExecution(EntityRef actor, EntityRef triggerEntity, CompiledAction definition)
         {
             ActionExecutionHandle handle = new(nextExecutionId++, actor);
-            ReactiveActionScope reactiveScope = sceneKernel.ReactiveValues?.CreateActionScope(handle, actor, triggerEntity);
-            ActionExecutionContext context = new(sceneKernel, this, actor, triggerEntity, reactiveScope);
+            ActionLocalValueStoreService localValueStore = new();
+            ReactiveActionScope reactiveScope = sceneKernel.ReactiveValues?.CreateActionScope(handle, actor, triggerEntity, localValueStore);
+            ActionExecutionContext context = new(sceneKernel, this, actor, triggerEntity, localValueStore, reactiveScope);
 
             try
             {
@@ -659,6 +673,7 @@ namespace BC.ActionSystem
 
             IsFinished = true;
             Context.Reactive?.Dispose();
+            Context.LocalValueStore?.Clear();
 
             if (cancellationAttached)
                 cancellationRegistration.Dispose();

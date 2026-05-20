@@ -25,9 +25,9 @@ namespace BC.Item
         private bool canCollect;
         public BonusItemData ItemData => itemData;
         private Collider[] _colliders; // BonusObjectにアタッチされている全てのコライダーへの参照を保持する配列
-        private float spinBaseSpeed = 90f; // アイテムが回転する速度 (度/秒)
-        private float targetSpinConvergence = 3f; // 回転速度がBaseに収束するセンシティブ
-        private float currentsSpinConvergence = 0f; // 回転速度がBaseに収束する
+        [SerializeField, Min(0f)] private float spinBaseSpeed = 90f; // アイテムが通常時に回転する速度 (度/秒)
+        [SerializeField, Min(0f)] private float deniedCollectSpinBoost = 45f; // 取得できない状態で触れた時に一時的に加える速度
+        [SerializeField, Min(0.01f)] private float spinReturnConvergence = 180f; // 一時加速した回転を基準速度へ戻す速さ
         private float targetSpinSpeed; // 触れたときに一時的に上がる回転速度の目標値
         private float currentSpinSpeed; // 現在の回転速度
         public event Action<BonusObjectMB> OnCollected; // アイテムが取得されたときに発火するイベント
@@ -37,6 +37,10 @@ namespace BC.Item
         {
             // BonusObjectにアタッチされている全てのコライダーへの参照を取得して保存する
             _colliders = GetComponentsInChildren<Collider>(true);
+
+            // 起動時は通常の回転速度から開始して、常にその速度へ戻るようにする。
+            targetSpinSpeed = spinBaseSpeed;
+            currentSpinSpeed = spinBaseSpeed;
         }
         private void Start()
         {
@@ -82,19 +86,8 @@ namespace BC.Item
         }
         private void Update()
         {
-            // 回転速度を目標値に向かって徐々に変化させる
-            if (currentSpinSpeed != targetSpinSpeed)
-            {
-                currentSpinSpeed = Mathf.MoveTowards(currentSpinSpeed, targetSpinSpeed, currentsSpinConvergence * Time.deltaTime);
-                if (currentSpinSpeed == targetSpinSpeed)
-                {
-                    currentsSpinConvergence = 0f; // 目標値に到達したら収束速度をリセットする
-                }
-            }
-            else
-            {
-                currentsSpinConvergence = Mathf.Lerp(currentsSpinConvergence, targetSpinConvergence, 1f * Time.deltaTime); // 目標値に到達していないときは収束速度を設定する
-            }
+            // 一時的な加速が入っていても、毎フレーム基準速度へ戻していく。
+            currentSpinSpeed = Mathf.MoveTowards(currentSpinSpeed, targetSpinSpeed, spinReturnConvergence * Time.deltaTime);
 
             // アイテムを回転させる
             transform.Rotate(Vector3.up, currentSpinSpeed * Time.deltaTime, Space.World);
@@ -104,8 +97,9 @@ namespace BC.Item
         {
             if (isCollected || !canCollect)
             {
-                currentSpinSpeed += spinBaseSpeed / 2; // 既に取得されている場合や取得できない状態のときは、触れたら回転速度が一時的に上がるようにする
-                currentsSpinConvergence = 0f; // 回転速度がBaseに収束する速度を速くする
+                // 取得不可の接触時だけ少しだけ加速させ、Update側で基準速度へ戻す。
+                currentSpinSpeed += deniedCollectSpinBoost;
+                targetSpinSpeed = spinBaseSpeed;
                 return; // 既に取得されている場合は何もしない
             }
 

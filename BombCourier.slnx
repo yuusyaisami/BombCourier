@@ -10,13 +10,14 @@
   <Project Path="BombCourier.ToyDioramaPostProcess.Editor.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.csproj" />
   <Project Path="Febucci.TextAnimatorForUnity.TMP.Runtime.csproj" />
+  <Project Path="BombCourier.Gameplay.PlayModeTests.csproj" />
   <Project Path="Febucci.TextAnimatorForUnity.Input.Runtime.csproj" />
   <Project Path="BombCourier.Particles.PlayModeTests.csproj" />
+  <Project Path="BombCourier.ReactiveValue.EditorTests.csproj" />
   <Project Path="Febucci.Attributes.Runtime.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.PlayModeTests.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Samples.Editor.csproj" />
   <Project Path="Febucci.TextAnimator.Demo.Runtime.csproj" />
   <Project Path="Sirenix.OdinInspector.Modules.UnityMathematics.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.EditorTests.csproj" />
-  <Project Path="BombCourier.ReactiveValue.EditorTests.csproj" />
 </Solution>

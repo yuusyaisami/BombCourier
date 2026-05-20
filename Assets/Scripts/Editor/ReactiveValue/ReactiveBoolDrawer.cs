@@ -12,13 +12,15 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveBoolSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                (int)ReactiveBoolSourceKind.LocalValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
 
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
-            return sourceKind == (int)ReactiveBoolSourceKind.EntityValueStore
+            return sourceKind == (int)ReactiveBoolSourceKind.EntityValueStore ||
+                   sourceKind == (int)ReactiveBoolSourceKind.LocalValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -29,6 +31,7 @@ namespace BC.Editor
             {
                 (int)ReactiveBoolSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveBoolSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
+                (int)ReactiveBoolSourceKind.LocalValueStore => GetReactiveLocalValueSourceHeight(),
                 (int)ReactiveBoolSourceKind.EntityAlive => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("entityAlive").FindPropertyRelative("entity"), true)),
                 (int)ReactiveBoolSourceKind.CompareFloat =>
                     GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("compareFloat").FindPropertyRelative("left"), true)) +
@@ -48,6 +51,9 @@ namespace BC.Editor
                     break;
                 case ReactiveBoolSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(bool));
+                    break;
+                case ReactiveBoolSourceKind.LocalValueStore:
+                    DrawReactiveLocalValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(bool));
                     break;
                 case ReactiveBoolSourceKind.EntityAlive:
                     DrawPropertyField(ref position, property.FindPropertyRelative("entityAlive").FindPropertyRelative("entity"), "Entity");

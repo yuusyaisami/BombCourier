@@ -6,6 +6,16 @@ using UnityEngine;
 
 namespace BC.Base
 {
+    public readonly struct CushionHighJumpEventData
+    {
+        public CushionHighJumpEventData(Vector3 bounceVelocity)
+        {
+            BounceVelocity = bounceVelocity;
+        }
+
+        public Vector3 BounceVelocity { get; }
+    }
+
     [DefaultExecutionOrder(90)]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
@@ -92,6 +102,7 @@ namespace BC.Base
 
         private Vector3 moveDirection;
         private bool sprintHeld;
+        private bool jumpHeld;
         private float jumpBufferCounter;
         private float lastGroundedTime = -999.0f;
 
@@ -107,6 +118,11 @@ namespace BC.Base
         private bool motionLocked;
         private Vector3 preservedVelocityWhenLocked;
         private float nextCushionImpactTime;
+        private float pendingCushionHighJumpExpireTime = -999.0f;
+        private Vector3 pendingCushionBounceDirection;
+        private float pendingCushionBounceSpeed;
+        private float pendingCushionBounceSpeedLimit;
+        private float pendingCushionHighJumpMultiplier = 1.0f;
         private bool isDead;
         private ValueModifierTagId? activeDeadMoveLockTag;
 
@@ -128,6 +144,7 @@ namespace BC.Base
         public bool IsAutoMoveActive => autoMoveActive;
         public bool IsGrounded => ground.IsValid;
         public bool IsDead => isDead;
+        public event Action<CushionHighJumpEventData> CushionHighJumped;
 
         public Transform CushionImpactRoot => transform;
         public EntityTagId CushionImpactTag => ResolveCushionImpactTag();
@@ -222,7 +239,7 @@ namespace BC.Base
             PublishRuntimeValues();
         }
 
-        public void SetMoveIntent(Vector3 worldMoveDirection, bool wantsSprint, bool jumpPressedThisFrame, float deltaTime)
+        public void SetMoveIntent(Vector3 worldMoveDirection, bool wantsSprint, bool jumpPressedThisFrame, bool jumpHeldInput, float deltaTime)
         {
             if (autoMoveActive)
             {
@@ -237,6 +254,7 @@ namespace BC.Base
                 worldMoveDirection.y = 0.0f;
                 moveDirection = Vector3.ClampMagnitude(worldMoveDirection, 1.0f);
                 sprintHeld = wantsSprint;
+                jumpHeld = jumpHeldInput;
 
                 if (jumpPressedThisFrame)
                 {
@@ -248,6 +266,7 @@ namespace BC.Base
             {
                 moveDirection = Vector3.zero;
                 sprintHeld = false;
+                jumpHeld = false;
             }
 
             jumpBufferCounter -= deltaTime;
@@ -257,7 +276,9 @@ namespace BC.Base
         {
             moveDirection = Vector3.zero;
             sprintHeld = false;
+            jumpHeld = false;
             jumpBufferCounter = 0.0f;
+            ClearPendingCushionHighJump();
         }
 
         private void TickMotor(float dt)
@@ -354,6 +375,9 @@ namespace BC.Base
 
         private void UpdateVerticalVelocity(float dt, bool isGrounded)
         {
+            if (TryConsumePendingCushionHighJump())
+                return;
+
             bool canUseCoyote = Time.time - lastGroundedTime <= coyoteTime;
             bool wantsJump = jumpBufferCounter > 0.0f;
 
@@ -428,7 +452,7 @@ namespace BC.Base
                     continue;
 
                 bestDistance = hit.distance;
-                ground = new GroundInfo(true, hit.normal, hit.point, hit.collider.transform);
+                ground = new GroundInfo(true, hit.normal, hit.point, hit.collider.transform, hit.collider);
             }
         }
 
@@ -460,14 +484,16 @@ namespace BC.Base
             }
 
             Transform platform = ground.Transform;
-            IMovingPlatformMotionSource motionSource = platform.GetComponentInParent<IMovingPlatformMotionSource>();
-
-            if (motionSource != null &&
-                motionSource.TryGetPassengerMotion(transform.position, dt, out MovingPlatformPassengerMotion motion))
+            if (SupportMotionUtility.TryGetSupportMotion(
+                    ground.Collider,
+                    transform.position,
+                    dt,
+                    transform,
+                    out SupportMotionSnapshot supportMotion))
             {
-                platformDelta = motion.Delta;
-                platformVelocity = motion.Velocity;
-                currentPlatform = platform;
+                platformDelta = supportMotion.PassengerDelta;
+                platformVelocity = supportMotion.PassengerVelocity;
+                currentPlatform = supportMotion.SourceTransform != null ? supportMotion.SourceTransform : platform;
                 return;
             }
 
@@ -655,7 +681,7 @@ namespace BC.Base
             switch (impactResult.ResponseKind)
             {
                 case CushionResponseKind.Bounce:
-                    ApplyCushionBounce(impactResult.BounceVelocity);
+                    ApplyCushionBounce(impactResult);
                     return true;
 
                 case CushionResponseKind.Stop:
@@ -1075,7 +1101,7 @@ namespace BC.Base
             if (snappedPosition.y - bodyRigidbody.position.y > maxStepHeight + StepAssistSurfaceSkin)
                 return false;
 
-            stepGround = new GroundInfo(true, hit.normal, hit.point, hit.collider.transform);
+            stepGround = new GroundInfo(true, hit.normal, hit.point, hit.collider.transform, hit.collider);
             return true;
         }
 
@@ -1155,6 +1181,7 @@ namespace BC.Base
 
         private void ApplyCushionStop()
         {
+            ClearPendingCushionHighJump();
             planarVelocity = Vector3.zero;
             externalVelocity = Vector3.zero;
             inheritedPlatformVelocity = Vector3.zero;
@@ -1162,13 +1189,117 @@ namespace BC.Base
             ApplyCurrentVelocityToBody(GetBodyVelocity());
         }
 
-        private void ApplyCushionBounce(Vector3 bounceVelocity)
+        private void ApplyCushionBounce(CushionImpactResult impactResult)
         {
+            ClearPendingCushionHighJump();
+
+            Vector3 bounceVelocity = impactResult.BounceVelocity;
+            if (TryBuildHighJumpBounceVelocity(impactResult.BounceVelocity, impactResult.BounceSpeedLimit, impactResult.HighJumpSpeedMultiplier, out Vector3 highJumpBounceVelocity))
+            {
+                bounceVelocity = highJumpBounceVelocity;
+                CushionHighJumped?.Invoke(new CushionHighJumpEventData(bounceVelocity));
+            }
+            else
+            {
+                ArmPendingCushionHighJump(impactResult);
+            }
+
             planarVelocity = Vector3.zero;
             verticalVelocity = groundedStickVelocity;
             externalVelocity = bounceVelocity;
             inheritedPlatformVelocity = Vector3.zero;
             ApplyCurrentVelocityToBody(GetBodyVelocity());
+        }
+
+        private bool TryConsumePendingCushionHighJump()
+        {
+            if (Time.time > pendingCushionHighJumpExpireTime)
+            {
+                ClearPendingCushionHighJump();
+                return false;
+            }
+
+            if (!HasBufferedHighJumpInput())
+                return false;
+
+            Vector3 normalBounceVelocity = pendingCushionBounceDirection * pendingCushionBounceSpeed;
+            if (!TryBuildHighJumpBounceVelocity(normalBounceVelocity, pendingCushionBounceSpeedLimit, pendingCushionHighJumpMultiplier, out Vector3 highJumpBounceVelocity))
+                return false;
+
+            planarVelocity = Vector3.zero;
+            verticalVelocity = groundedStickVelocity;
+            externalVelocity = highJumpBounceVelocity;
+            inheritedPlatformVelocity = Vector3.zero;
+            ApplyCurrentVelocityToBody(GetBodyVelocity());
+            CushionHighJumped?.Invoke(new CushionHighJumpEventData(highJumpBounceVelocity));
+            return true;
+        }
+
+        private bool TryBuildHighJumpBounceVelocity(
+            Vector3 normalBounceVelocity,
+            float bounceSpeedLimit,
+            float highJumpSpeedMultiplier,
+            out Vector3 highJumpBounceVelocity)
+        {
+            highJumpBounceVelocity = normalBounceVelocity;
+
+            if (highJumpSpeedMultiplier <= 1.0001f || !HasBufferedHighJumpInput())
+                return false;
+
+            float normalBounceSpeed = normalBounceVelocity.magnitude;
+            if (normalBounceSpeed <= 0.0001f)
+                return false;
+
+            Vector3 bounceDirection = normalBounceVelocity / normalBounceSpeed;
+            float cappedBoostedSpeed = normalBounceSpeed * highJumpSpeedMultiplier;
+            if (bounceSpeedLimit > 0f)
+                cappedBoostedSpeed = Mathf.Min(cappedBoostedSpeed, bounceSpeedLimit * highJumpSpeedMultiplier);
+
+            if (cappedBoostedSpeed <= normalBounceSpeed + 0.0001f)
+                return false;
+
+            ConsumeHighJumpInput();
+            highJumpBounceVelocity = bounceDirection * cappedBoostedSpeed;
+            return true;
+        }
+
+        private void ArmPendingCushionHighJump(CushionImpactResult impactResult)
+        {
+            if (impactResult.ResponseKind != CushionResponseKind.Bounce ||
+                impactResult.HighJumpSpeedMultiplier <= 1.0001f ||
+                impactResult.BounceVelocity.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            float bounceSpeed = impactResult.BounceVelocity.magnitude;
+            pendingCushionHighJumpExpireTime = Time.time + coyoteTime;
+            pendingCushionBounceDirection = impactResult.BounceVelocity / bounceSpeed;
+            pendingCushionBounceSpeed = bounceSpeed;
+            pendingCushionBounceSpeedLimit = impactResult.BounceSpeedLimit;
+            pendingCushionHighJumpMultiplier = impactResult.HighJumpSpeedMultiplier;
+        }
+
+        private void ClearPendingCushionHighJump()
+        {
+            pendingCushionHighJumpExpireTime = -999.0f;
+            pendingCushionBounceDirection = Vector3.zero;
+            pendingCushionBounceSpeed = 0f;
+            pendingCushionBounceSpeedLimit = 0f;
+            pendingCushionHighJumpMultiplier = 1.0f;
+        }
+
+        private bool HasBufferedHighJumpInput()
+        {
+            return jumpHeld || jumpBufferCounter > 0.0f;
+        }
+
+        private void ConsumeHighJumpInput()
+        {
+            jumpBufferCounter = 0.0f;
+            lastGroundedTime = -999.0f;
+            ClearPendingCushionHighJump();
+            StateMachine.ChangeState(EntityMoveState.Jumping);
         }
 
         private EntityTagId ResolveCushionImpactTag()
@@ -1364,13 +1495,15 @@ namespace BC.Base
             public readonly Vector3 Normal;
             public readonly Vector3 Point;
             public readonly Transform Transform;
+            public readonly Collider Collider;
 
-            public GroundInfo(bool isValid, Vector3 normal, Vector3 point, Transform transform)
+            public GroundInfo(bool isValid, Vector3 normal, Vector3 point, Transform transform, Collider collider)
             {
                 IsValid = isValid;
                 Normal = normal;
                 Point = point;
                 Transform = transform;
+                Collider = collider;
             }
         }
     }

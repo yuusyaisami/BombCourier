@@ -37,6 +37,7 @@ namespace BC.Stage
             return new StageObjectSnapshot(
                 this,
                 gameObject.activeSelf,
+                transform.parent,
                 transform.localPosition,
                 transform.localRotation,
                 transform.localScale,
@@ -52,6 +53,9 @@ namespace BC.Stage
             Rigidbody rb = saveRigidbody && snapshot.HasRigidbody && TryGetComponent(out Rigidbody cachedRigidbody)
                 ? cachedRigidbody
                 : null;
+
+            if (transform.parent != snapshot.Parent)
+                transform.SetParent(snapshot.Parent, false);
 
             if (saveTransform)
             {
@@ -116,6 +120,7 @@ namespace BC.Stage
     {
         public readonly StageSaveMarkMB Target;
         public readonly bool ActiveSelf;
+        public readonly Transform Parent;
         public readonly Vector3 LocalPosition;
         public readonly Quaternion LocalRotation;
         public readonly Vector3 LocalScale;
@@ -127,6 +132,7 @@ namespace BC.Stage
         public StageObjectSnapshot(
             StageSaveMarkMB target,
             bool activeSelf,
+            Transform parent,
             Vector3 localPosition,
             Quaternion localRotation,
             Vector3 localScale,
@@ -137,6 +143,7 @@ namespace BC.Stage
         {
             Target = target;
             ActiveSelf = activeSelf;
+            Parent = parent;
             LocalPosition = localPosition;
             LocalRotation = localRotation;
             LocalScale = localScale;

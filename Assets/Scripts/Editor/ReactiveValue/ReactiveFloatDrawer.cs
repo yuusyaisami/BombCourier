@@ -12,13 +12,15 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveFloatSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                (int)ReactiveFloatSourceKind.LocalValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
 
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
-            return sourceKind == (int)ReactiveFloatSourceKind.EntityValueStore
+            return sourceKind == (int)ReactiveFloatSourceKind.EntityValueStore ||
+                   sourceKind == (int)ReactiveFloatSourceKind.LocalValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -29,6 +31,7 @@ namespace BC.Editor
             {
                 (int)ReactiveFloatSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveFloatSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
+                (int)ReactiveFloatSourceKind.LocalValueStore => GetReactiveLocalValueSourceHeight(),
                 (int)ReactiveFloatSourceKind.Distance =>
                     GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("distance").FindPropertyRelative("fromEntity"), true)) +
                     GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("distance").FindPropertyRelative("toEntity"), true)),
@@ -45,6 +48,9 @@ namespace BC.Editor
                     break;
                 case ReactiveFloatSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(float));
+                    break;
+                case ReactiveFloatSourceKind.LocalValueStore:
+                    DrawReactiveLocalValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(float));
                     break;
                 case ReactiveFloatSourceKind.Distance:
                     DrawPropertyField(ref position, property.FindPropertyRelative("distance").FindPropertyRelative("fromEntity"), "From");

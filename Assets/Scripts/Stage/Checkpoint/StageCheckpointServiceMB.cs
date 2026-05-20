@@ -11,17 +11,21 @@ namespace BC.Stage
     {
         [SerializeField] private Transform stageRoot;
 
-        private readonly List<StageObjectSnapshot> latestSnapshot = new();
+        private StageCheckpointSnapshot latestSnapshot;
 
-        public bool HasCheckpoint => latestSnapshot.Count > 0;
+        public bool HasCheckpoint => latestSnapshot.IsValid;
 
         private Transform Root => stageRoot != null ? stageRoot : transform;
 
         public void Capture()
         {
-            latestSnapshot.Clear();
+            latestSnapshot = CaptureSnapshot();
+        }
 
+        public StageCheckpointSnapshot CaptureSnapshot()
+        {
             StageSaveMarkMB[] marks = Root.GetComponentsInChildren<StageSaveMarkMB>(true);
+            var snapshotEntries = new List<StageObjectSnapshot>(marks.Length);
 
             for (int i = 0; i < marks.Length; i++)
             {
@@ -30,13 +34,20 @@ namespace BC.Stage
                 if (mark == null || mark.ExcludeFromCheckpoint)
                     continue;
 
-                latestSnapshot.Add(mark.Capture());
+                snapshotEntries.Add(mark.Capture());
             }
+
+            return new StageCheckpointSnapshot(snapshotEntries.ToArray());
         }
 
         public void Restore()
         {
-            if (!HasCheckpoint)
+            RestoreSnapshot(latestSnapshot);
+        }
+
+        public void RestoreSnapshot(StageCheckpointSnapshot snapshot)
+        {
+            if (!snapshot.IsValid)
             {
                 Debug.LogError($"{nameof(StageCheckpointServiceMB)}: checkpoint does not exist.", this);
                 return;
@@ -44,10 +55,11 @@ namespace BC.Stage
 
             // CharacterController は transform ワープと相性が悪いので一時的に止める。
             var disabledControllers = new List<CharacterController>();
+            IReadOnlyList<StageObjectSnapshot> snapshotEntries = snapshot.Entries;
 
-            for (int i = 0; i < latestSnapshot.Count; i++)
+            for (int i = 0; i < snapshotEntries.Count; i++)
             {
-                var target = latestSnapshot[i].Target;
+                var target = snapshotEntries[i].Target;
 
                 if (target != null && target.TryGetComponent(out CharacterController controller) && controller.enabled)
                 {
@@ -56,14 +68,14 @@ namespace BC.Stage
                 }
             }
 
-            for (int i = 0; i < latestSnapshot.Count; i++)
+            for (int i = 0; i < snapshotEntries.Count; i++)
             {
-                StageObjectSnapshot snapshot = latestSnapshot[i];
+                StageObjectSnapshot snapshotEntry = snapshotEntries[i];
 
-                if (snapshot.Target == null)
+                if (snapshotEntry.Target == null)
                     continue;
 
-                snapshot.Target.Restore(snapshot);
+                snapshotEntry.Target.Restore(snapshotEntry);
             }
 
             for (int i = 0; i < disabledControllers.Count; i++)
@@ -75,7 +87,20 @@ namespace BC.Stage
 
         public void Clear()
         {
-            latestSnapshot.Clear();
+            latestSnapshot = default;
         }
+    }
+
+    public readonly struct StageCheckpointSnapshot
+    {
+        private readonly StageObjectSnapshot[] entries;
+
+        internal StageCheckpointSnapshot(StageObjectSnapshot[] entries)
+        {
+            this.entries = entries ?? System.Array.Empty<StageObjectSnapshot>();
+        }
+
+        public bool IsValid => entries != null;
+        internal IReadOnlyList<StageObjectSnapshot> Entries => entries ?? System.Array.Empty<StageObjectSnapshot>();
     }
 }

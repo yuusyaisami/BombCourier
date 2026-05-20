@@ -37,6 +37,14 @@ namespace BC.Base.Tests
             return method.Invoke(null, BuildInvokeArguments(method.GetParameters(), arguments));
         }
 
+        public static object InvokeGenericStatic(string fullTypeName, string methodName, Type genericType, params object[] arguments)
+        {
+            Type type = GetTypeByFullName(fullTypeName);
+            MethodInfo method = FindGenericMethod(type, methodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic, genericType, arguments);
+            Assert.IsNotNull(method, $"Expected generic static method: {fullTypeName}.{methodName}<{genericType.Name}>");
+            return method.Invoke(null, BuildInvokeArguments(method.GetParameters(), arguments));
+        }
+
         public static object InvokeMethod(object instance, string methodName, params object[] arguments)
         {
             MethodInfo method = FindMethod(instance.GetType(), methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, arguments);
@@ -63,6 +71,14 @@ namespace BC.Base.Tests
             PropertyInfo property = instance.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.IsNotNull(property, $"Expected property: {propertyName}");
             return property.GetValue(instance);
+        }
+
+        public static object GetStaticFieldValue(string fullTypeName, string fieldName)
+        {
+            Type type = GetTypeByFullName(fullTypeName);
+            FieldInfo field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, $"Expected static field: {fullTypeName}.{fieldName}");
+            return field.GetValue(null);
         }
 
         public static ScriptableObject CreateDrawerHost()
@@ -119,6 +135,30 @@ namespace BC.Base.Tests
                 ConstructorInfo ctor = constructors[index];
                 if (CanAcceptArguments(ctor.GetParameters(), arguments))
                     return ctor;
+            }
+
+            return null;
+        }
+
+        private static MethodInfo FindGenericMethod(
+            Type ownerType,
+            string methodName,
+            BindingFlags bindingFlags,
+            Type genericType,
+            object[] arguments)
+        {
+            MethodInfo[] methods = ownerType.GetMethods(bindingFlags);
+
+            for (int index = 0; index < methods.Length; index++)
+            {
+                MethodInfo method = methods[index];
+                if (method.Name != methodName || !method.IsGenericMethodDefinition || method.GetGenericArguments().Length != 1)
+                    continue;
+
+                MethodInfo closedMethod = method.MakeGenericMethod(genericType);
+
+                if (CanAcceptArguments(closedMethod.GetParameters(), arguments))
+                    return closedMethod;
             }
 
             return null;
