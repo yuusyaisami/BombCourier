@@ -145,6 +145,9 @@ namespace BC.Base
         public bool IsGrounded => ground.IsValid;
         public bool IsDead => isDead;
         public event Action<CushionHighJumpEventData> CushionHighJumped;
+        public Vector3 GroundNormal => ground.IsValid ? ground.Normal : Vector3.up;
+        public Vector3 GroundPoint => ground.IsValid ? ground.Point : transform.position;
+        public Transform GroundTransform => ground.IsValid ? ground.Transform : null;
 
         public Transform CushionImpactRoot => transform;
         public EntityTagId CushionImpactTag => ResolveCushionImpactTag();

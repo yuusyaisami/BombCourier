@@ -88,6 +88,7 @@ namespace BC.Player
         public ICarryableItem CurrentHandledItem => currentlyHandledItem;
         public bool IsHandlingItem => isHandlingItem;
         public bool CanInteract => currentCanInteract;
+        public ICarryableItem CurrentlyHandledItem => currentlyHandledItem;
         public bool IsInputPressed => interactionController != null && interactionController.IsInputPressed;
         public float InputHoldDuration => interactionController != null ? interactionController.InputHoldDuration : 0f;
         public int InputPressSequence => interactionController != null ? interactionController.InputPressSequence : 0;
@@ -406,6 +407,47 @@ namespace BC.Player
                 throwSequence++;
 
             ClearHeldState();
+        }
+
+        public bool ForceReleaseCurrentItem(Vector3 releaseVelocity)
+        {
+            if (currentlyHandledItem == null)
+                return false;
+
+            if (isThrowCharging)
+            {
+                isThrowCharging = false;
+                OnThrowChargeEnd?.Invoke();
+            }
+
+            // 着地ショックでの手放しは「投げた」扱いにしない。
+            // 投擲トリガーを増やすと着地アニメーションと競合するため、throwSequence は進めない。
+            currentlyHandledItem.OnRelease(releaseVelocity);
+            ClearHeldState();
+            return true;
+        }
+
+        public bool TryGetHeldItemTag(out EntityTagId heldItemTag)
+        {
+            heldItemTag = default;
+
+            if (currentlyHandledItem == null || currentlyHandledItem.ItemTransform == null)
+                return false;
+
+            EntityMB heldItemEntity = currentlyHandledItem.ItemTransform.GetComponentInParent<EntityMB>();
+
+            if (heldItemEntity == null || !heldItemEntity.Tag.IsValid)
+                return false;
+
+            heldItemTag = heldItemEntity.Tag;
+            return true;
+        }
+
+        public bool IsHoldingItemWithTag(EntityTagId tagId)
+        {
+            return tagId.IsValid &&
+                   TryGetHeldItemTag(out EntityTagId heldItemTag) &&
+                   heldItemTag.Equals(tagId);
         }
 
         private void ClearHeldState()
