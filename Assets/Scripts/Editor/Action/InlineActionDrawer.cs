@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BC.ActionSystem;
 using BC.Editor.Foundation;
 using BC.Editor.Foundation.IMGUI;
@@ -14,16 +15,14 @@ namespace BC.Editor.Action
         private const float HandleWidth = 18f;
         private const float FoldoutWidth = 14f;
         private const float IndexWidth = 28f;
-        private const float MaxStateWidth = 140f;
-        private const float MaxBadgeWidth = 120f;
-
-        private const string RenameActiveStateKey = "BC.Editor.Action.InlineActionDrawer.ActiveRename";
-        private const string RenameTextStatePrefix = "BC.Editor.Action.InlineActionDrawer.RenameText.";
-        private const string RenameFocusStatePrefix = "BC.Editor.Action.InlineActionDrawer.RenameFocus.";
-        private const string RenameFocusedStatePrefix = "BC.Editor.Action.InlineActionDrawer.RenameFocused.";
+        private const float FooterSpacing = 4f;
+        private const float MinSummaryWidth = 72f;
+        private const float MaxTypeBadgeWidth = 120f;
+        private const float MaxStateBadgeWidth = 132f;
 
         private static readonly GUIContent EmptyListLabel = new("Empty");
         private static readonly GUIContent AddStepButtonLabel = new("Add Step");
+        private static readonly GUIContent OpenInWindowButtonLabel = new("Open in Window");
 
         protected override float GetPropertyHeightCore(SerializedProperty property, GUIContent label)
         {
@@ -65,12 +64,16 @@ namespace BC.Editor.Action
             controller.Draw(listRect, stepsProperty, EmptyListLabel);
 
             Rect footerRect = new(contentRect.x, listRect.yMax + Spacing, contentRect.width, LineHeight);
-            DrawFooter(footerRect, stepsProperty);
+            DrawFooter(footerRect, property, stepsProperty);
         }
 
         private InlineListController CreateListController()
         {
-            return new InlineListController(GetRowHeight, DrawRow);
+            return new InlineListController(
+                GetRowHeight,
+                DrawRow,
+                MoveRow,
+                HeaderPadding + HandleWidth);
         }
 
         private float GetRowHeight(SerializedProperty stepProperty, int index)
@@ -80,7 +83,7 @@ namespace BC.Editor.Action
 
             float height = LineHeight;
 
-            if (stepProperty.isExpanded)
+            if (InlineActionEditorState.IsExpanded(stepProperty))
             {
                 float detailHeight = GetExpandedDetailHeight(stepProperty);
 
@@ -99,7 +102,7 @@ namespace BC.Editor.Action
 
             string typeLabel = ActionStepSummaryUtility.GetTypeLabel(stepProperty);
             string summary = ActionStepSummaryUtility.GetSummary(stepProperty);
-            string stateText = ActionStepSummaryUtility.GetStateText(stepProperty);
+            IReadOnlyList<ActionStepBadge> badges = ActionStepChildSlotUtility.GetBadges(stepProperty);
 
             Rect contentRect = new(
                 headerRect.x + HeaderPadding,
@@ -110,30 +113,30 @@ namespace BC.Editor.Action
             Rect handleRect = RectLayoutUtility.TakeLeft(ref contentRect, HandleWidth, 2f);
             Rect foldoutRect = RectLayoutUtility.TakeLeft(ref contentRect, FoldoutWidth, 2f);
             Rect indexRect = RectLayoutUtility.TakeLeft(ref contentRect, IndexWidth, 4f);
-
-            float stateWidth = ResolveStateWidth(stateText);
-            Rect stateRect = stateWidth > 0f
-                ? RectLayoutUtility.TakeRight(ref contentRect, stateWidth, 4f)
-                : Rect.zero;
-
-            float badgeWidth = ResolveBadgeWidth(typeLabel);
-            Rect badgeRect = RectLayoutUtility.TakeLeft(ref contentRect, badgeWidth, 4f);
+            float typeBadgeWidth = ResolveTypeBadgeWidth(typeLabel);
+            Rect typeBadgeRect = RectLayoutUtility.TakeLeft(ref contentRect, typeBadgeWidth, 4f);
             Rect summaryRect = contentRect;
 
-            GUI.Label(handleRect, "||", EditorStyles.centeredGreyMiniLabel);
-            stepProperty.isExpanded = EditorGUI.Foldout(foldoutRect, stepProperty.isExpanded, GUIContent.none, false);
-            EditorGUI.LabelField(indexRect, (index + 1).ToString(), EditorStyles.centeredGreyMiniLabel);
-            DrawBadge(badgeRect, typeLabel);
+            DrawStateBadges(ref summaryRect, badges);
 
-            if (IsRenameActive(stepProperty))
+            GUI.Label(handleRect, "||", EditorStyles.centeredGreyMiniLabel);
+
+            bool expanded = EditorGUI.Foldout(
+                foldoutRect,
+                InlineActionEditorState.IsExpanded(stepProperty),
+                GUIContent.none,
+                false);
+            InlineActionEditorState.SetExpanded(stepProperty, expanded);
+
+            EditorGUI.LabelField(indexRect, (index + 1).ToString(), EditorStyles.centeredGreyMiniLabel);
+            DrawTypeBadge(typeBadgeRect, typeLabel);
+
+            if (InlineActionEditorState.IsRenameActive(stepProperty))
                 DrawRenameField(summaryRect, stepProperty);
             else
                 EditorGUI.LabelField(summaryRect, summary);
 
-            if (stateWidth > 0f)
-                EditorGUI.LabelField(stateRect, stateText, EditorStyles.miniLabel);
-
-            if (!stepProperty.isExpanded)
+            if (!expanded)
                 return;
 
             float detailHeight = GetExpandedDetailHeight(stepProperty);
@@ -150,6 +153,15 @@ namespace BC.Editor.Action
             DrawExpandedDetail(detailRect, stepProperty);
         }
 
+        private void MoveRow(SerializedProperty listProperty, int sourceIndex, int destinationIndex)
+        {
+            ActionStepManagedReferenceUtility.MoveStep(
+                listProperty.serializedObject.targetObjects,
+                listProperty.propertyPath,
+                sourceIndex,
+                destinationIndex);
+        }
+
         private static void DrawHeaderBackground(Rect headerRect, SerializedProperty stepProperty)
         {
             Color background = stepProperty?.managedReferenceValue == null
@@ -159,23 +171,56 @@ namespace BC.Editor.Action
             EditorGUI.DrawRect(headerRect, background);
         }
 
-        private static float ResolveBadgeWidth(string typeLabel)
+        private static float ResolveTypeBadgeWidth(string typeLabel)
         {
-            return Mathf.Min(MaxBadgeWidth, EditorStyles.miniBoldLabel.CalcSize(new GUIContent(typeLabel)).x + 12f);
+            return Mathf.Min(
+                MaxTypeBadgeWidth,
+                EditorStyles.miniBoldLabel.CalcSize(new GUIContent(typeLabel)).x + 12f);
         }
 
-        private static float ResolveStateWidth(string stateText)
+        private static float ResolveStateBadgeWidth(string text)
         {
-            if (string.IsNullOrWhiteSpace(stateText))
-                return 0f;
-
-            return Mathf.Min(MaxStateWidth, EditorStyles.miniLabel.CalcSize(new GUIContent(stateText)).x + 8f);
+            return Mathf.Min(
+                MaxStateBadgeWidth,
+                EditorStyles.miniBoldLabel.CalcSize(new GUIContent(text)).x + 12f);
         }
 
-        private static void DrawBadge(Rect badgeRect, string typeLabel)
+        private static void DrawTypeBadge(Rect badgeRect, string typeLabel)
         {
             EditorGUI.DrawRect(badgeRect, EditorThemeTokens.TypeBadgeBackground);
             EditorGUI.LabelField(RectLayoutUtility.WithPadding(badgeRect, 2f), typeLabel, EditorStyles.miniBoldLabel);
+        }
+
+        private static void DrawStateBadges(ref Rect summaryRect, IReadOnlyList<ActionStepBadge> badges)
+        {
+            if (badges == null || badges.Count == 0)
+                return;
+
+            for (int i = badges.Count - 1; i >= 0; i--)
+            {
+                ActionStepBadge badge = badges[i];
+
+                if (string.IsNullOrWhiteSpace(badge.Text))
+                    continue;
+
+                float badgeWidth = ResolveStateBadgeWidth(badge.Text);
+
+                if (summaryRect.width - badgeWidth - 4f < MinSummaryWidth)
+                    break;
+
+                Rect badgeRect = RectLayoutUtility.TakeRight(ref summaryRect, badgeWidth, 4f);
+                DrawStateBadge(badgeRect, badge);
+            }
+        }
+
+        private static void DrawStateBadge(Rect badgeRect, ActionStepBadge badge)
+        {
+            Color background = badge.Kind == ActionStepBadgeKind.Warning
+                ? EditorThemeTokens.MissingBackground
+                : EditorThemeTokens.BranchBackground;
+
+            EditorGUI.DrawRect(badgeRect, background);
+            EditorGUI.LabelField(RectLayoutUtility.WithPadding(badgeRect, 2f), badge.Text, EditorStyles.miniBoldLabel);
         }
 
         private static bool HasVisibleLabel(GUIContent label)
@@ -219,7 +264,6 @@ namespace BC.Editor.Action
             int rootDepth = iterator.depth;
             bool enterChildren = true;
 
-            // Draw direct child properties manually so DisplayName stays hidden outside inline rename mode.
             while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, endProperty))
             {
                 enterChildren = false;
@@ -236,35 +280,23 @@ namespace BC.Editor.Action
             }
         }
 
-        private static void DrawFooter(Rect footerRect, SerializedProperty stepsProperty)
+        private static void DrawFooter(
+            Rect footerRect,
+            SerializedProperty inlineActionProperty,
+            SerializedProperty stepsProperty)
         {
-            if (!GUI.Button(footerRect, AddStepButtonLabel, EditorStyles.miniButton))
-                return;
+            float buttonWidth = Mathf.Max(0f, (footerRect.width - FooterSpacing) * 0.5f);
+            Rect addButtonRect = new(footerRect.x, footerRect.y, buttonWidth, footerRect.height);
+            Rect openButtonRect = new(addButtonRect.xMax + FooterSpacing, footerRect.y, buttonWidth, footerRect.height);
 
-            ShowAddStepMenu(footerRect, stepsProperty);
-        }
+            if (GUI.Button(addButtonRect, AddStepButtonLabel, EditorStyles.miniButtonLeft))
+                ActionStepPickerDropdown.Show(addButtonRect, stepsProperty);
 
-        private static void ShowAddStepMenu(Rect buttonRect, SerializedProperty stepsProperty)
-        {
-            if (stepsProperty == null)
-                return;
-
-            GenericMenu menu = new();
-            IReadOnlyList<Type> stepTypes = ActionStepManagedReferenceUtility.GetStepTypes();
-            UnityEngine.Object[] targets = stepsProperty.serializedObject.targetObjects;
-            string listPropertyPath = stepsProperty.propertyPath;
-
-            for (int i = 0; i < stepTypes.Count; i++)
+            using (new EditorGUI.DisabledScope(!ActionInlineWindowLauncher.CanLaunch(inlineActionProperty)))
             {
-                Type stepType = stepTypes[i];
-                string label = ActionStepManagedReferenceUtility.GetStepTypeLabel(stepType);
-                menu.AddItem(new GUIContent(label), false, () =>
-                {
-                    ActionStepManagedReferenceUtility.AddStep(targets, listPropertyPath, stepType);
-                });
+                if (GUI.Button(openButtonRect, OpenInWindowButtonLabel, EditorStyles.miniButtonRight))
+                    ActionInlineWindowLauncher.LaunchAndOpen(inlineActionProperty);
             }
-
-            menu.DropDown(buttonRect);
         }
 
         private static void HandleContextClick(Rect headerRect, SerializedProperty stepProperty, int index)
@@ -274,168 +306,30 @@ namespace BC.Editor.Action
             if (currentEvent.type != EventType.ContextClick || !headerRect.Contains(currentEvent.mousePosition))
                 return;
 
-            ShowStepContextMenu(stepProperty, index);
+            ActionStepContextMenuUtility.Show(stepProperty, index);
             currentEvent.Use();
-        }
-
-        private static void ShowStepContextMenu(SerializedProperty stepProperty, int index)
-        {
-            if (stepProperty == null)
-                return;
-
-            UnityEngine.Object[] targets = stepProperty.serializedObject.targetObjects;
-            string stepPropertyPath = stepProperty.propertyPath;
-            string listPropertyPath = ResolveParentListPropertyPath(stepPropertyPath);
-            string renameRowKey = GetRenameRowKey(stepProperty);
-            string currentDisplayName = stepProperty.FindPropertyRelative("DisplayName")?.stringValue ?? string.Empty;
-            bool hasCustomLabel = !string.IsNullOrWhiteSpace(currentDisplayName);
-            int arraySize = ResolveArraySize(stepProperty);
-
-            ContextMenuBuilder menu = new();
-            menu.AddItem(
-                "Rename Label",
-                stepProperty.managedReferenceValue != null,
-                () => BeginRename(renameRowKey, currentDisplayName));
-            menu.AddItem(
-                "Clear Label",
-                hasCustomLabel,
-                () => ActionStepManagedReferenceUtility.ClearDisplayName(targets, stepPropertyPath));
-            menu.AddSeparator();
-            menu.AddItem(
-                "Duplicate Step",
-                !string.IsNullOrWhiteSpace(listPropertyPath),
-                () => ActionStepManagedReferenceUtility.DuplicateStep(targets, listPropertyPath, index));
-            menu.AddItem(
-                "Delete Step",
-                !string.IsNullOrWhiteSpace(listPropertyPath),
-                () =>
-                {
-                    CancelRename(renameRowKey);
-                    ActionStepManagedReferenceUtility.DeleteStep(targets, listPropertyPath, index);
-                });
-            menu.AddSeparator();
-            menu.AddItem(
-                "Move Up",
-                index > 0,
-                () => ActionStepManagedReferenceUtility.MoveStep(targets, listPropertyPath, index, index - 1));
-            menu.AddItem(
-                "Move Down",
-                index >= 0 && index < arraySize - 1,
-                () => ActionStepManagedReferenceUtility.MoveStep(targets, listPropertyPath, index, index + 1));
-            menu.ShowAsContext();
-        }
-
-        private static int ResolveArraySize(SerializedProperty stepProperty)
-        {
-            string listPropertyPath = ResolveParentListPropertyPath(stepProperty.propertyPath);
-            SerializedProperty listProperty = stepProperty.serializedObject.FindProperty(listPropertyPath);
-            return listProperty != null && listProperty.isArray ? listProperty.arraySize : 0;
-        }
-
-        private static string ResolveParentListPropertyPath(string stepPropertyPath)
-        {
-            if (string.IsNullOrWhiteSpace(stepPropertyPath))
-                return string.Empty;
-
-            int markerIndex = stepPropertyPath.LastIndexOf(".Array.data[", StringComparison.Ordinal);
-            return markerIndex < 0 ? string.Empty : stepPropertyPath.Substring(0, markerIndex);
-        }
-
-        private static bool IsRenameActive(SerializedProperty stepProperty)
-        {
-            return string.Equals(
-                SessionState.GetString(RenameActiveStateKey, string.Empty),
-                GetRenameRowKey(stepProperty),
-                StringComparison.Ordinal);
-        }
-
-        private static string GetRenameRowKey(SerializedProperty stepProperty)
-        {
-            return EditorStateKey.ForProperty(stepProperty, "rename");
-        }
-
-        private static string GetRenameTextStateKey(string rowKey)
-        {
-            return RenameTextStatePrefix + rowKey;
-        }
-
-        private static string GetRenameFocusStateKey(string rowKey)
-        {
-            return RenameFocusStatePrefix + rowKey;
-        }
-
-        private static string GetRenameFocusedStateKey(string rowKey)
-        {
-            return RenameFocusedStatePrefix + rowKey;
-        }
-
-        private static void BeginRename(string rowKey, string initialValue)
-        {
-            if (string.IsNullOrWhiteSpace(rowKey))
-                return;
-
-            SessionState.SetString(RenameActiveStateKey, rowKey);
-            SessionState.SetString(GetRenameTextStateKey(rowKey), initialValue ?? string.Empty);
-            SessionState.SetBool(GetRenameFocusStateKey(rowKey), true);
-            SessionState.SetBool(GetRenameFocusedStateKey(rowKey), false);
-        }
-
-        private static void CancelRename(string rowKey)
-        {
-            if (string.IsNullOrWhiteSpace(rowKey))
-                return;
-
-            if (string.Equals(SessionState.GetString(RenameActiveStateKey, string.Empty), rowKey, StringComparison.Ordinal))
-                SessionState.SetString(RenameActiveStateKey, string.Empty);
-
-            SessionState.EraseString(GetRenameTextStateKey(rowKey));
-            SessionState.SetBool(GetRenameFocusStateKey(rowKey), false);
-            SessionState.SetBool(GetRenameFocusedStateKey(rowKey), false);
-        }
-
-        private static void CommitRename(SerializedProperty stepProperty, string rowKey, string displayName)
-        {
-            ActionStepManagedReferenceUtility.SetDisplayName(
-                stepProperty.serializedObject.targetObjects,
-                stepProperty.propertyPath,
-                displayName);
-
-            CancelRename(rowKey);
         }
 
         private static void DrawRenameField(Rect summaryRect, SerializedProperty stepProperty)
         {
-            string rowKey = GetRenameRowKey(stepProperty);
-            string textStateKey = GetRenameTextStateKey(rowKey);
-            string focusStateKey = GetRenameFocusStateKey(rowKey);
-            string focusedStateKey = GetRenameFocusedStateKey(rowKey);
-            string controlName = $"InlineActionRename_{rowKey}";
-
-            string currentText = SessionState.GetString(
-                textStateKey,
-                stepProperty.FindPropertyRelative("DisplayName")?.stringValue ?? string.Empty);
+            string controlName = InlineActionEditorState.GetRenameControlName(stepProperty);
+            string currentText = InlineActionEditorState.GetRenameText(stepProperty);
 
             GUI.SetNextControlName(controlName);
             string nextText = EditorGUI.TextField(summaryRect, currentText);
 
             if (!string.Equals(nextText, currentText, StringComparison.Ordinal))
-                SessionState.SetString(textStateKey, nextText);
+                InlineActionEditorState.SetRenameText(stepProperty, nextText);
 
-            if (SessionState.GetBool(focusStateKey, true))
-            {
+            if (InlineActionEditorState.ConsumeRenameFocus(stepProperty))
                 EditorGUI.FocusTextInControl(controlName);
-                SessionState.SetBool(focusStateKey, false);
-            }
 
             Event currentEvent = Event.current;
             bool isFocused = GUI.GetNameOfFocusedControl() == controlName;
-            bool hadFocus = SessionState.GetBool(focusedStateKey, false);
 
-            if (isFocused)
-                SessionState.SetBool(focusedStateKey, true);
-            else if (hadFocus && currentEvent.type != EventType.Layout)
+            if (InlineActionEditorState.ShouldCommitRenameOnFocusLoss(stepProperty, isFocused, currentEvent.type))
             {
-                CommitRename(stepProperty, rowKey, SessionState.GetString(textStateKey, nextText));
+                InlineActionEditorState.CommitRename(stepProperty);
                 return;
             }
 
@@ -444,14 +338,14 @@ namespace BC.Editor.Action
 
             if (currentEvent.keyCode == KeyCode.Return || currentEvent.keyCode == KeyCode.KeypadEnter)
             {
-                CommitRename(stepProperty, rowKey, SessionState.GetString(textStateKey, nextText));
+                InlineActionEditorState.CommitRename(stepProperty);
                 currentEvent.Use();
                 return;
             }
 
             if (currentEvent.keyCode == KeyCode.Escape)
             {
-                CancelRename(rowKey);
+                InlineActionEditorState.CancelRename(stepProperty);
                 currentEvent.Use();
             }
         }

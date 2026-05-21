@@ -138,7 +138,7 @@ namespace BC.Gimmick.MovingPlatform
             SyncRuntimePathVisualization();
         }
 
-        private void OnDrawGizmos()
+        public void DrawEditorPathGizmos()
         {
             if (!showPathInEditor || layers == null || layers.Length == 0)
                 return;

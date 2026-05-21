@@ -55,5 +55,30 @@ namespace BC.Editor.Tests
                 Object.DestroyImmediate(host);
             }
         }
+
+        [Test]
+        public void InlineListControllerUsesStandardSpacingForMultiRowHeight()
+        {
+            InlineListController controller = new(
+                (_, _) => 20f,
+                (_, _, _) => { });
+
+            EditorFoundationTestHost host = ScriptableObject.CreateInstance<EditorFoundationTestHost>();
+            SerializedObject serializedObject = new(host);
+            SerializedProperty values = serializedObject.FindProperty("values");
+            values.arraySize = 2;
+            serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            serializedObject.Update();
+
+            try
+            {
+                float expectedHeight = 40f + EditorGUIUtility.standardVerticalSpacing;
+                Assert.AreEqual(expectedHeight, controller.GetHeight(values));
+            }
+            finally
+            {
+                Object.DestroyImmediate(host);
+            }
+        }
     }
 }

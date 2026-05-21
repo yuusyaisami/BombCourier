@@ -42,6 +42,9 @@ namespace BC.Editor.Foundation
         public static Color WarningColor =>
             EditorGUIUtility.isProSkin ? new Color(1.0f, 0.72f, 0.28f) : new Color(0.72f, 0.42f, 0.02f);
 
+        public static Color SelectedColor =>
+            EditorGUIUtility.isProSkin ? new Color(1.0f, 0.82f, 0.36f, 1.0f) : new Color(0.86f, 0.48f, 0.04f, 1.0f);
+
         public static Color ErrorColor =>
             EditorGUIUtility.isProSkin ? new Color(1.0f, 0.38f, 0.34f) : new Color(0.75f, 0.12f, 0.10f);
 

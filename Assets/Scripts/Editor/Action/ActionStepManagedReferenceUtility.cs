@@ -19,7 +19,7 @@ namespace BC.Editor.Action
                 return cachedStepTypes;
 
             List<Type> stepTypes = new();
-            TypeCollection discoveredTypes = TypeCache.GetTypesDerivedFrom<ActionStepAuthoring>();
+            var discoveredTypes = TypeCache.GetTypesDerivedFrom<ActionStepAuthoring>();
 
             for (int i = 0; i < discoveredTypes.Count; i++)
             {
@@ -84,6 +84,31 @@ namespace BC.Editor.Action
 
                 ManagedReferenceListController.DeleteElement(listProperty, index);
             });
+        }
+
+        internal static void ClearSteps(UnityEngine.Object[] targets, string listPropertyPath)
+        {
+            ApplyListMutation(targets, listPropertyPath, "Clear Action Steps", listProperty =>
+            {
+                listProperty.arraySize = 0;
+            });
+        }
+
+        internal static void ClearInlineAction(UnityEngine.Object[] targets, string inlineActionPropertyPath)
+        {
+            if (targets == null || string.IsNullOrWhiteSpace(inlineActionPropertyPath))
+                return;
+
+            UndoApplyUtility.ApplyToTargets(
+                targets,
+                "Clear Inline Action Branch",
+                serializedObject =>
+                {
+                    SerializedProperty inlineActionProperty = serializedObject.FindProperty(inlineActionPropertyPath);
+
+                    if (inlineActionProperty != null)
+                        inlineActionProperty.boxedValue = null;
+                });
         }
 
         internal static void MoveStep(UnityEngine.Object[] targets, string listPropertyPath, int sourceIndex, int destinationIndex)

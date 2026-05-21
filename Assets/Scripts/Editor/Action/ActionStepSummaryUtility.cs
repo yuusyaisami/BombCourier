@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using BC.ActionSystem;
+using BC.Animation;
 using BC.Base;
 using UnityEditor;
+using UnityEngine;
 
 namespace BC.Editor.Action
 {
@@ -35,12 +37,20 @@ namespace BC.Editor.Action
             string summary = step switch
             {
                 WaitFramesStepAuthoring => BuildWaitFramesSummary(stepProperty),
+                SetActiveStepAuthoring => BuildSetActiveSummary(stepProperty),
                 SubActionStepAuthoring => BuildSubActionSummary(stepProperty),
                 IfStepAuthoring => BuildIfSummary(stepProperty),
                 ShowToastStepAuthoring => BuildShowToastSummary(stepProperty),
                 ShowTalkStepAuthoring => BuildShowTalkSummary(stepProperty),
+                HideTalkStepAuthoring => BuildHideTalkSummary(stepProperty),
                 ShowTalkChoiceStepAuthoring => BuildShowTalkChoiceSummary(stepProperty),
                 SetValueStoreValueStepAuthoring => BuildValueStoreSummary(stepProperty),
+                SetSceneCameraStepAuthoring => BuildSetSceneCameraSummary(stepProperty),
+                ClearSceneCameraStepAuthoring => BuildClearSceneCameraSummary(stepProperty),
+                SetEntityFacingTargetStepAuthoring => BuildSetEntityFacingTargetSummary(stepProperty),
+                ClearEntityFacingStepAuthoring => BuildClearEntityFacingSummary(stepProperty),
+                SetEntityAnimationParameterStepAuthoring => BuildSetEntityAnimationParameterSummary(stepProperty),
+                SetEntityAnimationLayerWeightStepAuthoring => BuildSetEntityAnimationLayerWeightSummary(stepProperty),
                 _ => GetTypeLabel(stepProperty),
             };
 
@@ -49,41 +59,33 @@ namespace BC.Editor.Action
 
         internal static string GetStateText(SerializedProperty stepProperty)
         {
-            if (stepProperty == null)
+            IReadOnlyList<ActionStepBadge> badges = ActionStepChildSlotUtility.GetBadges(stepProperty);
+
+            if (badges == null || badges.Count == 0)
                 return string.Empty;
 
-            List<string> states = new();
-            SerializedProperty displayNameProperty = stepProperty.FindPropertyRelative("DisplayName");
+            List<string> texts = new(badges.Count);
 
-            if (displayNameProperty != null && !string.IsNullOrWhiteSpace(displayNameProperty.stringValue))
-                states.Add("Label");
-
-            SerializedProperty talkRequestDataProperty = stepProperty.FindPropertyRelative("talkRequestData");
-
-            if (talkRequestDataProperty != null)
+            for (int i = 0; i < badges.Count; i++)
             {
-                if (talkRequestDataProperty.FindPropertyRelative("isWaitingActionCompleted")?.boolValue == true)
-                    states.Add("Wait");
-
-                if (GetInlineActionStepCount(talkRequestDataProperty.FindPropertyRelative("onStartTalkAction")) > 0)
-                    states.Add("Start");
-
-                if (GetInlineActionStepCount(talkRequestDataProperty.FindPropertyRelative("onCompleteTalkAction")) > 0)
-                    states.Add("Complete");
+                if (!string.IsNullOrWhiteSpace(badges[i].Text))
+                    texts.Add(badges[i].Text);
             }
 
-            int presentChildCount = GetPresentChildSlotCount(stepProperty);
-
-            if (presentChildCount > 0)
-                states.Add(presentChildCount == 1 ? "1 child" : $"{presentChildCount} children");
-
-            return string.Join(", ", states);
+            return string.Join(", ", texts);
         }
 
         private static string BuildWaitFramesSummary(SerializedProperty stepProperty)
         {
             int frames = stepProperty.FindPropertyRelative("frames")?.intValue ?? 0;
             return frames == 1 ? "1 frame" : $"{frames} frames";
+        }
+
+        private static string BuildSetActiveSummary(SerializedProperty stepProperty)
+        {
+            string targetSummary = BuildEntityTargetSummary(stepProperty.FindPropertyRelative("_target"));
+            string activeSummary = stepProperty.FindPropertyRelative("_active")?.boolValue == true ? "On" : "Off";
+            return IsDefaultSelfTarget(targetSummary) ? activeSummary : $"{targetSummary} -> {activeSummary}";
         }
 
         private static string BuildSubActionSummary(SerializedProperty stepProperty)
@@ -133,6 +135,12 @@ namespace BC.Editor.Action
                 return speaker;
 
             return text;
+        }
+
+        private static string BuildHideTalkSummary(SerializedProperty stepProperty)
+        {
+            float duration = stepProperty.FindPropertyRelative("duration")?.floatValue ?? 0f;
+            return Mathf.Approximately(duration, 0f) ? "Instant" : FormatDuration(duration);
         }
 
         private static string BuildShowTalkChoiceSummary(SerializedProperty stepProperty)
@@ -189,11 +197,102 @@ namespace BC.Editor.Action
             {
                 string targetSummary = BuildEntityTargetSummary(writeProperty.FindPropertyRelative("target"));
 
-                if (!string.Equals(targetSummary, "Self", StringComparison.Ordinal))
+                if (!IsDefaultSelfTarget(targetSummary))
                     return $"{targetSummary}: {keySummary} = {valueSummary}";
             }
 
             return $"{keySummary} = {valueSummary}";
+        }
+
+        private static string BuildSetSceneCameraSummary(SerializedProperty stepProperty)
+        {
+            string channel = Normalize(stepProperty.FindPropertyRelative("channel")?.stringValue);
+            string cameraName = stepProperty.FindPropertyRelative("camera")?.objectReferenceValue?.name;
+
+            if (string.IsNullOrWhiteSpace(cameraName))
+                return "No camera";
+
+            return IsDefaultActionCameraChannel(channel) ? cameraName : $"{channel}: {cameraName}";
+        }
+
+        private static string BuildClearSceneCameraSummary(SerializedProperty stepProperty)
+        {
+            string channel = Normalize(stepProperty.FindPropertyRelative("channel")?.stringValue);
+            return string.IsNullOrWhiteSpace(channel) ? "ActionCamera" : channel;
+        }
+
+        private static string BuildSetEntityFacingTargetSummary(SerializedProperty stepProperty)
+        {
+            string targetSummary = BuildEntityTargetSummary(stepProperty.FindPropertyRelative("target"));
+            string faceTargetSummary = BuildEntityTargetSummary(stepProperty.FindPropertyRelative("faceTarget"));
+            string channel = Normalize(stepProperty.FindPropertyRelative("channel")?.stringValue);
+
+            string summary = IsDefaultSelfTarget(targetSummary)
+                ? $"face {faceTargetSummary}"
+                : $"{targetSummary} face {faceTargetSummary}";
+
+            if (!IsDefaultActionFacingChannel(channel))
+                summary = $"{summary} @ {channel}";
+
+            return summary;
+        }
+
+        private static string BuildClearEntityFacingSummary(SerializedProperty stepProperty)
+        {
+            string targetSummary = BuildEntityTargetSummary(stepProperty.FindPropertyRelative("target"));
+            string channel = Normalize(stepProperty.FindPropertyRelative("channel")?.stringValue);
+            string summary = targetSummary;
+
+            if (!IsDefaultActionFacingChannel(channel))
+                summary = $"{summary} @ {channel}";
+
+            return summary;
+        }
+
+        private static string BuildSetEntityAnimationParameterSummary(SerializedProperty stepProperty)
+        {
+            string targetSummary = BuildEntityTargetSummary(stepProperty.FindPropertyRelative("target"));
+            string parameterName = Normalize(stepProperty.FindPropertyRelative("parameterName")?.stringValue);
+
+            if (string.IsNullOrWhiteSpace(parameterName))
+                return "Unconfigured";
+
+            EntityAnimatorParameterWriteMode writeMode =
+                (EntityAnimatorParameterWriteMode)(stepProperty.FindPropertyRelative("writeMode")?.enumValueIndex ?? 0);
+
+            string body = writeMode switch
+            {
+                EntityAnimatorParameterWriteMode.SetBool =>
+                    $"{parameterName} = {(stepProperty.FindPropertyRelative("boolValue")?.boolValue == true ? "True" : "False")}",
+                EntityAnimatorParameterWriteMode.SetFloat =>
+                    $"{parameterName} = {FormatFloat(stepProperty.FindPropertyRelative("floatValue")?.floatValue ?? 0f)}",
+                EntityAnimatorParameterWriteMode.SetInteger =>
+                    $"{parameterName} = {(stepProperty.FindPropertyRelative("intValue")?.intValue ?? 0).ToString(CultureInfo.InvariantCulture)}",
+                EntityAnimatorParameterWriteMode.SetTrigger => $"SetTrigger {parameterName}",
+                EntityAnimatorParameterWriteMode.ResetTrigger => $"ResetTrigger {parameterName}",
+                _ => parameterName,
+            };
+
+            return IsDefaultSelfTarget(targetSummary) ? body : $"{targetSummary}: {body}";
+        }
+
+        private static string BuildSetEntityAnimationLayerWeightSummary(SerializedProperty stepProperty)
+        {
+            string targetSummary = BuildEntityTargetSummary(stepProperty.FindPropertyRelative("target"));
+            string layerName = Normalize(stepProperty.FindPropertyRelative("layerName")?.stringValue);
+
+            if (string.IsNullOrWhiteSpace(layerName))
+                return "Unconfigured";
+
+            float weight = stepProperty.FindPropertyRelative("weight")?.floatValue ?? 0f;
+            float duration = stepProperty.FindPropertyRelative("duration")?.floatValue ?? 0f;
+
+            string body = $"{layerName} = {FormatFloat(weight)}";
+
+            if (duration > 0f)
+                body = $"{body} in {FormatDuration(duration)}";
+
+            return IsDefaultSelfTarget(targetSummary) ? body : $"{targetSummary}: {body}";
         }
 
         private static string BuildReactiveBoolSummary(SerializedProperty property)
@@ -201,7 +300,7 @@ namespace BC.Editor.Action
             if (property == null)
                 return "Unconfigured";
 
-            return (ReactiveBoolSourceKind)property.FindPropertyRelative("sourceKind")?.enumValueIndex switch
+            return (ReactiveBoolSourceKind)(property.FindPropertyRelative("sourceKind")?.enumValueIndex ?? 0) switch
             {
                 ReactiveBoolSourceKind.Literal => property.FindPropertyRelative("literal")?.boolValue == true ? "True" : "False",
                 ReactiveBoolSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
@@ -217,9 +316,9 @@ namespace BC.Editor.Action
             if (property == null)
                 return "Unconfigured";
 
-            return (ReactiveIntSourceKind)property.FindPropertyRelative("sourceKind")?.enumValueIndex switch
+            return (ReactiveIntSourceKind)(property.FindPropertyRelative("sourceKind")?.enumValueIndex ?? 0) switch
             {
-                ReactiveIntSourceKind.Literal => property.FindPropertyRelative("literal")?.intValue.ToString(CultureInfo.InvariantCulture) ?? "0",
+                ReactiveIntSourceKind.Literal => (property.FindPropertyRelative("literal")?.intValue ?? 0).ToString(CultureInfo.InvariantCulture),
                 ReactiveIntSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
                 ReactiveIntSourceKind.LocalValueStore => BuildLocalValueSummary(property.FindPropertyRelative("localValue")),
                 _ => "Unconfigured",
@@ -231,7 +330,7 @@ namespace BC.Editor.Action
             if (property == null)
                 return "Unconfigured";
 
-            return (ReactiveFloatSourceKind)property.FindPropertyRelative("sourceKind")?.enumValueIndex switch
+            return (ReactiveFloatSourceKind)(property.FindPropertyRelative("sourceKind")?.enumValueIndex ?? 0) switch
             {
                 ReactiveFloatSourceKind.Literal => FormatFloat(property.FindPropertyRelative("literal")?.floatValue ?? 0f),
                 ReactiveFloatSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
@@ -246,7 +345,7 @@ namespace BC.Editor.Action
             if (property == null)
                 return "Unconfigured";
 
-            return (ReactiveStringSourceKind)property.FindPropertyRelative("sourceKind")?.enumValueIndex switch
+            return (ReactiveStringSourceKind)(property.FindPropertyRelative("sourceKind")?.enumValueIndex ?? 0) switch
             {
                 ReactiveStringSourceKind.Literal => BuildTextSnippet(property.FindPropertyRelative("literal")?.stringValue, "Empty text"),
                 ReactiveStringSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
@@ -307,7 +406,7 @@ namespace BC.Editor.Action
             if (property == null)
                 return "Self";
 
-            return (ReactiveEntitySourceKind)property.FindPropertyRelative("sourceKind")?.enumValueIndex switch
+            return (ReactiveEntitySourceKind)(property.FindPropertyRelative("sourceKind")?.enumValueIndex ?? 0) switch
             {
                 ReactiveEntitySourceKind.Self => "Self",
                 ReactiveEntitySourceKind.TriggerEntity => "Trigger",
@@ -343,7 +442,7 @@ namespace BC.Editor.Action
             if (property == null)
                 return "Self";
 
-            return (EntityTargetResolveMode)property.FindPropertyRelative("mode")?.enumValueIndex switch
+            return (EntityTargetResolveMode)(property.FindPropertyRelative("mode")?.enumValueIndex ?? 0) switch
             {
                 EntityTargetResolveMode.Self => "Self",
                 EntityTargetResolveMode.TriggerEntity => "Trigger",
@@ -356,7 +455,7 @@ namespace BC.Editor.Action
         {
             SerializedProperty tagProperty = property.FindPropertyRelative("tag");
             string path = tagProperty?.FindPropertyRelative("path")?.stringValue;
-            string tagLabel = string.IsNullOrWhiteSpace(path) ? "Tag" : $"Tag:{path}";
+            string tagLabel = string.IsNullOrWhiteSpace(path) ? "Tag" : $"Tag:{Normalize(path)}";
 
             if (property.FindPropertyRelative("selection")?.enumValueIndex == (int)EntityTargetSelection.All)
                 return $"{tagLabel} (All)";
@@ -374,18 +473,40 @@ namespace BC.Editor.Action
             if (string.IsNullOrWhiteSpace(path))
                 return "No key";
 
-            string[] segments = path.Split('.');
+            string[] segments = path.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
 
             if (segments.Length == 0)
                 return "No key";
 
             if (string.Equals(segments[0], "Local", StringComparison.Ordinal))
-                return $"L:{segments[segments.Length - 1]}";
+                return $"L:{BuildCompactKeyPath(segments)}";
 
             if (string.Equals(segments[0], "Kernel", StringComparison.Ordinal))
-                return $"K:{segments[segments.Length - 1]}";
+                return $"K:{BuildCompactKeyPath(segments)}";
 
             return Normalize(path);
+        }
+
+        private static string BuildCompactKeyPath(IReadOnlyList<string> segments)
+        {
+            if (segments == null || segments.Count == 0)
+                return "Unknown";
+
+            string leaf = segments[segments.Count - 1];
+
+            if (segments.Count >= 3 && IsAmbiguousLeafSegment(leaf))
+                return $"{segments[segments.Count - 2]}.{leaf}";
+
+            return leaf;
+        }
+
+        private static bool IsAmbiguousLeafSegment(string leaf)
+        {
+            return string.Equals(leaf, "Index", StringComparison.Ordinal) ||
+                   string.Equals(leaf, "SelectedIndex", StringComparison.Ordinal) ||
+                   string.Equals(leaf, "Value", StringComparison.Ordinal) ||
+                   string.Equals(leaf, "State", StringComparison.Ordinal) ||
+                   string.Equals(leaf, "Flag", StringComparison.Ordinal);
         }
 
         private static string BuildTextSnippet(string text, string emptyPlaceholder)
@@ -403,6 +524,21 @@ namespace BC.Editor.Action
             return WhitespaceRegex.Replace(normalized, " ");
         }
 
+        private static bool IsDefaultSelfTarget(string targetSummary)
+        {
+            return string.Equals(targetSummary, "Self", StringComparison.Ordinal);
+        }
+
+        private static bool IsDefaultActionFacingChannel(string channel)
+        {
+            return string.IsNullOrWhiteSpace(channel) || string.Equals(channel, EntityFacingChannels.Action, StringComparison.Ordinal);
+        }
+
+        private static bool IsDefaultActionCameraChannel(string channel)
+        {
+            return string.IsNullOrWhiteSpace(channel) || string.Equals(channel, "ActionCamera", StringComparison.Ordinal);
+        }
+
         private static string FormatCount(int count, string singular)
         {
             return count == 1 ? $"1 {singular}" : $"{count} {singular}s";
@@ -411,6 +547,11 @@ namespace BC.Editor.Action
         private static string FormatFloat(float value)
         {
             return value.ToString("0.###", CultureInfo.InvariantCulture);
+        }
+
+        private static string FormatDuration(float duration)
+        {
+            return $"{FormatFloat(duration)}s";
         }
 
         private static bool TryResolveWriteKind(SerializedProperty writeProperty, out ValueStoreWriteValueKind effectiveKind)
@@ -438,30 +579,13 @@ namespace BC.Editor.Action
             return valueType != null && ValueStoreWriteValueTypeUtility.TryGetKind(valueType, out effectiveKind);
         }
 
-        private static int GetPresentChildSlotCount(SerializedProperty stepProperty)
-        {
-            if (stepProperty?.managedReferenceValue is not ActionStepAuthoring step)
-                return 0;
-
-            IReadOnlyList<ActionChildSlotDescriptor> childSlots = step.GetChildActionSlots();
-            int count = 0;
-
-            for (int i = 0; i < childSlots.Count; i++)
-            {
-                if (childSlots[i].IsPresent)
-                    count++;
-            }
-
-            return count;
-        }
-
         private static int GetInlineActionStepCount(SerializedProperty inlineActionProperty)
         {
             if (inlineActionProperty == null)
                 return 0;
 
-            if (inlineActionProperty.boxedValue is InlineAction inlineAction && inlineAction.Steps != null)
-                return inlineAction.Steps.Count;
+            if (inlineActionProperty.boxedValue is InlineAction inlineAction)
+                return inlineAction.Steps?.Count ?? 0;
 
             SerializedProperty stepsProperty = inlineActionProperty.FindPropertyRelative("_steps");
             return stepsProperty != null && stepsProperty.isArray ? stepsProperty.arraySize : 0;

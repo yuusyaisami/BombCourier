@@ -63,10 +63,15 @@ namespace BC.Editor.Action
             if (rootActionProperty == null)
                 throw new ArgumentNullException(nameof(rootActionProperty));
 
-            Rebuild(rootActionProperty.propertyPath, rootActionProperty.boxedValue as InlineAction);
+            Rebuild(rootActionProperty.serializedObject, rootActionProperty.propertyPath, rootActionProperty.boxedValue as InlineAction);
         }
 
         public void Rebuild(string rootPropertyPath, InlineAction rootAction)
+        {
+            Rebuild(null, rootPropertyPath, rootAction);
+        }
+
+        private void Rebuild(SerializedObject rootSerializedObject, string rootPropertyPath, InlineAction rootAction)
         {
             items.Clear();
 
@@ -75,6 +80,7 @@ namespace BC.Editor.Action
                 : rootPropertyPath;
 
             BuildBlock(
+                rootSerializedObject,
                 rootAction,
                 resolvedRootPath,
                 new ActionBranchKey(resolvedRootPath, "root"),
@@ -84,6 +90,7 @@ namespace BC.Editor.Action
         }
 
         private void BuildBlock(
+            SerializedObject rootSerializedObject,
             InlineAction action,
             string actionPropertyPath,
             ActionBranchKey branchKey,
@@ -145,7 +152,7 @@ namespace BC.Editor.Action
             {
                 ActionStepAuthoring step = steps[i];
                 string stepPropertyPath = $"{actionPropertyPath}._steps.Array.data[{i}]";
-                ActionBranchKey stepKey = branchKey.Append($"step:{i}");
+                ActionBranchKey stepKey = branchKey.Append(BuildStepKeySegment(rootSerializedObject, stepPropertyPath, i));
 
                 items.Add(new ActionBlockTreeItem(
                     ActionBlockTreeItemKind.Step,
@@ -162,13 +169,14 @@ namespace BC.Editor.Action
                 if (step == null)
                     continue;
 
-                AddChildSlots(step, stepPropertyPath, stepKey, depth + 2, ancestry);
+                AddChildSlots(rootSerializedObject, step, stepPropertyPath, stepKey, depth + 2, ancestry);
             }
 
             ancestry.Remove(action);
         }
 
         private void AddChildSlots(
+            SerializedObject rootSerializedObject,
             ActionStepAuthoring step,
             string stepPropertyPath,
             ActionBranchKey stepKey,
@@ -204,8 +212,18 @@ namespace BC.Editor.Action
                     !slot.IsPresent));
 
                 if (slot.IsPresent && slot.Action != null)
-                    BuildBlock(slot.Action, branchPropertyPath, childKey, slot.Label, depth + 1, ancestry);
+                    BuildBlock(rootSerializedObject, slot.Action, branchPropertyPath, childKey, slot.Label, depth + 1, ancestry);
             }
+        }
+
+        private static string BuildStepKeySegment(SerializedObject rootSerializedObject, string stepPropertyPath, int stepIndex)
+        {
+            SerializedProperty stepProperty = rootSerializedObject?.FindProperty(stepPropertyPath);
+
+            if (stepProperty != null && stepProperty.managedReferenceId != 0)
+                return $"step:{stepProperty.managedReferenceId}";
+
+            return $"step:{stepIndex}";
         }
 
         private static int CompareChildSlots(ActionChildSlotDescriptor left, ActionChildSlotDescriptor right)
