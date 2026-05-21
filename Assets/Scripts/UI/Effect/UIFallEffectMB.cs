@@ -22,6 +22,9 @@ namespace BC.UI
         private bool isPlaying;
         private float endTimer; // 一回再生モードの終了タイマー
 
+        public Vector2 SpawnAreaOffset => spawnAreaOffset;
+        public Vector2 SpawnAreaSize => spawnAreaSize;
+
         private void Awake()
         {
             DisableInputBlocking();
@@ -144,34 +147,5 @@ namespace BC.UI
             fallEffectCanvasGroup.interactable = false;
             fallEffectCanvasGroup.blocksRaycasts = false;
         }
-
-#if UNITY_EDITOR
-        // Area Gizmoの表示
-        private void OnDrawGizmosSelected()
-        {
-            Gizmos.color = new Color(1, 0, 0, 0.5f);
-            RectTransform rectTransform = transform as RectTransform;
-
-            if (rectTransform != null)
-            {
-                // anchoredPosition を基準に、親ローカル空間へ矩形を描画する。
-                Matrix4x4 previousMatrix = Gizmos.matrix;
-                Transform parentTransform = rectTransform.parent;
-                Gizmos.matrix = parentTransform != null ? parentTransform.localToWorldMatrix : Matrix4x4.identity;
-
-                Vector2 center = rectTransform.anchoredPosition + spawnAreaOffset;
-                Vector3 size = new Vector3(spawnAreaSize.x, spawnAreaSize.y, 0.01f);
-                Gizmos.DrawWireCube(new Vector3(center.x, center.y, 0f), size);
-
-                Gizmos.matrix = previousMatrix;
-                return;
-            }
-
-            // RectTransform ではない場合は従来のワールド座標で描画する。
-            Vector3 fallbackCenter = transform.position + (Vector3)spawnAreaOffset;
-            Vector3 fallbackSize = new Vector3(spawnAreaSize.x, spawnAreaSize.y, 0.01f);
-            Gizmos.DrawWireCube(fallbackCenter, fallbackSize);
-        }
-#endif
     }
 }

@@ -45,6 +45,14 @@ namespace BC.Base.Tests
             return method.Invoke(null, BuildInvokeArguments(method.GetParameters(), arguments));
         }
 
+        public static object InvokeGenericMethod(object instance, string methodName, Type genericType, params object[] arguments)
+        {
+            Assert.IsNotNull(instance, $"Expected instance for generic method: {methodName}<{genericType.Name}>");
+            MethodInfo method = FindGenericMethod(instance.GetType(), methodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic, genericType, arguments);
+            Assert.IsNotNull(method, $"Expected generic method: {instance.GetType().FullName}.{methodName}<{genericType.Name}>");
+            return method.Invoke(instance, BuildInvokeArguments(method.GetParameters(), arguments));
+        }
+
         public static object InvokeMethod(object instance, string methodName, params object[] arguments)
         {
             MethodInfo method = FindMethod(instance.GetType(), methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, arguments);

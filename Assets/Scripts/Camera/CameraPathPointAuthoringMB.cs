@@ -24,14 +24,5 @@ namespace BC.Camera
 
             return true;
         }
-
-#if UNITY_EDITOR
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawSphere(transform.position, 0.22f);
-            Gizmos.DrawLine(transform.position, transform.position + transform.forward * 1.25f);
-        }
-#endif
     }
 }

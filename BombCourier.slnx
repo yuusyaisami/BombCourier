@@ -1,9 +1,11 @@
 ﻿<Solution>
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="BombCourier.Editor.csproj" />
   <Project Path="BombCourier.Particles.EditorTests.csproj" />
   <Project Path="Febucci.TextAnimatorForUnity.Runtime.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Samples.Runtime.csproj" />
+  <Project Path="BombCourier.EditorTests.csproj" />
   <Project Path="BombCourier.EnvironmentStylizedLit.EditorTests.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
   <Project Path="Febucci.TextAnimatorForUnity.UITk.Runtime.csproj" />

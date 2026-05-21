@@ -97,6 +97,8 @@ namespace BC.Player
         public IInteractionTarget CurrentBestInteractable => interactionController != null ? interactionController.CurrentBestInteractable : null;
         public IInteractionTarget ActiveInteractable => interactionController != null ? interactionController.ActiveInteractable : null;
         public float ActiveHoldProgress => interactionController != null ? interactionController.ActiveHoldProgress : 0f;
+        public Transform HandleItemPoint => handleItemPoint;
+        public float HandleItemDistance => handleItemDistance;
         public IReadOnlyList<InteractionCandidate> Candidates =>
             interactionController != null ? interactionController.Candidates : Array.Empty<InteractionCandidate>();
 
@@ -1012,14 +1014,6 @@ namespace BC.Player
 
             if (fatigueInteractHandle == null && valueStore != null && entityRef.IsValid)
                 fatigueInteractHandle = valueStore.GetHandle(entityRef, ValueKeys.Runtime.IsFatigueInteracting);
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            if (handleItemPoint == null)
-                return;
-
-            Gizmos.DrawWireSphere(handleItemPoint.position, handleItemDistance);
         }
 
         private bool IsFatigueInteracting()

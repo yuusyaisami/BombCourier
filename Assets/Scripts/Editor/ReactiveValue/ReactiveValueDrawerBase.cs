@@ -1,17 +1,15 @@
 using System;
 using System.Collections.Generic;
 using BC.Base;
+using BC.Editor.Foundation.IMGUI;
 using UnityEditor;
 using UnityEngine;
 
 namespace BC.Editor
 {
-    public abstract class ReactiveValueDrawerBase : PropertyDrawer
+    public abstract class ReactiveValueDrawerBase : PropertyDrawerBase
     {
-        protected static readonly float LineHeight = EditorGUIUtility.singleLineHeight;
-        protected static readonly float Spacing = EditorGUIUtility.standardVerticalSpacing;
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        protected override float GetPropertyHeightCore(SerializedProperty property, GUIContent label)
         {
             SerializedProperty sourceKindProperty = property.FindPropertyRelative("sourceKind");
 
@@ -21,12 +19,22 @@ namespace BC.Editor
             int sourceKind = sourceKindProperty.enumValueIndex;
             float height = 0f;
             height += GetControlDelta(LineHeight);
+            height += GetControlDelta(LineHeight);
+            height += GetControlDelta(LineHeight);
             height += GetSourcePayloadHeight(property, sourceKind);
+
+            SerializedProperty failurePolicyProperty = property.FindPropertyRelative("failurePolicy");
+
+            if (failurePolicyProperty != null &&
+                failurePolicyProperty.enumValueIndex == (int)ReactiveFailurePolicy.UseFallback)
+            {
+                height += GetFallbackHeight(property);
+            }
 
             return Mathf.Max(LineHeight, height - Spacing);
         }
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawProperty(Rect position, SerializedProperty property, GUIContent label)
         {
             SerializedProperty sourceKindProperty = property.FindPropertyRelative("sourceKind");
             SerializedProperty evaluationModeProperty = property.FindPropertyRelative("evaluationMode");
@@ -34,28 +42,39 @@ namespace BC.Editor
 
             if (sourceKindProperty == null)
             {
-                EditorGUI.LabelField(position, label.text, "ReactiveValue fields are missing.");
+                DrawMissingField(position, label, "ReactiveValue fields are missing.");
                 return;
             }
 
-            EditorGUI.BeginProperty(position, label, property);
             Rect contentRect = EditorGUI.IndentedRect(position);
             Rect rowRect = new(contentRect.x, contentRect.y, contentRect.width, LineHeight);
 
             EditorGUI.PropertyField(rowRect, sourceKindProperty, new GUIContent(label.text));
 
             if (evaluationModeProperty != null)
+            {
                 NormalizeEvaluationMode(evaluationModeProperty, sourceKindProperty.enumValueIndex);
+                rowRect.y += LineHeight + Spacing;
+                DrawEvaluationModePopup(rowRect, evaluationModeProperty, sourceKindProperty.enumValueIndex);
+            }
 
             if (failurePolicyProperty != null)
-                NormalizeFailurePolicy(failurePolicyProperty);
+            {
+                rowRect.y += LineHeight + Spacing;
+                EditorGUI.PropertyField(rowRect, failurePolicyProperty, new GUIContent("Failure"));
+            }
 
             rowRect.y += LineHeight + Spacing;
             EditorGUI.indentLevel++;
             DrawSourcePayload(ref rowRect, property, sourceKindProperty.enumValueIndex);
 
+            if (failurePolicyProperty != null &&
+                failurePolicyProperty.enumValueIndex == (int)ReactiveFailurePolicy.UseFallback)
+            {
+                DrawFallback(ref rowRect, property);
+            }
+
             EditorGUI.indentLevel--;
-            EditorGUI.EndProperty();
         }
 
         protected abstract ReactiveEvaluationMode[] GetAllowedEvaluationModes(int sourceKind);
@@ -205,12 +224,6 @@ namespace BC.Editor
 
             // Unsupported combinations are normalized in the inspector so serialized data stays runtime-valid.
             evaluationModeProperty.enumValueIndex = (int)GetDefaultEvaluationMode(sourceKind);
-        }
-
-        private static void NormalizeFailurePolicy(SerializedProperty failurePolicyProperty)
-        {
-            if (failurePolicyProperty.enumValueIndex != (int)ReactiveFailurePolicy.FailAction)
-                failurePolicyProperty.enumValueIndex = (int)ReactiveFailurePolicy.FailAction;
         }
 
         private void DrawEvaluationModePopup(Rect position, SerializedProperty evaluationModeProperty, int sourceKind)

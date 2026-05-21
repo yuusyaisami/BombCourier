@@ -4,6 +4,40 @@ using UnityEngine;
 
 namespace BC.ActionSystem
 {
+    public readonly struct ActionChildSlotDescriptor
+    {
+        public ActionChildSlotDescriptor(
+            string slotId,
+            string label,
+            int order,
+            InlineAction action,
+            bool isPresent,
+            string metadataBadge,
+            string serializedPropertyPath = null)
+        {
+            if (string.IsNullOrWhiteSpace(slotId))
+                throw new ArgumentException("Child action slot id must not be empty.", nameof(slotId));
+
+            SlotId = slotId;
+            Label = string.IsNullOrWhiteSpace(label) ? slotId : label;
+            Order = order;
+            Action = action;
+            IsPresent = isPresent;
+            MetadataBadge = metadataBadge ?? string.Empty;
+            SerializedPropertyPath = serializedPropertyPath ?? string.Empty;
+        }
+
+        public string SlotId { get; }
+        public string Label { get; }
+        public int Order { get; }
+        public InlineAction Action { get; }
+        public bool IsPresent { get; }
+        public string MetadataBadge { get; }
+
+        // Editor-only consumers use this to bind the detail pane without hard-coding each step type.
+        public string SerializedPropertyPath { get; }
+    }
+
     [Serializable]
     public sealed class InlineAction
     {
@@ -76,7 +110,15 @@ namespace BC.ActionSystem
     [Serializable]
     public abstract class ActionStepAuthoring
     {
+        private static readonly IReadOnlyList<ActionChildSlotDescriptor> EmptyChildSlots =
+            Array.Empty<ActionChildSlotDescriptor>();
+
         public string DisplayName;
+
+        public virtual IReadOnlyList<ActionChildSlotDescriptor> GetChildActionSlots()
+        {
+            return EmptyChildSlots;
+        }
 
         public abstract void Validate(ActionValidationContext context);
 

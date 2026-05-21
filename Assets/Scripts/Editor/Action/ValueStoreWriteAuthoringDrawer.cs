@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using BC.ActionSystem;
 using BC.Base;
+using BC.Editor.Foundation.IMGUI;
+using BC.Editor.Foundation.Pickers;
 using UnityEditor;
 using UnityEngine;
 
 namespace BC.Editor
 {
     [CustomPropertyDrawer(typeof(ValueStoreWriteAuthoring))]
-    public sealed class ValueStoreWriteAuthoringDrawer : PropertyDrawer
+    public sealed class ValueStoreWriteAuthoringDrawer : PropertyDrawerBase
     {
-        private static readonly float LineHeight = EditorGUIUtility.singleLineHeight;
-        private static readonly float Spacing = EditorGUIUtility.standardVerticalSpacing;
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        protected override float GetPropertyHeightCore(SerializedProperty property, GUIContent label)
         {
             SerializedProperty scopeProperty = property.FindPropertyRelative("storeScope");
             SerializedProperty targetProperty = property.FindPropertyRelative("target");
@@ -32,7 +31,7 @@ namespace BC.Editor
             return Mathf.Max(LineHeight, height - Spacing);
         }
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawProperty(Rect position, SerializedProperty property, GUIContent label)
         {
             SerializedProperty scopeProperty = property.FindPropertyRelative("storeScope");
             SerializedProperty targetProperty = property.FindPropertyRelative("target");
@@ -41,11 +40,10 @@ namespace BC.Editor
 
             if (scopeProperty == null || targetProperty == null || kindProperty == null || keyProperty == null)
             {
-                EditorGUI.LabelField(position, label.text, "ValueStore write fields are missing.");
+                DrawMissingField(position, label, "ValueStore write fields are missing.");
                 return;
             }
 
-            EditorGUI.BeginProperty(position, label, property);
             Rect contentRect = EditorGUI.IndentedRect(position);
             Rect rowRect = new(contentRect.x, contentRect.y, contentRect.width, LineHeight);
 
@@ -67,8 +65,6 @@ namespace BC.Editor
             rowRect.y += GetKeyFieldHeight() + Spacing;
 
             DrawValueField(new Rect(contentRect.x, rowRect.y, contentRect.width, GetValueFieldHeight(property, kindProperty, keyProperty)), property, kindProperty, keyProperty);
-
-            EditorGUI.EndProperty();
         }
 
         private static float GetControlDelta(float controlHeight)
@@ -255,45 +251,34 @@ namespace BC.Editor
 
         private static void ApplySelection(SerializedProperty property, ValueKeyDescriptor? selectedDescriptor)
         {
-            UnityEngine.Object[] targets = property.serializedObject.targetObjects;
-            string propertyPath = property.propertyPath;
+            PickerApplyUtility.ApplySelection(
+                property.serializedObject.targetObjects,
+                property.propertyPath,
+                "Select ValueKey",
+                keyProperty => ApplySelectionToProperty(keyProperty, selectedDescriptor));
+        }
 
-            Undo.RecordObjects(targets, "Select ValueKey");
+        private static void ApplySelectionToProperty(SerializedProperty keyProperty, ValueKeyDescriptor? selectedDescriptor)
+        {
+            SerializedProperty idProperty = keyProperty?.FindPropertyRelative("id");
+            SerializedProperty pathProperty = keyProperty?.FindPropertyRelative("path");
+            SerializedProperty typeNameProperty = keyProperty?.FindPropertyRelative("valueTypeName");
 
-            for (int index = 0; index < targets.Length; index++)
+            if (idProperty == null || pathProperty == null || typeNameProperty == null)
+                return;
+
+            if (selectedDescriptor.HasValue)
             {
-                UnityEngine.Object target = targets[index];
-
-                if (target == null)
-                    continue;
-
-                SerializedObject serializedObject = new(target);
-                SerializedProperty keyProperty = serializedObject.FindProperty(propertyPath);
-                SerializedProperty idProperty = keyProperty?.FindPropertyRelative("id");
-                SerializedProperty pathProperty = keyProperty?.FindPropertyRelative("path");
-                SerializedProperty typeNameProperty = keyProperty?.FindPropertyRelative("valueTypeName");
-
-                if (idProperty == null || pathProperty == null || typeNameProperty == null)
-                    continue;
-
-                if (selectedDescriptor.HasValue)
-                {
-                    ValueKeyDescriptor descriptor = selectedDescriptor.Value;
-                    idProperty.intValue = descriptor.Id.Value;
-                    pathProperty.stringValue = descriptor.Path;
-                    typeNameProperty.stringValue = descriptor.ValueType.AssemblyQualifiedName;
-                }
-                else
-                {
-                    idProperty.intValue = 0;
-                    pathProperty.stringValue = string.Empty;
-                    typeNameProperty.stringValue = string.Empty;
-                }
-
-                serializedObject.ApplyModifiedProperties();
-                PrefabUtility.RecordPrefabInstancePropertyModifications(target);
-                EditorUtility.SetDirty(target);
+                ValueKeyDescriptor descriptor = selectedDescriptor.Value;
+                idProperty.intValue = descriptor.Id.Value;
+                pathProperty.stringValue = descriptor.Path;
+                typeNameProperty.stringValue = descriptor.ValueType.AssemblyQualifiedName;
+                return;
             }
+
+            idProperty.intValue = 0;
+            pathProperty.stringValue = string.Empty;
+            typeNameProperty.stringValue = string.Empty;
         }
 
         private static bool TryResolveEffectiveKind(

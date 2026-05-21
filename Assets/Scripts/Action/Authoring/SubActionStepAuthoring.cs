@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BC.ActionSystem
@@ -6,7 +7,24 @@ namespace BC.ActionSystem
     [Serializable]
     public sealed class SubActionStepAuthoring : ActionStepAuthoring
     {
+        private const string ActionSlotId = "sub.action";
+
         [SerializeField] private InlineAction action;
+
+        public override IReadOnlyList<ActionChildSlotDescriptor> GetChildActionSlots()
+        {
+            return new[]
+            {
+                new ActionChildSlotDescriptor(
+                    ActionSlotId,
+                    "Sub Action",
+                    0,
+                    action,
+                    action != null,
+                    "Sub",
+                    "action"),
+            };
+        }
 
         public override void Validate(ActionValidationContext context)
         {
