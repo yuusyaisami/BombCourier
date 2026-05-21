@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BC.Managers;
 using UnityEngine;
 
@@ -14,15 +15,30 @@ namespace BC.ActionSystem
     [Serializable]
     public sealed class TalkChoiceOptionAuthoring
     {
+        [SerializeField, HideInInspector] private string stableId;
         [SerializeField] private string displayText;
         [SerializeField] private TalkChoiceOptionOutcomeKind outcomeKind;
         [SerializeField] private InlineAction inlineAction;
         [SerializeField] private ValueStoreWriteAuthoring valueStoreWrite = new();
 
+        public string StableId => stableId;
         public string DisplayText => displayText;
         public TalkChoiceOptionOutcomeKind OutcomeKind => outcomeKind;
         public InlineAction InlineAction => inlineAction;
         public ValueStoreWriteAuthoring ValueStoreWrite => valueStoreWrite;
+
+        internal string EnsureStableId()
+        {
+            if (string.IsNullOrWhiteSpace(stableId))
+                stableId = Guid.NewGuid().ToString("N");
+
+            return stableId;
+        }
+
+        internal void ResetStableId()
+        {
+            stableId = Guid.NewGuid().ToString("N");
+        }
     }
 
     [Serializable]
@@ -32,8 +48,44 @@ namespace BC.ActionSystem
         [SerializeField] private int defaultSelectionIndex;
         [SerializeField] private bool wrapSelection = true;
 
+        public override IReadOnlyList<ActionChildSlotDescriptor> GetChildActionSlots()
+        {
+            EnsureStableOptionIds();
+
+            if (options == null || options.Length == 0)
+                return Array.Empty<ActionChildSlotDescriptor>();
+
+            List<ActionChildSlotDescriptor> slots = null;
+
+            for (int i = 0; i < options.Length; i++)
+            {
+                TalkChoiceOptionAuthoring option = options[i];
+
+                if (option == null || option.OutcomeKind != TalkChoiceOptionOutcomeKind.InlineAction)
+                    continue;
+
+                slots ??= new List<ActionChildSlotDescriptor>();
+                string optionLabel = string.IsNullOrWhiteSpace(option.DisplayText)
+                    ? $"Option {i + 1}"
+                    : option.DisplayText;
+
+                slots.Add(new ActionChildSlotDescriptor(
+                    $"choice.{option.EnsureStableId()}",
+                    optionLabel,
+                    i,
+                    option.InlineAction,
+                    option.InlineAction != null,
+                    $"#{i + 1}",
+                    $"options.Array.data[{i}].inlineAction"));
+            }
+
+            return slots ?? (IReadOnlyList<ActionChildSlotDescriptor>)Array.Empty<ActionChildSlotDescriptor>();
+        }
+
         public override void Validate(ActionValidationContext context)
         {
+            EnsureStableOptionIds();
+
             if (options == null || options.Length == 0)
             {
                 context.AddError("Talk choice requires at least one option.");
@@ -59,6 +111,8 @@ namespace BC.ActionSystem
 
         public override void Compile(ActionCompileContext context)
         {
+            EnsureStableOptionIds();
+
             TalkChoiceOptionDefinition[] compiledOptions = new TalkChoiceOptionDefinition[options.Length];
             TalkChoiceOptionRequestData[] requestOptions = new TalkChoiceOptionRequestData[options.Length];
 
@@ -141,6 +195,30 @@ namespace BC.ActionSystem
             ActionCompileContext compileContext = new();
             compileContext.AddStep(ValueStoreWriteAuthoringUtility.CreateRuntime(write));
             return compileContext.BuildBlock();
+        }
+
+        private void EnsureStableOptionIds()
+        {
+            if (options == null || options.Length == 0)
+                return;
+
+            HashSet<string> usedIds = new(StringComparer.Ordinal);
+
+            for (int i = 0; i < options.Length; i++)
+            {
+                TalkChoiceOptionAuthoring option = options[i];
+
+                if (option == null)
+                    continue;
+
+                string stableId = option.EnsureStableId();
+
+                if (usedIds.Add(stableId))
+                    continue;
+
+                option.ResetStableId();
+                usedIds.Add(option.StableId);
+            }
         }
 
         private static void PrefixErrors(

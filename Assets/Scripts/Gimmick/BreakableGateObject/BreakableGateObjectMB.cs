@@ -25,6 +25,9 @@ namespace BC.Gimmick
         private bool isBroken = false;
         public bool IsBroken => isBroken;
         public GoalData GoalData => goalData;
+        public bool IsGoalGate => isGoalGate;
+        public Transform BreakForceOrigin => breakForceOrigin;
+        public Vector3 BreakForceDirection => breakForceDirection;
         public Vector3 TargetPoint => isGoalGate && goalData != null ? goalData.Target : transform.position;
         private void Awake()
         {
@@ -128,22 +131,6 @@ namespace BC.Gimmick
                 goalData.goalTransform = this.transform;
             }
         }
-        private void OnDrawGizmosSelected()
-        {
-            if (breakForceOrigin != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(breakForceOrigin.position, breakForceOrigin.position + breakForceDirection.normalized * 2f);
-                Gizmos.DrawWireSphere(breakForceOrigin.position, 0.2f);
-            }
-            // PlayerTargetの位置をSceneビューでわかりやすくするためのGizmo
-            if (isGoalGate && goalData != null)
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireSphere(TargetPoint, 0.2f);
-            }
-        }
-
 # endif
 
     }

@@ -1,12 +1,13 @@
 using BC.Camera;
 using BC.Base;
+using BC.Editor.Foundation.Scene;
 using UnityEditor;
 using UnityEngine;
 
-namespace BC.CameraEditor
+namespace BC.Editor.Camera
 {
     [CustomEditor(typeof(CameraPathSequenceAuthoringMB), true)]
-    public sealed class CameraPathSequenceAuthoringMBEditor : UnityEditor.Editor
+    public sealed class CameraPathSequenceAuthoringMBEditor : SceneToolEditorBase<CameraPathSequenceAuthoringMB>
     {
         private const string PointsPropertyName = "points";
         private const string SelectedPointIndexPropertyName = "selectedPointIndex";
@@ -28,9 +29,9 @@ namespace BC.CameraEditor
         private const string LensOverrideFieldName = "overrideFieldOfView";
         private const string LensFieldOfViewFieldName = "fieldOfView";
 
-        private static readonly Color LineColor = new(0.1f, 0.95f, 0.55f, 1.0f);
-        private static readonly Color PointColor = new(0.25f, 0.85f, 1.0f, 1.0f);
-        private static readonly Color SelectedPointColor = new(1.0f, 0.85f, 0.2f, 1.0f);
+        private const float PointHandleRadiusMultiplier = 1.5f;
+        private const float PointPickRadiusMultiplier = 2.25f;
+        private const float ArrowLengthMultiplier = 6.875f;
 
         private SerializedProperty pointsProperty;
         private SerializedProperty selectedPointIndexProperty;
@@ -41,9 +42,8 @@ namespace BC.CameraEditor
             selectedPointIndexProperty = serializedObject.FindProperty(SelectedPointIndexPropertyName);
         }
 
-        public override void OnInspectorGUI()
+        protected override void DrawInspectorGUI()
         {
-            serializedObject.Update();
             EnsureSelectionInRange();
 
             EditorGUILayout.LabelField("Camera Path", EditorStyles.boldLabel);
@@ -68,7 +68,7 @@ namespace BC.CameraEditor
                 if (GUILayout.Button("Select Last"))
                 {
                     selectedPointIndexProperty.intValue = pointsProperty.arraySize - 1;
-                    SceneView.RepaintAll();
+                    RepaintSceneView();
                 }
                 GUI.enabled = true;
             }
@@ -82,19 +82,13 @@ namespace BC.CameraEditor
             {
                 RemovePoint(removeIndex);
             }
-
-            serializedObject.ApplyModifiedProperties();
         }
 
-        private void OnSceneGUI()
+        protected override void DrawSceneGUI(CameraPathSequenceAuthoringMB sequence)
         {
-            serializedObject.Update();
             EnsureSelectionInRange();
-
             DrawPathSceneHandles();
-            DrawSelectedTransformHandle();
-
-            serializedObject.ApplyModifiedProperties();
+            DrawSelectedTransformHandle(sequence);
         }
 
         private void DrawPointInspector(int index, ref int removeIndex, ref int insertAfterIndex)
@@ -111,7 +105,7 @@ namespace BC.CameraEditor
                     if (GUILayout.Toggle(selected, pointName, EditorStyles.miniButtonLeft))
                     {
                         selectedPointIndexProperty.intValue = index;
-                        SceneView.RepaintAll();
+                        RepaintSceneView();
                     }
 
                     if (GUILayout.Button("+", EditorStyles.miniButtonMid, GUILayout.Width(28.0f)))
@@ -154,6 +148,7 @@ namespace BC.CameraEditor
             for (int i = 0; i < pointsProperty.arraySize; i++)
             {
                 SerializedProperty pointProperty = pointsProperty.GetArrayElementAtIndex(i);
+
                 if (!TryGetLiteralPosition(pointProperty, out _, out Vector3 position))
                 {
                     hasPrevious = false;
@@ -162,43 +157,45 @@ namespace BC.CameraEditor
 
                 bool hasLiteralRotation = TryGetLiteralRotation(pointProperty, out _, out Quaternion rotation);
                 Quaternion handleRotation = hasLiteralRotation ? rotation : Quaternion.identity;
-
                 float handleSize = HandleUtility.GetHandleSize(position);
                 bool selected = selectedPointIndexProperty.intValue == i;
 
                 if (hasPrevious)
                 {
-                    Handles.color = LineColor;
+                    Handles.color = SceneHandleStyleTokens.LineColor;
                     Handles.DrawAAPolyLine(4.0f, previousPosition, position);
                 }
 
-                Handles.color = selected ? SelectedPointColor : PointColor;
-                if (Handles.Button(position, handleRotation, handleSize * 0.12f, handleSize * 0.18f, Handles.SphereHandleCap))
+                Handles.color = selected ? SceneHandleStyleTokens.SelectedColor : SceneHandleStyleTokens.LineColor;
+                if (Handles.Button(
+                    position,
+                    handleRotation,
+                    ResolvePointHandleRadius(handleSize),
+                    ResolvePointPickRadius(handleSize),
+                    Handles.SphereHandleCap))
                 {
                     selectedPointIndexProperty.intValue = i;
-                    SceneView.RepaintAll();
+                    RepaintSceneView();
                 }
 
                 if (hasLiteralRotation)
-                    Handles.ArrowHandleCap(0, position, rotation, handleSize * 0.55f, EventType.Repaint);
+                    Handles.ArrowHandleCap(0, position, rotation, ResolveArrowLength(handleSize), EventType.Repaint);
 
-                Handles.Label(position + Vector3.up * handleSize * 0.18f, GetPointLabel(i, pointProperty));
+                Handles.Label(position + Vector3.up * handleSize * SceneHandleStyleTokens.LabelOffset, GetPointLabel(i, pointProperty));
 
                 previousPosition = position;
                 hasPrevious = true;
             }
         }
 
-        private void DrawSelectedTransformHandle()
+        private void DrawSelectedTransformHandle(CameraPathSequenceAuthoringMB sequence)
         {
             int selectedIndex = selectedPointIndexProperty.intValue;
 
             if (selectedIndex < 0 || selectedIndex >= pointsProperty.arraySize)
                 return;
 
-            CameraPathSequenceAuthoringMB sequence = (CameraPathSequenceAuthoringMB)target;
             SerializedProperty pointProperty = pointsProperty.GetArrayElementAtIndex(selectedIndex);
-
             bool hasLiteralPosition = TryGetLiteralPosition(pointProperty, out SerializedProperty positionProperty, out Vector3 position);
             bool hasLiteralRotation = TryGetLiteralRotation(pointProperty, out SerializedProperty eulerAnglesProperty, out Quaternion rotation);
 
@@ -207,14 +204,13 @@ namespace BC.CameraEditor
 
             if (hasLiteralPosition)
             {
-                EditorGUI.BeginChangeCheck();
+                using SceneUndoScope moveScope = new(target, "Move Camera Path Point", recordPrefabOverrides: false, markDirty: false);
                 Vector3 movedPosition = Handles.PositionHandle(position, hasLiteralRotation ? rotation : Quaternion.identity);
-                if (EditorGUI.EndChangeCheck())
+                if (moveScope.TryRecordChanges())
                 {
-                    Undo.RecordObject(target, "Move Camera Path Point");
                     positionProperty.vector3Value = movedPosition;
                     position = movedPosition;
-                    EditorUtility.SetDirty(target);
+                    RepaintSceneView();
                 }
             }
 
@@ -222,13 +218,12 @@ namespace BC.CameraEditor
             {
                 Vector3 rotationPivot = hasLiteralPosition ? position : sequence.transform.position;
 
-                EditorGUI.BeginChangeCheck();
+                using SceneUndoScope rotationScope = new(target, "Rotate Camera Path Point", recordPrefabOverrides: false, markDirty: false);
                 Quaternion movedRotation = Handles.RotationHandle(rotation, rotationPivot);
-                if (EditorGUI.EndChangeCheck())
+                if (rotationScope.TryRecordChanges())
                 {
-                    Undo.RecordObject(target, "Rotate Camera Path Point");
                     eulerAnglesProperty.vector3Value = movedRotation.eulerAngles;
-                    EditorUtility.SetDirty(target);
+                    RepaintSceneView();
                 }
             }
         }
@@ -251,7 +246,7 @@ namespace BC.CameraEditor
 
             WriteDefaultPoint(pointsProperty.GetArrayElementAtIndex(newIndex), newIndex, position, rotation);
             selectedPointIndexProperty.intValue = newIndex;
-            SceneView.RepaintAll();
+            RepaintSceneView();
         }
 
         private void RemovePoint(int index)
@@ -261,12 +256,12 @@ namespace BC.CameraEditor
 
             pointsProperty.DeleteArrayElementAtIndex(index);
             selectedPointIndexProperty.intValue = pointsProperty.arraySize == 0 ? -1 : Mathf.Clamp(index, 0, pointsProperty.arraySize - 1);
-            SceneView.RepaintAll();
+            RepaintSceneView();
         }
 
         private void BuildNewPointPose(int sourceIndex, out Vector3 position, out Quaternion rotation)
         {
-            CameraPathSequenceAuthoringMB sequence = (CameraPathSequenceAuthoringMB)target;
+            CameraPathSequenceAuthoringMB sequence = TypedTarget;
             position = sequence.transform.position;
             rotation = sequence.transform.rotation;
 
@@ -274,7 +269,6 @@ namespace BC.CameraEditor
                 return;
 
             SerializedProperty sourcePoint = pointsProperty.GetArrayElementAtIndex(sourceIndex);
-
             bool hasLiteralPosition = TryGetLiteralPosition(sourcePoint, out _, out Vector3 sourcePosition);
             bool hasLiteralRotation = TryGetLiteralRotation(sourcePoint, out _, out Quaternion sourceRotation);
 
@@ -384,6 +378,21 @@ namespace BC.CameraEditor
             property.FindPropertyRelative(ReactiveFailurePolicyFieldName).enumValueIndex = (int)ReactiveFailurePolicy.FailAction;
             property.FindPropertyRelative(ReactiveLiteralFieldName).vector3Value = value;
             property.FindPropertyRelative(ReactiveFallbackValueFieldName).vector3Value = value;
+        }
+
+        private static float ResolvePointHandleRadius(float handleSize)
+        {
+            return handleSize * SceneHandleStyleTokens.HandleSizeMultiplier * PointHandleRadiusMultiplier;
+        }
+
+        private static float ResolvePointPickRadius(float handleSize)
+        {
+            return handleSize * SceneHandleStyleTokens.HandleSizeMultiplier * PointPickRadiusMultiplier;
+        }
+
+        private static float ResolveArrowLength(float handleSize)
+        {
+            return handleSize * SceneHandleStyleTokens.HandleSizeMultiplier * ArrowLengthMultiplier;
         }
     }
 }
