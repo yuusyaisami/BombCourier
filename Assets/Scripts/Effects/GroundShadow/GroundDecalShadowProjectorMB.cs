@@ -74,7 +74,7 @@ namespace BC.Effects.GroundShadow
         [SerializeField, Range(0.0f, 180.0f)] private float endAngleFade = 88.0f;
         [SerializeField, Min(0.0f)] private float drawDistance = 40.0f;
         [SerializeField, Range(0.0f, 1.0f)] private float cameraFadeScale = 0.85f;
-        [SerializeField] private bool hideWhenMaterialInvalid = true;
+        [SerializeField] private bool hideWhenMaterialMissing = true;
 
         private RaycastHit lastGroundHit;
         private bool hasLastGroundHit;
@@ -236,7 +236,7 @@ namespace BC.Effects.GroundShadow
                 return false;
             }
 
-            if (hideWhenMaterialInvalid && !decalProjector.IsValid())
+            if (hideWhenMaterialMissing && decalProjector.material == null)
             {
                 return false;
             }
@@ -265,14 +265,14 @@ namespace BC.Effects.GroundShadow
 
         private void UpdateProjectorFromGround(float deltaTime, bool immediate)
         {
-            float height = Mathf.Max(0.0f, target.position.y - lastGroundHit.point.y);
-            float height01 = fadeHeight <= MinimumPositiveValue ? 0.0f : Mathf.Clamp01(height / fadeHeight);
+            float targetToGroundHeight = Mathf.Max(0.0f, target.position.y - lastGroundHit.point.y);
+            float height01 = fadeHeight <= MinimumPositiveValue ? 0.0f : Mathf.Clamp01(targetToGroundHeight / fadeHeight);
             float size01 = EvaluateSafe(heightToSize, height01, height01);
             float fade01 = EvaluateSafe(heightToFade, height01, 1.0f - height01);
 
             float width = Mathf.Lerp(baseWidth, baseWidth * maxWidthMultiplier, size01) * externalSizeMultiplier;
-            float heightSize = Mathf.Lerp(baseHeight, baseHeight * maxHeightMultiplier, size01) * externalSizeMultiplier;
-            Vector3 targetSize = new Vector3(width, heightSize, Mathf.Max(MinimumPositiveValue, projectionDepth));
+            float height = Mathf.Lerp(baseHeight, baseHeight * maxHeightMultiplier, size01) * externalSizeMultiplier;
+            Vector3 targetSize = new Vector3(width, height, Mathf.Max(MinimumPositiveValue, projectionDepth));
 
             float targetFade = Mathf.Lerp(minFadeFactor, maxFadeFactor, fade01) * externalFadeMultiplier;
             targetFade = Mathf.Clamp01(targetFade);
