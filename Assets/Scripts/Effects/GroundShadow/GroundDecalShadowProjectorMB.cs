@@ -17,6 +17,12 @@ namespace BC.Effects.GroundShadow
         Manual = 3
     }
 
+    public enum GroundShadowProjectionVolumeAnchor
+    {
+        KeepProjectorPivot = 0,
+        SurfaceFront = 1
+    }
+
     /// <summary>
     /// Projects a stylized gameplay shadow straight down from a target onto the nearest ground surface.
     /// This is not a physically correct light shadow. It is a landing/contact indicator for Player, bombs,
@@ -45,10 +51,10 @@ namespace BC.Effects.GroundShadow
         [SerializeField] private QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.Ignore;
         [SerializeField] private bool ignoreTargetHierarchy = true;
         [SerializeField, Min(0.0f)] private float castOriginUpOffset = 0.5f;
-        [SerializeField, Min(0.01f)] private float maxGroundDistance = 20.0f;
+        [SerializeField, Min(0.01f)] private float maxGroundDistance = 60.0f;
         [SerializeField, Min(0.0f)] private float sphereCastRadius = 0.18f;
         [SerializeField, Range(0.0f, 89.0f)] private float maxReceivableSurfaceAngle = 68.0f;
-        [SerializeField, Min(0.0f)] private float surfaceOffset = 0.025f;
+        [SerializeField, Min(0.0f)] private float surfaceOffset = 0.08f;
         [SerializeField, Min(0.0f)] private float lostGroundGraceTime = 0.08f;
 
         [Header("Shape")]
@@ -56,12 +62,18 @@ namespace BC.Effects.GroundShadow
         [SerializeField, Min(0.01f)] private float baseHeight = 0.58f;
         [SerializeField, Min(0.01f)] private float maxWidthMultiplier = 1.45f;
         [SerializeField, Min(0.01f)] private float maxHeightMultiplier = 1.25f;
+        [Tooltip("Thickness of the decal volume around the receiver surface. This is not the player-to-ground distance. Increase Max Ground Distance for high drops.")]
         [SerializeField, Min(0.01f)] private float projectionDepth = 0.85f;
         [SerializeField, Min(0.01f)] private float fadeHeight = 6.0f;
         [SerializeField, Range(0.0f, 1.0f)] private float minFadeFactor = 0.22f;
         [SerializeField, Range(0.0f, 1.0f)] private float maxFadeFactor = 0.68f;
         [SerializeField] private AnimationCurve heightToSize = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
         [SerializeField] private AnimationCurve heightToFade = AnimationCurve.EaseInOut(0.0f, 1.0f, 1.0f, 0.0f);
+
+        [Header("Projection Volume")]
+        [Tooltip("SurfaceFront keeps the front face of the projection box anchored near the hit surface so Projection Depth grows into the ground instead of expanding around the foot center.")]
+        [SerializeField] private GroundShadowProjectionVolumeAnchor projectionVolumeAnchor = GroundShadowProjectionVolumeAnchor.SurfaceFront;
+        [SerializeField] private Vector2 projectorPivotXY = Vector2.zero;
 
         [Header("Smoothing")]
         [SerializeField, Min(0.0f)] private float positionSharpness = 0.0f;
@@ -116,6 +128,9 @@ namespace BC.Effects.GroundShadow
             updatePhase = GroundShadowUpdatePhase.LateUpdate;
             castMode = GroundShadowCastMode.SphereCast;
             ignoreTargetHierarchy = true;
+            maxGroundDistance = 60.0f;
+            surfaceOffset = 0.08f;
+            projectionVolumeAnchor = GroundShadowProjectionVolumeAnchor.SurfaceFront;
             ApplyStaticProjectorSettings();
         }
 
@@ -346,9 +361,19 @@ namespace BC.Effects.GroundShadow
                 currentFadeFactor = DampFloat(currentFadeFactor, targetFade, fadeSharpness, deltaTime);
             }
 
-            decalProjector.size = currentSize;
-            decalProjector.fadeFactor = currentFadeFactor;
+            ApplyProjectorGeometry(currentSize, currentFadeFactor);
             SetProjectorVisible(currentFadeFactor > 0.001f);
+        }
+
+        private void ApplyProjectorGeometry(Vector3 size, float fadeFactor)
+        {
+            decalProjector.size = size;
+            decalProjector.fadeFactor = fadeFactor;
+
+            if (projectionVolumeAnchor == GroundShadowProjectionVolumeAnchor.SurfaceFront)
+            {
+                decalProjector.pivot = new Vector3(projectorPivotXY.x, projectorPivotXY.y, size.z * 0.5f);
+            }
         }
 
         private Quaternion BuildProjectorRotation(Vector3 surfaceNormal)
@@ -445,6 +470,7 @@ namespace BC.Effects.GroundShadow
             maxWidthMultiplier = Mathf.Max(0.01f, maxWidthMultiplier);
             maxHeightMultiplier = Mathf.Max(0.01f, maxHeightMultiplier);
             sphereCastRadius = Mathf.Max(0.0f, sphereCastRadius);
+            surfaceOffset = Mathf.Max(0.0f, surfaceOffset);
 
             if (minFadeFactor > maxFadeFactor)
             {
