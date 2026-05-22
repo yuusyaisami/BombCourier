@@ -28,6 +28,7 @@ namespace BC.Effects.GroundShadow
     public sealed class GroundDecalShadowProjectorMB : MonoBehaviour
     {
         private const float MinimumPositiveValue = 0.0001f;
+        private const int MaxProbeHitCount = 16;
 
         [Header("References")]
         [SerializeField] private Transform target;
@@ -42,6 +43,7 @@ namespace BC.Effects.GroundShadow
         [SerializeField] private GroundShadowCastMode castMode = GroundShadowCastMode.SphereCast;
         [SerializeField] private LayerMask groundMask = ~0;
         [SerializeField] private QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.Ignore;
+        [SerializeField] private bool ignoreTargetHierarchy = true;
         [SerializeField, Min(0.0f)] private float castOriginUpOffset = 0.5f;
         [SerializeField, Min(0.01f)] private float maxGroundDistance = 20.0f;
         [SerializeField, Min(0.0f)] private float sphereCastRadius = 0.18f;
@@ -76,6 +78,7 @@ namespace BC.Effects.GroundShadow
         [SerializeField, Range(0.0f, 1.0f)] private float cameraFadeScale = 0.85f;
         [SerializeField] private bool hideWhenMaterialMissing = true;
 
+        private readonly RaycastHit[] probeHits = new RaycastHit[MaxProbeHitCount];
         private RaycastHit lastGroundHit;
         private bool hasLastGroundHit;
         private float missingGroundTimer;
@@ -112,6 +115,7 @@ namespace BC.Effects.GroundShadow
             groundMask = ~0;
             updatePhase = GroundShadowUpdatePhase.LateUpdate;
             castMode = GroundShadowCastMode.SphereCast;
+            ignoreTargetHierarchy = true;
             ApplyStaticProjectorSettings();
         }
 
@@ -203,7 +207,7 @@ namespace BC.Effects.GroundShadow
                 return;
             }
 
-            bool foundGround = TryProbeGround(out RaycastHit hit) && IsReceivableSurface(hit.normal);
+            bool foundGround = TryProbeGround(out RaycastHit hit);
             if (foundGround)
             {
                 lastGroundHit = hit;
@@ -248,13 +252,61 @@ namespace BC.Effects.GroundShadow
         {
             Vector3 origin = target.position + Vector3.up * castOriginUpOffset;
             float distance = castOriginUpOffset + maxGroundDistance;
+            int hitCount;
 
             if (castMode == GroundShadowCastMode.SphereCast && sphereCastRadius > MinimumPositiveValue)
             {
-                return Physics.SphereCast(origin, sphereCastRadius, Vector3.down, out hit, distance, groundMask, triggerInteraction);
+                hitCount = Physics.SphereCastNonAlloc(origin, sphereCastRadius, Vector3.down, probeHits, distance, groundMask, triggerInteraction);
+            }
+            else
+            {
+                hitCount = Physics.RaycastNonAlloc(origin, Vector3.down, probeHits, distance, groundMask, triggerInteraction);
             }
 
-            return Physics.Raycast(origin, Vector3.down, out hit, distance, groundMask, triggerInteraction);
+            hit = default;
+            bool hasCandidate = false;
+            float bestDistance = float.PositiveInfinity;
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit candidate = probeHits[i];
+                if (candidate.collider == null)
+                {
+                    continue;
+                }
+
+                if (IsIgnoredHit(candidate))
+                {
+                    continue;
+                }
+
+                if (!IsReceivableSurface(candidate.normal))
+                {
+                    continue;
+                }
+
+                if (candidate.distance >= bestDistance)
+                {
+                    continue;
+                }
+
+                hit = candidate;
+                bestDistance = candidate.distance;
+                hasCandidate = true;
+            }
+
+            return hasCandidate;
+        }
+
+        private bool IsIgnoredHit(RaycastHit hit)
+        {
+            if (!ignoreTargetHierarchy || target == null || hit.collider == null)
+            {
+                return false;
+            }
+
+            Transform hitTransform = hit.collider.transform;
+            return hitTransform == target || hitTransform.IsChildOf(target);
         }
 
         private bool IsReceivableSurface(Vector3 normal)
