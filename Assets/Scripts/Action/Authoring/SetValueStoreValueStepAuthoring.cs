@@ -21,6 +21,7 @@ namespace BC.ActionSystem
         EntityRef = 5,
         FaceExpressionId = 6,
         EntityMoveState = 7,
+        ShapeExpressionId = 8,
     }
 
     [Serializable]
@@ -37,6 +38,7 @@ namespace BC.ActionSystem
         [SerializeField] private ReactiveEntityRef entityValue = ReactiveEntityRef.Self();
         [SerializeField] private ReactiveFaceExpressionId faceExpressionValue = ReactiveFaceExpressionId.LiteralValue(FaceExpressionId.Neutral);
         [SerializeField] private ReactiveEntityMoveState entityMoveStateValue = ReactiveEntityMoveState.LiteralValue(EntityMoveState.Idle);
+        [SerializeField] private ReactiveShapeExpressionId shapeExpressionValue = ReactiveShapeExpressionId.LiteralValue(ShapeExpressionId.Neutral);
 
         public ValueStoreWriteStoreScope StoreScope => storeScope;
         public EntityTargetReference Target => target;
@@ -49,6 +51,7 @@ namespace BC.ActionSystem
         public ReactiveEntityRef EntityValue => entityValue;
         public ReactiveFaceExpressionId FaceExpressionValue => faceExpressionValue;
         public ReactiveEntityMoveState EntityMoveStateValue => entityMoveStateValue;
+        public ReactiveShapeExpressionId ShapeExpressionValue => shapeExpressionValue;
     }
 
     public static class ValueStoreWriteValueTypeUtility
@@ -128,6 +131,12 @@ namespace BC.ActionSystem
                 return true;
             }
 
+            if (valueType == typeof(ShapeExpressionId))
+            {
+                kind = ValueStoreWriteValueKind.ShapeExpressionId;
+                return true;
+            }
+
             kind = ValueStoreWriteValueKind.Auto;
             return false;
         }
@@ -143,6 +152,7 @@ namespace BC.ActionSystem
                 ValueStoreWriteValueKind.EntityRef => typeof(EntityRef),
                 ValueStoreWriteValueKind.FaceExpressionId => typeof(FaceExpressionId),
                 ValueStoreWriteValueKind.EntityMoveState => typeof(EntityMoveState),
+                ValueStoreWriteValueKind.ShapeExpressionId => typeof(ShapeExpressionId),
                 _ => null,
             };
         }
@@ -258,7 +268,8 @@ namespace BC.ActionSystem
                 write.StringValue,
                 write.EntityValue,
                 write.FaceExpressionValue,
-                write.EntityMoveStateValue);
+                write.EntityMoveStateValue,
+                write.ShapeExpressionValue);
         }
     }
 

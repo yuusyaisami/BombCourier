@@ -443,15 +443,13 @@ duration は既定から外れる場合のみ metadata か suffix で補う。
 テンプレート:
 
 - camera がある場合: `<camera name>`
-- channel が既定でない場合: `<channel>: <camera name>`
 - camera 未設定時: `No camera`
 
 ### 10.11 ClearSceneCameraStepAuthoring
 
 テンプレート:
 
-- 既定 channel の場合: `ActionCamera`
-- 既定以外: `<channel>`
+- `Clear action camera`
 
 ### 10.12 SetEntityFacingTargetStepAuthoring
 

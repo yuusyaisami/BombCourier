@@ -150,6 +150,28 @@ namespace BC.Gameplay.PlayModeTests
             yield break;
         }
 
+        [UnityTest]
+        public IEnumerator FrontDirection_BackAxisMakesBackFaceRequestedDirection()
+        {
+            GameObject root = new GameObject("FrontDirectionFacingRoot");
+            createdObjects.Add(root);
+
+            Component facingController = root.AddComponent(FindRuntimeType(FacingControllerTypeName));
+            SetPrivateField(facingController, "defaultTurnSharpness", 64f);
+            SetPrivateField(facingController, "frontDirection", Vector3.back);
+
+            root.SetActive(true);
+            yield return null;
+
+            InvokeMethod(facingController, "SetFacingDirection", "Movement", Vector3.right, 0, 64f);
+            ApplyFacingNow(facingController);
+
+            AssertLocalAxisFacingApproximately(root.transform, Vector3.back, Vector3.right,
+                "Configured local back axis should face the requested world direction.");
+            AssertFacingApproximately(root.transform.forward, Vector3.left,
+                "When back is treated as front, local forward should point opposite the requested direction.");
+        }
+
         private PlayerFacingFixture CreatePlayerFacingFixture()
         {
             GameObject root = new GameObject("PlayerFacingRoot");
@@ -234,6 +256,12 @@ namespace BC.Gameplay.PlayModeTests
 
             float dot = Vector3.Dot(actualForward, expectedForward);
             Assert.Greater(dot, 0.92f, $"{message} Actual dot={dot}");
+        }
+
+        private static void AssertLocalAxisFacingApproximately(Transform transform, Vector3 localAxis, Vector3 expectedWorldDirection, string message)
+        {
+            Vector3 actualWorldDirection = transform.rotation * localAxis;
+            AssertFacingApproximately(actualWorldDirection, expectedWorldDirection, message);
         }
 
         private static void ApplyFacingNow(object facingController)

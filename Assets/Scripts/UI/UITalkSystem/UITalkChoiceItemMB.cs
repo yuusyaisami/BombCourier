@@ -1,45 +1,65 @@
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace BC.UI
 {
     [DisallowMultipleComponent]
-    public sealed class UITalkChoiceItemMB : MonoBehaviour
+    public sealed class UITalkChoiceItemMB : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private Image backgroundImage;
         [SerializeField] private TextMeshProUGUI choiceText;
+        [SerializeField] private UIOutlineSystemMB outlineSystem;
         [SerializeField, Range(0.1f, 1.0f)] private float unselectedBackgroundAlphaMultiplier = 0.55f;
-        [SerializeField, Range(0.8f, 1.2f)] private float selectedScale = 1.0f;
-        [SerializeField, Range(0.8f, 1.2f)] private float unselectedScale = 0.98f;
 
         private RectTransform rectTransform;
+        private LayoutElement layoutElement;
         private Color backgroundBaseColor;
         private bool backgroundColorCaptured;
+        private int choiceIndex = -1;
+        private Action<int> clickCallback;
 
         private void Awake()
         {
             ResolveReferences();
-            CaptureBasePresentation();
+            RefreshBasePresentation();
         }
 
         private void OnValidate()
         {
             ResolveReferences();
-            CaptureBasePresentation();
+            RefreshBasePresentation();
         }
 
         private void Reset()
         {
             ResolveReferences();
-            CaptureBasePresentation();
+            RefreshBasePresentation();
         }
 
-        public void ConfigureRuntimeTemplate()
+        public void Initialize(
+            int index,
+            float itemMinHeight,
+            float unselectedAlphaMultiplier,
+            Color outlineColor,
+            Vector2 outlineDistance,
+            Action<int> selectionCallback)
         {
-            EnsureRuntimeTemplateStructure();
+            choiceIndex = index;
+            unselectedBackgroundAlphaMultiplier = unselectedAlphaMultiplier;
+            clickCallback = selectionCallback;
+
             ResolveReferences();
-            CaptureBasePresentation();
+            EnsureRuntimeTemplateStructure(itemMinHeight);
+
+            if (outlineSystem != null)
+            {
+                outlineSystem.Configure(backgroundImage, outlineColor, outlineDistance);
+            }
+
+            RefreshBasePresentation();
             SetSelected(false);
         }
 
@@ -48,13 +68,24 @@ namespace BC.UI
             ResolveReferences();
 
             if (choiceText != null)
+            {
                 choiceText.text = text ?? string.Empty;
+            }
         }
 
         public void SetSelected(bool isSelected)
         {
             ResolveReferences();
-            CaptureBasePresentation();
+
+            if (!backgroundColorCaptured)
+            {
+                RefreshBasePresentation();
+            }
+
+            if (outlineSystem != null)
+            {
+                outlineSystem.SetHighlighted(isSelected);
+            }
 
             if (backgroundImage != null)
             {
@@ -63,50 +94,75 @@ namespace BC.UI
                     ? backgroundBaseColor.a
                     : backgroundBaseColor.a * Mathf.Clamp01(unselectedBackgroundAlphaMultiplier);
                 backgroundImage.color = color;
-                backgroundImage.raycastTarget = false;
+                backgroundImage.raycastTarget = true;
             }
 
             if (choiceText != null)
+            {
                 choiceText.raycastTarget = false;
+            }
 
             if (rectTransform != null)
             {
-                float scale = isSelected ? selectedScale : unselectedScale;
-                rectTransform.localScale = new Vector3(scale, scale, 1f);
+                rectTransform.localScale = Vector3.one;
             }
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            {
+                return;
+            }
+
+            clickCallback?.Invoke(choiceIndex);
         }
 
         private void ResolveReferences()
         {
             rectTransform ??= transform as RectTransform;
+            layoutElement ??= GetComponent<LayoutElement>();
             backgroundImage ??= GetComponent<Image>();
             choiceText ??= GetComponentInChildren<TextMeshProUGUI>(true);
+            outlineSystem ??= GetComponent<UIOutlineSystemMB>();
         }
 
-        private void CaptureBasePresentation()
+        private void RefreshBasePresentation()
         {
-            if (backgroundColorCaptured || backgroundImage == null)
+            if (backgroundImage == null)
+            {
                 return;
+            }
 
             backgroundBaseColor = backgroundImage.color;
             backgroundColorCaptured = true;
         }
 
-        private void EnsureRuntimeTemplateStructure()
+        private void EnsureRuntimeTemplateStructure(float itemMinHeight)
         {
             rectTransform ??= transform as RectTransform;
             if (rectTransform == null)
+            {
                 return;
+            }
 
-            LayoutElement layoutElement = GetComponent<LayoutElement>();
             if (layoutElement == null)
-                layoutElement = gameObject.AddComponent<LayoutElement>();
+            {
+                layoutElement = gameObject.GetComponent<LayoutElement>() ?? gameObject.AddComponent<LayoutElement>();
+            }
 
-            layoutElement.minHeight = 52f;
+            float resolvedMinHeight = Mathf.Max(1f, itemMinHeight);
+            layoutElement.minHeight = resolvedMinHeight;
+            layoutElement.preferredHeight = resolvedMinHeight;
             layoutElement.flexibleWidth = 1f;
+            layoutElement.flexibleHeight = 0f;
 
             if (backgroundImage == null)
+            {
                 backgroundImage = gameObject.GetComponent<Image>() ?? gameObject.AddComponent<Image>();
+            }
+
+            backgroundImage.raycastTarget = true;
 
             if (choiceText == null)
             {
@@ -126,6 +182,12 @@ namespace BC.UI
             choiceText.textWrappingMode = TextWrappingModes.Normal;
             choiceText.overflowMode = TextOverflowModes.Overflow;
             choiceText.color = Color.white;
+            choiceText.raycastTarget = false;
+
+            if (outlineSystem == null)
+            {
+                outlineSystem = gameObject.GetComponent<UIOutlineSystemMB>() ?? gameObject.AddComponent<UIOutlineSystemMB>();
+            }
         }
     }
 }

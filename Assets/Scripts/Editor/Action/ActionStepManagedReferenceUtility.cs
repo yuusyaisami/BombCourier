@@ -5,7 +5,7 @@ using BC.Editor.Foundation;
 using BC.Editor.Foundation.IMGUI;
 using UnityEditor;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     internal static class ActionStepManagedReferenceUtility
     {
@@ -55,12 +55,54 @@ namespace BC.Editor.Action
 
         internal static void AddStep(UnityEngine.Object[] targets, string listPropertyPath, Type stepType)
         {
+            AddStep(targets, listPropertyPath, stepType, -1);
+        }
+
+        internal static void AddStep(UnityEngine.Object[] targets, string listPropertyPath, Type stepType, int insertIndex)
+        {
             if (stepType == null)
                 return;
 
+            // Inline and window UIs both insert relative to the current selection, so centralize the index handling here.
             ApplyListMutation(targets, listPropertyPath, "Add Action Step", listProperty =>
             {
-                ManagedReferenceListController.AddNewElement(listProperty, stepType);
+                int targetIndex = ResolveInsertIndex(listProperty, insertIndex);
+                listProperty.InsertArrayElementAtIndex(targetIndex);
+                listProperty.GetArrayElementAtIndex(targetIndex).managedReferenceValue = Activator.CreateInstance(stepType);
+            });
+        }
+
+        internal static void CopyStep(SerializedProperty stepProperty)
+        {
+            ActionStepClipboard.Copy(stepProperty);
+        }
+
+        internal static bool CanPasteStep()
+        {
+            return ActionStepClipboard.HasStep;
+        }
+
+        internal static void PasteStep(UnityEngine.Object[] targets, string listPropertyPath)
+        {
+            PasteStep(targets, listPropertyPath, -1);
+        }
+
+        internal static void PasteStep(UnityEngine.Object[] targets, string listPropertyPath, int insertIndex)
+        {
+            if (!CanPasteStep())
+                return;
+
+            ApplyListMutation(targets, listPropertyPath, "Paste Action Step", listProperty =>
+            {
+                // Paste always materializes a fresh clone so the clipboard payload stays immutable across edits.
+                object clone = ActionStepClipboard.CloneStep();
+
+                if (clone == null)
+                    return;
+
+                int targetIndex = ResolveInsertIndex(listProperty, insertIndex);
+                listProperty.InsertArrayElementAtIndex(targetIndex);
+                listProperty.GetArrayElementAtIndex(targetIndex).managedReferenceValue = clone;
             });
         }
 
@@ -130,6 +172,16 @@ namespace BC.Editor.Action
             SetDisplayName(targets, stepPropertyPath, string.Empty, "Clear Action Label");
         }
 
+        internal static string ResolveParentListPropertyPath(string stepPropertyPath)
+        {
+            if (string.IsNullOrWhiteSpace(stepPropertyPath))
+                return string.Empty;
+
+            // Step properties live under `<list>.Array.data[n]`; strip that suffix to target the owning list.
+            int markerIndex = stepPropertyPath.LastIndexOf(".Array.data[", StringComparison.Ordinal);
+            return markerIndex < 0 ? string.Empty : stepPropertyPath.Substring(0, markerIndex);
+        }
+
         internal static void SetDisplayName(
             UnityEngine.Object[] targets,
             string stepPropertyPath,
@@ -165,6 +217,7 @@ namespace BC.Editor.Action
             if (targets == null || string.IsNullOrWhiteSpace(listPropertyPath) || mutate == null)
                 return;
 
+            // Keep every structural edit on the same Undo + multi-object editing path.
             UndoApplyUtility.ApplyToTargets(
                 targets,
                 undoName,
@@ -177,6 +230,16 @@ namespace BC.Editor.Action
 
                     mutate(listProperty);
                 });
+        }
+
+        private static int ResolveInsertIndex(SerializedProperty listProperty, int insertIndex)
+        {
+            if (listProperty == null)
+                return 0;
+
+            return insertIndex < 0
+                ? listProperty.arraySize
+                : Math.Min(Math.Max(insertIndex, 0), listProperty.arraySize);
         }
     }
 }

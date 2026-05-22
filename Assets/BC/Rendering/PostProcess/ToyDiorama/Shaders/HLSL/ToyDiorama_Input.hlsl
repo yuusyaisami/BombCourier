@@ -1,9 +1,12 @@
 #ifndef BC_TOY_DIORAMA_INPUT_INCLUDED
 #define BC_TOY_DIORAMA_INPUT_INCLUDED
 
+// 外部ノイズテクスチャ（任意）。現行グレインは手続き生成ですが、将来拡張用に保持します。
 TEXTURE2D(_ToyDioramaBlueNoiseTex);
 SAMPLER(sampler_ToyDioramaBlueNoiseTex);
 
+// ToyDiorama全パスで共有するマテリアル定数です。
+// C#側のVolume/Propertyバインディング名と必ず一致させてください。
 CBUFFER_START(UnityPerMaterial)
     float _ToyDioramaEnabled;
     float _ToyDioramaQualityTier;

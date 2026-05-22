@@ -3,8 +3,7 @@ using BC.Base;
 using BC.Managers;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using Febucci.TextAnimatorCore;
-//using Febucci.UI.Core;
+using Febucci.TextAnimatorForUnity;
 
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,15 +11,21 @@ namespace BC.UI
 {
     public class UITalkSystemMB : MonoBehaviour
     {
-        [SerializeField] private TextAnimator bodyTextAnimator; // 会話本文
-        [SerializeField] private TextAnimator speakerNameTextAnimator; // 話者名
+        [Header("Text Animator / Typewriter")]
+        [SerializeField] private TypewriterComponent bodyTypewriter; // 会話本文の typewriter
+        [SerializeField] private TypewriterComponent speakerNameTypewriter; // 話者名の typewriter
+
+        [Header("UI")]
         [SerializeField] private CanvasGroup canvasGroup; // 会話UI全体のCanvasGroup
         [SerializeField] private Transform talkUIRoot; // 会話UIの親Transform (nullの場合はこれ自身のTransformを使用)
-        [SerializeField] private SpriteAnimationPlayerMB speakerIconAnimator; // 話者アイコンのアニメーター 
         [SerializeField] private SpriteAnimationPlayerMB nextIndicatorAnimator; // 次へ進むインジケーターのアニメーター
         [SerializeField] private AnimationSpriteClip nextIndicatorClip; // 次へ進むインジケーターのアニメーション
+
+        [Header("Input")]
         [SerializeField] private InputActionReference nextTalkInputAction; // 次の会話に進む入力アクション
+        [SerializeField] private bool advanceOnSkipInput = true; // 文字送り中の入力で全文表示したあと、同じ入力で次stepへ進むか。
         private bool isShowingTalk; // 会話UIが表示されているかどうかのフラグ
+        private bool bodyTextCompleted; // 本文の表示完了状態。Typewriterイベントで更新する。
 
         public InputAction NextTalkInputAction => nextTalkInputAction != null ? nextTalkInputAction.action : null;
 
@@ -34,15 +39,32 @@ namespace BC.UI
         {
             // 会話中だけ入力を受け付ける。
             nextTalkInputAction?.action.Enable();
+
+            // Inspector未設定でも動作が壊れにくいよう、コード側でもイベント購読を貼る。
+            if (bodyTypewriter != null)
+            {
+                bodyTypewriter.onTextShowed.RemoveListener(NotifyBodyTextShowed);
+                bodyTypewriter.onTextShowed.AddListener(NotifyBodyTextShowed);
+            }
         }
 
         private void OnDisable()
         {
+            if (bodyTypewriter != null)
+            {
+                bodyTypewriter.onTextShowed.RemoveListener(NotifyBodyTextShowed);
+            }
+
             nextTalkInputAction?.action.Disable();
         }
 
         private void OnDestroy()
         {
+            if (bodyTypewriter != null)
+            {
+                bodyTypewriter.onTextShowed.RemoveListener(NotifyBodyTextShowed);
+            }
+
             nextTalkInputAction?.action.Disable();
         }
 
@@ -71,22 +93,31 @@ namespace BC.UI
 
         public async UniTask ShowTalk(TalkRequestData talkRequestData, CancellationToken cancellationToken)
         {
+            if (bodyTypewriter == null)
+            {
+                Debug.LogError($"{nameof(UITalkSystemMB)}: {nameof(bodyTypewriter)} is not assigned.", this);
+                return;
+            }
+
             // 文字サイズなどの見た目設定を先に反映する。
             ApplyTextEffect(talkRequestData.textEffectData);
 
             // 新しい会話を出す前に、前回のインジケーター表示を止める。
             StopNextIndicator();
 
-            // 話者名と本文を更新する。
-            if (speakerNameTextAnimator != null)
+            // 新しい本文を開始する時点で、会話制御側の完了フラグを初期化する。
+            bodyTextCompleted = string.IsNullOrEmpty(talkRequestData.dialogueText);
+
+            // 話者名と本文を typewriter 経由で更新する。
+            if (speakerNameTypewriter != null)
             {
-                speakerNameTextAnimator.SetText(talkRequestData.speakerName ?? string.Empty);
+                speakerNameTypewriter.ShowText(talkRequestData.speakerName ?? string.Empty);
             }
 
-            if (bodyTextAnimator != null)
-            {
-                bodyTextAnimator.SetText(talkRequestData.dialogueText ?? string.Empty);
-            }
+            bodyTypewriter.ShowText(talkRequestData.dialogueText ?? string.Empty);
+
+            // 設定差異に左右されないよう、明示的に開始しておく。
+            bodyTypewriter.StartShowingText(true);
 
             if (!isShowingTalk)
             {
@@ -114,23 +145,28 @@ namespace BC.UI
                 canvasGroup.blocksRaycasts = true;
             }
 
-            // 本文アニメーション中の入力は全文表示に使い、表示完了後の入力で次へ進む。
+            // 本文アニメーション中の入力は skip に使い、表示完了後の入力で次へ進む。
             while (!cancellationToken.IsCancellationRequested)
             {
-                bool bodyAnimationCompleted = bodyTextAnimator == null || bodyTextAnimator.AllLettersShown;
-
-                if (bodyAnimationCompleted)
+                if (bodyTextCompleted)
                 {
                     PlayNextIndicator();
                 }
 
                 if (nextTalkInputAction != null && nextTalkInputAction.action.WasPressedThisFrame())
                 {
-                    if (!bodyAnimationCompleted && bodyTextAnimator != null)
+                    if (!bodyTextCompleted)
                     {
-                        // まだ文字送り中なら、残りを即座に表示して確定する。
-                        bodyTextAnimator.SetVisibilityEntireText(true, false);
+                        // 文字送り中の入力は本文を即時表示し、会話制御上は完了扱いにする。
+                        bodyTypewriter.SkipTypewriter();
+                        bodyTextCompleted = true;
                         PlayNextIndicator();
+
+                        // 1回入力で skip と同時に次stepへ進めるかどうかは既存フラグで制御する。
+                        if (advanceOnSkipInput)
+                        {
+                            break;
+                        }
                     }
                     else
                     {
@@ -140,6 +176,14 @@ namespace BC.UI
 
                 await UniTask.Yield();
             }
+        }
+
+        // Typewriter の本文表示が完了した時に呼ばれる。Inspector からの登録でもコード登録でも使える。
+        public void NotifyBodyTextShowed()
+        {
+            bodyTextCompleted = true;
+            TalkSystemManagerMB.Instance?.NotifyTalkTypingCompleted();
+            PlayNextIndicator();
         }
 
         public void ApplyTextEffect(TextEffectData textEffectData)
@@ -165,21 +209,22 @@ namespace BC.UI
 
             await TalkRoot.DOScaleY(0f, duration).SetEase(Ease.InBack).AsyncWaitForCompletion();
             isShowingTalk = false;
+            bodyTextCompleted = false;
 
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;
             }
 
-            if (speakerNameTextAnimator != null)
+            if (speakerNameTypewriter != null)
             {
-                speakerNameTextAnimator.SetText(string.Empty);
+                speakerNameTypewriter.ShowText(string.Empty);
             }
 
-            if (bodyTextAnimator != null)
+            if (bodyTypewriter != null)
             {
                 // 次の会話で前回の本文が残らないように消しておく。
-                bodyTextAnimator.SetText(string.Empty);
+                bodyTypewriter.ShowText(string.Empty);
             }
         }
 

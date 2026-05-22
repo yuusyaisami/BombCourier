@@ -1,7 +1,7 @@
 using BC.ActionSystem;
 using UnityEngine;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     public sealed class InlineActionDrawerTestHost : ScriptableObject
     {

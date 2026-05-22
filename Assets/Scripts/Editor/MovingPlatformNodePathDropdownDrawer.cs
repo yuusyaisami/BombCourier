@@ -103,20 +103,14 @@ namespace BC.Editor
             {
                 SerializedProperty nodeProperty = railNodesProperty.GetArrayElementAtIndex(i);
                 SerializedProperty nodePathProperty = nodeProperty.FindPropertyRelative("nodePath");
-                SerializedProperty nodeNameProperty = nodeProperty.FindPropertyRelative("nodeName");
-                if (nodePathProperty == null || nodeNameProperty == null)
+                if (nodePathProperty == null)
                     continue;
 
                 string nodePath = NormalizeNodePath(nodePathProperty.stringValue);
                 if (string.IsNullOrWhiteSpace(nodePath))
                     continue;
 
-                string nodeName = string.IsNullOrWhiteSpace(nodeNameProperty.stringValue)
-                    ? nodePath
-                    : nodeNameProperty.stringValue.Trim();
-                string label = string.Equals(nodeName, nodePath, StringComparison.Ordinal)
-                    ? nodeName
-                    : $"{nodeName} ({nodePath})";
+                string label = nodePath;
 
                 if (usedLabels.TryGetValue(label, out int duplicateCount))
                 {

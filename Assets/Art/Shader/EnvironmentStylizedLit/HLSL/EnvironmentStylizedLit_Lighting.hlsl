@@ -100,7 +100,9 @@ float ESL_EvaluateAdditionalLightModeTerm(int additionalLightMode, float ndotl, 
 {
 	if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_FILL_ONLY)
 	{
-		return ESL_EvaluateAdditionalContinuousTerm(ndotl) * ESL_EvaluateAdditionalFillMask(mainShadowAttenuation, mainNdotL);
+		// Fill-only keeps the shadow/unlit masking behavior, but the light term itself
+		// is still quantized so Light Step Count controls point/spot contribution.
+		return ESL_EvaluateAdditionalQuantizedTerm(ndotl) * ESL_EvaluateAdditionalFillMask(mainShadowAttenuation, mainNdotL);
 	}
 
 	if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_QUANTIZED)
@@ -141,7 +143,14 @@ ESL_AdditionalLightingData ESL_EvaluateAdditionalLighting(ESL_InputData inputDat
 
 	if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_FILL_ONLY)
 	{
-		additionalLightingData.fillColor = vertexContribution * ESL_EvaluateAdditionalFillMask(mainShadowAttenuation, mainNdotL);
+		float quantizedVertexLight = ESL_ComputeSteppedLight(
+			ESL_ApplyBandContrastAndOffset(saturate(vertexLightLuminance)),
+			max(_LightStepCount, 1.0),
+			saturate(_LightStepSmoothness));
+		float quantizedScale = vertexLightLuminance <= 1e-4 ? 0.0 : saturate(quantizedVertexLight / vertexLightLuminance);
+		additionalLightingData.fillColor = vertexContribution
+			* quantizedScale
+			* ESL_EvaluateAdditionalFillMask(mainShadowAttenuation, mainNdotL);
 	}
 	else if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_QUANTIZED)
 	{

@@ -7,6 +7,8 @@ namespace BC.Base
     // 独自 DDOL Canvas と UIFadeEffectMB を受け取り、scene 遷移前後の表示制御をサービス化する。
     public sealed class LoadingSceneServiceMB : MonoBehaviour, IKernelInstaller
     {
+        private const string PersistentLoadingRootName = "[PersistentLoadingUI]";
+
         [SerializeField] private Canvas loadingCanvas;
         [SerializeField] private UIFadeEffectMB uiFadeEffectMB;
         [SerializeField] private FadeType fadeType = FadeType.Single;
@@ -37,9 +39,24 @@ namespace BC.Base
 
                 if (Application.isPlaying)
                 {
-                    // Loading 用 Canvas は scene 切り替えでも残る前提なので DDOL に固定する。
-                    DontDestroyOnLoad(loadingCanvas.transform.root.gameObject);
+                    MoveLoadingUiToPersistentRoot();
                 }
+            }
+        }
+
+        private void MoveLoadingUiToPersistentRoot()
+        {
+            GameObject persistentRoot = new GameObject(PersistentLoadingRootName);
+            persistentRoot.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            persistentRoot.transform.localScale = Vector3.one;
+            DontDestroyOnLoad(persistentRoot);
+
+            // loading UI だけを専用 root に退避し、scene root 側の SceneKernel を DDOL に巻き込まない。
+            loadingCanvas.transform.SetParent(persistentRoot.transform, false);
+
+            if (uiFadeEffectMB != null && !uiFadeEffectMB.transform.IsChildOf(loadingCanvas.transform))
+            {
+                uiFadeEffectMB.transform.SetParent(persistentRoot.transform, false);
             }
         }
 

@@ -16,6 +16,7 @@ namespace BC.Editor
         [SerializeField] internal ReactiveEntityRef reactiveEntity;
         [SerializeField] internal ReactiveString reactiveString;
         [SerializeField] internal ReactiveFaceExpressionId reactiveFaceExpression;
+        [SerializeField] internal ReactiveShapeExpressionId reactiveShapeExpression;
         [SerializeField] internal ReactiveEntityMoveState reactiveEntityMoveState;
         [SerializeField] internal ValueStoreWriteAuthoring valueStoreWrite = new();
     }

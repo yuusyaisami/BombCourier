@@ -1,6 +1,6 @@
 using System;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     public readonly struct ActionBranchKey : IEquatable<ActionBranchKey>
     {

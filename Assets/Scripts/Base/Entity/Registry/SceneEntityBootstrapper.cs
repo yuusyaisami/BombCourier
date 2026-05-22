@@ -31,6 +31,13 @@ namespace BC.Base
                     entityMb.Flags
                 );
 
+                if (request.Flags.HasFlag(EntityFlags.DontDestroyOnLoad))
+                {
+                    Debug.LogError(
+                        $"{nameof(SceneEntityBootstrapper)}: Scene entity '{entityMb.name}' is marked {nameof(EntityFlags.DontDestroyOnLoad)}. SceneKernel entities must remain scene-scoped.",
+                        entityMb);
+                }
+
                 EntityRef entity = kernel.EntityLifecycle.Register(request);
                 // SceneKernel 配下に最初からある Entity は実際の登録経路で ScenePlaced とみなす。
                 entityMb.Bind(entity, EntityRegistrationMode.ScenePlaced);

@@ -21,6 +21,7 @@ namespace BC.UI
         private BombMB bomb;
         private GameLogicManagerMB gameLogicManager;
         private PlayerItemHandleStateMB itemHandleState;
+        private BombMB lastKnownBomb;
         private bool isFuseStarted;
         private bool hadBombLastFrame;
         private float displayedImpactExplosionRatio;
@@ -48,7 +49,10 @@ namespace BC.UI
             if (newBomb == null && bomb != null)
                 HoldCurrentImpactGauge();
 
-            bomb = newBomb;
+            if (newBomb != null)
+                lastKnownBomb = newBomb;
+
+            bomb = newBomb != null ? newBomb : lastKnownBomb;
 
             if (bomb != null)
             {

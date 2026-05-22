@@ -8,6 +8,8 @@ using UnityEngine;
 
 namespace BC.Camera
 {
+    // カメラパス再生に必要な入力をまとめたリクエスト。
+    // 再生対象カメラ、戻り先カメラ、sequence、本体 actor などを 1 つに束ねる。
     public sealed class CameraPathPlayRequest
     {
         public readonly CinemachineCamera PathCamera;
@@ -40,9 +42,12 @@ namespace BC.Camera
         }
     }
 
+    // CameraPathSequenceDefinition を時間進行に沿って再生する純粋サービス。
+    // 実際のカメラ選択は SceneCameraService が担い、この class は再生進行だけに集中する。
     public sealed class CameraPathPlayerService
     {
         private readonly SceneKernel sceneKernel;
+        // 新しい再生を始めるたびに version を進め、古い async ループを自然終了させる。
         private int playVersion;
 
         public CameraPathPlayerService(SceneKernel sceneKernel)
@@ -50,6 +55,7 @@ namespace BC.Camera
             this.sceneKernel = sceneKernel ?? throw new ArgumentNullException(nameof(sceneKernel));
         }
 
+        // sequence の各 point を順番に適用し、必要なら point action も実行する。
         public async UniTask PlayAsync(CameraPathPlayRequest request)
         {
             if (!ValidateRequest(request))
@@ -57,7 +63,8 @@ namespace BC.Camera
 
             int version = ++playVersion;
             IReadOnlyList<CameraPathResolvedPoint> points = request.Sequence.Points;
-            sceneKernel.Cameras?.BeginPathPlayback(request, version);
+            // 再生中だけ SceneCameraService 側で path camera を最優先にする。
+            sceneKernel.Cameras?.BeginPathCameraOverride(request, version);
 
             try
             {
@@ -90,15 +97,18 @@ namespace BC.Camera
             }
             finally
             {
-                sceneKernel.Cameras?.EndPathPlayback(version);
+                // 途中 cancel や exception でも override を必ず解除する。
+                sceneKernel.Cameras?.EndPathCameraOverride(version);
             }
         }
 
+        // 現在進行中の再生を止めたいときは version を進めるだけでよい。
         public void Cancel()
         {
             playVersion++;
         }
 
+        // 実行前に最低限必要な構成だけチェックする。
         private bool ValidateRequest(CameraPathPlayRequest request)
         {
             if (request == null)
@@ -128,6 +138,7 @@ namespace BC.Camera
             return true;
         }
 
+        // 2 点間を transition 設定に従って補間する。
         private async UniTask MoveToPointAsync(
             CinemachineCamera camera,
             CameraPathResolvedPoint from,
@@ -145,6 +156,7 @@ namespace BC.Camera
                 return;
             }
 
+            // move 中に新しい再生が始まったら version 不一致で中断する。
             float elapsed = 0.0f;
 
             while (elapsed < transition.Duration)
@@ -212,8 +224,10 @@ namespace BC.Camera
 
         private static void ApplyPoint(CinemachineCamera camera, Transform cameraTransform, CameraPathResolvedPoint point)
         {
-            cameraTransform.SetPositionAndRotation(point.Position, point.Rotation);
-            ApplyLens(camera, point.Lens);
+            CameraPathPlaybackUtility.ApplyPose(
+                cameraTransform,
+                camera,
+                CameraPathPlaybackUtility.BuildPose(point));
         }
 
         private static void ApplyInterpolatedPoint(
@@ -223,40 +237,14 @@ namespace BC.Camera
             CameraPathResolvedPoint to,
             float t)
         {
-            cameraTransform.SetPositionAndRotation(
-                Vector3.Lerp(from.Position, to.Position, t),
-                Quaternion.Slerp(from.Rotation, to.Rotation, t));
-
-            ApplyInterpolatedLens(camera, from.Lens, to.Lens, t);
-        }
-
-        private static void ApplyLens(CinemachineCamera camera, CameraPathLensSettings lensSettings)
-        {
-            if (camera == null || !lensSettings.OverrideFieldOfView)
-                return;
-
-            LensSettings lens = camera.Lens;
-            lens.FieldOfView = lensSettings.FieldOfView;
-            camera.Lens = lens;
-        }
-
-        private static void ApplyInterpolatedLens(
-            CinemachineCamera camera,
-            CameraPathLensSettings from,
-            CameraPathLensSettings to,
-            float t)
-        {
-            if (camera == null)
-                return;
-
-            if (!from.OverrideFieldOfView && !to.OverrideFieldOfView)
-                return;
-
-            LensSettings lens = camera.Lens;
-            float fromFieldOfView = from.OverrideFieldOfView ? from.FieldOfView : lens.FieldOfView;
-            float toFieldOfView = to.OverrideFieldOfView ? to.FieldOfView : fromFieldOfView;
-            lens.FieldOfView = Mathf.Lerp(fromFieldOfView, toFieldOfView, t);
-            camera.Lens = lens;
+            CameraPathPlaybackUtility.ApplyPose(
+                cameraTransform,
+                camera,
+                CameraPathPlaybackUtility.BuildInterpolatedPose(
+                    from,
+                    to,
+                    t,
+                    CameraPathPlaybackUtility.GetFieldOfView(camera)));
         }
     }
 }

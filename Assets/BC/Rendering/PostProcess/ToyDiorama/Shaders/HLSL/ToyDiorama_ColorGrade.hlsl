@@ -33,6 +33,7 @@ struct ToyDiorama_FinalColorPipelineData
     ToyDiorama_GrainData grainData;
 };
 
+// 露出/コントラストの基礎整形。以降のマスク・ティント評価の前処理です。
 float3 ToyDiorama_PrepareColorGradeBase(float3 sourceColor)
 {
     float3 color = ToyDiorama_ApplyExposure(sourceColor, _ToyDioramaExposure);
@@ -40,6 +41,7 @@ float3 ToyDiorama_PrepareColorGradeBase(float3 sourceColor)
     return max(color, 0.0);
 }
 
+// 複数段で再利用する輝度帯マスクを先に計算します。
 ToyDiorama_ColorGradeMasks ToyDiorama_CalculateColorGradeMasks(float3 color)
 {
     ToyDiorama_ColorGradeMasks masks;
@@ -50,12 +52,14 @@ ToyDiorama_ColorGradeMasks ToyDiorama_CalculateColorGradeMasks(float3 color)
     return masks;
 }
 
+// シャドウ帯に限定した黒浮きを、シャドウティント付きで付与します。
 float3 ToyDiorama_ApplyBlackLift(float3 color, ToyDiorama_ColorGradeMasks masks)
 {
     float lift = saturate(_ToyDioramaBlackLift) * masks.shadow;
     return color + _ToyDioramaShadowTint.rgb * lift * 0.35;
 }
 
+// シャドウ/中間/ハイライトの3帯域に、それぞれの強度でティントを重ねます。
 float3 ToyDiorama_ApplyColorGradeTints(float3 color, ToyDiorama_ColorGradeMasks masks)
 {
     color = ToyDiorama_TintByLuminance(
@@ -76,6 +80,7 @@ float3 ToyDiorama_ApplyColorGradeTints(float3 color, ToyDiorama_ColorGradeMasks 
     return color;
 }
 
+// ブルーム前経路と統合経路の両方で使うベースグレーディング段です。
 float3 ToyDiorama_ApplyBaseColorGrade(float3 sourceColor, out ToyDiorama_ColorGradeMasks masks)
 {
     float3 color = ToyDiorama_PrepareColorGradeBase(sourceColor);
@@ -88,12 +93,15 @@ float3 ToyDiorama_ApplyBaseColorGrade(float3 sourceColor, out ToyDiorama_ColorGr
     return saturate(color);
 }
 
+// ブルーム前の処理順: 基本グレード -> パステル圧縮 -> クリームハイライト -> 距離ヘイズ。
+// エッジ着色と粒状ノイズは最終合成パス側で適用します。
 ToyDiorama_ColorPipelineData ToyDiorama_EvaluatePreBloomPipeline(float3 sourceColor, float2 uv)
 {
     ToyDiorama_ColorPipelineData data;
 
     if (_ToyDioramaEnabled < 0.5)
     {
+        // エフェクト無効時でもデバッグ表示が壊れないよう全フィールドを埋めます。
         data.beforePastel = sourceColor;
         data.afterPastel = sourceColor;
         data.beforeBloom = sourceColor;
@@ -123,6 +131,7 @@ ToyDiorama_ColorPipelineData ToyDiorama_EvaluatePreBloomPipeline(float3 sourceCo
     return data;
 }
 
+// 最終段: ブルーム合成後にエッジ着色と粒状ノイズを適用します。
 ToyDiorama_FinalColorPipelineData ToyDiorama_EvaluateFinalColorPipeline(float3 preBloomColor, float4 bloomComposite, float2 uv)
 {
     ToyDiorama_FinalColorPipelineData data;
@@ -135,6 +144,7 @@ ToyDiorama_FinalColorPipelineData ToyDiorama_EvaluateFinalColorPipeline(float3 p
     return data;
 }
 
+// ブルーム分離前提でない旧呼び出し/デバッグ向けの互換経路です。
 ToyDiorama_ColorPipelineData ToyDiorama_EvaluateColorPipeline(float3 sourceColor, float2 uv)
 {
     ToyDiorama_ColorPipelineData data = ToyDiorama_EvaluatePreBloomPipeline(sourceColor, uv);
@@ -147,6 +157,7 @@ ToyDiorama_ColorPipelineData ToyDiorama_EvaluateColorPipeline(float3 sourceColor
     return data;
 }
 
+// 最終色のみを返す公開エントリ関数です。
 float3 ToyDiorama_ApplyColorGrade(float3 sourceColor, float2 uv)
 {
     return ToyDiorama_EvaluateColorPipeline(sourceColor, uv).afterColorGrade;

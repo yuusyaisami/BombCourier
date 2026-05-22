@@ -89,16 +89,16 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
-    - _AdditionalLightColorInfluence: 0.75
-    - _AdditionalLightIntensity: 0.5
-    - _AdditionalLightMode: 1
-    - _AdditionalLightShadowInfluence: 0.65
+    - _AdditionalLightColorInfluence: 0.776
+    - _AdditionalLightIntensity: 0.431
+    - _AdditionalLightMode: 2
+    - _AdditionalLightShadowInfluence: 0.622
     - _AlbedoNoiseStrength: 0.18
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _AmbientStrength: 0.35
-    - _BandContrast: 1
-    - _BandOffset: 0
+    - _AmbientStrength: 0.566
+    - _BandContrast: 1.122
+    - _BandOffset: 0.096
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BounceStrength: 0.2
@@ -127,8 +127,8 @@ Material:
     - _IndirectStylizeStrength: 0.35
     - _LightBandNoiseScale: 0.75
     - _LightBandNoiseStrength: 0.08
-    - _LightStepCount: 3
-    - _LightStepSmoothness: 0.08
+    - _LightStepCount: 5
+    - _LightStepSmoothness: 0.219
     - _Metallic: 0
     - _NoiseDistanceFadeEnd: 32
     - _NoiseDistanceFadeStart: 12
@@ -140,7 +140,7 @@ Material:
     - _ReceiveShadows: 1
     - _ShadowColorBlend: 0.6
     - _ShadowInfluence: 1
-    - _ShadowSoftFill: 0.2
+    - _ShadowSoftFill: 0.159
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -169,7 +169,7 @@ Material:
     - _WorldYGradientMax: 3
     - _WorldYGradientMin: 0
     - _WorldYGradientStrength: 0
-    - _WrapLighting: 0.15
+    - _WrapLighting: 0.384
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:

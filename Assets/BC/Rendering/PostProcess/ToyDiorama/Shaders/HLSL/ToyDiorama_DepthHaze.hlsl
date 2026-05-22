@@ -11,6 +11,7 @@ struct ToyDiorama_DepthHazeData
 	float mask;
 };
 
+// 深度が使えない/効果無効時に返すNo-Op用データです。
 ToyDiorama_DepthHazeData ToyDiorama_CreateDepthHazeNoOp(float3 color)
 {
 	ToyDiorama_DepthHazeData data;
@@ -23,6 +24,7 @@ ToyDiorama_DepthHazeData ToyDiorama_CreateDepthHazeNoOp(float3 color)
 	return data;
 }
 
+// 正規化線形深度をヘイズ合成マスクへ変換します。
 float ToyDiorama_CalculateDepthHazeMask(float linearDepth)
 {
 	float hazeStart = saturate(_ToyDioramaDepthHazeStart);
@@ -30,11 +32,13 @@ float ToyDiorama_CalculateDepthHazeMask(float linearDepth)
 	return smoothstep(hazeStart, hazeEnd, saturate(linearDepth));
 }
 
+// URPの深度変換ヘルパーを包み、clamp位置を一元化します。
 float ToyDiorama_Linear01DepthFromRaw(float rawDepth)
 {
 	return saturate(Linear01Depth(rawDepth, _ZBufferParams));
 }
 
+// ヘイズ無効でも、特定デバッグ表示では深度サンプルが必要です。
 bool ToyDiorama_ShouldCaptureDepthDebugData()
 {
 	int debugView = (int)round(_ToyDioramaDebugView);
@@ -45,6 +49,7 @@ bool ToyDiorama_ShouldCaptureDepthDebugData()
 		debugView == 21;
 }
 
+// 距離ヘイズを適用し、デバッグ表示用の中間値も返します。
 ToyDiorama_DepthHazeData ToyDiorama_ApplyDepthHaze(float3 color, float2 uv)
 {
 	if (_ToyDioramaDepthAvailable < 0.5)
@@ -73,6 +78,7 @@ ToyDiorama_DepthHazeData ToyDiorama_ApplyDepthHaze(float3 color, float2 uv)
 		return data;
 	}
 
+	// ヘイズ量に応じて脱彩度→距離色へ寄せ、最後にわずかに明度を持ち上げます。
 	float hazeStrength = data.mask * saturate(_ToyDioramaDepthHazeStrength);
 	float saturation = 1.0 - hazeStrength * saturate(_ToyDioramaDepthHazeSaturationFade);
 	float3 softenedColor = ToyDiorama_ApplySaturation(color, saturation);

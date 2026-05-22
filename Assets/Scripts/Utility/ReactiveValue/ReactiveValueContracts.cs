@@ -119,6 +119,14 @@ namespace BC.Base
                 : ReactiveEvaluationMode.Snapshot;
         }
 
+        public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveShapeExpressionIdSourceKind sourceKind)
+        {
+            return sourceKind == ReactiveShapeExpressionIdSourceKind.EntityValueStore ||
+               sourceKind == ReactiveShapeExpressionIdSourceKind.LocalValueStore
+            ? ReactiveEvaluationMode.Watched
+            : ReactiveEvaluationMode.Snapshot;
+        }
+
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveEntityMoveStateSourceKind sourceKind)
         {
             return sourceKind == ReactiveEntityMoveStateSourceKind.EntityValueStore ||

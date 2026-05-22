@@ -9,6 +9,7 @@ struct ToyDiorama_EdgeToneData
 	float mask;
 };
 
+// パイプラインのデータ形状を維持するためのNo-Opデータです。
 ToyDiorama_EdgeToneData ToyDiorama_CreateEdgeToneNoOp(float3 color)
 {
 	ToyDiorama_EdgeToneData data;
@@ -19,6 +20,7 @@ ToyDiorama_EdgeToneData ToyDiorama_CreateEdgeToneNoOp(float3 color)
 	return data;
 }
 
+// アスペクト補正した画面空間で、放射状のエッジマスクを計算します。
 float ToyDiorama_CalculateEdgeMask(float2 uv)
 {
 	float2 centered = uv * 2.0 - 1.0;
@@ -38,6 +40,7 @@ float ToyDiorama_CalculateEdgeMask(float2 uv)
 	return smoothstep(edgeStart, edgeEnd, edgeDistance);
 }
 
+// ビネット風のエッジ着色を適用します。彩度減衰と明度オフセットを任意で加算します。
 ToyDiorama_EdgeToneData ToyDiorama_ApplyEdgeTone(float3 color, float2 uv)
 {
 	ToyDiorama_EdgeToneData data;

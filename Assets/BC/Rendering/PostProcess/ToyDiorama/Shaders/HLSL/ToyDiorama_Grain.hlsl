@@ -10,6 +10,7 @@ struct ToyDiorama_GrainData
 	float grainContribution;
 };
 
+// 手続きグレインセル値に使う決定論的な2次元ハッシュです。
 float ToyDiorama_Hash12(float2 value)
 {
 	float3 value3 = frac(float3(value.xyx) * 0.1031);
@@ -17,6 +18,7 @@ float ToyDiorama_Hash12(float2 value)
 	return frac((value3.x + value3.y) * value3.z);
 }
 
+// グレイン無効時に返す無処理データです。
 ToyDiorama_GrainData ToyDiorama_CreateGrainNoOp(float3 color)
 {
 	ToyDiorama_GrainData data;
@@ -28,12 +30,14 @@ ToyDiorama_GrainData ToyDiorama_CreateGrainNoOp(float3 color)
 	return data;
 }
 
+// 深い暗部/明部では弱く、中間調で強く効く応答カーブです。
 float ToyDiorama_GrainResponseMask(float luminance)
 {
 	float midResponse = 1.0 - abs(luminance * 2.0 - 1.0);
 	return lerp(1.0, saturate(0.2 + midResponse * 0.8), saturate(_ToyDioramaGrainResponse));
 }
 
+// ハッシュ位相を時間補間し、時間的に滑らかな手続きフィルムグレインを適用します。
 ToyDiorama_GrainData ToyDiorama_ApplyGrain(float3 color, float2 uv)
 {
 	if (_ToyDioramaGrainEnabled < 0.5 || _ToyDioramaGrainStrength <= 0.0)

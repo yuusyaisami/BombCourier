@@ -9,6 +9,16 @@ using UnityEngine;
 
 namespace BC.Managers
 {
+    public enum TalkStateId
+    {
+        None = 0,
+        Normal1 = 10,
+        Signature1 = 20,
+        Surprised = 30,
+        Happy = 40,
+        Narrow = 50,
+    }
+
     [Serializable]
     public struct TextEffectData
     {
@@ -19,14 +29,34 @@ namespace BC.Managers
     [Serializable]
     public struct TalkRequestData
     {
+        public TalkStateId talkStateId; // 会話中の actor presentation を選ぶ状態。
         public string speakerName;
         [TextArea]
         public string dialogueText;
 
-        public TextEffectData textEffectData;
-        public bool isWaitingActionCompleted; // action の完了を待つかどうか
-        public InlineAction onStartTalkAction; // 会話開始時に実行する action
-        public InlineAction onCompleteTalkAction; // 会話終了時に実行する action
+        public TextEffectData textEffectData; // 文字サイズなど、会話テキストの見た目を制御する設定。
+
+        public bool isWaitingActionCompleted; // 会話前後の inline action を完了待ちするか。
+        public InlineAction onStartTalkAction; // 会話開始時に走らせる action。
+        public InlineAction onCompleteTalkAction; // 会話終了時に走らせる action。
+    }
+
+    [Serializable]
+    public struct HideTalkRequestData
+    {
+        [Min(0f)]
+        public float duration;
+        public bool applyTalkStateOverride; // true のときだけ hide 時に talkStateId を actor へ流す。
+        public TalkStateId talkStateId;
+
+        public static HideTalkRequestData Default => new HideTalkRequestData
+        {
+            duration = 0.3f,
+            applyTalkStateOverride = false,
+            talkStateId = TalkStateId.None,
+        };
+
+        public float Duration => Mathf.Max(0f, duration);
     }
 
     public readonly struct TalkChoiceOptionRequestData
@@ -80,6 +110,8 @@ namespace BC.Managers
         public TalkRequestData[] talkRequests;
     }
 
+    // 会話の再生順序と入力待機をまとめる MonoBehaviour。
+    // UI はここ、camera focus は SceneCameraService、具体的な action は ActionSystem に委譲する。
     public class TalkSystemManagerMB : MonoBehaviour
     {
         public static TalkSystemManagerMB Instance { get; private set; }
@@ -88,6 +120,7 @@ namespace BC.Managers
         [SerializeField] private UITalkChoiceSystemMB talkChoiceUIManagerMB;
 
         private CancellationTokenSource cancellationTokenSource;
+        private EntityRef activeTalkActor;
         private SceneKernel sceneKernel;
 
         private void Awake()
@@ -114,7 +147,8 @@ namespace BC.Managers
                 cancellationTokenSource = null;
             }
 
-            ReleaseTalkPresentation();
+            EndConversationCameraFocus();
+            activeTalkActor = default;
 
             if (Instance == this)
             {
@@ -122,11 +156,12 @@ namespace BC.Managers
             }
         }
 
-        // 重複命令が入った場合は cancel して新しい命令を実行する。
+        // 重複会話が来たら、古い処理を止めて新しい会話へ切り替える。
         public async UniTask ShowTalk(EntityRef actor, EntityRef viewer, TalkRequestData talkRequestData)
         {
             if (talkSystemUIManagerMB == null)
             {
+                Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: ShowTalk skipped because {nameof(talkSystemUIManagerMB)} is null.", this);
                 return;
             }
 
@@ -139,8 +174,9 @@ namespace BC.Managers
 
             cancellationTokenSource = new CancellationTokenSource();
             CancellationTokenSource currentTalkCancellation = cancellationTokenSource;
+            activeTalkActor = actor;
 
-            BeginTalkPresentation(actor, viewer);
+            BeginConversationCameraFocus(actor, viewer);
 
             await ExecuteInlineActionAsync(
                 actor,
@@ -158,22 +194,41 @@ namespace BC.Managers
             talkChoiceUIManagerMB?.ClearChoicesImmediate();
             await talkSystemUIManagerMB.ShowTalk(talkRequestData, currentTalkCancellation.Token);
 
+            // Typewriter 側 callback が取りこぼされても、ShowTalk 復帰時点で speaking 表現は必ず落とす。
+            NotifyTalkTypingCompleted();
+
             if (currentTalkCancellation.IsCancellationRequested)
             {
                 return;
             }
 
+            // complete action では HideTalk が現在の会話待機 token を止めることがあります。
+            // ここで同じ token を action 実行にも渡すと、HideTalk 自身が complete action を
+            // 自己キャンセルしてしまい、UI が閉じる前に action 連鎖が中断されます。
             await ExecuteInlineActionAsync(
                 actor,
                 viewer,
                 talkRequestData.onCompleteTalkAction,
                 talkRequestData.isWaitingActionCompleted,
-                currentTalkCancellation.Token,
+                CancellationToken.None,
                 "complete");
+
         }
 
-        public async UniTask HideTalk(float duration = 0.3f)
+        public async UniTask HideTalk(EntityRef actor, HideTalkRequestData requestData)
         {
+            if (!activeTalkActor.IsValid)
+            {
+                Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: HideTalk ignored because there is no active talk actor. requestActor={actor}", this);
+                return;
+            }
+
+            if (!activeTalkActor.Equals(actor))
+            {
+                Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: ignored hide request from non-active actor {actor}.", this);
+                return;
+            }
+
             // 非表示要求が来たら、待機中の入力処理を止める。
             if (cancellationTokenSource != null)
             {
@@ -185,12 +240,13 @@ namespace BC.Managers
             if (talkSystemUIManagerMB != null)
             {
                 // UI を閉じるアニメーションを終えたあと、カメラを通常状態へ戻す。
-                await talkSystemUIManagerMB.HideTalk(duration);
+                await talkSystemUIManagerMB.HideTalk(requestData.Duration);
             }
 
             talkChoiceUIManagerMB?.ClearChoicesImmediate();
 
-            ReleaseTalkPresentation();
+            EndConversationCameraFocus();
+            activeTalkActor = default;
         }
 
         public async UniTask<TalkChoiceSelectionResult> ShowChoicesAsync(
@@ -212,12 +268,25 @@ namespace BC.Managers
                 linkedCancellation.Token);
         }
 
-        private void BeginTalkPresentation(EntityRef actor, EntityRef viewer)
+        // Typewriter 完了時に speaking 表現を解除する通知入口。
+        public void NotifyTalkTypingCompleted()
         {
-            ReleaseTalkPresentation();
+            if (!activeTalkActor.IsValid)
+                return;
+
+            if (!TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) || resolvedSceneKernel.EntityComponents == null)
+                return;
+
+            if (resolvedSceneKernel.EntityComponents.TryResolve(activeTalkActor, out TalkAdapterMB talkAdapter))
+                talkAdapter.NotifyTalkTypingCompleted();
+        }
+
+        private void BeginConversationCameraFocus(EntityRef actor, EntityRef viewer)
+        {
+            EndConversationCameraFocus();
 
             if (TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) && resolvedSceneKernel.Cameras != null)
-                resolvedSceneKernel.Cameras.BeginTalk(new TalkCameraContext(actor, viewer));
+                resolvedSceneKernel.Cameras.BeginFocus(new SceneCameraFocusContext(actor, viewer));
         }
 
         private UniTask ExecuteInlineActionAsync(
@@ -235,7 +304,7 @@ namespace BC.Managers
 
             if (!waitForCompletion)
             {
-                InlineActionExecutionUtility.ExecuteAndForget(this, actor, inlineAction, viewer, $"Talk {phaseLabel}");
+                InlineActionExecutionUtility.ExecuteDetachedAndForget(this, actor, inlineAction, viewer, $"Talk {phaseLabel}");
                 return UniTask.CompletedTask;
             }
 
@@ -249,7 +318,7 @@ namespace BC.Managers
             CancellationToken cancellationToken,
             string phaseLabel)
         {
-            ActionExecutionResult result = await InlineActionExecutionUtility.ExecuteAsync(this, actor, inlineAction, viewer, cancellationToken);
+            ActionExecutionResult result = await InlineActionExecutionUtility.ExecuteDetachedAsync(this, actor, inlineAction, viewer, cancellationToken);
 
             if (result.IsFailed)
             {
@@ -257,10 +326,10 @@ namespace BC.Managers
             }
         }
 
-        private void ReleaseTalkPresentation()
+        private void EndConversationCameraFocus()
         {
             if (TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) && resolvedSceneKernel.Cameras != null)
-                resolvedSceneKernel.Cameras.EndTalk();
+                resolvedSceneKernel.Cameras.EndFocus();
         }
 
         private bool TryResolveSceneKernel(out SceneKernel resolvedSceneKernel)

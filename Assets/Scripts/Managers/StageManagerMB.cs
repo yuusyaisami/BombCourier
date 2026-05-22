@@ -8,6 +8,7 @@ using UnityEngine;
 using BC.Item;
 namespace BC.Manager
 {
+    // ステージ prefab のロード、ランタイム参照の解決、チェックポイント操作をまとめる stage 司令塔。
     public struct StageLoadResult
     {
         public List<BombMB> bombs; // ステージ内の爆弾のリスト
@@ -20,13 +21,15 @@ namespace BC.Manager
         public BonusObjectMB bonusObject; // ステージ内のBonusObjectの参照 (スコア計算に使います。)
         public float ClearTimeThreshold; // ゴールデータにクリアタイムの閾値がある場合はそれを使用し、ない場合はデフォルト値を返す
     }
+
+    // ステージの読み込みとチェックポイント処理を担当する MonoBehaviour。
+    // 実際のゲーム進行は GameLogicManagerMB が受け持ち、ここは stage 生成/復元に集中する。
     public class StageManagerMB : MonoBehaviour
     {
-        // ステージの管理を行うクラス
-        // 例えば、ステージの生成、ステージの状態管理、ステージのイベント管理などを担当することができます。
         public static StageManagerMB Instance { get; private set; }
         private void Awake()
         {
+            // 1 シーン 1 インスタンス前提の簡易 singleton。
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
@@ -34,11 +37,14 @@ namespace BC.Manager
             }
             Instance = this;
         }
+
+        // 現在の stage instance を保持し、次回 Load 時に安全に破棄する。
         private Transform stageInstance;
         [SerializeField] private StageRegistrySO stageData; // ステージデータのScriptableObject
         [SerializeField] private StageCheckpointServiceMB checkpointService; // チェックポイントサービス
         [SerializeField] private Transform stageRoot; // ステージの親オブジェクト
 
+        // index 指定で stage prefab を instantiate し、その場で runtime 参照へ変換する。
         public StageLoadResult LoadStage(int stageIndex)
         {
             if (stageIndex < 0 || stageIndex >= stageData.StageData.Count)
@@ -59,11 +65,13 @@ namespace BC.Manager
             return ResolveStageRuntime(stageInstance, data);
         }
 
+        // 既にある stage instance から runtime 情報だけ取り出したいときの入口。
         public StageLoadResult ResolveStageRuntime(GameObject stageInstance)
         {
             return ResolveStageRuntime(stageInstance, new StageData());
         }
 
+        // MapRuntimeMB に集約された参照を stage 起動時に拾い直す。
         public StageLoadResult ResolveStageRuntime(GameObject stageInstance, StageData data)
         {
             if (stageInstance == null)
@@ -93,6 +101,8 @@ namespace BC.Manager
                 bonusObject = mapRuntime.BonusObject, // ステージ内のBonusObjectの参照 (スコア計算に使います。)
             };
         }
+
+        // 現在の checkpointService に stage checkpoint を保存させる。
         public void CaptureStageCheckpoint()
         {
             if (checkpointService == null)
@@ -104,6 +114,7 @@ namespace BC.Manager
             checkpointService.Capture();
         }
 
+        // 呼び出し側が snapshot を持ち回りたい場合はこちらを使う。
         public StageCheckpointSnapshot CaptureStageCheckpointSnapshot()
         {
             if (checkpointService == null)
@@ -115,7 +126,7 @@ namespace BC.Manager
             return checkpointService.CaptureSnapshot();
         }
 
-        // ステージをリロードする (注意: これはStageSaveが入った後に呼び出すこと, またReloadはSaveの一番最新の状態で呼ぶこと)
+        // 現在の checkpoint へ戻す reload 入口。
         public void ReloadStage()
         {
             if (checkpointService == null)
@@ -128,6 +139,7 @@ namespace BC.Manager
 
         }
 
+        // snapshot 指定で stage を戻したい場合の入口。
         public void ReloadStage(StageCheckpointSnapshot snapshot)
         {
             if (checkpointService == null)
@@ -139,11 +151,13 @@ namespace BC.Manager
             checkpointService.RestoreSnapshot(snapshot);
         }
 
+        // 退避済み checkpoint を消し、リロード可能状態をリセットする。
         public void ClearStageCheckpoint()
         {
             checkpointService?.Clear();
         }
 
+        // 失敗時でも呼び出し側が扱いやすいよう、空の結果を返す helper。
         private static StageLoadResult CreateEmptyResult(GameObject stageInstance = null)
         {
             return new StageLoadResult

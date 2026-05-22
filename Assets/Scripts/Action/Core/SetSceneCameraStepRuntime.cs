@@ -9,28 +9,24 @@ namespace BC.ActionSystem
     [Serializable]
     public sealed class SetSceneCameraStepRuntime : IActionNodeDefinition
     {
-        private readonly string channel;
         private readonly CinemachineCamera camera;
 
-        public SetSceneCameraStepRuntime(string channel, CinemachineCamera camera)
+        public SetSceneCameraStepRuntime(CinemachineCamera camera)
         {
-            this.channel = string.IsNullOrWhiteSpace(channel) ? "ActionCamera" : channel;
             this.camera = camera;
         }
 
         public IActionNodeRuntime CreateRuntime()
         {
-            return new Runtime(channel, camera);
+            return new Runtime(camera);
         }
 
         private sealed class Runtime : IActionNodeRuntime
         {
-            private readonly string channel;
             private readonly CinemachineCamera camera;
 
-            public Runtime(string channel, CinemachineCamera camera)
+            public Runtime(CinemachineCamera camera)
             {
-                this.channel = string.IsNullOrWhiteSpace(channel) ? "ActionCamera" : channel;
                 this.camera = camera;
             }
 
@@ -48,7 +44,7 @@ namespace BC.ActionSystem
                     return ActionNodeStatus.Failed;
                 }
 
-                context.SceneKernel.Cameras.SetActionCameraRequest(channel, camera);
+                context.SceneKernel.Cameras.SetActionCamera(context.ExecutionHandle, camera);
                 return ActionNodeStatus.Continue;
             }
         }

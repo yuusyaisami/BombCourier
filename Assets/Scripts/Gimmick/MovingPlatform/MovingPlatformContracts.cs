@@ -19,6 +19,12 @@ namespace BC.Gimmick.MovingPlatform
         EaseInOutSine = 2,
     }
 
+    public enum MovingPlatformTimingControl
+    {
+        Duration = 0,
+        Speed = 1,
+    }
+
     public readonly struct MovingPlatformBasePose
     {
         public readonly Vector3 Position;
@@ -66,38 +72,21 @@ namespace BC.Gimmick.MovingPlatform
         internal const string DefaultNodeLabelPrefix = "Node";
 
         [SerializeField] private string nodePath = "Node";
-        [SerializeField] private string nodeName = "Node";
         [SerializeField] private ReactiveVector3 localPosition = default;
 
         public string NodePath => MovingPlatformRailIdUtility.Normalize(nodePath);
-        public string NodeName => !string.IsNullOrWhiteSpace(nodeName)
-            ? nodeName
-            : !string.IsNullOrWhiteSpace(NodePath)
-                ? NodePath
-                : "Node";
         public ReactiveVector3 LocalPosition => localPosition;
 
         internal string RawNodePath => nodePath;
-        internal string RawNodeName => nodeName;
 
         internal bool NeedsGeneratedNodePath()
         {
             return string.IsNullOrWhiteSpace(NodePath) || string.Equals(NodePath, DefaultNodeLabelPrefix, StringComparison.Ordinal);
         }
 
-        internal bool NeedsGeneratedNodeName()
-        {
-            return string.IsNullOrWhiteSpace(nodeName) || string.Equals(nodeName, DefaultNodeLabelPrefix, StringComparison.Ordinal);
-        }
-
         internal void SetNodePath(string value)
         {
             nodePath = MovingPlatformRailIdUtility.Normalize(value);
-        }
-
-        internal void SetNodeName(string value)
-        {
-            nodeName = string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
         }
     }
 
@@ -176,13 +165,11 @@ namespace BC.Gimmick.MovingPlatform
         internal readonly struct NodeData
         {
             public readonly string Path;
-            public readonly string Name;
             public readonly ReactiveVector3 LocalPosition;
 
-            public NodeData(string path, string name, ReactiveVector3 localPosition)
+            public NodeData(string path, ReactiveVector3 localPosition)
             {
                 Path = path;
-                Name = name;
                 LocalPosition = localPosition;
             }
         }
@@ -266,7 +253,7 @@ namespace BC.Gimmick.MovingPlatform
                     continue;
 
                 int nodeIndex = nodeBuffer.Count;
-                nodeBuffer.Add(new NodeData(nodePath, railNode.NodeName, railNode.LocalPosition));
+                nodeBuffer.Add(new NodeData(nodePath, railNode.LocalPosition));
                 nodeIndicesByPath.Add(nodePath, nodeIndex);
             }
 
@@ -351,6 +338,14 @@ namespace BC.Gimmick.MovingPlatform
                 return true;
 
             return TryGetEdge(toIndex, fromIndex, out edge);
+        }
+
+        public float GetApproxDistance(int fromIndex, int toIndex)
+        {
+            if (fromIndex < 0 || fromIndex >= NodeCount || toIndex < 0 || toIndex >= NodeCount)
+                return 0f;
+
+            return Vector3.Distance(ResolveLocalPosition(fromIndex), ResolveLocalPosition(toIndex));
         }
 
         public bool TryFindNearestLocation(in MovingPlatformBasePose basePose, Vector3 worldPosition, out MovingPlatformRailLocation location)
@@ -523,40 +518,75 @@ namespace BC.Gimmick.MovingPlatform
 
     internal sealed class MovingPlatformRailLayerRoute
     {
+        internal enum ResolvedStepKind
+        {
+            Move = 0,
+            WaitDuration = 1,
+            WaitSignal = 2,
+            InlineAction = 3,
+            Rotate = 4,
+            Scale = 5,
+        }
+
         internal readonly struct ResolvedSegment
         {
-            private readonly MovingPlatformRailRouteSegment sourceSegment;
+            private readonly MovingPlatformLayerSegment sourceSegment;
 
             public readonly int SegmentIndex;
+            public readonly ResolvedStepKind Kind;
             public readonly int FromNodeIndex;
             public readonly int ToNodeIndex;
             public readonly float Duration;
             public readonly MovingPlatformEasingMode EasingMode;
+            public readonly SignalId WaitSignalId;
+            public readonly bool HasWaitSignal;
+            public readonly Vector3 RotationEulerDelta;
+            public readonly Vector3 ScaleTarget;
+            public readonly MovingPlatformScaleMode ScaleMode;
+            public readonly bool UsePivotOffset;
+            public readonly ReactiveVector3 PivotLocalOffset;
 
             public ResolvedSegment(
                 int segmentIndex,
+                ResolvedStepKind kind,
                 int fromNodeIndex,
                 int toNodeIndex,
                 float duration,
                 MovingPlatformEasingMode easingMode,
-                MovingPlatformRailRouteSegment sourceSegment)
+                MovingPlatformLayerSegment sourceSegment,
+                SignalId waitSignalId = default,
+                bool hasWaitSignal = false,
+                Vector3 rotationEulerDelta = default,
+                Vector3 scaleTarget = default,
+                MovingPlatformScaleMode scaleMode = MovingPlatformScaleMode.Absolute,
+                bool usePivotOffset = false,
+                ReactiveVector3 pivotLocalOffset = default)
             {
                 SegmentIndex = segmentIndex;
+                Kind = kind;
                 FromNodeIndex = fromNodeIndex;
                 ToNodeIndex = toNodeIndex;
                 Duration = Mathf.Max(0.01f, duration);
                 EasingMode = easingMode;
                 this.sourceSegment = sourceSegment;
+                WaitSignalId = waitSignalId;
+                HasWaitSignal = hasWaitSignal;
+                RotationEulerDelta = rotationEulerDelta;
+                ScaleTarget = scaleTarget;
+                ScaleMode = scaleMode;
+                UsePivotOffset = usePivotOffset;
+                PivotLocalOffset = pivotLocalOffset;
             }
 
             public void ExecuteEnter(in WiringActionContext context)
             {
-                sourceSegment?.ExecuteEnter(context);
+                if (sourceSegment is MovingPlatformInlineActionSegment inlineActionSegment)
+                    inlineActionSegment.Execute(context);
             }
 
             public void ExecuteExit(in WiringActionContext context)
             {
-                sourceSegment?.ExecuteExit(context);
+                _ = context;
             }
         }
 
@@ -574,26 +604,169 @@ namespace BC.Gimmick.MovingPlatform
                 return;
             }
 
-            var resolvedNodeIndices = new List<int>(layer.RouteSegmentCount + 1) { currentNodeIndex };
-            var resolvedSegments = new List<ResolvedSegment>(layer.RouteSegmentCount);
+            int segmentCount = layer.Segments != null ? layer.Segments.Count : 0;
+            var resolvedNodeIndices = new List<int>(Mathf.Max(2, segmentCount + 1)) { currentNodeIndex };
+            var resolvedSegments = new List<ResolvedSegment>(segmentCount);
 
-            for (int i = 0; i < layer.RouteSegmentCount; i++)
+            for (int i = 0; i < segmentCount; i++)
             {
-                if (!layer.TryGetRouteSegment(i, out MovingPlatformRailRouteSegment segment) ||
-                    string.IsNullOrWhiteSpace(segment.TargetNodePath) ||
-                    !graph.TryGetNodeIndex(segment.TargetNodePath, out int targetNodeIndex) ||
-                    !graph.TryGetEdge(currentNodeIndex, targetNodeIndex, out MovingPlatformRailGraph.EdgeData edge))
+                if (!layer.TryGetSegment(i, out MovingPlatformLayerSegment segment) || segment == null)
                 {
                     nodeIndices = Array.Empty<int>();
                     segments = Array.Empty<ResolvedSegment>();
                     return;
                 }
 
-                float duration = segment.OverrideConnectionTiming ? segment.Duration : edge.Duration;
-                MovingPlatformEasingMode easingMode = segment.OverrideConnectionTiming ? segment.EasingMode : edge.EasingMode;
-                resolvedSegments.Add(new ResolvedSegment(i, currentNodeIndex, targetNodeIndex, duration, easingMode, segment));
-                resolvedNodeIndices.Add(targetNodeIndex);
-                currentNodeIndex = targetNodeIndex;
+                if (segment is MovingPlatformRailRouteSegment moveSegment)
+                {
+                    if (string.IsNullOrWhiteSpace(moveSegment.TargetNodePath) ||
+                        !graph.TryGetNodeIndex(moveSegment.TargetNodePath, out int targetNodeIndex))
+                    {
+                        nodeIndices = Array.Empty<int>();
+                        segments = Array.Empty<ResolvedSegment>();
+                        return;
+                    }
+
+                    float duration;
+                    MovingPlatformEasingMode easingMode;
+                    if (moveSegment.OverrideConnectionTiming)
+                    {
+                        if (moveSegment.TimingControl == MovingPlatformTimingControl.Speed)
+                        {
+                            float distance = graph.GetApproxDistance(currentNodeIndex, targetNodeIndex);
+                            duration = distance > 0.0001f
+                                ? distance / moveSegment.Speed
+                                : 0.01f;
+                        }
+                        else
+                        {
+                            duration = moveSegment.Duration;
+                        }
+
+                        easingMode = moveSegment.EasingMode;
+                    }
+                    else
+                    {
+                        if (layer.DefaultTimingControl == MovingPlatformTimingControl.Speed)
+                        {
+                            float distance = graph.GetApproxDistance(currentNodeIndex, targetNodeIndex);
+                            duration = distance > 0.0001f
+                                ? distance / layer.DefaultSpeed
+                                : 0.01f;
+                        }
+                        else
+                        {
+                            duration = layer.DefaultDuration;
+                        }
+
+                        easingMode = layer.DefaultEasingMode;
+                    }
+
+                    resolvedSegments.Add(new ResolvedSegment(
+                        i,
+                        ResolvedStepKind.Move,
+                        currentNodeIndex,
+                        targetNodeIndex,
+                        duration,
+                        easingMode,
+                        moveSegment));
+                    resolvedNodeIndices.Add(targetNodeIndex);
+                    currentNodeIndex = targetNodeIndex;
+                    continue;
+                }
+
+                if (segment is MovingPlatformWaitSegment waitSegment)
+                {
+                    if (waitSegment.WaitMode == MovingPlatformWaitMode.Signal)
+                    {
+                        if (!waitSegment.Signal.TryResolve(out Signal signal))
+                        {
+                            nodeIndices = Array.Empty<int>();
+                            segments = Array.Empty<ResolvedSegment>();
+                            return;
+                        }
+
+                        resolvedSegments.Add(new ResolvedSegment(
+                            i,
+                            ResolvedStepKind.WaitSignal,
+                            currentNodeIndex,
+                            currentNodeIndex,
+                            0.01f,
+                            MovingPlatformEasingMode.Linear,
+                            waitSegment,
+                            signal.Id,
+                            true));
+                    }
+                    else
+                    {
+                        resolvedSegments.Add(new ResolvedSegment(
+                            i,
+                            ResolvedStepKind.WaitDuration,
+                            currentNodeIndex,
+                            currentNodeIndex,
+                            waitSegment.Duration,
+                            MovingPlatformEasingMode.Linear,
+                            waitSegment));
+                    }
+
+                    continue;
+                }
+
+                if (segment is MovingPlatformInlineActionSegment inlineActionSegment)
+                {
+                    resolvedSegments.Add(new ResolvedSegment(
+                        i,
+                        ResolvedStepKind.InlineAction,
+                        currentNodeIndex,
+                        currentNodeIndex,
+                        0.01f,
+                        MovingPlatformEasingMode.Linear,
+                        inlineActionSegment));
+                    continue;
+                }
+
+                if (segment is MovingPlatformRotationSegment rotationSegment)
+                {
+                    resolvedSegments.Add(new ResolvedSegment(
+                        i,
+                        ResolvedStepKind.Rotate,
+                        currentNodeIndex,
+                        currentNodeIndex,
+                        rotationSegment.Duration,
+                        rotationSegment.EasingMode,
+                        rotationSegment,
+                        default,
+                        false,
+                        rotationEulerDelta: rotationSegment.EulerDelta,
+                        usePivotOffset: rotationSegment.UsePivotOffset,
+                        pivotLocalOffset: rotationSegment.PivotLocalOffset));
+                    continue;
+                }
+
+                if (segment is MovingPlatformScaleSegment scaleSegment)
+                {
+                    resolvedSegments.Add(new ResolvedSegment(
+                        i,
+                        ResolvedStepKind.Scale,
+                        currentNodeIndex,
+                        currentNodeIndex,
+                        scaleSegment.Duration,
+                        scaleSegment.EasingMode,
+                        scaleSegment,
+                        default,
+                        false,
+                        scaleTarget: scaleSegment.TargetScale,
+                        scaleMode: scaleSegment.ScaleMode,
+                        usePivotOffset: scaleSegment.UsePivotOffset,
+                        pivotLocalOffset: scaleSegment.PivotLocalOffset));
+                }
+            }
+
+            if (resolvedSegments.Count == 0)
+            {
+                nodeIndices = Array.Empty<int>();
+                segments = Array.Empty<ResolvedSegment>();
+                return;
             }
 
             nodeIndices = resolvedNodeIndices.ToArray();
@@ -601,7 +774,7 @@ namespace BC.Gimmick.MovingPlatform
         }
 
         public MovingPlatformPlaybackMode PlaybackMode { get; }
-        public bool IsValid => nodeIndices != null && nodeIndices.Length >= 2 && segments != null && segments.Length == nodeIndices.Length - 1;
+        public bool IsValid => nodeIndices != null && nodeIndices.Length >= 1 && segments != null && segments.Length > 0;
         public int NodeCount => nodeIndices != null ? nodeIndices.Length : 0;
         public int SegmentCount => segments != null ? segments.Length : 0;
         public IReadOnlyList<int> NodeIndices => nodeIndices;
@@ -651,13 +824,8 @@ namespace BC.Gimmick.MovingPlatform
 
         public bool TryGetSegmentForTransition(int currentCursor, int nextCursor, out ResolvedSegment segment)
         {
-            if (!IsValid || Mathf.Abs(nextCursor - currentCursor) != 1)
-            {
-                segment = default;
-                return false;
-            }
-
-            return TryGetSegment(Math.Min(currentCursor, nextCursor), out segment);
+            _ = currentCursor;
+            return TryGetSegment(nextCursor, out segment);
         }
 
         public bool TryFindNodeCursor(int nodeIndex, int preferredDirection, out int cursor, out int resolvedDirection)
@@ -763,6 +931,61 @@ namespace BC.Gimmick.MovingPlatform
         {
             return direction >= 0 ? 1 : -1;
         }
+
+        public bool TryGetNextSegmentCursor(int currentCursor, int direction, out int nextCursor, out int nextDirection, out bool completedCycle)
+        {
+            nextCursor = -1;
+            nextDirection = NormalizeDirection(direction);
+            completedCycle = false;
+
+            if (!IsValid || SegmentCount <= 0)
+                return false;
+
+            if (currentCursor < 0)
+            {
+                nextCursor = nextDirection >= 0 ? 0 : SegmentCount - 1;
+                return true;
+            }
+
+            switch (PlaybackMode)
+            {
+                case MovingPlatformPlaybackMode.Loop:
+                    nextCursor = currentCursor + nextDirection;
+                    if (nextCursor >= SegmentCount)
+                    {
+                        nextCursor = 0;
+                        completedCycle = true;
+                    }
+                    else if (nextCursor < 0)
+                    {
+                        nextCursor = SegmentCount - 1;
+                        completedCycle = true;
+                    }
+
+                    return true;
+
+                case MovingPlatformPlaybackMode.PingPong:
+                    nextCursor = currentCursor + nextDirection;
+                    if (nextCursor >= SegmentCount)
+                    {
+                        nextDirection = -1;
+                        nextCursor = currentCursor - 1;
+                        completedCycle = true;
+                    }
+                    else if (nextCursor < 0)
+                    {
+                        nextDirection = 1;
+                        nextCursor = currentCursor + 1;
+                        completedCycle = true;
+                    }
+
+                    return nextCursor >= 0 && nextCursor < SegmentCount;
+
+                default:
+                    nextCursor = currentCursor + nextDirection;
+                    return nextCursor >= 0 && nextCursor < SegmentCount;
+            }
+        }
     }
 
     internal sealed class MovingPlatformRailController
@@ -770,30 +993,28 @@ namespace BC.Gimmick.MovingPlatform
         private struct RailSegmentState
         {
             public bool IsActive;
-            public bool IsRouteSegment;
-            public Vector3 StartWorldPosition;
-            public Vector3 EndWorldPosition;
+            public MovingPlatformRailLayerRoute.ResolvedStepKind Kind;
+            public MovingPlatformPose StartPose;
+            public MovingPlatformPose EndPose;
             public float Duration;
             public float Elapsed;
             public MovingPlatformEasingMode EasingMode;
-            public int EndNodeIndex;
+            public SignalId WaitSignalId;
+            public bool WaitSignalTriggered;
             public int RouteLayerIndex;
             public int RouteSegmentIndex;
         }
 
         private readonly MovingPlatformRailGraph graph;
         private readonly MovingPlatformRailLayerRoute[] routes;
-        private readonly List<int> transferPathNodes = new();
         private readonly List<MovingPlatformRailTransitionEvent> pendingTransitionEvents = new();
 
-        private MovingPlatformRailLocation currentLocation;
         private RailSegmentState activeSegment;
+        private MovingPlatformBasePose railReferencePose;
+        private bool hasRailReferencePose;
         private int currentRouteLayerIndex = -1;
-        private int currentRouteNodeCursor = -1;
+        private int currentRouteSegmentCursor = -1;
         private int currentRouteDirection = 1;
-        private int transferTargetLayerIndex = -1;
-        private int transferPathCursor;
-        private bool hasCurrentLocation;
         private bool segmentPaused;
 
         public MovingPlatformRailController(MovingPlatformRailGraph graph, IReadOnlyList<MovingPlatformRailLayerRoute> routes)
@@ -831,13 +1052,14 @@ namespace BC.Gimmick.MovingPlatform
         public void Reset(in MovingPlatformBasePose basePose, Vector3 currentWorldPosition)
         {
             AbortActiveSegment(false);
+            railReferencePose = basePose;
+            hasRailReferencePose = true;
             currentRouteLayerIndex = -1;
-            currentRouteNodeCursor = -1;
+            currentRouteSegmentCursor = -1;
             currentRouteDirection = 1;
             segmentPaused = false;
-            hasCurrentLocation = graph != null && graph.TryFindNearestLocation(basePose, currentWorldPosition, out currentLocation);
+            _ = currentWorldPosition;
             pendingTransitionEvents.Clear();
-            ClearTransfer();
         }
 
         public bool TryGetRoute(int layerIndex, out MovingPlatformRailLayerRoute route)
@@ -850,6 +1072,22 @@ namespace BC.Gimmick.MovingPlatform
 
             route = null;
             return false;
+        }
+
+        public bool SnapToRouteStart(int layerIndex, in MovingPlatformBasePose basePose)
+        {
+            if (!IsValidRouteIndex(layerIndex))
+                return false;
+
+            AbortActiveSegment(false);
+            railReferencePose = basePose;
+            hasRailReferencePose = true;
+            currentRouteLayerIndex = layerIndex;
+            currentRouteSegmentCursor = -1;
+            currentRouteDirection = 1;
+            segmentPaused = false;
+            pendingTransitionEvents.Clear();
+            return true;
         }
 
         public void DrainTransitionEvents(List<MovingPlatformRailTransitionEvent> buffer)
@@ -869,10 +1107,13 @@ namespace BC.Gimmick.MovingPlatform
             int requestedLayerIndex,
             in MovingPlatformBasePose basePose,
             Vector3 currentWorldPosition,
+            Quaternion currentWorldRotation,
+            Vector3 currentLocalScale,
             out bool sequenceCompleted)
         {
             sequenceCompleted = false;
-            EnsureCurrentLocation(basePose, currentWorldPosition);
+            _ = basePose;
+            MovingPlatformPose currentPose = new(currentWorldPosition, currentWorldRotation, currentLocalScale);
 
             bool hasRequestedRoute = IsValidRouteIndex(requestedLayerIndex);
             if (!hasRequestedRoute)
@@ -880,21 +1121,27 @@ namespace BC.Gimmick.MovingPlatform
                 if (activeSegment.IsActive)
                     segmentPaused = true;
 
-                return EvaluateCurrentPose(basePose, currentWorldPosition);
+                return EvaluateCurrentPose(currentPose);
+            }
+
+            if (currentRouteLayerIndex != requestedLayerIndex && !activeSegment.IsActive)
+            {
+                railReferencePose = basePose;
+                hasRailReferencePose = true;
+                currentRouteLayerIndex = requestedLayerIndex;
+                currentRouteSegmentCursor = -1;
+                currentRouteDirection = 1;
             }
 
             if (segmentPaused && activeSegment.IsActive)
             {
-                if (currentRouteLayerIndex == requestedLayerIndex || transferTargetLayerIndex == requestedLayerIndex)
+                if (currentRouteLayerIndex == requestedLayerIndex)
                 {
                     segmentPaused = false;
                 }
                 else
                 {
-                    currentLocation = GetCurrentLocationFromState(basePose, currentWorldPosition);
-                    hasCurrentLocation = currentLocation.IsValid;
                     AbortActiveSegment(true);
-                    ClearTransfer();
                 }
             }
 
@@ -905,7 +1152,7 @@ namespace BC.Gimmick.MovingPlatform
             {
                 if (!activeSegment.IsActive)
                 {
-                    if (!TryBeginMovement(requestedLayerIndex, basePose, currentWorldPosition, ref sequenceCompleted))
+                    if (!TryBeginStep(requestedLayerIndex, currentPose, ref sequenceCompleted))
                         break;
                 }
 
@@ -916,333 +1163,170 @@ namespace BC.Gimmick.MovingPlatform
                 if (remainingTime < remainingSegmentTime)
                 {
                     activeSegment.Elapsed += remainingTime;
+                    currentPose = EvaluateCurrentPose(currentPose);
                     remainingTime = 0f;
                     break;
                 }
 
                 activeSegment.Elapsed = activeSegment.Duration;
                 remainingTime -= remainingSegmentTime;
-                CompleteActiveSegment(basePose);
+                currentPose = EvaluateCurrentPose(currentPose);
+                CompleteActiveSegment();
             }
 
-            return EvaluateCurrentPose(basePose, currentWorldPosition);
+            return EvaluateCurrentPose(currentPose);
         }
 
-        private bool TryBeginMovement(
+        public void NotifySignal(SignalId signalId)
+        {
+            if (!activeSegment.IsActive || activeSegment.Kind != MovingPlatformRailLayerRoute.ResolvedStepKind.WaitSignal)
+                return;
+
+            if (activeSegment.WaitSignalId.Equals(signalId))
+                activeSegment.WaitSignalTriggered = true;
+        }
+
+        private bool TryBeginStep(
             int requestedLayerIndex,
-            in MovingPlatformBasePose basePose,
-            Vector3 currentWorldPosition,
+            in MovingPlatformPose currentPose,
             ref bool sequenceCompleted)
         {
             if (!IsValidRouteIndex(requestedLayerIndex))
                 return false;
 
-            currentLocation = GetCurrentLocationFromState(basePose, currentWorldPosition);
-            hasCurrentLocation = currentLocation.IsValid;
-            if (!currentLocation.IsValid)
-                return false;
-
-            if (transferTargetLayerIndex >= 0 && transferTargetLayerIndex != requestedLayerIndex)
-                ClearTransfer();
-
-            if (transferPathNodes.Count > 0 && TryStartNextTransferSegment(requestedLayerIndex, basePose, ref sequenceCompleted))
-                return true;
-
-            if (currentLocation.IsOnNode)
-            {
-                if (routes[requestedLayerIndex].ContainsNode(currentLocation.NodeIndex))
-                {
-                    if (TryAttachRouteAtCurrentNode(requestedLayerIndex))
-                        return TryStartNextCurrentRouteSegment(basePose, ref sequenceCompleted);
-                }
-
-                if (currentRouteLayerIndex >= 0 && currentRouteLayerIndex != requestedLayerIndex)
-                {
-                    if (TryStartNextCurrentRouteSegment(basePose, ref sequenceCompleted))
-                        return true;
-                }
-
-                if (currentRouteLayerIndex == requestedLayerIndex)
-                    return TryStartNextCurrentRouteSegment(basePose, ref sequenceCompleted);
-            }
-
-            return TryPlanTransferToRoute(requestedLayerIndex, basePose);
-        }
-
-        private bool TryStartNextCurrentRouteSegment(in MovingPlatformBasePose basePose, ref bool sequenceCompleted)
-        {
-            if (!currentLocation.IsOnNode || !IsValidRouteIndex(currentRouteLayerIndex))
-                return false;
-
-            MovingPlatformRailLayerRoute route = routes[currentRouteLayerIndex];
-            if (currentRouteNodeCursor < 0 || currentRouteNodeCursor >= route.NodeCount)
-            {
-                if (!route.TryFindNodeCursor(currentLocation.NodeIndex, currentRouteDirection, out currentRouteNodeCursor, out currentRouteDirection))
-                    return false;
-            }
-
-            if (!route.TryGetNextCursor(currentRouteNodeCursor, currentRouteDirection, out int nextCursor, out int nextDirection, out bool completedCycle))
+            MovingPlatformRailLayerRoute route = routes[requestedLayerIndex];
+            if (!route.TryGetNextSegmentCursor(currentRouteSegmentCursor, currentRouteDirection, out int nextCursor, out int nextDirection, out bool completedCycle))
             {
                 sequenceCompleted = true;
                 return false;
             }
 
-            int nextNodeIndex = route.GetNodeIndexAt(nextCursor);
-            if (!route.TryGetSegmentForTransition(currentRouteNodeCursor, nextCursor, out MovingPlatformRailLayerRoute.ResolvedSegment segment))
+            if (!route.TryGetSegment(nextCursor, out MovingPlatformRailLayerRoute.ResolvedSegment segment))
                 return false;
 
-            currentRouteNodeCursor = nextCursor;
+            currentRouteSegmentCursor = nextCursor;
             currentRouteDirection = nextDirection;
             sequenceCompleted |= completedCycle;
-            StartSegment(
-                currentLocation.WorldPosition,
-                graph.GetWorldPosition(basePose, nextNodeIndex),
-                segment.Duration,
-                segment.EasingMode,
-                nextNodeIndex,
-                true,
-                currentRouteLayerIndex,
-                segment.SegmentIndex);
+
+            StartSegment(segment, currentPose, requestedLayerIndex);
             return true;
         }
 
-        private bool TryPlanTransferToRoute(int requestedLayerIndex, in MovingPlatformBasePose basePose)
+        private MovingPlatformPose EvaluateCurrentPose(in MovingPlatformPose fallbackPose)
         {
-            if (!IsValidRouteIndex(requestedLayerIndex))
-                return false;
+            if (!activeSegment.IsActive)
+                return fallbackPose;
 
-            ClearTransfer();
+            float normalizedTime = activeSegment.Duration > 0.0f
+                ? Mathf.Clamp01(activeSegment.Elapsed / activeSegment.Duration)
+                : 1.0f;
+            float eased = Ease(activeSegment.EasingMode, normalizedTime);
 
-            if (currentLocation.IsOnNode)
-            {
-                if (!graph.TryFindShortestPathToAny(basePose, currentLocation.NodeIndex, routes[requestedLayerIndex].NodeIndices, out List<int> nodePath, out _))
-                    return false;
+            if (activeSegment.Kind == MovingPlatformRailLayerRoute.ResolvedStepKind.WaitSignal && !activeSegment.WaitSignalTriggered)
+                eased = 0.0f;
 
-                if (nodePath.Count <= 1)
-                {
-                    if (!TryAttachRouteAtCurrentNode(requestedLayerIndex))
-                        return false;
+            Vector3 position = Vector3.Lerp(activeSegment.StartPose.Position, activeSegment.EndPose.Position, eased);
+            Quaternion rotation = Quaternion.Slerp(activeSegment.StartPose.Rotation, activeSegment.EndPose.Rotation, eased);
+            Vector3 scale = Vector3.Lerp(activeSegment.StartPose.LocalScale, activeSegment.EndPose.LocalScale, eased);
 
-                    bool unused = false;
-                    return TryStartNextCurrentRouteSegment(basePose, ref unused);
-                }
-
-                transferTargetLayerIndex = requestedLayerIndex;
-                transferPathNodes.AddRange(nodePath);
-                transferPathCursor = 0;
-                bool unusedSequenceCompleted = false;
-                return TryStartNextTransferSegment(requestedLayerIndex, basePose, ref unusedSequenceCompleted);
-            }
-
-            if (!graph.TryGetAnyEdge(currentLocation.FromNodeIndex, currentLocation.ToNodeIndex, out MovingPlatformRailGraph.EdgeData edgeInfo))
-                return false;
-
-            bool hasFromPath = graph.TryFindShortestPathToAny(
-                basePose,
-                currentLocation.FromNodeIndex,
-                routes[requestedLayerIndex].NodeIndices,
-                out List<int> fromPath,
-                out float fromPathCost);
-            bool hasToPath = graph.TryFindShortestPathToAny(
-                basePose,
-                currentLocation.ToNodeIndex,
-                routes[requestedLayerIndex].NodeIndices,
-                out List<int> toPath,
-                out float toPathCost);
-            if (!hasFromPath && !hasToPath)
-                return false;
-
-            float fromTotalCost = hasFromPath
-                ? Vector3.Distance(currentLocation.WorldPosition, graph.GetWorldPosition(basePose, currentLocation.FromNodeIndex)) + fromPathCost
-                : float.MaxValue;
-            float toTotalCost = hasToPath
-                ? Vector3.Distance(currentLocation.WorldPosition, graph.GetWorldPosition(basePose, currentLocation.ToNodeIndex)) + toPathCost
-                : float.MaxValue;
-
-            int chosenStartNodeIndex;
-            List<int> chosenPath;
-            float partialNormalized;
-            if (fromTotalCost <= toTotalCost)
-            {
-                chosenStartNodeIndex = currentLocation.FromNodeIndex;
-                chosenPath = fromPath;
-                partialNormalized = currentLocation.Normalized;
-            }
-            else
-            {
-                chosenStartNodeIndex = currentLocation.ToNodeIndex;
-                chosenPath = toPath;
-                partialNormalized = 1f - currentLocation.Normalized;
-            }
-
-            if (chosenPath == null || chosenPath.Count == 0)
-                return false;
-
-            transferTargetLayerIndex = requestedLayerIndex;
-            transferPathNodes.AddRange(chosenPath);
-            transferPathCursor = 0;
-
-            float partialDuration = Mathf.Max(0f, edgeInfo.Duration * Mathf.Clamp01(partialNormalized));
-            Vector3 endWorldPosition = graph.GetWorldPosition(basePose, chosenStartNodeIndex);
-            if (partialDuration > 0.0001f && (currentLocation.WorldPosition - endWorldPosition).sqrMagnitude > 0.000001f)
-            {
-                currentRouteLayerIndex = -1;
-                currentRouteNodeCursor = -1;
-                StartSegment(currentLocation.WorldPosition, endWorldPosition, partialDuration, edgeInfo.EasingMode, chosenStartNodeIndex);
-                return true;
-            }
-
-            currentLocation = MovingPlatformRailLocation.AtNode(chosenStartNodeIndex, endWorldPosition);
-            hasCurrentLocation = true;
-            bool unusedTransferCompleted = false;
-            return TryStartNextTransferSegment(requestedLayerIndex, basePose, ref unusedTransferCompleted);
-        }
-
-        private bool TryStartNextTransferSegment(int requestedLayerIndex, in MovingPlatformBasePose basePose, ref bool sequenceCompleted)
-        {
-            if (transferPathNodes.Count == 0 || !currentLocation.IsOnNode || transferTargetLayerIndex != requestedLayerIndex)
-                return false;
-
-            if (transferPathCursor >= transferPathNodes.Count - 1)
-            {
-                int targetLayerIndex = transferTargetLayerIndex;
-                ClearTransfer();
-                if (!TryAttachRouteAtCurrentNode(targetLayerIndex))
-                    return false;
-
-                return TryStartNextCurrentRouteSegment(basePose, ref sequenceCompleted);
-            }
-
-            int currentNodeIndex = transferPathNodes[transferPathCursor];
-            int nextNodeIndex = transferPathNodes[transferPathCursor + 1];
-            if (currentNodeIndex != currentLocation.NodeIndex || !graph.TryGetEdge(currentNodeIndex, nextNodeIndex, out MovingPlatformRailGraph.EdgeData edge))
-            {
-                ClearTransfer();
-                return false;
-            }
-
-            transferPathCursor++;
-            currentRouteLayerIndex = -1;
-            currentRouteNodeCursor = -1;
-            StartSegment(currentLocation.WorldPosition, graph.GetWorldPosition(basePose, nextNodeIndex), edge.Duration, edge.EasingMode, nextNodeIndex);
-            return true;
-        }
-
-        private bool TryAttachRouteAtCurrentNode(int routeLayerIndex)
-        {
-            if (!currentLocation.IsOnNode || !IsValidRouteIndex(routeLayerIndex))
-                return false;
-
-            if (!routes[routeLayerIndex].TryFindNodeCursor(currentLocation.NodeIndex, currentRouteDirection, out int routeNodeCursor, out int routeDirection))
-                return false;
-
-            currentRouteLayerIndex = routeLayerIndex;
-            currentRouteNodeCursor = routeNodeCursor;
-            currentRouteDirection = routeDirection;
-            return true;
-        }
-
-        private MovingPlatformPose EvaluateCurrentPose(in MovingPlatformBasePose basePose, Vector3 fallbackWorldPosition)
-        {
-            Vector3 worldPosition;
-            if (activeSegment.IsActive)
-            {
-                float normalizedTime = activeSegment.Duration > 0.0f
-                    ? Mathf.Clamp01(activeSegment.Elapsed / activeSegment.Duration)
-                    : 1.0f;
-                worldPosition = Vector3.Lerp(
-                    activeSegment.StartWorldPosition,
-                    activeSegment.EndWorldPosition,
-                    Ease(activeSegment.EasingMode, normalizedTime));
-            }
-            else if (hasCurrentLocation && currentLocation.IsValid)
-            {
-                worldPosition = currentLocation.WorldPosition;
-            }
-            else
-            {
-                worldPosition = fallbackWorldPosition;
-            }
-
-            return new MovingPlatformPose(worldPosition, basePose.Rotation, basePose.LocalScale);
-        }
-
-        private MovingPlatformRailLocation GetCurrentLocationFromState(in MovingPlatformBasePose basePose, Vector3 fallbackWorldPosition)
-        {
-            if (activeSegment.IsActive)
-            {
-                float normalizedTime = activeSegment.Duration > 0.0f
-                    ? Mathf.Clamp01(activeSegment.Elapsed / activeSegment.Duration)
-                    : 1.0f;
-                Vector3 worldPosition = Vector3.Lerp(
-                    activeSegment.StartWorldPosition,
-                    activeSegment.EndWorldPosition,
-                    Ease(activeSegment.EasingMode, normalizedTime));
-
-                if (!graph.TryFindNearestLocation(basePose, worldPosition, out MovingPlatformRailLocation segmentLocation))
-                    return default;
-
-                return segmentLocation;
-            }
-
-            if (hasCurrentLocation && currentLocation.IsValid)
-                return currentLocation;
-
-            return graph != null && graph.TryFindNearestLocation(basePose, fallbackWorldPosition, out MovingPlatformRailLocation nearestLocation)
-                ? nearestLocation
-                : default;
-        }
-
-        private void EnsureCurrentLocation(in MovingPlatformBasePose basePose, Vector3 currentWorldPosition)
-        {
-            if (activeSegment.IsActive || (hasCurrentLocation && currentLocation.IsValid) || graph == null)
-                return;
-
-            hasCurrentLocation = graph.TryFindNearestLocation(basePose, currentWorldPosition, out currentLocation);
+            return new MovingPlatformPose(position, rotation, scale);
         }
 
         private void StartSegment(
-            Vector3 startWorldPosition,
-            Vector3 endWorldPosition,
-            float duration,
-            MovingPlatformEasingMode easingMode,
-            int endNodeIndex,
-            bool isRouteSegment = false,
-            int routeLayerIndex = -1,
-            int routeSegmentIndex = -1)
+            in MovingPlatformRailLayerRoute.ResolvedSegment segment,
+            in MovingPlatformPose currentPose,
+            int routeLayerIndex)
         {
+            MovingPlatformPose endPose = ResolveEndPose(segment, currentPose);
+            bool waitSignal = segment.Kind == MovingPlatformRailLayerRoute.ResolvedStepKind.WaitSignal;
+
             activeSegment = new RailSegmentState
             {
                 IsActive = true,
-                IsRouteSegment = isRouteSegment,
-                StartWorldPosition = startWorldPosition,
-                EndWorldPosition = endWorldPosition,
-                Duration = Mathf.Max(0.0001f, duration),
+                Kind = segment.Kind,
+                StartPose = currentPose,
+                EndPose = endPose,
+                Duration = waitSignal ? 0.01f : Mathf.Max(0.0001f, segment.Duration),
                 Elapsed = 0f,
-                EasingMode = easingMode,
-                EndNodeIndex = endNodeIndex,
+                EasingMode = segment.EasingMode,
+                WaitSignalId = segment.WaitSignalId,
+                WaitSignalTriggered = !waitSignal,
                 RouteLayerIndex = routeLayerIndex,
-                RouteSegmentIndex = routeSegmentIndex,
+                RouteSegmentIndex = segment.SegmentIndex,
             };
 
-            if (isRouteSegment && routeLayerIndex >= 0 && routeSegmentIndex >= 0)
+            if (routeLayerIndex >= 0 && segment.SegmentIndex >= 0)
             {
                 pendingTransitionEvents.Add(new MovingPlatformRailTransitionEvent(
                     routeLayerIndex,
-                    routeSegmentIndex,
+                    segment.SegmentIndex,
                     MovingPlatformRailTransitionEventKind.SegmentEnter));
             }
 
             segmentPaused = false;
         }
 
-        private void CompleteActiveSegment(in MovingPlatformBasePose basePose)
+        private MovingPlatformPose ResolveEndPose(in MovingPlatformRailLayerRoute.ResolvedSegment segment, in MovingPlatformPose currentPose)
+        {
+            switch (segment.Kind)
+            {
+                case MovingPlatformRailLayerRoute.ResolvedStepKind.Move:
+                {
+                    MovingPlatformBasePose poseBase = hasRailReferencePose
+                        ? railReferencePose
+                        : new MovingPlatformBasePose(currentPose.Position, currentPose.Rotation, currentPose.LocalScale);
+                    Vector3 targetPosition = graph.GetWorldPosition(poseBase, segment.ToNodeIndex);
+                    return new MovingPlatformPose(targetPosition, currentPose.Rotation, currentPose.LocalScale);
+                }
+
+                case MovingPlatformRailLayerRoute.ResolvedStepKind.Rotate:
+                {
+                    Quaternion targetRotation = currentPose.Rotation * Quaternion.Euler(segment.RotationEulerDelta);
+                    if (!segment.UsePivotOffset)
+                        return new MovingPlatformPose(currentPose.Position, targetRotation, currentPose.LocalScale);
+
+                    Vector3 pivotOffsetLocal = ResolveReactiveVector3(segment.PivotLocalOffset);
+                    Vector3 pivotWorld = currentPose.Position + currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
+                    Vector3 rotatedPivotVector = targetRotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
+                    Vector3 targetPosition = pivotWorld - rotatedPivotVector;
+                    return new MovingPlatformPose(targetPosition, targetRotation, currentPose.LocalScale);
+                }
+
+                case MovingPlatformRailLayerRoute.ResolvedStepKind.Scale:
+                {
+                    Vector3 targetScale = segment.ScaleMode == MovingPlatformScaleMode.Multiply
+                        ? Vector3.Scale(currentPose.LocalScale, segment.ScaleTarget)
+                        : segment.ScaleTarget;
+
+                    if (!segment.UsePivotOffset)
+                        return new MovingPlatformPose(currentPose.Position, currentPose.Rotation, targetScale);
+
+                    Vector3 pivotOffsetLocal = ResolveReactiveVector3(segment.PivotLocalOffset);
+                    Vector3 pivotWorld = currentPose.Position + currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
+                    Vector3 scaledPivotVector = currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, targetScale);
+                    Vector3 targetPosition = pivotWorld - scaledPivotVector;
+                    return new MovingPlatformPose(targetPosition, currentPose.Rotation, targetScale);
+                }
+
+                default:
+                    return currentPose;
+            }
+        }
+
+        private static Vector3 ResolveReactiveVector3(ReactiveVector3 reactiveVector)
+        {
+            if (reactiveVector.SourceKind == ReactiveVector3SourceKind.Literal)
+                return reactiveVector.Literal;
+
+            return reactiveVector.FallbackValue;
+        }
+
+        private void CompleteActiveSegment()
         {
             if (!activeSegment.IsActive)
                 return;
 
-            int endNodeIndex = activeSegment.EndNodeIndex;
-            bool shouldEmitExit = activeSegment.IsRouteSegment && activeSegment.RouteLayerIndex >= 0 && activeSegment.RouteSegmentIndex >= 0;
+            bool shouldEmitExit = activeSegment.RouteLayerIndex >= 0 && activeSegment.RouteSegmentIndex >= 0;
             int routeLayerIndex = activeSegment.RouteLayerIndex;
             int routeSegmentIndex = activeSegment.RouteSegmentIndex;
             activeSegment = default;
@@ -1254,9 +1338,6 @@ namespace BC.Gimmick.MovingPlatform
                     routeSegmentIndex,
                     MovingPlatformRailTransitionEventKind.SegmentExit));
             }
-
-            currentLocation = MovingPlatformRailLocation.AtNode(endNodeIndex, graph.GetWorldPosition(basePose, endNodeIndex));
-            hasCurrentLocation = true;
         }
 
         private void AbortActiveSegment(bool emitExit)
@@ -1264,7 +1345,7 @@ namespace BC.Gimmick.MovingPlatform
             if (!activeSegment.IsActive)
                 return;
 
-            if (emitExit && activeSegment.IsRouteSegment && activeSegment.RouteLayerIndex >= 0 && activeSegment.RouteSegmentIndex >= 0)
+            if (emitExit && activeSegment.RouteLayerIndex >= 0 && activeSegment.RouteSegmentIndex >= 0)
             {
                 pendingTransitionEvents.Add(new MovingPlatformRailTransitionEvent(
                     activeSegment.RouteLayerIndex,
@@ -1274,13 +1355,6 @@ namespace BC.Gimmick.MovingPlatform
 
             activeSegment = default;
             segmentPaused = false;
-        }
-
-        private void ClearTransfer()
-        {
-            transferPathNodes.Clear();
-            transferTargetLayerIndex = -1;
-            transferPathCursor = 0;
         }
 
         private bool IsValidRouteIndex(int routeLayerIndex)

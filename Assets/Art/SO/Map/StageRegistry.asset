@@ -22,4 +22,4 @@ MonoBehaviour:
     stageDescription: 
     stageDifficulty: 0
     clearTimeThreshold: 6
-    stagePrefab: {fileID: 2650056577534689671, guid: b04adfd443287f54daee122c974b5e03, type: 3}
+    stagePrefab: {fileID: 2650056577534689671, guid: e97e7e98249d8774095aa548b72fdc46, type: 3}

@@ -16,7 +16,11 @@ namespace BC.UI
         [SerializeField] private UITalkChoiceItemMB choiceItemPrefab;
         [SerializeField] private InputActionReference moveSelectionInputAction;
         [SerializeField] private InputActionReference submitChoiceInputAction;
+        [SerializeField, Min(1f)] private float itemMinHeight = 52f;
         [SerializeField, Min(0f)] private float itemSpacing = 10f;
+        [SerializeField, Range(0.1f, 1.0f)] private float unselectedBackgroundAlphaMultiplier = 0.55f;
+        [SerializeField] private Color selectedOutlineColor = new(1f, 0.95f, 0.35f, 1f);
+        [SerializeField] private Vector2 selectedOutlineDistance = new(2f, -2f);
         [SerializeField, Range(0.1f, 1f)] private float navigationDeadZone = 0.5f;
 
         private readonly List<UITalkChoiceItemMB> activeItems = new();
@@ -24,6 +28,7 @@ namespace BC.UI
         private ContentSizeFitter contentSizeFitter;
         private UITalkChoiceItemMB runtimeChoiceTemplate;
         private bool navigationHeld;
+        private int clickedItemIndex = -1;
 
         private RectTransform ChoiceRoot => choiceRoot != null ? choiceRoot : transform as RectTransform;
 
@@ -78,6 +83,7 @@ namespace BC.UI
             if (activeItems.Count == 0)
                 return TalkChoiceSelectionResult.None;
 
+            clickedItemIndex = -1;
             UpdateSelectionVisuals(selectedIndex);
 
             try
@@ -93,6 +99,15 @@ namespace BC.UI
                     {
                         selectedIndex = MoveSelection(selectedIndex, navigationStep, requestData.WrapSelection);
                         UpdateSelectionVisuals(selectedIndex);
+                    }
+
+                    if (clickedItemIndex >= 0)
+                    {
+                        selectedIndex = Mathf.Clamp(clickedItemIndex, 0, activeItems.Count - 1);
+                        UpdateSelectionVisuals(selectedIndex);
+
+                        TalkChoiceOptionRequestData clickedOption = requestData.Options[selectedIndex];
+                        return new TalkChoiceSelectionResult(selectedIndex, clickedOption.DisplayText ?? string.Empty);
                     }
 
                     if (WasSubmitPressed(fallbackSubmitAction))
@@ -122,6 +137,7 @@ namespace BC.UI
 
             activeItems.Clear();
             navigationHeld = false;
+            clickedItemIndex = -1;
         }
 
         private void EnsureStructure()
@@ -163,6 +179,13 @@ namespace BC.UI
                 UITalkChoiceItemMB item = Instantiate(template, ChoiceRoot, false);
                 item.gameObject.name = $"TalkChoiceItem_{i}";
                 item.gameObject.SetActive(true);
+                item.Initialize(
+                    i,
+                    itemMinHeight,
+                    unselectedBackgroundAlphaMultiplier,
+                    selectedOutlineColor,
+                    selectedOutlineDistance,
+                    HandleItemClicked);
                 item.Apply(options[i].DisplayText);
                 activeItems.Add(item);
             }
@@ -195,9 +218,23 @@ namespace BC.UI
                 runtimeChoiceTemplate = templateObject.GetComponent<UITalkChoiceItemMB>();
             }
 
-            runtimeChoiceTemplate.ConfigureRuntimeTemplate();
+            runtimeChoiceTemplate.Initialize(
+                -1,
+                itemMinHeight,
+                unselectedBackgroundAlphaMultiplier,
+                selectedOutlineColor,
+                selectedOutlineDistance,
+                null);
             runtimeChoiceTemplate.gameObject.SetActive(false);
             return runtimeChoiceTemplate;
+        }
+
+        private void HandleItemClicked(int index)
+        {
+            if (index < 0 || index >= activeItems.Count)
+                return;
+
+            clickedItemIndex = index;
         }
 
         private int MoveSelection(int currentIndex, int navigationStep, bool wrapSelection)

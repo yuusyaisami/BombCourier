@@ -5,10 +5,11 @@ using System.Text.RegularExpressions;
 using BC.ActionSystem;
 using BC.Animation;
 using BC.Base;
+using BC.Managers;
 using UnityEditor;
 using UnityEngine;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     internal static class ActionStepSummaryUtility
     {
@@ -125,22 +126,52 @@ namespace BC.Editor.Action
             if (requestProperty == null)
                 return "Empty talk";
 
+            string talkState = BuildTalkStateSummary(requestProperty.FindPropertyRelative("talkStateId"));
             string speaker = Normalize(requestProperty.FindPropertyRelative("speakerName")?.stringValue);
             string text = BuildTextSnippet(requestProperty.FindPropertyRelative("dialogueText")?.stringValue, "Empty talk");
+            string bodySummary = text;
 
             if (!string.IsNullOrWhiteSpace(speaker) && text != "Empty talk")
-                return $"{speaker}: {text}";
+                bodySummary = $"{speaker}: {text}";
+            else if (!string.IsNullOrWhiteSpace(speaker))
+                bodySummary = speaker;
 
-            if (!string.IsNullOrWhiteSpace(speaker))
-                return speaker;
+            if (string.IsNullOrWhiteSpace(talkState))
+                return bodySummary;
 
-            return text;
+            return bodySummary == "Empty talk"
+                ? talkState
+                : $"{talkState} | {bodySummary}";
         }
 
         private static string BuildHideTalkSummary(SerializedProperty stepProperty)
         {
-            float duration = stepProperty.FindPropertyRelative("duration")?.floatValue ?? 0f;
-            return Mathf.Approximately(duration, 0f) ? "Instant" : FormatDuration(duration);
+            SerializedProperty requestProperty = stepProperty.FindPropertyRelative("requestData");
+            float duration = requestProperty?.FindPropertyRelative("duration")?.floatValue ?? 0f;
+            string durationSummary = Mathf.Approximately(duration, 0f) ? "Instant" : FormatDuration(duration);
+
+            if (requestProperty?.FindPropertyRelative("applyTalkStateOverride")?.boolValue != true)
+                return $"{durationSummary}, restore idle";
+
+            string talkState = BuildTalkStateSummary(requestProperty.FindPropertyRelative("talkStateId"));
+            return string.IsNullOrWhiteSpace(talkState)
+                ? $"{durationSummary}, restore idle"
+                : $"{durationSummary}, {talkState}";
+        }
+
+        private static string BuildTalkStateSummary(SerializedProperty talkStateProperty)
+        {
+            if (talkStateProperty == null || talkStateProperty.propertyType != SerializedPropertyType.Enum)
+                return string.Empty;
+
+            int enumIndex = talkStateProperty.enumValueIndex;
+            string[] displayNames = talkStateProperty.enumDisplayNames;
+
+            if (displayNames == null || enumIndex < 0 || enumIndex >= displayNames.Length)
+                return string.Empty;
+
+            string label = Normalize(displayNames[enumIndex]);
+            return string.Equals(label, nameof(TalkStateId.None), StringComparison.OrdinalIgnoreCase) ? string.Empty : label;
         }
 
         private static string BuildShowTalkChoiceSummary(SerializedProperty stepProperty)
@@ -188,6 +219,7 @@ namespace BC.Editor.Action
                 ValueStoreWriteValueKind.EntityRef => BuildReactiveEntitySummary(writeProperty.FindPropertyRelative("entityValue")),
                 ValueStoreWriteValueKind.FaceExpressionId => BuildReactiveEnumSummary(writeProperty.FindPropertyRelative("faceExpressionValue")),
                 ValueStoreWriteValueKind.EntityMoveState => BuildReactiveEnumSummary(writeProperty.FindPropertyRelative("entityMoveStateValue")),
+                ValueStoreWriteValueKind.ShapeExpressionId => BuildReactiveEnumSummary(writeProperty.FindPropertyRelative("shapeExpressionValue")),
                 _ => "Unconfigured",
             };
 
@@ -206,19 +238,17 @@ namespace BC.Editor.Action
 
         private static string BuildSetSceneCameraSummary(SerializedProperty stepProperty)
         {
-            string channel = Normalize(stepProperty.FindPropertyRelative("channel")?.stringValue);
             string cameraName = stepProperty.FindPropertyRelative("camera")?.objectReferenceValue?.name;
 
             if (string.IsNullOrWhiteSpace(cameraName))
                 return "No camera";
 
-            return IsDefaultActionCameraChannel(channel) ? cameraName : $"{channel}: {cameraName}";
+            return cameraName;
         }
 
         private static string BuildClearSceneCameraSummary(SerializedProperty stepProperty)
         {
-            string channel = Normalize(stepProperty.FindPropertyRelative("channel")?.stringValue);
-            return string.IsNullOrWhiteSpace(channel) ? "ActionCamera" : channel;
+            return "Clear action camera";
         }
 
         private static string BuildSetEntityFacingTargetSummary(SerializedProperty stepProperty)
@@ -532,11 +562,6 @@ namespace BC.Editor.Action
         private static bool IsDefaultActionFacingChannel(string channel)
         {
             return string.IsNullOrWhiteSpace(channel) || string.Equals(channel, EntityFacingChannels.Action, StringComparison.Ordinal);
-        }
-
-        private static bool IsDefaultActionCameraChannel(string channel)
-        {
-            return string.IsNullOrWhiteSpace(channel) || string.Equals(channel, "ActionCamera", StringComparison.Ordinal);
         }
 
         private static string FormatCount(int count, string singular)

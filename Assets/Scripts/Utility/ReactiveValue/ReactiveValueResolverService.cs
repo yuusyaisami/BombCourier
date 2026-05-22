@@ -123,6 +123,17 @@ namespace BC.Base
             };
         }
 
+        public ReactiveResult<ShapeExpressionId> ResolveShapeExpressionId(in ReactiveEvalContext context, in ReactiveShapeExpressionId value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveShapeExpressionIdSourceKind.Literal => ReactiveResult<ShapeExpressionId>.Ok(value.Literal),
+                ReactiveShapeExpressionIdSourceKind.EntityValueStore => ResolveEntityStoreValue<ShapeExpressionId>(context, value.EntityValue),
+                ReactiveShapeExpressionIdSourceKind.LocalValueStore => ResolveLocalStoreValue<ShapeExpressionId>(context, value.LocalValue),
+                _ => FailUnsupportedSource<ShapeExpressionId>(nameof(ReactiveShapeExpressionId), value.SourceKind.ToString(), context),
+            };
+        }
+
         public ReactiveResult<EntityMoveState> ResolveEntityMoveState(in ReactiveEvalContext context, in ReactiveEntityMoveState value)
         {
             return value.SourceKind switch
@@ -191,6 +202,16 @@ namespace BC.Base
                 ReactiveFaceExpressionIdSourceKind.EntityValueStore => ResolveEntityStoreHandle<FaceExpressionId>(context, value.EntityValue),
                 ReactiveFaceExpressionIdSourceKind.LocalValueStore => ResolveLocalStoreHandle<FaceExpressionId>(context, value.LocalValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<FaceExpressionId>>(nameof(ReactiveFaceExpressionId), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
+        internal ReactiveResult<ValueWatchHandle<ShapeExpressionId>> ResolveShapeExpressionIdWatch(in ReactiveEvalContext context, in ReactiveShapeExpressionId value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveShapeExpressionIdSourceKind.EntityValueStore => ResolveEntityStoreHandle<ShapeExpressionId>(context, value.EntityValue),
+                ReactiveShapeExpressionIdSourceKind.LocalValueStore => ResolveLocalStoreHandle<ShapeExpressionId>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<ShapeExpressionId>>(nameof(ReactiveShapeExpressionId), ReactiveEvaluationMode.Watched, context),
             };
         }
 

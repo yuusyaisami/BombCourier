@@ -3,17 +3,21 @@ namespace BC.Base
     using BC.ActionSystem;
     using BC.Camera;
 
+    // シーン単位のサービス集約点。
+    // Entity ではなく Scene 全体で共有する機能をここに載せ、GameLogic からは kernel 経由で参照する。
     public sealed class SceneKernel : BaseKernel
     {
+        // stage 上の Entity を引くための登録テーブル。
         public ScopedEntityRegistry EntitiesRegistry { get; set; }
 
-        // KernelEventsはScene全体通知、EntityEventsはEntity単位通知として使い分ける。
+        // Scene 全体通知と Entity 単位通知を分けて扱う。
         public EventService Events { get; set; }
         public EntityLifecycleService EntityLifecycle { get; set; }
 
-        // EntityValueStoreはEntityRefごとの状態、KernelValueStoreはScene全体の共有状態を扱う。
+        // EntityValueStore は個別 Entity の状態、KernelValueStore は Scene 全体の共有状態を扱う。
         public ValueStoreService EntityValueStore { get; set; }
         public KernelValueStoreService KernelValueStore { get; set; }
+        // scene 内の生成・解決・反応値・action・camera をまとめて持つ。
         public EntitySpawnerService Spawner { get; set; }
         public EntityComponentResolverService EntityComponents { get; set; }
         public ReactiveValueResolverService ReactiveValues { get; set; }
@@ -21,7 +25,7 @@ namespace BC.Base
         public CameraPathPlayerService CameraPaths { get; set; }
         public SceneCameraService Cameras { get; set; }
 
-        // 既存コード互換用。新規コードでは EntityValueStore / KernelValueStore を明示して使う。
+        // 旧コード互換の alias。新規コードでは EntityValueStore / KernelValueStore を直接使う。
         public ValueStoreService ValueStore
         {
             get => EntityValueStore;
@@ -30,12 +34,11 @@ namespace BC.Base
 
         public IKernelEventBus KernelEvents => Events;
 
-        // 旧名互換。新規コードでは KernelEvents を使う。
-        public IGameEventBus GameEvents => Events;
         public IEntityEventService EntityEvents => Events;
 
         public SceneKernel()
         {
+            // kernel は各 service の組み立て役で、ゲームループの Tick もここから流す。
             EntityComponents = new EntityComponentResolverService(this);
             ReactiveValues = new ReactiveValueResolverService(this);
             Actions = new ActionService(this);
@@ -49,7 +52,7 @@ namespace BC.Base
             };
         }
 
-
+        // シーン終了時や再ロード時に、kernel が保持する service を順に解放する。
         public void Dispose()
         {
             Actions?.Clear();

@@ -127,6 +127,7 @@ namespace BC.Editor
                 ValueStoreWriteValueKind.EntityRef => "entityValue",
                 ValueStoreWriteValueKind.FaceExpressionId => "faceExpressionValue",
                 ValueStoreWriteValueKind.EntityMoveState => "entityMoveStateValue",
+                ValueStoreWriteValueKind.ShapeExpressionId => "shapeExpressionValue",
                 _ => null,
             };
 

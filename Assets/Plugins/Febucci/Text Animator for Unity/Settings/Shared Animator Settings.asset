@@ -18,7 +18,7 @@ MonoBehaviour:
     timeScale: 0
     defaultBehaviorTags: []
     defaultAppearanceTags:
-    - incr
+    - Wave
     defaultDisappearanceTags: []
     isAnimatingBehaviors: 1
     isAnimatingAppearances: 1

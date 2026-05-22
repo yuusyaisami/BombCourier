@@ -60,6 +60,13 @@ namespace BC.Base
         LocalValueStore = 2,
     }
 
+    public enum ReactiveShapeExpressionIdSourceKind
+    {
+        Literal = 0,
+        EntityValueStore = 1,
+        LocalValueStore = 2,
+    }
+
     public enum ReactiveEntityMoveStateSourceKind
     {
         Literal = 0,
@@ -796,6 +803,65 @@ namespace BC.Base
             return new ReactiveFaceExpressionId
             {
                 sourceKind = ReactiveFaceExpressionIdSourceKind.LocalValueStore,
+                evaluationMode = evaluationMode,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                localValue = ReactiveLocalValueSource.Create(key),
+            };
+        }
+    }
+
+    [Serializable]
+    public struct ReactiveShapeExpressionId
+    {
+        [SerializeField] private ReactiveShapeExpressionIdSourceKind sourceKind;
+        [SerializeField] private ReactiveEvaluationMode evaluationMode;
+        [SerializeField] private ReactiveFailurePolicy failurePolicy;
+        [SerializeField] private ShapeExpressionId literal;
+        [SerializeField] private ReactiveEntityValueSource entityValue;
+        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ShapeExpressionId fallbackValue;
+
+        public ReactiveShapeExpressionIdSourceKind SourceKind => sourceKind;
+        public ReactiveEvaluationMode EvaluationMode => evaluationMode;
+        public ReactiveFailurePolicy FailurePolicy => failurePolicy;
+        public ShapeExpressionId Literal => literal;
+        public ReactiveEntityValueSource EntityValue => entityValue;
+        public ReactiveLocalValueSource LocalValue => localValue;
+        public ShapeExpressionId FallbackValue => fallbackValue;
+
+        public static ReactiveShapeExpressionId LiteralValue(ShapeExpressionId value, ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
+        {
+            return new ReactiveShapeExpressionId
+            {
+                sourceKind = ReactiveShapeExpressionIdSourceKind.Literal,
+                evaluationMode = evaluationMode,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                literal = value,
+                fallbackValue = value,
+            };
+        }
+
+        public static ReactiveShapeExpressionId EntityValueStore(
+            ReactiveEntityRef entity,
+            ValueKeyReference key,
+            ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
+        {
+            return new ReactiveShapeExpressionId
+            {
+                sourceKind = ReactiveShapeExpressionIdSourceKind.EntityValueStore,
+                evaluationMode = evaluationMode,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                entityValue = ReactiveEntityValueSource.Create(entity, key),
+            };
+        }
+
+        public static ReactiveShapeExpressionId LocalValueStore(
+            ValueKeyReference key,
+            ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
+        {
+            return new ReactiveShapeExpressionId
+            {
+                sourceKind = ReactiveShapeExpressionIdSourceKind.LocalValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
                 localValue = ReactiveLocalValueSource.Create(key),

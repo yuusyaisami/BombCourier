@@ -12,6 +12,16 @@ namespace BC.Base
         Falling = 7,
         Running = 8
     }
+
+    public enum ShapeExpressionId
+    {
+        Neutral = 10,
+        Happy = 20,
+        Open = 30,
+        Close = 40,
+        Talk = 50,
+    }
+
     public static class ValueKeys
     {
         public static class Health
@@ -253,6 +263,22 @@ namespace BC.Base
                     true,
                     ValueCompositionMode.BoolAnd
                 );
+
+            public static readonly ValueKey<bool> IsTalking =
+                new ValueKey<bool>(
+                    new ValueKeyId(8018),
+                    "Runtime.IsTalking",
+                    false,
+                    ValueCompositionMode.BoolOr
+                );
+
+            public static readonly ValueKey<ShapeExpressionId> ShapeExpression =
+                new ValueKey<ShapeExpressionId>(
+                    new ValueKeyId(8019),
+                    "Runtime.ShapeExpression",
+                    ShapeExpressionId.Neutral,
+                    ValueCompositionMode.Raw
+                );
         }
 
         public static class Identity
@@ -463,6 +489,14 @@ namespace BC.Base
                         new ValueKeyId(12014),
                         "Local.Values.MoveState0",
                         EntityMoveState.Idle,
+                        ValueCompositionMode.Raw
+                    );
+
+                public static readonly ValueKey<ShapeExpressionId> ShapeExpression0 =
+                    new ValueKey<ShapeExpressionId>(
+                        new ValueKeyId(12015),
+                        "Local.Values.ShapeExpression0",
+                        ShapeExpressionId.Neutral,
                         ValueCompositionMode.Raw
                     );
             }

@@ -7,6 +7,8 @@ namespace BC.Camera
     {
         Quaternion GetYawRotation();
         Quaternion GetPitchRotation();
+        float GetYawAngle();
+        float GetPitchAngle();
     }
     public sealed class ThirdPersonCameraController : MonoBehaviour, ICameraController
     {
@@ -116,6 +118,11 @@ namespace BC.Camera
             return Quaternion.Euler(0f, yaw, 0f);
         }
 
+        public float GetYawAngle()
+        {
+            return yaw;
+        }
+
         private static float NormalizeAngle(float angle)
         {
             angle %= 360f;
@@ -129,6 +136,31 @@ namespace BC.Camera
         public Quaternion GetPitchRotation()
         {
             return Quaternion.Euler(pitch, 0f, 0f);
+        }
+
+        public float GetPitchAngle()
+        {
+            return pitch;
+        }
+
+        // 会話 camera など別 rig が同じ look state を使うときの明示同期入口です。
+        // yaw/pitch の正規化と pitch clamp をここに閉じ込め、外側が独自実装を持たないようにします。
+        public void SetLookAngles(float nextYaw, float nextPitch)
+        {
+            yaw = NormalizeAngle(nextYaw);
+            pitch = Mathf.Clamp(nextPitch, minPitch, maxPitch);
+            ApplyCameraOrientation();
+        }
+
+        public void SyncYawToWorldForward(Vector3 worldForward)
+        {
+            worldForward.y = 0f;
+
+            if (worldForward.sqrMagnitude <= 0.0001f)
+                return;
+
+            float targetYaw = Mathf.Atan2(worldForward.x, worldForward.z) * Mathf.Rad2Deg;
+            SetLookAngles(targetYaw, pitch);
         }
 
         private void ApplyCameraOrientation()

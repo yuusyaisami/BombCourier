@@ -8,27 +8,13 @@ namespace BC.ActionSystem
     [Serializable]
     public sealed class ClearSceneCameraStepRuntime : IActionNodeDefinition
     {
-        private readonly string channel;
-
-        public ClearSceneCameraStepRuntime(string channel)
-        {
-            this.channel = string.IsNullOrWhiteSpace(channel) ? "ActionCamera" : channel;
-        }
-
         public IActionNodeRuntime CreateRuntime()
         {
-            return new Runtime(channel);
+            return new Runtime();
         }
 
         private sealed class Runtime : IActionNodeRuntime
         {
-            private readonly string channel;
-
-            public Runtime(string channel)
-            {
-                this.channel = string.IsNullOrWhiteSpace(channel) ? "ActionCamera" : channel;
-            }
-
             public ActionNodeStatus Tick(in ActionExecutionContext context, ref int remainingOperations)
             {
                 if (context.SceneKernel?.Cameras == null)
@@ -37,7 +23,7 @@ namespace BC.ActionSystem
                     return ActionNodeStatus.Failed;
                 }
 
-                context.SceneKernel.Cameras.ClearActionCameraRequest(channel);
+                context.SceneKernel.Cameras.ClearActionCamera(context.ExecutionHandle);
                 return ActionNodeStatus.Continue;
             }
         }

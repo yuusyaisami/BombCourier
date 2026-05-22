@@ -42,21 +42,33 @@ float ESL_ComputeWrappedLight(float ndotl, float wrapLighting)
 float ESL_ComputeSteppedLight(float value, float stepCount, float smoothness)
 {
 	value = saturate(value);
-	stepCount = max(stepCount, 1.0);
+	float bands = max(round(stepCount), 1.0);
 
-	float scaled = value * stepCount;
-	float lower = floor(scaled) / stepCount;
-	float upper = ceil(scaled) / stepCount;
-	float fractional = frac(scaled);
+	if (bands <= 1.0)
+	{
+		return value;
+	}
+
+	float scaled = value * bands;
+	float lowerIndex = min(floor(scaled), bands - 1.0);
+	float upperIndex = min(lowerIndex + 1.0, bands - 1.0);
+	float lower = lowerIndex / (bands - 1.0);
+
+	if (lowerIndex >= bands - 1.0)
+	{
+		return 1.0;
+	}
 
 	if (smoothness <= 1e-4)
 	{
-		return saturate(lerp(lower, upper, step(0.5, fractional)));
+		return saturate(lower);
 	}
 
-	float smoothedStep = smoothstep(0.5 - smoothness, 0.5 + smoothness, frac(scaled));
-
-	return saturate(lerp(lower, upper, smoothedStep));
+	float upper = upperIndex / (bands - 1.0);
+	float fractional = frac(scaled);
+	float edgeStart = 1.0 - saturate(smoothness);
+	float transition = smoothstep(edgeStart, 1.0, fractional);
+	return saturate(lerp(lower, upper, transition));
 }
 
 float3 ESL_TransformNormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS)

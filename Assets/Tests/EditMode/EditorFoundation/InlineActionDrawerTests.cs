@@ -17,7 +17,7 @@ namespace BC.Editor.Tests
         public void SetUp()
         {
             CloseInlineActionWindows();
-            Type hostType = GetTypeByFullName("BC.Editor.Action.InlineActionDrawerTestHost");
+            Type hostType = GetTypeByFullName("BC.Editor.ActionSystem.InlineActionDrawerTestHost");
             host = ScriptableObject.CreateInstance(hostType);
             serializedObject = new SerializedObject(host);
             ClearWindowLaunchRequest();
@@ -34,13 +34,13 @@ namespace BC.Editor.Tests
         }
 
         [Test]
-        public void InlineActionDrawer_GetPropertyHeight_ForEmptyAction_IncludesLabelListAndFooter()
+        public void InlineActionDrawer_GetPropertyHeight_ForEmptyAction_IncludesLabelAndList()
         {
-            PropertyDrawer drawer = CreateDrawer("BC.Editor.Action.InlineActionDrawer");
+            PropertyDrawer drawer = CreateDrawer("BC.Editor.ActionSystem.InlineActionDrawer");
             SerializedProperty property = serializedObject.FindProperty("inlineAction");
             float lineHeight = EditorGUIUtility.singleLineHeight;
             float spacing = EditorGUIUtility.standardVerticalSpacing;
-            float expectedHeight = (lineHeight * 3f) + (spacing * 2f);
+            float expectedHeight = (lineHeight * 2f) + spacing;
 
             Assert.That(drawer.GetPropertyHeight(property, new GUIContent("Action")), Is.EqualTo(expectedHeight).Within(0.001f));
         }
@@ -75,11 +75,21 @@ namespace BC.Editor.Tests
             Assert.AreEqual("if True | T:1 F:1", GetSummary(ifStep));
 
             SerializedProperty talkStep = AddStep("BC.ActionSystem.ShowTalkStepAuthoring");
+            talkStep.FindPropertyRelative("talkRequestData").FindPropertyRelative("talkStateId").enumValueIndex = 4;
             talkStep.FindPropertyRelative("talkRequestData").FindPropertyRelative("speakerName").stringValue = "Guide";
             talkStep.FindPropertyRelative("talkRequestData").FindPropertyRelative("dialogueText").stringValue = "Line 1\nLine 2";
             ApplyChanges();
 
-            Assert.AreEqual("Guide: Line 1 Line 2", GetSummary(talkStep));
+            Assert.AreEqual("Happy | Guide: Line 1 Line 2", GetSummary(talkStep));
+
+            SerializedProperty hideTalkStep = AddStep("BC.ActionSystem.HideTalkStepAuthoring");
+            SerializedProperty hideRequestProperty = hideTalkStep.FindPropertyRelative("requestData");
+            hideRequestProperty.FindPropertyRelative("duration").floatValue = 0.2f;
+            hideRequestProperty.FindPropertyRelative("applyTalkStateOverride").boolValue = true;
+            hideRequestProperty.FindPropertyRelative("talkStateId").enumValueIndex = 3;
+            ApplyChanges();
+
+            Assert.AreEqual("0.2s, Surprised", GetSummary(hideTalkStep));
 
             SerializedProperty choiceStep = AddStep("BC.ActionSystem.ShowTalkChoiceStepAuthoring");
             SerializedProperty optionsProperty = choiceStep.FindPropertyRelative("options");
@@ -113,7 +123,7 @@ namespace BC.Editor.Tests
         public void InlineActionEditorState_CommitsAndCancelsRenameState()
         {
             SerializedProperty stepProperty = AddStep("BC.ActionSystem.WaitFramesStepAuthoring");
-            Type stateType = GetTypeByFullName("BC.Editor.Action.InlineActionEditorState");
+            Type stateType = GetTypeByFullName("BC.Editor.ActionSystem.InlineActionEditorState");
 
             InvokeDeclaredMethod(stateType, null, "BeginRename", stepProperty);
             Assert.IsTrue((bool)InvokeDeclaredMethod(stateType, null, "IsRenameActive", stepProperty));
@@ -146,7 +156,7 @@ namespace BC.Editor.Tests
             ApplyChanges();
 
             SerializedProperty stepsProperty = FindStepsProperty();
-            Type utilityType = GetTypeByFullName("BC.Editor.Action.ActionStepManagedReferenceUtility");
+            Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepManagedReferenceUtility");
             InvokeDeclaredMethod(utilityType, null, "DuplicateStep", serializedObject.targetObjects, stepsProperty.propertyPath, 0);
             serializedObject.Update();
             stepsProperty = FindStepsProperty();
@@ -175,15 +185,30 @@ namespace BC.Editor.Tests
             AddNestedStep(subActionStep.FindPropertyRelative("action"), "BC.ActionSystem.WaitFramesStepAuthoring");
             ApplyChanges();
 
-            PropertyDrawer drawer = CreateDrawer("BC.Editor.Action.InlineActionDrawer");
+            PropertyDrawer drawer = CreateDrawer("BC.Editor.ActionSystem.InlineActionDrawer");
             SerializedProperty property = serializedObject.FindProperty("inlineAction");
             float collapsedHeight = drawer.GetPropertyHeight(property, GUIContent.none);
 
-            Type stateType = GetTypeByFullName("BC.Editor.Action.InlineActionEditorState");
+            Type stateType = GetTypeByFullName("BC.Editor.ActionSystem.InlineActionEditorState");
             InvokeDeclaredMethod(stateType, null, "SetExpanded", subActionStep, true);
             float expandedHeight = drawer.GetPropertyHeight(property, GUIContent.none);
 
             Assert.Greater(expandedHeight, collapsedHeight);
+        }
+
+        [Test]
+        public void InlineActionDrawer_ExpandedShowTalk_AutoExpandsTalkRequestData()
+        {
+            SerializedProperty talkStep = AddStep("BC.ActionSystem.ShowTalkStepAuthoring");
+            SerializedProperty talkRequestData = talkStep.FindPropertyRelative("talkRequestData");
+            talkRequestData.isExpanded = false;
+            ApplyChanges();
+
+            Type drawerType = GetTypeByFullName("BC.Editor.ActionSystem.InlineActionDrawer");
+            InvokeDeclaredMethod(drawerType, null, "GetExpandedDetailHeight", talkStep);
+            serializedObject.Update();
+
+            Assert.IsTrue(talkStep.FindPropertyRelative("talkRequestData").isExpanded);
         }
 
         [Test]
@@ -243,15 +268,15 @@ namespace BC.Editor.Tests
         public void ActionInlineWindowLauncher_StoresPropertyBoundRequest()
         {
             SerializedProperty property = serializedObject.FindProperty("inlineAction");
-            Type launcherType = GetTypeByFullName("BC.Editor.Action.ActionInlineWindowLauncher");
+            Type launcherType = GetTypeByFullName("BC.Editor.ActionSystem.ActionInlineWindowLauncher");
             InvokeDeclaredMethod(launcherType, null, "Launch", property);
 
-            int storedInstanceId = SessionState.GetInt("BC.Editor.Action.ActionInlineWindowLauncher.TargetInstanceId", 0);
+            int storedInstanceId = SessionState.GetInt("BC.Editor.ActionSystem.ActionInlineWindowLauncher.TargetInstanceId", 0);
 #pragma warning disable CS0618
             Assert.AreEqual(host.GetInstanceID(), storedInstanceId);
 #pragma warning restore CS0618
-            Assert.AreEqual("inlineAction", SessionState.GetString("BC.Editor.Action.ActionInlineWindowLauncher.PropertyPath", string.Empty));
-            Assert.That(SessionState.GetString("BC.Editor.Action.ActionInlineWindowLauncher.BindingKey", string.Empty), Does.Contain("inlineAction"));
+            Assert.AreEqual("inlineAction", SessionState.GetString("BC.Editor.ActionSystem.ActionInlineWindowLauncher.PropertyPath", string.Empty));
+            Assert.That(SessionState.GetString("BC.Editor.ActionSystem.ActionInlineWindowLauncher.BindingKey", string.Empty), Does.Contain("inlineAction"));
             Assert.AreEqual(0, GetInlineActionWindowCount());
         }
 
@@ -259,11 +284,11 @@ namespace BC.Editor.Tests
         public void ActionInlineWindowLauncher_LaunchAndOpen_OpensWindow()
         {
             SerializedProperty property = serializedObject.FindProperty("inlineAction");
-            Type launcherType = GetTypeByFullName("BC.Editor.Action.ActionInlineWindowLauncher");
+            Type launcherType = GetTypeByFullName("BC.Editor.ActionSystem.ActionInlineWindowLauncher");
             InvokeDeclaredMethod(launcherType, null, "LaunchAndOpen", property);
 
             Assert.AreEqual(1, GetInlineActionWindowCount());
-            Assert.AreEqual("inlineAction", SessionState.GetString("BC.Editor.Action.ActionInlineWindowLauncher.PropertyPath", string.Empty));
+            Assert.AreEqual("inlineAction", SessionState.GetString("BC.Editor.ActionSystem.ActionInlineWindowLauncher.PropertyPath", string.Empty));
         }
 
         [Test]
@@ -274,7 +299,7 @@ namespace BC.Editor.Tests
             ApplyChanges();
 
             SerializedProperty stepsProperty = FindStepsProperty();
-            Type utilityType = GetTypeByFullName("BC.Editor.Action.ActionStepManagedReferenceUtility");
+            Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepManagedReferenceUtility");
             InvokeDeclaredMethod(utilityType, null, "ClearSteps", serializedObject.targetObjects, stepsProperty.propertyPath);
             serializedObject.Update();
 
@@ -290,13 +315,31 @@ namespace BC.Editor.Tests
             AddNestedStep(branchProperty, "BC.ActionSystem.WaitFramesStepAuthoring");
             ApplyChanges();
 
-            Type utilityType = GetTypeByFullName("BC.Editor.Action.ActionStepManagedReferenceUtility");
+            Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepManagedReferenceUtility");
             InvokeDeclaredMethod(utilityType, null, "ClearInlineAction", serializedObject.targetObjects, branchProperty.propertyPath);
             serializedObject.Update();
 
             SerializedProperty clearedBranchProperty = serializedObject.FindProperty(branchProperty.propertyPath);
             Assert.IsNotNull(clearedBranchProperty, "Expected branch property.");
             Assert.IsNull(clearedBranchProperty.boxedValue);
+        }
+
+        [Test]
+        public void ActionStepManagedReferenceUtility_CopyAndPasteStep_ClonesSelectedStep()
+        {
+            SerializedProperty sourceStep = AddStep("BC.ActionSystem.WaitFramesStepAuthoring");
+            sourceStep.FindPropertyRelative("frames").intValue = 7;
+            ApplyChanges();
+
+            SerializedProperty stepsProperty = FindStepsProperty();
+            Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepManagedReferenceUtility");
+            InvokeDeclaredMethod(utilityType, null, "CopyStep", sourceStep);
+            InvokeDeclaredMethod(utilityType, null, "PasteStep", serializedObject.targetObjects, stepsProperty.propertyPath, 1);
+            serializedObject.Update();
+
+            SerializedProperty pastedStep = FindStepsProperty().GetArrayElementAtIndex(1);
+            Assert.AreEqual(2, FindStepsProperty().arraySize);
+            Assert.AreEqual(7, pastedStep.FindPropertyRelative("frames").intValue);
         }
 
         [Test]
@@ -309,13 +352,13 @@ namespace BC.Editor.Tests
             ApplyChanges();
 
             SerializedProperty rootProperty = serializedObject.FindProperty("inlineAction");
-            Type modelType = GetTypeByFullName("BC.Editor.Action.ActionBlockTreeViewModel");
+            Type modelType = GetTypeByFullName("BC.Editor.ActionSystem.ActionBlockTreeViewModel");
             object model = Activator.CreateInstance(modelType);
             InvokeDeclaredMethod(modelType, model, "Rebuild", rootProperty);
 
             string beforeMoveBranchKey = GetStepBranchKey(model, "Second");
 
-            Type utilityType = GetTypeByFullName("BC.Editor.Action.ActionStepManagedReferenceUtility");
+            Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepManagedReferenceUtility");
             SerializedProperty stepsProperty = FindStepsProperty();
             InvokeDeclaredMethod(utilityType, null, "MoveStep", serializedObject.targetObjects, stepsProperty.propertyPath, 1, 0);
             serializedObject.Update();
@@ -325,6 +368,24 @@ namespace BC.Editor.Tests
             string afterMoveBranchKey = GetStepBranchKey(model, "Second");
 
             Assert.AreEqual(beforeMoveBranchKey, afterMoveBranchKey);
+        }
+
+        [Test]
+        public void ActionBlockTreeViewModel_DoesNotDuplicateChildActionBlockRows()
+        {
+            SerializedProperty talkStep = AddStep("BC.ActionSystem.ShowTalkStepAuthoring");
+            SerializedProperty startBranchProperty = talkStep.FindPropertyRelative("talkRequestData").FindPropertyRelative("onStartTalkAction");
+            EnsureInlineAction(startBranchProperty);
+            AddNestedStep(startBranchProperty, "BC.ActionSystem.WaitFramesStepAuthoring");
+            ApplyChanges();
+
+            SerializedProperty rootProperty = serializedObject.FindProperty("inlineAction");
+            Type modelType = GetTypeByFullName("BC.Editor.ActionSystem.ActionBlockTreeViewModel");
+            object model = Activator.CreateInstance(modelType);
+            InvokeDeclaredMethod(modelType, model, "Rebuild", rootProperty);
+
+            Assert.AreEqual(1, CountTreeItems(model, "Start Talk", "Branch"));
+            Assert.AreEqual(0, CountTreeItems(model, "Start Talk", "Block"));
         }
 
         private SerializedProperty AddStep(string stepTypeName)
@@ -368,13 +429,13 @@ namespace BC.Editor.Tests
 
         private string GetSummary(SerializedProperty stepProperty)
         {
-            Type utilityType = GetTypeByFullName("BC.Editor.Action.ActionStepSummaryUtility");
+            Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepSummaryUtility");
             return (string)InvokeDeclaredMethod(utilityType, null, "GetSummary", stepProperty);
         }
 
         private string[] GetBadgeTexts(SerializedProperty stepProperty)
         {
-            Type utilityType = GetTypeByFullName("BC.Editor.Action.ActionStepChildSlotUtility");
+            Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepChildSlotUtility");
             IEnumerable badges = InvokeDeclaredMethod(utilityType, null, "GetBadges", stepProperty) as IEnumerable;
 
             Assert.IsNotNull(badges, "Expected badge collection.");
@@ -426,6 +487,34 @@ namespace BC.Editor.Tests
             return null;
         }
 
+        private static int CountTreeItems(object model, string title, string kindName)
+        {
+            PropertyInfo itemsProperty = model.GetType().GetProperty("Items", BindingFlags.Instance | BindingFlags.Public);
+            IEnumerable items = itemsProperty?.GetValue(model) as IEnumerable;
+            Assert.IsNotNull(items, "Expected tree items.");
+
+            int count = 0;
+
+            foreach (object item in items)
+            {
+                if (item == null)
+                    continue;
+
+                PropertyInfo titleProperty = item.GetType().GetProperty("Title", BindingFlags.Instance | BindingFlags.Public);
+                PropertyInfo kindProperty = item.GetType().GetProperty("Kind", BindingFlags.Instance | BindingFlags.Public);
+
+                if (!string.Equals(titleProperty?.GetValue(item) as string, title, StringComparison.Ordinal))
+                    continue;
+
+                if (!string.Equals(kindProperty?.GetValue(item)?.ToString(), kindName, StringComparison.Ordinal))
+                    continue;
+
+                count++;
+            }
+
+            return count;
+        }
+
         private void ApplyChanges()
         {
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -434,14 +523,14 @@ namespace BC.Editor.Tests
 
         private static void ClearWindowLaunchRequest()
         {
-            SessionState.SetInt("BC.Editor.Action.ActionInlineWindowLauncher.TargetInstanceId", 0);
-            SessionState.EraseString("BC.Editor.Action.ActionInlineWindowLauncher.PropertyPath");
-            SessionState.EraseString("BC.Editor.Action.ActionInlineWindowLauncher.BindingKey");
+            SessionState.SetInt("BC.Editor.ActionSystem.ActionInlineWindowLauncher.TargetInstanceId", 0);
+            SessionState.EraseString("BC.Editor.ActionSystem.ActionInlineWindowLauncher.PropertyPath");
+            SessionState.EraseString("BC.Editor.ActionSystem.ActionInlineWindowLauncher.BindingKey");
         }
 
         private static void CloseInlineActionWindows()
         {
-            Type windowType = GetTypeByFullName("BC.Editor.Action.ActionInlineWindow");
+            Type windowType = GetTypeByFullName("BC.Editor.ActionSystem.ActionInlineWindow");
             UnityEngine.Object[] windows = Resources.FindObjectsOfTypeAll(windowType);
 
             for (int i = 0; i < windows.Length; i++)
@@ -453,7 +542,7 @@ namespace BC.Editor.Tests
 
         private static int GetInlineActionWindowCount()
         {
-            Type windowType = GetTypeByFullName("BC.Editor.Action.ActionInlineWindow");
+            Type windowType = GetTypeByFullName("BC.Editor.ActionSystem.ActionInlineWindow");
             return Resources.FindObjectsOfTypeAll(windowType).Length;
         }
 

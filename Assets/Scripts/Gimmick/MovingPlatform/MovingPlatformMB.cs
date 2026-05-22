@@ -29,6 +29,12 @@ namespace BC.Gimmick.MovingPlatform
         [SerializeField]
         private MovingPlatformLayer[] layers = Array.Empty<MovingPlatformLayer>();
 
+        [Header("Motion")]
+        [Tooltip("実際に移動させる Rigidbody 群です。先頭要素を基準に、残りは初期相対オフセットを保って同時に移動します。")]
+        [SerializeField] private Rigidbody[] motionTargets = Array.Empty<Rigidbody>();
+        [Tooltip("motionTargets が空の時、子階層の Rigidbody を自動収集します。")]
+        [SerializeField] private bool autoCollectChildRigidbodies = true;
+
         [Header("Signals")]
         [Tooltip("レイヤー切り替えやシーケンス完了時に Kernel Signal を送るかを指定します。")]
         [SerializeField] private bool publishLayerSignals = true;
@@ -67,8 +73,15 @@ namespace BC.Gimmick.MovingPlatform
         [ShowIf(nameof(showPathInGame))]
         [Tooltip("LineのMaterial")]
         [SerializeField] private Material runtimePathMaterial;
+        [Header("Debug")]
+        [Tooltip("Layer 選択と有効判定の診断ログを出力します。停止原因の切り分け用です。")]
+        [SerializeField] private bool enableLayerDebugLog;
+        [ShowIf(nameof(enableLayerDebugLog))]
+        [Tooltip("診断ログの最小出力間隔です。")]
+        [SerializeField, Min(0.2f)] private float layerDebugLogInterval = 1.0f;
         private MovingPlatformLayerRuntime[] runtimes;
         private MovingPlatformRailLayerRoute[] railRoutes;
+        private MotionTargetBinding[] motionTargetBindings = Array.Empty<MotionTargetBinding>();
         private MovingPlatformBasePose basePose;
         private SceneKernel sceneKernel;
         private EntityMB selfEntityMB;
@@ -89,10 +102,41 @@ namespace BC.Gimmick.MovingPlatform
         private int visualizedRuntimePointCount = -1;
         private float visualizedRuntimeLineWidth = -1.0f;
         private Color visualizedRuntimeColor = default;
+        private float nextLayerDebugLogTime;
+        private int lastLoggedLayerSelection = int.MinValue;
+
+        private Transform MotionTransform => motionTargetBindings.Length > 0 && motionTargetBindings[0].Rigidbody != null
+            ? motionTargetBindings[0].Rigidbody.transform
+            : transform;
+
+        private readonly struct MotionTargetBinding
+        {
+            public readonly Rigidbody Rigidbody;
+            public readonly Vector3 LocalOffsetFromReference;
+            public readonly Quaternion LocalRotationFromReference;
+            public readonly Vector3 InitialLocalScale;
+
+            public MotionTargetBinding(
+                Rigidbody rigidbody,
+                Vector3 localOffsetFromReference,
+                Quaternion localRotationFromReference,
+                Vector3 initialLocalScale)
+            {
+                Rigidbody = rigidbody;
+                LocalOffsetFromReference = localOffsetFromReference;
+                LocalRotationFromReference = localRotationFromReference;
+                InitialLocalScale = initialLocalScale;
+            }
+        }
 
         private void OnValidate()
         {
             NormalizeRailNodeAuthoring();
+
+            if (!autoCollectChildRigidbodies || (motionTargets != null && motionTargets.Length > 0))
+                return;
+
+            motionTargets = GetComponentsInChildren<Rigidbody>(true);
         }
 
         private void Start()
@@ -107,10 +151,128 @@ namespace BC.Gimmick.MovingPlatform
 
             sceneKernel = kernelMB.Kernel;
             selfEntityMB = GetComponentInParent<EntityMB>();
-            basePose = new MovingPlatformBasePose(transform.position, transform.rotation, transform.localScale);
+            BuildMotionTargetBindings();
+            if (motionTargetBindings.Length == 0)
+            {
+                Debug.LogError($"{nameof(MovingPlatformMB)}[{name}]: 有効な motionTargets がありません。子の Rigidbody を設定してください。", this);
+                enabled = false;
+                return;
+            }
+
+            Transform motion = MotionTransform;
+            basePose = new MovingPlatformBasePose(motion.position, motion.rotation, motion.localScale);
             BuildLayerRuntimes();
             BuildRailRouting();
+            WarnAuthoringSetup();
             signalSubscription = sceneKernel.KernelEvents.Subscribe<KernelSignalRaisedEvent>(OnKernelSignalRaised);
+        }
+
+        private void BuildMotionTargetBindings()
+        {
+            var uniqueTargets = new List<Rigidbody>();
+            if (motionTargets != null)
+            {
+                for (int i = 0; i < motionTargets.Length; i++)
+                {
+                    Rigidbody target = motionTargets[i];
+                    if (target == null || uniqueTargets.Contains(target))
+                        continue;
+
+                    uniqueTargets.Add(target);
+                }
+            }
+
+            if (uniqueTargets.Count == 0 && autoCollectChildRigidbodies)
+            {
+                Rigidbody[] discovered = GetComponentsInChildren<Rigidbody>(true);
+                for (int i = 0; i < discovered.Length; i++)
+                {
+                    Rigidbody candidate = discovered[i];
+                    if (candidate == null || uniqueTargets.Contains(candidate))
+                        continue;
+
+                    uniqueTargets.Add(candidate);
+                }
+
+                motionTargets = discovered;
+            }
+
+            if (uniqueTargets.Count == 0)
+            {
+                motionTargetBindings = Array.Empty<MotionTargetBinding>();
+                return;
+            }
+
+            Transform reference = uniqueTargets[0].transform;
+            Vector3 referencePosition = reference.position;
+            Quaternion referenceRotation = reference.rotation;
+
+            var bindings = new MotionTargetBinding[uniqueTargets.Count];
+            for (int i = 0; i < uniqueTargets.Count; i++)
+            {
+                Rigidbody target = uniqueTargets[i];
+                Vector3 localOffset = Quaternion.Inverse(referenceRotation) * (target.position - referencePosition);
+                Quaternion localRotation = Quaternion.Inverse(referenceRotation) * target.rotation;
+                bindings[i] = new MotionTargetBinding(target, localOffset, localRotation, target.transform.localScale);
+            }
+
+            motionTargetBindings = bindings;
+        }
+
+        private void WarnAuthoringSetup()
+        {
+            if (motionTargetBindings == null || motionTargetBindings.Length == 0)
+            {
+                Debug.LogWarning($"{nameof(MovingPlatformMB)}[{name}]: motionTargets が未設定です。子階層 Rigidbody を最低1つ指定してください。", this);
+                return;
+            }
+
+            for (int i = 0; i < motionTargetBindings.Length; i++)
+            {
+                Rigidbody target = motionTargetBindings[i].Rigidbody;
+                if (target == null)
+                    continue;
+
+                if (!target.transform.IsChildOf(transform))
+                {
+                    Debug.LogWarning(
+                        $"{nameof(MovingPlatformMB)}[{name}]: motionTargets[{i}] '{target.name}' が {name} の子階層外です。相対移動が想定どおりにならない可能性があります。",
+                        this);
+                }
+
+                if (!target.isKinematic)
+                {
+                    Debug.LogWarning(
+                        $"{nameof(MovingPlatformMB)}[{name}]: motionTargets[{i}] '{target.name}' は Dynamic Rigidbody です。Concave MeshCollider 併用で不安定になりやすいため、基本は Kinematic を推奨します。",
+                        this);
+                }
+
+                bool hasCollider = target.GetComponent<Collider>() != null || HasChildComponentExcludingRoot<Collider>(target.transform);
+                if (!hasCollider)
+                {
+                    Debug.LogWarning(
+                        $"{nameof(MovingPlatformMB)}[{name}]: motionTargets[{i}] '{target.name}' 配下に Collider がありません。接地/運搬判定が必要な場合は Collider を追加してください。",
+                        this);
+                }
+            }
+        }
+
+        private static bool HasChildComponentExcludingRoot<T>(Transform root) where T : Component
+        {
+            if (root == null)
+                return false;
+
+            T[] components = root.GetComponentsInChildren<T>(true);
+            for (int i = 0; i < components.Length; i++)
+            {
+                T component = components[i];
+                if (component == null || component.transform == root)
+                    continue;
+
+                return true;
+            }
+
+            return false;
         }
 
         private void OnDestroy()
@@ -182,9 +344,9 @@ namespace BC.Gimmick.MovingPlatform
             }
 
             motion = SupportMotionUtility.FromDelta(
-                transform,
+                MotionTransform,
                 null,
-                transform.position,
+                MotionTransform.position,
                 passengerWorldPosition,
                 accumulatedPositionDelta,
                 accumulatedRotationDelta,
@@ -231,7 +393,7 @@ namespace BC.Gimmick.MovingPlatform
             railController = railGraph != null ? new MovingPlatformRailController(railGraph, railRoutes) : null;
             useRailRouting = railController != null && railController.IsValid;
             if (useRailRouting)
-                railController.Reset(basePose, transform.position);
+                railController.Reset(basePose, MotionTransform.position);
         }
 
         private MovingPlatformBasePose GetVisualizationBasePose()
@@ -239,7 +401,8 @@ namespace BC.Gimmick.MovingPlatform
             if (Application.isPlaying)
                 return basePose;
 
-            return new MovingPlatformBasePose(transform.position, transform.rotation, transform.localScale);
+            Transform motion = MotionTransform;
+            return new MovingPlatformBasePose(motion.position, motion.rotation, motion.localScale);
         }
 
         private ReactiveEvalContext BuildReactiveEvalContext()
@@ -265,8 +428,6 @@ namespace BC.Gimmick.MovingPlatform
                 if (railNode == null)
                     continue;
 
-                string previousRawPath = railNode.RawNodePath;
-                string previousRawName = railNode.RawNodeName;
                 string nodePath = railNode.NodePath;
                 bool needsGeneratedPath = railNode.NeedsGeneratedNodePath() ||
                     string.IsNullOrWhiteSpace(nodePath) ||
@@ -276,17 +437,10 @@ namespace BC.Gimmick.MovingPlatform
                 {
                     string generatedPath = GenerateNextNodePath(usedNodePaths, ref nextGeneratedIndex);
                     railNode.SetNodePath(generatedPath);
-
-                    if (railNode.NeedsGeneratedNodeName() || string.Equals(previousRawName, previousRawPath, StringComparison.Ordinal))
-                        railNode.SetNodeName(generatedPath);
-
                     continue;
                 }
 
                 nextGeneratedIndex = Mathf.Max(nextGeneratedIndex, ExtractGeneratedNodeIndex(nodePath) + 1);
-
-                if (railNode.NeedsGeneratedNodeName())
-                    railNode.SetNodeName(nodePath);
             }
         }
 
@@ -717,6 +871,7 @@ namespace BC.Gimmick.MovingPlatform
         private void TickLayers(float deltaTime)
         {
             int nextSelectedLayerIndex = SelectActiveLayerIndex();
+            LogLayerDiagnostics(nextSelectedLayerIndex);
             WiringActionContext wiringContext = BuildWiringActionContext();
             if (nextSelectedLayerIndex != selectedLayerIndex)
                 ChangeSelectedLayer(nextSelectedLayerIndex);
@@ -725,7 +880,15 @@ namespace BC.Gimmick.MovingPlatform
                 return;
 
             bool sequenceCompleted = false;
-            MovingPlatformPose pose = railController.Tick(deltaTime, selectedLayerIndex, basePose, transform.position, out sequenceCompleted);
+            Transform motion = MotionTransform;
+            MovingPlatformPose pose = railController.Tick(
+                deltaTime,
+                selectedLayerIndex,
+                basePose,
+                motion.position,
+                motion.rotation,
+                motion.localScale,
+                out sequenceCompleted);
             ApplyPose(pose);
             railController.DrainTransitionEvents(railTransitionEvents);
             ExecuteRailTransitionEvents(wiringContext);
@@ -745,6 +908,9 @@ namespace BC.Gimmick.MovingPlatform
                 if (runtime == null || !runtime.RefreshActive())
                     continue;
 
+                if (!IsLayerPlayable(i))
+                    continue;
+
                 if (runtime.Priority <= bestPriority)
                     continue;
 
@@ -755,6 +921,163 @@ namespace BC.Gimmick.MovingPlatform
             return bestIndex;
         }
 
+        private bool IsLayerPlayable(int layerIndex)
+        {
+            if (layerIndex < 0 || layers == null || layerIndex >= layers.Length || layers[layerIndex] == null)
+                return false;
+
+            bool routeValid = railRoutes != null &&
+                              layerIndex < railRoutes.Length &&
+                              railRoutes[layerIndex] != null &&
+                              railRoutes[layerIndex].IsValid;
+
+            // Rail-only 実装なので、Layer がルートを使う場合は route 有効化を必須にする。
+            if (layers[layerIndex].UsesRailRoute)
+                return routeValid;
+
+            if (!useRailRouting)
+                return true;
+
+            return routeValid;
+        }
+
+        private void LogLayerDiagnostics(int nextSelectedLayerIndex)
+        {
+            if (!enableLayerDebugLog || runtimes == null || runtimes.Length == 0)
+                return;
+
+            float now = Time.unscaledTime;
+            bool selectionChanged = nextSelectedLayerIndex != lastLoggedLayerSelection;
+            bool intervalElapsed = now >= nextLayerDebugLogTime;
+            if (!selectionChanged && !intervalElapsed)
+                return;
+
+            lastLoggedLayerSelection = nextSelectedLayerIndex;
+            nextLayerDebugLogTime = now + Mathf.Max(0.2f, layerDebugLogInterval);
+
+            string selectedLayerName = nextSelectedLayerIndex >= 0 && layers != null && nextSelectedLayerIndex < layers.Length && layers[nextSelectedLayerIndex] != null
+                ? layers[nextSelectedLayerIndex].LayerName
+                : "None";
+
+            Debug.Log(
+                $"{nameof(MovingPlatformMB)}[{name}] layer selection: index={nextSelectedLayerIndex}, name={selectedLayerName}, useRailRouting={useRailRouting}, railControllerValid={(railController != null && railController.IsValid)}",
+                this);
+
+            for (int i = 0; i < runtimes.Length; i++)
+            {
+                MovingPlatformLayerRuntime runtime = runtimes[i];
+                if (runtime == null)
+                    continue;
+
+                bool playable = IsLayerPlayable(i);
+                bool active = runtime.RefreshActive();
+                bool routeValid = railRoutes != null && i < railRoutes.Length && railRoutes[i] != null && railRoutes[i].IsValid;
+                string routeIssue = ResolveLayerRouteIssue(i);
+                float routeDistance = ResolveLayerApproxRouteDistance(i);
+                string kernelCurrentValueText = runtime.TryGetKernelCurrentValue(out bool kernelCurrentValue)
+                    ? kernelCurrentValue.ToString()
+                    : "n/a";
+
+                string reason = active && playable
+                    ? "selected-candidate"
+                    : BuildInactiveReason(runtime, playable, routeValid);
+
+                Debug.Log(
+                    $"{nameof(MovingPlatformMB)}[{name}] layer[{i}] '{runtime.LayerName}': priority={runtime.Priority}, activeOnStart={runtime.ActiveOnStart}, useSignalGate={runtime.UseSignalGate}, signalGateActive={runtime.SignalGateActive}, useKernelBoolCondition={runtime.UseKernelBoolCondition}, kernelHandleReady={runtime.KernelHandleReady}, kernelCurrent={kernelCurrentValueText}, activeWhenValue={runtime.ActiveWhenValue}, playable={playable}, routeValid={routeValid}, routeIssue={routeIssue}, routeDistance={routeDistance:F3}, result={reason}",
+                    this);
+            }
+        }
+
+        private float ResolveLayerApproxRouteDistance(int layerIndex)
+        {
+            if (railGraph == null || railRoutes == null || layerIndex < 0 || layerIndex >= railRoutes.Length)
+                return 0f;
+
+            MovingPlatformRailLayerRoute route = railRoutes[layerIndex];
+            if (route == null || !route.IsValid || route.NodeCount < 2)
+                return 0f;
+
+            float distance = 0f;
+            for (int i = 0; i < route.NodeCount - 1; i++)
+            {
+                int fromNode = route.GetNodeIndexAt(i);
+                int toNode = route.GetNodeIndexAt(i + 1);
+                distance += railGraph.GetApproxDistance(fromNode, toNode);
+            }
+
+            return distance;
+        }
+
+        private string ResolveLayerRouteIssue(int layerIndex)
+        {
+            if (layers == null || layerIndex < 0 || layerIndex >= layers.Length)
+                return "layer-out-of-range";
+
+            MovingPlatformLayer layer = layers[layerIndex];
+            if (layer == null)
+                return "layer-null";
+
+            if (!layer.UsesRailRoute)
+                return "uses-rail-route=false";
+
+            if (railGraph == null)
+                return "rail-graph-null";
+
+            if (string.IsNullOrWhiteSpace(layer.StartNodePath))
+                return "start-node-empty";
+
+            if (!railGraph.TryGetNodeIndex(layer.StartNodePath, out int currentNodeIndex))
+                return $"start-node-missing:{layer.StartNodePath}";
+
+            IReadOnlyList<MovingPlatformLayerSegment> segments = layer.Segments;
+            for (int i = 0; i < segments.Count; i++)
+            {
+                if (!layer.TryGetSegment(i, out MovingPlatformLayerSegment segment) || segment == null)
+                    return $"segment-null:{i}";
+
+                if (segment is MovingPlatformRailRouteSegment moveSegment)
+                {
+                    if (string.IsNullOrWhiteSpace(moveSegment.TargetNodePath))
+                        return $"segment-target-empty:{i}";
+
+                    if (!railGraph.TryGetNodeIndex(moveSegment.TargetNodePath, out int targetNodeIndex))
+                        return $"segment-target-missing:{i}:{moveSegment.TargetNodePath}";
+
+                    currentNodeIndex = targetNodeIndex;
+                    continue;
+                }
+
+                if (segment is MovingPlatformWaitSegment waitSegment &&
+                    waitSegment.WaitMode == MovingPlatformWaitMode.Signal &&
+                    !waitSegment.Signal.TryResolve(out _))
+                {
+                    return $"wait-signal-unresolved:{i}";
+                }
+            }
+
+            return "none";
+        }
+
+        private static string BuildInactiveReason(MovingPlatformLayerRuntime runtime, bool playable, bool routeValid)
+        {
+            if (!routeValid)
+                return "inactive(route-invalid)";
+
+            if (!playable)
+                return "inactive(not-playable)";
+
+            if (runtime.UseSignalGate && !runtime.SignalGateActive)
+                return "inactive(signal-gate-off)";
+
+            if (runtime.UseKernelBoolCondition && !runtime.KernelHandleReady)
+                return "inactive(kernel-key-unresolved)";
+
+            if (runtime.UseKernelBoolCondition && runtime.KernelHandleReady && !runtime.IsKernelConditionSatisfied)
+                return "inactive(kernel-condition-mismatch)";
+
+            return "inactive(priority-lost)";
+        }
+
         private void ChangeSelectedLayer(int nextSelectedLayerIndex)
         {
             if (publishLayerSignals && selectedLayerIndex >= 0)
@@ -763,6 +1086,18 @@ namespace BC.Gimmick.MovingPlatform
             selectedLayerIndex = nextSelectedLayerIndex;
             if (selectedLayerIndex < 0)
                 return;
+
+            if (useRailRouting && railController != null &&
+                layers != null &&
+                selectedLayerIndex < layers.Length &&
+                layers[selectedLayerIndex] != null &&
+                layers[selectedLayerIndex].ResetWhenSelected)
+            {
+                railController.SnapToRouteStart(selectedLayerIndex, basePose);
+
+                if (TryBuildRouteStartPose(selectedLayerIndex, out MovingPlatformPose routeStartPose))
+                    ApplyPose(routeStartPose);
+            }
 
             if (publishLayerSignals)
                 sceneKernel.KernelEvents.RaiseSignal(layerEnabledSignal);
@@ -794,14 +1129,52 @@ namespace BC.Gimmick.MovingPlatform
 
         private void ApplyPose(in MovingPlatformPose pose)
         {
-            Vector3 previousPosition = transform.position;
-            Quaternion previousRotation = transform.rotation;
+            if (motionTargetBindings == null || motionTargetBindings.Length == 0)
+                return;
 
-            transform.SetPositionAndRotation(pose.Position, pose.Rotation);
-            transform.localScale = pose.LocalScale;
+            Transform referenceTransform = MotionTransform;
+            Vector3 previousPosition = referenceTransform.position;
+            Quaternion previousRotation = referenceTransform.rotation;
 
-            Vector3 positionDelta = transform.position - previousPosition;
-            Quaternion rotationDelta = transform.rotation * Quaternion.Inverse(previousRotation);
+            Vector3 baseScale = SanitizeScale(basePose.LocalScale);
+            Vector3 poseScale = SanitizeScale(pose.LocalScale);
+            Vector3 scaleRatio = new Vector3(
+                poseScale.x / baseScale.x,
+                poseScale.y / baseScale.y,
+                poseScale.z / baseScale.z);
+
+            float deltaTime = Mathf.Max(0.0001f, Time.fixedDeltaTime);
+
+            for (int i = 0; i < motionTargetBindings.Length; i++)
+            {
+                MotionTargetBinding binding = motionTargetBindings[i];
+                Rigidbody target = binding.Rigidbody;
+                if (target == null)
+                    continue;
+
+                Transform targetTransform = target.transform;
+                Vector3 targetPosition = pose.Position + pose.Rotation * Vector3.Scale(binding.LocalOffsetFromReference, scaleRatio);
+                Quaternion targetRotation = pose.Rotation * binding.LocalRotationFromReference;
+                Vector3 targetLocalScale = Vector3.Scale(binding.InitialLocalScale, scaleRatio);
+
+                if (target.isKinematic)
+                {
+                    target.MovePosition(targetPosition);
+                    target.MoveRotation(targetRotation);
+                }
+                else
+                {
+                    Vector3 previousTargetPosition = target.position;
+                    target.position = targetPosition;
+                    target.rotation = targetRotation;
+                    target.linearVelocity = (target.position - previousTargetPosition) / deltaTime;
+                }
+
+                targetTransform.localScale = targetLocalScale;
+            }
+
+            Vector3 positionDelta = referenceTransform.position - previousPosition;
+            Quaternion rotationDelta = referenceTransform.rotation * Quaternion.Inverse(previousRotation);
             accumulatedPositionDelta += positionDelta;
             accumulatedRotationDelta = rotationDelta * accumulatedRotationDelta;
 
@@ -809,8 +1182,35 @@ namespace BC.Gimmick.MovingPlatform
                 hasAccumulatedMotion = true;
         }
 
+        private bool TryBuildRouteStartPose(int layerIndex, out MovingPlatformPose pose)
+        {
+            pose = default;
+            if (railGraph == null || railController == null || !railController.TryGetRoute(layerIndex, out MovingPlatformRailLayerRoute route) ||
+                route == null || !route.IsValid || route.NodeCount <= 0)
+            {
+                return false;
+            }
+
+            int startNodeIndex = route.GetNodeIndexAt(0);
+            Vector3 startWorldPosition = railGraph.GetWorldPosition(basePose, startNodeIndex);
+            Transform motion = MotionTransform;
+            pose = new MovingPlatformPose(startWorldPosition, motion.rotation, motion.localScale);
+            return true;
+        }
+
+        private static Vector3 SanitizeScale(Vector3 value)
+        {
+            const float MinScale = 0.0001f;
+            return new Vector3(
+                Mathf.Abs(value.x) < MinScale ? 1.0f : value.x,
+                Mathf.Abs(value.y) < MinScale ? 1.0f : value.y,
+                Mathf.Abs(value.z) < MinScale ? 1.0f : value.z);
+        }
+
         private void OnKernelSignalRaised(KernelSignalRaisedEvent signalEvent)
         {
+            railController?.NotifySignal(signalEvent.Signal);
+
             if (runtimes == null)
                 return;
 
@@ -850,6 +1250,16 @@ namespace BC.Gimmick.MovingPlatform
             private bool signalGateActive;
 
             public int Priority => layer != null ? layer.Priority : int.MinValue;
+            public string LayerName => layer != null ? layer.LayerName : "Layer";
+            public bool ActiveOnStart => layer != null && layer.ActiveOnStart;
+            public bool UseSignalGate => layer != null && layer.UseSignalGate;
+            public bool SignalGateActive => signalGateActive;
+            public bool UseKernelBoolCondition => layer != null && layer.UseKernelBoolCondition;
+            public bool KernelHandleReady => activeValueHandle != null;
+            public bool ActiveWhenValue => layer != null && layer.ActiveWhenValue;
+            public bool IsKernelConditionSatisfied =>
+                !UseKernelBoolCondition ||
+                (activeValueHandle != null && activeValueHandle.CurrentValue == layer.ActiveWhenValue);
 
             public MovingPlatformLayerRuntime(MovingPlatformLayer layer)
             {
@@ -883,6 +1293,18 @@ namespace BC.Gimmick.MovingPlatform
                         return false;
                 }
 
+                return true;
+            }
+
+            public bool TryGetKernelCurrentValue(out bool value)
+            {
+                if (activeValueHandle == null)
+                {
+                    value = default;
+                    return false;
+                }
+
+                value = activeValueHandle.CurrentValue;
                 return true;
             }
 

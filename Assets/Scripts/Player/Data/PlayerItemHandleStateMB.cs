@@ -363,8 +363,8 @@ namespace BC.Player
 
             if (item is BombMB bomb && GameLogicManagerMB.Instance != null)
             {
-                // Bomb を持つ直前の状態を retry checkpoint として確定する。
-                GameLogicManagerMB.Instance.CaptureRetryCheckpointBeforeBombPickup(bomb);
+                // current bomb の追従だけ行い、retry checkpoint は起爆開始時に確定する。
+                GameLogicManagerMB.Instance.SetCurrentBomb(bomb);
             }
 
             interactionController?.ClearCandidateState();
@@ -918,7 +918,7 @@ namespace BC.Player
                     break;
 
                 case InteractionEventType.Completed:
-                    activeInteractionFacingOwnsChannel = false;
+                    ClearInteractionFacing(force: true);
 
                     if (eventData.Interactable is CarryableItemInteractableAdapter adapter)
                         HandleItem(adapter.CarryableItem);

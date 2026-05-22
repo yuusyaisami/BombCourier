@@ -28,12 +28,42 @@ namespace BC.Base
         [Header("Facing")]
         [SerializeField] private Transform facingRoot;
         [SerializeField, Min(0.01f)] private float defaultTurnSharpness = 16.0f;
+        // モデルの「正面」とみなすローカル軸です。
+        // 例えば見た目上の正面が -Z の mesh なら Vector3.back を指定します。
+        [SerializeField] private Vector3 frontDirection = Vector3.forward;
         [SerializeField] private bool usePlanarYawOnly = true;
 
+        // channel ごとに 1 つだけ facing 要求を保持し、priority と更新順で勝者を決めます。
         private readonly Dictionary<string, FacingRequest> requestsByChannel = new(StringComparer.Ordinal);
         private int nextRevision = 1;
 
         public Transform FacingRoot => facingRoot != null ? facingRoot : transform;
+
+        // 他の component からも「今この entity がどちらを正面として扱っているか」を
+        // 同じ定義で参照できるように、frontDirection と facingRoot を解決した world 方向を返します。
+        public bool TryGetWorldFrontDirection(out Vector3 worldFrontDirection)
+        {
+            Transform root = FacingRoot;
+            if (root == null)
+            {
+                worldFrontDirection = Vector3.forward;
+                return false;
+            }
+
+            worldFrontDirection = root.rotation * ResolveNormalizedFrontDirection();
+
+            if (usePlanarYawOnly)
+                worldFrontDirection.y = 0.0f;
+
+            if (worldFrontDirection.sqrMagnitude <= 0.0001f)
+            {
+                worldFrontDirection = Vector3.forward;
+                return false;
+            }
+
+            worldFrontDirection.Normalize();
+            return true;
+        }
 
         private void Reset()
         {
@@ -46,6 +76,9 @@ namespace BC.Base
                 facingRoot = transform;
 
             defaultTurnSharpness = Mathf.Max(0.01f, defaultTurnSharpness);
+
+            if (frontDirection.sqrMagnitude <= 0.0001f)
+                frontDirection = Vector3.forward;
         }
 
         private void LateUpdate()
@@ -121,7 +154,10 @@ namespace BC.Base
             if (!TryGetActiveRequest(root, out FacingRequest request, out Vector3 direction))
                 return;
 
-            Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+            // LookRotation(direction) だけだと「local forward が正面」の前提に固定されてしまい、
+            // frontDirection を back/right に変えても最終姿勢が変わりません。
+            // ここでは「frontDirection が direction を向く」回転を直接組み立てます。
+            Quaternion targetRotation = Quaternion.FromToRotation(ResolveNormalizedFrontDirection(), direction);
             float blend = 1.0f - Mathf.Exp(-request.TurnSharpness * deltaTime);
             root.rotation = Quaternion.Slerp(root.rotation, targetRotation, blend);
         }
@@ -139,6 +175,7 @@ namespace BC.Base
                 if (!request.TryGetDirection(root.position, usePlanarYawOnly, out Vector3 candidateDirection))
                     continue;
 
+                // priority が同じなら、最後に更新された request を優先して自然に上書きできるようにします。
                 if (!found || request.Priority > activeRequest.Priority ||
                     (request.Priority == activeRequest.Priority && request.Revision > activeRequest.Revision))
                 {
@@ -154,6 +191,19 @@ namespace BC.Base
         private float NormalizeTurnSharpness(float turnSharpness)
         {
             return turnSharpness > 0.0f ? turnSharpness : defaultTurnSharpness;
+        }
+
+        private Vector3 ResolveNormalizedFrontDirection()
+        {
+            Vector3 normalizedFrontDirection = frontDirection;
+
+            if (usePlanarYawOnly)
+                normalizedFrontDirection.y = 0.0f;
+
+            if (normalizedFrontDirection.sqrMagnitude <= 0.0001f)
+                normalizedFrontDirection = Vector3.forward;
+
+            return normalizedFrontDirection.normalized;
         }
 
         private bool TryNormalizeDirection(Vector3 worldDirection, out Vector3 normalizedDirection)
@@ -261,5 +311,18 @@ namespace BC.Base
                 return true;
             }
         }
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            // 現在の root rotation に対して、frontDirection がどちらを向いているかを可視化します。
+            if (facingRoot != null)
+            {
+                Vector3 origin = facingRoot.position;
+                Vector3 forward = facingRoot.rotation * ResolveNormalizedFrontDirection();
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(origin, origin + forward);
+            }
+        }
+#endif
     }
 }

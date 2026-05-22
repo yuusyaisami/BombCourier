@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using BC.ActionSystem;
 using UnityEditor;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     public enum ActionBlockTreeItemKind
     {
@@ -24,7 +24,8 @@ namespace BC.Editor.Action
             ActionStepAuthoring step,
             ActionChildSlotDescriptor childSlot,
             string propertyPath,
-            bool isMissing)
+            bool isMissing,
+            bool canExpand)
         {
             Kind = kind;
             Depth = depth;
@@ -36,6 +37,7 @@ namespace BC.Editor.Action
             ChildSlot = childSlot;
             PropertyPath = propertyPath ?? string.Empty;
             IsMissing = isMissing;
+            CanExpand = canExpand;
         }
 
         public ActionBlockTreeItemKind Kind { get; }
@@ -48,6 +50,7 @@ namespace BC.Editor.Action
         public ActionChildSlotDescriptor ChildSlot { get; }
         public string PropertyPath { get; }
         public bool IsMissing { get; }
+        public bool CanExpand { get; }
     }
 
     public sealed class ActionBlockTreeViewModel
@@ -98,6 +101,8 @@ namespace BC.Editor.Action
             int depth,
             HashSet<InlineAction> ancestry)
         {
+            // Only the root inline action gets a dedicated block row. Child inline actions are represented by
+            // their owning branch row so nested blocks do not appear twice in the tree.
             items.Add(new ActionBlockTreeItem(
                 ActionBlockTreeItemKind.Block,
                 depth,
@@ -108,46 +113,41 @@ namespace BC.Editor.Action
                 null,
                 default,
                 actionPropertyPath,
-                action == null));
+                action == null,
+                action != null));
 
             if (action == null)
                 return;
 
             if (!ancestry.Add(action))
             {
-                items.Add(new ActionBlockTreeItem(
-                    ActionBlockTreeItemKind.Branch,
-                    depth + 1,
-                    "Cyclic child action",
-                    "Cycle",
-                    branchKey,
-                    -1,
-                    null,
-                    default,
-                    actionPropertyPath,
-                    true));
+                AddIssueItem(depth + 1, "Cyclic child action", "Cycle", branchKey, actionPropertyPath);
                 return;
             }
 
             if (depth >= MaxDepth)
             {
-                items.Add(new ActionBlockTreeItem(
-                    ActionBlockTreeItemKind.Branch,
-                    depth + 1,
-                    "Nested action depth limit",
-                    "Depth",
-                    branchKey,
-                    -1,
-                    null,
-                    default,
-                    actionPropertyPath,
-                    true));
+                AddIssueItem(depth + 1, "Nested action depth limit", "Depth", branchKey, actionPropertyPath);
                 ancestry.Remove(action);
                 return;
             }
 
+            AddSteps(rootSerializedObject, action, actionPropertyPath, branchKey, depth + 1, ancestry);
+
+            ancestry.Remove(action);
+        }
+
+        private void AddSteps(
+            SerializedObject rootSerializedObject,
+            InlineAction action,
+            string actionPropertyPath,
+            ActionBranchKey branchKey,
+            int depth,
+            HashSet<InlineAction> ancestry)
+        {
             IReadOnlyList<ActionStepAuthoring> steps = action.Steps;
 
+            // Emit each step directly under the current block/branch so indentation stays aligned with execution order.
             for (int i = 0; i < steps.Count; i++)
             {
                 ActionStepAuthoring step = steps[i];
@@ -156,7 +156,7 @@ namespace BC.Editor.Action
 
                 items.Add(new ActionBlockTreeItem(
                     ActionBlockTreeItemKind.Step,
-                    depth + 1,
+                    depth,
                     BuildStepTitle(step, i),
                     BuildStepBadge(step),
                     stepKey,
@@ -164,15 +164,14 @@ namespace BC.Editor.Action
                     step,
                     default,
                     stepPropertyPath,
-                    step == null));
+                    step == null,
+                    false));
 
                 if (step == null)
                     continue;
 
-                AddChildSlots(rootSerializedObject, step, stepPropertyPath, stepKey, depth + 2, ancestry);
+                AddChildSlots(rootSerializedObject, step, stepPropertyPath, stepKey, depth + 1, ancestry);
             }
-
-            ancestry.Remove(action);
         }
 
         private void AddChildSlots(
@@ -209,17 +208,64 @@ namespace BC.Editor.Action
                     step,
                     slot,
                     branchPropertyPath,
-                    !slot.IsPresent));
+                    !slot.IsPresent,
+                    slot.Action != null));
 
                 if (slot.IsPresent && slot.Action != null)
-                    BuildBlock(rootSerializedObject, slot.Action, branchPropertyPath, childKey, slot.Label, depth + 1, ancestry);
+                    BuildChildAction(rootSerializedObject, slot.Action, branchPropertyPath, childKey, depth + 1, ancestry);
             }
+        }
+
+        private void BuildChildAction(
+            SerializedObject rootSerializedObject,
+            InlineAction action,
+            string actionPropertyPath,
+            ActionBranchKey branchKey,
+            int depth,
+            HashSet<InlineAction> ancestry)
+        {
+            if (action == null)
+                return;
+
+            // Nested actions inline their steps beneath the branch header instead of creating another block wrapper.
+            if (!ancestry.Add(action))
+            {
+                AddIssueItem(depth, "Cyclic child action", "Cycle", branchKey, actionPropertyPath);
+                return;
+            }
+
+            if (depth >= MaxDepth)
+            {
+                AddIssueItem(depth, "Nested action depth limit", "Depth", branchKey, actionPropertyPath);
+                ancestry.Remove(action);
+                return;
+            }
+
+            AddSteps(rootSerializedObject, action, actionPropertyPath, branchKey, depth, ancestry);
+            ancestry.Remove(action);
+        }
+
+        private void AddIssueItem(int depth, string title, string badge, ActionBranchKey branchKey, string propertyPath)
+        {
+            items.Add(new ActionBlockTreeItem(
+                ActionBlockTreeItemKind.Branch,
+                depth,
+                title,
+                badge,
+                branchKey,
+                -1,
+                null,
+                default,
+                propertyPath,
+                true,
+                false));
         }
 
         private static string BuildStepKeySegment(SerializedObject rootSerializedObject, string stepPropertyPath, int stepIndex)
         {
             SerializedProperty stepProperty = rootSerializedObject?.FindProperty(stepPropertyPath);
 
+            // Prefer the managed reference id when available so selection survives step reordering.
             if (stepProperty != null && stepProperty.managedReferenceId != 0)
                 return $"step:{stepProperty.managedReferenceId}";
 

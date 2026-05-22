@@ -6,23 +6,26 @@ using BC.Editor.Foundation.IMGUI;
 using UnityEditor;
 using UnityEngine;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     [CustomPropertyDrawer(typeof(InlineAction))]
     public sealed class InlineActionDrawer : PropertyDrawerBase
     {
         private const float HeaderPadding = 4f;
-        private const float HandleWidth = 18f;
+        private const float HandleWidth = 12f;
+        private const float HandleSpacing = 10f;
         private const float FoldoutWidth = 14f;
+        private const float FoldoutSpacing = 6f;
         private const float IndexWidth = 28f;
-        private const float FooterSpacing = 4f;
         private const float MinSummaryWidth = 72f;
         private const float MaxTypeBadgeWidth = 120f;
         private const float MaxStateBadgeWidth = 132f;
 
         private static readonly GUIContent EmptyListLabel = new("Empty");
-        private static readonly GUIContent AddStepButtonLabel = new("Add Step");
-        private static readonly GUIContent OpenInWindowButtonLabel = new("Open in Window");
+        private static readonly HashSet<string> AutoExpandedPropertyNames = new(StringComparer.Ordinal)
+        {
+            "talkRequestData",
+        };
 
         protected override float GetPropertyHeightCore(SerializedProperty property, GUIContent label)
         {
@@ -31,7 +34,7 @@ namespace BC.Editor.Action
             if (stepsProperty == null || !stepsProperty.isArray)
                 return LineHeight;
 
-            float contentHeight = CreateListController().GetHeight(stepsProperty) + Spacing + LineHeight;
+            float contentHeight = CreateListController(property).GetHeight(stepsProperty);
 
             if (HasVisibleLabel(label))
                 contentHeight += RectLayoutUtility.ControlDelta(LineHeight);
@@ -58,20 +61,19 @@ namespace BC.Editor.Action
             }
 
             Rect contentRect = RectLayoutUtility.Indented(cursor);
-            InlineListController controller = CreateListController();
+            InlineListController controller = CreateListController(property);
             float listHeight = controller.GetHeight(stepsProperty);
             Rect listRect = new(contentRect.x, contentRect.y, contentRect.width, listHeight);
             controller.Draw(listRect, stepsProperty, EmptyListLabel);
-
-            Rect footerRect = new(contentRect.x, listRect.yMax + Spacing, contentRect.width, LineHeight);
-            DrawFooter(footerRect, property, stepsProperty);
+            HandleSectionInteraction(listRect, property, stepsProperty);
         }
 
-        private InlineListController CreateListController()
+        private InlineListController CreateListController(SerializedProperty inlineActionProperty)
         {
+            // Keep the owning InlineAction property in scope so row callbacks can open the dedicated window or show section menus.
             return new InlineListController(
                 GetRowHeight,
-                DrawRow,
+                (rowRect, stepProperty, index) => DrawRow(rowRect, stepProperty, index, inlineActionProperty),
                 MoveRow,
                 HeaderPadding + HandleWidth);
         }
@@ -94,11 +96,10 @@ namespace BC.Editor.Action
             return height;
         }
 
-        private void DrawRow(Rect rowRect, SerializedProperty stepProperty, int index)
+        private void DrawRow(Rect rowRect, SerializedProperty stepProperty, int index, SerializedProperty inlineActionProperty)
         {
             Rect headerRect = new(rowRect.x, rowRect.y, rowRect.width, LineHeight);
             DrawHeaderBackground(headerRect, stepProperty);
-            HandleContextClick(headerRect, stepProperty, index);
 
             string typeLabel = ActionStepSummaryUtility.GetTypeLabel(stepProperty);
             string summary = ActionStepSummaryUtility.GetSummary(stepProperty);
@@ -110,12 +111,14 @@ namespace BC.Editor.Action
                 Mathf.Max(0f, headerRect.width - (HeaderPadding * 2f)),
                 headerRect.height);
 
-            Rect handleRect = RectLayoutUtility.TakeLeft(ref contentRect, HandleWidth, 2f);
-            Rect foldoutRect = RectLayoutUtility.TakeLeft(ref contentRect, FoldoutWidth, 2f);
+            Rect handleRect = RectLayoutUtility.TakeLeft(ref contentRect, HandleWidth, HandleSpacing);
+            Rect foldoutRect = RectLayoutUtility.TakeLeft(ref contentRect, FoldoutWidth, FoldoutSpacing);
             Rect indexRect = RectLayoutUtility.TakeLeft(ref contentRect, IndexWidth, 4f);
             float typeBadgeWidth = ResolveTypeBadgeWidth(typeLabel);
             Rect typeBadgeRect = RectLayoutUtility.TakeLeft(ref contentRect, typeBadgeWidth, 4f);
             Rect summaryRect = contentRect;
+
+            HandleRowInteraction(headerRect, foldoutRect, stepProperty, index, inlineActionProperty);
 
             DrawStateBadges(ref summaryRect, badges);
 
@@ -168,7 +171,16 @@ namespace BC.Editor.Action
                 ? EditorThemeTokens.MissingBackground
                 : EditorThemeTokens.StepBackground;
 
+            if (InlineActionEditorState.IsActive(stepProperty))
+                background = Color.Lerp(background, EditorThemeTokens.SelectedColor, 0.18f);
+
             EditorGUI.DrawRect(headerRect, background);
+
+            if (InlineActionEditorState.IsActive(stepProperty))
+            {
+                Rect selectionRect = new(headerRect.x, headerRect.y, 3f, headerRect.height);
+                EditorGUI.DrawRect(selectionRect, EditorThemeTokens.SelectedColor);
+            }
         }
 
         private static float ResolveTypeBadgeWidth(string typeLabel)
@@ -249,6 +261,9 @@ namespace BC.Editor.Action
                 if (iterator.name == "DisplayName")
                     continue;
 
+                if (ShouldAutoExpandDetail(iterator))
+                    iterator.isExpanded = true;
+
                 height += EditorGUI.GetPropertyHeight(iterator, true);
                 height += Spacing;
             }
@@ -274,40 +289,162 @@ namespace BC.Editor.Action
                 if (iterator.name == "DisplayName")
                     continue;
 
+                if (ShouldAutoExpandDetail(iterator))
+                    iterator.isExpanded = true;
+
                 float childHeight = EditorGUI.GetPropertyHeight(iterator, true);
                 Rect childRect = RectLayoutUtility.TakeHeight(ref cursor, childHeight);
                 EditorGUI.PropertyField(childRect, iterator, true);
             }
         }
 
-        private static void DrawFooter(
-            Rect footerRect,
+        private static void HandleSectionInteraction(
+            Rect interactionRect,
             SerializedProperty inlineActionProperty,
             SerializedProperty stepsProperty)
         {
-            float buttonWidth = Mathf.Max(0f, (footerRect.width - FooterSpacing) * 0.5f);
-            Rect addButtonRect = new(footerRect.x, footerRect.y, buttonWidth, footerRect.height);
-            Rect openButtonRect = new(addButtonRect.xMax + FooterSpacing, footerRect.y, buttonWidth, footerRect.height);
+            Event currentEvent = Event.current;
 
-            if (GUI.Button(addButtonRect, AddStepButtonLabel, EditorStyles.miniButtonLeft))
-                ActionStepPickerDropdown.Show(addButtonRect, stepsProperty);
-
-            using (new EditorGUI.DisabledScope(!ActionInlineWindowLauncher.CanLaunch(inlineActionProperty)))
+            // The inline surface now exposes structural actions from right-click/double-click instead of footer buttons.
+            if (currentEvent.type == EventType.MouseDown &&
+                currentEvent.button == 0 &&
+                currentEvent.clickCount == 2 &&
+                interactionRect.Contains(currentEvent.mousePosition) &&
+                ActionInlineWindowLauncher.CanLaunch(inlineActionProperty))
             {
-                if (GUI.Button(openButtonRect, OpenInWindowButtonLabel, EditorStyles.miniButtonRight))
-                    ActionInlineWindowLauncher.LaunchAndOpen(inlineActionProperty);
+                ActionInlineWindowLauncher.LaunchAndOpen(inlineActionProperty);
+                currentEvent.Use();
+                return;
             }
+
+            if (currentEvent.type != EventType.ContextClick || !interactionRect.Contains(currentEvent.mousePosition))
+                return;
+
+            UnityEngine.Object[] targets = inlineActionProperty?.serializedObject?.targetObjects;
+            string stepsPropertyPath = stepsProperty?.propertyPath;
+            ContextMenuBuilder menu = new();
+            IReadOnlyList<Type> stepTypes = ActionStepManagedReferenceUtility.GetStepTypes();
+
+            for (int i = 0; i < stepTypes.Count; i++)
+            {
+                Type stepType = stepTypes[i];
+                menu.AddItem(
+                    $"Add Step/{ActionStepManagedReferenceUtility.GetStepTypeLabel(stepType)}",
+                    targets != null && !string.IsNullOrWhiteSpace(stepsPropertyPath),
+                    () => ActionStepManagedReferenceUtility.AddStep(targets, stepsPropertyPath, stepType));
+            }
+
+            menu.AddSeparator();
+            menu.AddItem(
+                "Open in Window",
+                ActionInlineWindowLauncher.CanLaunch(inlineActionProperty),
+                () => ActionInlineWindowLauncher.LaunchAndOpen(inlineActionProperty));
+            menu.AddItem(
+                "Delete",
+                targets != null && !string.IsNullOrWhiteSpace(stepsPropertyPath) && stepsProperty != null && stepsProperty.arraySize > 0,
+                () =>
+                {
+                    InlineActionEditorState.ClearActive();
+                    ActionStepManagedReferenceUtility.ClearSteps(targets, stepsPropertyPath);
+                });
+            menu.AddItem(
+                "Paste",
+                targets != null && !string.IsNullOrWhiteSpace(stepsPropertyPath) && ActionStepManagedReferenceUtility.CanPasteStep(),
+                () => ActionStepManagedReferenceUtility.PasteStep(targets, stepsPropertyPath));
+            menu.ShowAsContext();
+            currentEvent.Use();
         }
 
-        private static void HandleContextClick(Rect headerRect, SerializedProperty stepProperty, int index)
+        private static bool ShouldAutoExpandDetail(SerializedProperty property)
+        {
+            // Wrapper payloads like talkRequestData become useful only when their nested fields are immediately visible.
+            return property != null &&
+                   property.propertyType == SerializedPropertyType.Generic &&
+                   property.hasVisibleChildren &&
+                   !property.isArray &&
+                   AutoExpandedPropertyNames.Contains(property.name);
+        }
+
+        private static void HandleRowInteraction(
+            Rect headerRect,
+            Rect foldoutRect,
+            SerializedProperty stepProperty,
+            int index,
+            SerializedProperty inlineActionProperty)
         {
             Event currentEvent = Event.current;
 
-            if (currentEvent.type != EventType.ContextClick || !headerRect.Contains(currentEvent.mousePosition))
+            if (stepProperty == null)
                 return;
 
-            ActionStepContextMenuUtility.Show(stepProperty, index);
-            currentEvent.Use();
+            // Row-local keyboard shortcuts operate on the last clicked item so delete/copy/paste feel predictable.
+            if (currentEvent.type == EventType.MouseDown && headerRect.Contains(currentEvent.mousePosition))
+            {
+                InlineActionEditorState.SetActive(stepProperty);
+
+                // 折り畳みの当たり判定上では window を開かず、展開/折り畳み操作を優先する。
+                if (currentEvent.button == 0 &&
+                    currentEvent.clickCount == 2 &&
+                    !foldoutRect.Contains(currentEvent.mousePosition) &&
+                    ActionInlineWindowLauncher.CanLaunch(inlineActionProperty))
+                {
+                    ActionInlineWindowLauncher.LaunchAndOpen(inlineActionProperty);
+                    currentEvent.Use();
+                    return;
+                }
+
+                if (currentEvent.button == 1)
+                {
+                    ActionStepContextMenuUtility.Show(stepProperty, index);
+                    currentEvent.Use();
+                    return;
+                }
+            }
+
+            if (!InlineActionEditorState.IsActive(stepProperty) || currentEvent.type != EventType.KeyDown)
+                return;
+
+            if (InlineActionEditorState.IsRenameActive(stepProperty) || EditorGUIUtility.editingTextField)
+                return;
+
+            string listPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(stepProperty.propertyPath);
+            UnityEngine.Object[] targets = stepProperty.serializedObject.targetObjects;
+
+            if (string.IsNullOrWhiteSpace(listPropertyPath) || targets == null)
+                return;
+
+            if (currentEvent.keyCode == KeyCode.Delete || currentEvent.keyCode == KeyCode.Backspace)
+            {
+                InlineActionEditorState.CancelRename(stepProperty);
+                InlineActionEditorState.ClearActive();
+                ActionStepManagedReferenceUtility.DeleteStep(targets, listPropertyPath, index);
+                currentEvent.Use();
+                GUI.changed = true;
+                GUIUtility.ExitGUI();
+            }
+
+            if (!IsActionShortcut(currentEvent))
+                return;
+
+            if (currentEvent.keyCode == KeyCode.C)
+            {
+                ActionStepManagedReferenceUtility.CopyStep(stepProperty);
+                currentEvent.Use();
+                return;
+            }
+
+            if (currentEvent.keyCode == KeyCode.V && ActionStepManagedReferenceUtility.CanPasteStep())
+            {
+                ActionStepManagedReferenceUtility.PasteStep(targets, listPropertyPath, index + 1);
+                currentEvent.Use();
+                GUI.changed = true;
+                GUIUtility.ExitGUI();
+            }
+        }
+
+        private static bool IsActionShortcut(Event currentEvent)
+        {
+            return currentEvent != null && (currentEvent.control || currentEvent.command);
         }
 
         private static void DrawRenameField(Rect summaryRect, SerializedProperty stepProperty)

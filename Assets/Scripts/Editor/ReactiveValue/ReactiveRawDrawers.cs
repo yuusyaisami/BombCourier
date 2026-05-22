@@ -180,4 +180,63 @@ namespace BC.Editor
             DrawPropertyField(ref position, property.FindPropertyRelative("fallbackValue"), "Fallback");
         }
     }
+
+    [CustomPropertyDrawer(typeof(ReactiveShapeExpressionId))]
+    public sealed class ReactiveShapeExpressionIdDrawer : ReactiveValueDrawerBase
+    {
+        protected override ReactiveEvaluationMode[] GetAllowedEvaluationModes(int sourceKind)
+        {
+            return sourceKind switch
+            {
+                (int)ReactiveShapeExpressionIdSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                (int)ReactiveShapeExpressionIdSourceKind.LocalValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
+            };
+        }
+
+        protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
+        {
+            return sourceKind == (int)ReactiveShapeExpressionIdSourceKind.EntityValueStore ||
+                   sourceKind == (int)ReactiveShapeExpressionIdSourceKind.LocalValueStore
+                ? ReactiveEvaluationMode.Watched
+                : ReactiveEvaluationMode.Snapshot;
+        }
+
+        protected override float GetSourcePayloadHeight(SerializedProperty property, int sourceKind)
+        {
+            return sourceKind switch
+            {
+                (int)ReactiveShapeExpressionIdSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
+                (int)ReactiveShapeExpressionIdSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
+                (int)ReactiveShapeExpressionIdSourceKind.LocalValueStore => GetReactiveLocalValueSourceHeight(),
+                _ => 0f,
+            };
+        }
+
+        protected override void DrawSourcePayload(ref Rect position, SerializedProperty property, int sourceKind)
+        {
+            switch ((ReactiveShapeExpressionIdSourceKind)sourceKind)
+            {
+                case ReactiveShapeExpressionIdSourceKind.Literal:
+                    DrawPropertyField(ref position, property.FindPropertyRelative("literal"), "Value");
+                    break;
+                case ReactiveShapeExpressionIdSourceKind.EntityValueStore:
+                    DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(ShapeExpressionId));
+                    break;
+                case ReactiveShapeExpressionIdSourceKind.LocalValueStore:
+                    DrawReactiveLocalValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(ShapeExpressionId));
+                    break;
+            }
+        }
+
+        protected override float GetFallbackHeight(SerializedProperty property)
+        {
+            return GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("fallbackValue")));
+        }
+
+        protected override void DrawFallback(ref Rect position, SerializedProperty property)
+        {
+            DrawPropertyField(ref position, property.FindPropertyRelative("fallbackValue"), "Fallback");
+        }
+    }
 }

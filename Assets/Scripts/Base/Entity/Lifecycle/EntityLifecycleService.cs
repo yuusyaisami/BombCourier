@@ -22,6 +22,18 @@ namespace BC.Base
 
         public EntityRef Register(EntityRegistryRequest request)
         {
+            // SceneKernel 配下の Entity で DDOL flag が立っていたら、
+            // scene lifetime を壊すためエラーにして scene 登録へ強制ダウングレードする。
+            if (request.Flags.HasFlag(EntityFlags.DontDestroyOnLoad) &&
+                request.Transform != null &&
+                request.Transform.GetComponentInParent<SceneKernelMB>() != null)
+            {
+                UnityEngine.Debug.LogError(
+                    $"{nameof(EntityLifecycleService)}: SceneKernel scoped entity '{request.GameObject.name}' cannot use {nameof(EntityFlags.DontDestroyOnLoad)}. Downgrading to scene registration.",
+                    request.GameObject);
+                request.Flags &= ~EntityFlags.DontDestroyOnLoad;
+            }
+
             EntityRef entity;
 
             if (request.Flags.HasFlag(EntityFlags.DontDestroyOnLoad))

@@ -4,6 +4,13 @@ using UnityEngine;
 
 namespace BC.Base
 {
+    public enum EntityDespawnMode
+    {
+        Auto = 0,
+        ReturnToPool = 1,
+        Destroy = 2,
+    }
+
     public readonly struct EntitySpawnRequest
     {
         public readonly GameObject Prefab;

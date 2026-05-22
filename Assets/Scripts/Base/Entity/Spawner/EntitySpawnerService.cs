@@ -62,7 +62,7 @@ namespace BC.Base
             return new EntitySpawnResult(record.Entity, instance, instance.transform, entityMb);
         }
 
-        public bool Despawn(EntityRef entity)
+        public bool Despawn(EntityRef entity, EntityDespawnMode despawnMode = EntityDespawnMode.Auto)
         {
             if (!spawnedByEntityId.TryGetValue(entity.EntityId, out SpawnedEntityRecord record))
                 return false;
@@ -84,16 +84,31 @@ namespace BC.Base
                 kernel.EntityLifecycle.Unregister(binding.Entity);
             }
 
-            if (record.UsePool)
+            switch (ResolveDespawnMode(record, despawnMode))
             {
-                GetOrCreatePool(record.Prefab).Release(record.GameObject);
-            }
-            else
-            {
-                UnityEngine.Object.Destroy(record.GameObject);
+                case EntityDespawnMode.ReturnToPool:
+                    GetOrCreatePool(record.Prefab).Release(record.GameObject);
+                    break;
+
+                case EntityDespawnMode.Destroy:
+                    UnityEngine.Object.Destroy(record.GameObject);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(despawnMode), despawnMode, null);
             }
 
             return true;
+        }
+
+        private static EntityDespawnMode ResolveDespawnMode(
+            in SpawnedEntityRecord record,
+            EntityDespawnMode despawnMode)
+        {
+            if (despawnMode != EntityDespawnMode.Auto)
+                return despawnMode;
+
+            return record.UsePool ? EntityDespawnMode.ReturnToPool : EntityDespawnMode.Destroy;
         }
 
         private SpawnedEntityRecord RegisterSpawnedEntities(GameObject prefab, GameObject instance, bool usePool)

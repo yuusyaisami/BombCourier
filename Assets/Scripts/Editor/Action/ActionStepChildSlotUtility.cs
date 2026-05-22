@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using BC.ActionSystem;
 using UnityEditor;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     internal enum ActionStepBadgeKind
     {

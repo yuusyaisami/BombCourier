@@ -15,6 +15,7 @@ namespace BC.UI
         [SerializeField] private CanvasGroup canvasGroup;
         private PlayerItemHandleStateMB itemHandState;
         private bool isThrowing => itemHandState != null && itemHandState.IsThrowCharging;
+        private bool isVisible;
         private CancellationTokenSource tokenSource;
         private void Reset()
         {
@@ -23,44 +24,56 @@ namespace BC.UI
 
         private void Awake()
         {
-            canvasGroup.alpha = 0f;
+            if (canvasGroup != null)
+                canvasGroup.alpha = 0f;
         }
 
         void Start()
         {
             // PlayerMBはGameLogicから
-            SetPlayerMB(GameLogicManagerMB.Instance.PlayerInstance);
-            GameLogicManagerMB.Instance.OnPlayerSpawned += SetPlayerMB;
+            GameLogicManagerMB gameLogic = GameLogicManagerMB.Instance;
+            if (gameLogic != null)
+            {
+                SetPlayerMB(gameLogic.PlayerInstance);
+                gameLogic.OnPlayerSpawned += SetPlayerMB;
+            }
         }
         void OnDestroy()
         {
-            GameLogicManagerMB.Instance.OnPlayerSpawned -= SetPlayerMB;
+            GameLogicManagerMB gameLogic = GameLogicManagerMB.Instance;
+            if (gameLogic != null)
+                gameLogic.OnPlayerSpawned -= SetPlayerMB;
+
+            UnbindItemHandleState();
             tokenSource?.Cancel();
             tokenSource?.Dispose();
             tokenSource = null;
         }
         private void Update()
         {
+            if (itemHandState == null)
+            {
+                SyncVisibility(false);
+                return;
+            }
 
+            throwPowerSlider.value = itemHandState.CurrentThrowChargeRatio;
+            SyncVisibility(isThrowing);
         }
         private void SetPlayerMB(PlayerMB player)
         {
-            if (player != null)
+            UnbindItemHandleState();
+
+            itemHandState = player != null ? player.GetComponent<PlayerItemHandleStateMB>() : null;
+
+            if (itemHandState != null)
             {
-                itemHandState = player.GetComponent<PlayerItemHandleStateMB>();
-                if (itemHandState != null)
-                {
-                    // PlayerMBのイベントにスライダー更新関数を登録
-                    itemHandState.OnThrowChargeStart += StartThrowCharge;
-                    itemHandState.OnThrowChargeEnd += EndThrowCharge;
-                }
+                // Player差し替え後も表示イベントを取りこぼさないよう毎回再登録する。
+                itemHandState.OnThrowChargeStart += StartThrowCharge;
+                itemHandState.OnThrowChargeEnd += EndThrowCharge;
             }
-            else
-            {
-                // 解除
-                EndThrowCharge();
-                itemHandState = null;
-            }
+
+            SyncVisibility(isThrowing);
         }
         private async void UpdateThrowPowerSlider(CancellationToken token)
         {
@@ -73,19 +86,38 @@ namespace BC.UI
 
         private void StartThrowCharge()
         {
-            Debug.Log("StartThrowCharge called. CurrentThrowChargeRatio: " + itemHandState.CurrentThrowChargeRatio);
             throwPowerSlider.value = 0f;
-            canvasGroup.DOFade(1f, 0.2f).SetEase(Ease.OutSine);
+            SyncVisibility(true);
             tokenSource?.Cancel(); // 既存の更新タスクがあればキャンセル
             tokenSource = new CancellationTokenSource();
             UpdateThrowPowerSlider(tokenSource.Token);
         }
         private void EndThrowCharge()
         {
-            canvasGroup.DOFade(0f, 0.2f).SetEase(Ease.OutSine);
+            SyncVisibility(false);
             throwPowerSlider.value = 0f;
             tokenSource?.Cancel();
             tokenSource = null;
+        }
+
+        private void SyncVisibility(bool visible)
+        {
+            if (canvasGroup == null || isVisible == visible)
+                return;
+
+            isVisible = visible;
+            canvasGroup.DOFade(visible ? 1f : 0f, 0.2f).SetEase(Ease.OutSine);
+        }
+
+        private void UnbindItemHandleState()
+        {
+            if (itemHandState != null)
+            {
+                itemHandState.OnThrowChargeStart -= StartThrowCharge;
+                itemHandState.OnThrowChargeEnd -= EndThrowCharge;
+            }
+
+            itemHandState = null;
         }
     }
 }

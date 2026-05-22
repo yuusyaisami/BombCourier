@@ -215,6 +215,7 @@ namespace BC.Bomb
         public Transform CushionImpactRoot => transform;
         public EntityTagId CushionImpactTag => ResolveImpactTag();
         public bool FuseStarted => fuseStarted;
+        public bool HasExploded => exploded;
         public float TotalFuseTime => fuseTime;
         public float RemainingFuseTime => remainingFuseTime;
         public string PromptDetailText => exploded ? string.Empty : $"{ResolvePromptDetailSeconds()}s";
@@ -245,8 +246,28 @@ namespace BC.Bomb
                 lastImpactThreshold,
                 rb != null && rb.isKinematic,
                 rb != null && rb.useGravity,
-                rb == null || rb.detectCollisions);
+                rb == null || rb.detectCollisions,
+                rb != null ? rb.linearVelocity : Vector3.zero,
+                rb != null ? rb.angularVelocity : Vector3.zero);
         }
+
+            // Retry checkpoint では「起爆開始時接触」を基準に、未起爆状態へ戻せるスナップショットを使う。
+            public object CaptureRetryCheckpointState()
+            {
+                return new BombCheckpointState(
+                transform.parent,
+                false,
+                false,
+                isHandled,
+                fuseTime,
+                0f,
+                lastImpactThreshold,
+                rb != null && rb.isKinematic,
+                rb != null && rb.useGravity,
+                rb == null || rb.detectCollisions,
+                Vector3.zero,
+                Vector3.zero);
+            }
 
         public void RestoreCheckpointState(object state)
         {
@@ -271,6 +292,8 @@ namespace BC.Bomb
                 rb.isKinematic = checkpointState.IsKinematic;
                 rb.useGravity = checkpointState.UseGravity;
                 rb.detectCollisions = checkpointState.DetectCollisions;
+                rb.linearVelocity = checkpointState.LinearVelocity;
+                rb.angularVelocity = checkpointState.AngularVelocity;
             }
 
             if (startFuseEffect != null)
@@ -616,7 +639,9 @@ namespace BC.Bomb
 
         private bool TryHandleCheckpointableExplosion()
         {
-            if (!TryGetComponent(out StageSaveMarkMB _))
+            bool hasStageSaveMark = TryGetComponent(out StageSaveMarkMB _);
+            bool hasRetryCheckpoint = GameLogicManagerMB.Instance != null && GameLogicManagerMB.Instance.HasRetryCheckpoint;
+            if (!hasStageSaveMark && !hasRetryCheckpoint)
                 return false;
 
             if (GameLogicManagerMB.Instance != null)
@@ -699,7 +724,9 @@ namespace BC.Bomb
                 float lastImpactThreshold,
                 bool isKinematic,
                 bool useGravity,
-                bool detectCollisions)
+                bool detectCollisions,
+                Vector3 linearVelocity,
+                Vector3 angularVelocity)
             {
                 Parent = parent;
                 FuseStarted = fuseStarted;
@@ -711,6 +738,8 @@ namespace BC.Bomb
                 IsKinematic = isKinematic;
                 UseGravity = useGravity;
                 DetectCollisions = detectCollisions;
+                LinearVelocity = linearVelocity;
+                AngularVelocity = angularVelocity;
             }
 
             public Transform Parent { get; }
@@ -723,6 +752,8 @@ namespace BC.Bomb
             public bool IsKinematic { get; }
             public bool UseGravity { get; }
             public bool DetectCollisions { get; }
+            public Vector3 LinearVelocity { get; }
+            public Vector3 AngularVelocity { get; }
         }
 
         private bool IsTouchingNonPlayerCollider()

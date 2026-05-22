@@ -9,6 +9,8 @@ namespace BC.Editor.Camera
     [CustomEditor(typeof(CameraPathSequenceAuthoringMB), true)]
     public sealed class CameraPathSequenceAuthoringMBEditor : SceneToolEditorBase<CameraPathSequenceAuthoringMB>
     {
+        private static CameraPathPreviewTargetMode previewTargetMode = CameraPathPreviewTargetMode.Both;
+
         private const string PointsPropertyName = "points";
         private const string SelectedPointIndexPropertyName = "selectedPointIndex";
         private const string LabelFieldName = "label";
@@ -48,6 +50,7 @@ namespace BC.Editor.Camera
 
             EditorGUILayout.LabelField("Camera Path", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("Position と Euler Angles は ReactiveVector3 です。Literal な要素だけ Scene View で編集します。Position が Literal なら移動、Euler Angles が Literal なら回転を扱えます。", MessageType.Info);
+            DrawPreviewControls();
 
             int removeIndex = -1;
             int insertAfterIndex = -1;
@@ -89,6 +92,84 @@ namespace BC.Editor.Camera
             EnsureSelectionInRange();
             DrawPathSceneHandles();
             DrawSelectedTransformHandle(sequence);
+        }
+
+        public override bool RequiresConstantRepaint()
+        {
+            return CameraPathSequencePreviewSession.ActiveSession != null &&
+                   CameraPathSequencePreviewSession.ActiveSession.IsOwnedBy(TypedTarget);
+        }
+
+        private void DrawPreviewControls()
+        {
+            CameraPathPreviewResolveResult resolveResult = CameraPathSequencePreviewResolver.Resolve(TypedTarget);
+            CameraPathSequencePreviewSession activeSession = CameraPathSequencePreviewSession.ActiveSession;
+            bool isPreviewingThisTarget = activeSession != null && activeSession.IsOwnedBy(TypedTarget);
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("Preview", EditorStyles.boldLabel);
+                previewTargetMode = (CameraPathPreviewTargetMode)EditorGUILayout.EnumFlagsField("Target", previewTargetMode);
+
+                if (!string.IsNullOrWhiteSpace(resolveResult.ResolveModeLabel))
+                    EditorGUILayout.LabelField("Resolve", resolveResult.ResolveModeLabel);
+
+                if (!string.IsNullOrWhiteSpace(resolveResult.Message))
+                    EditorGUILayout.HelpBox(resolveResult.Message, resolveResult.CanPreview ? MessageType.Info : MessageType.Warning);
+
+                if (isPreviewingThisTarget)
+                {
+                    EditorGUILayout.LabelField("State", $"{activeSession.PhaseLabel} | Point {activeSession.CurrentPointIndex + 1}/{activeSession.PointCount}");
+                    EditorGUILayout.LabelField("Time", $"{activeSession.ElapsedSeconds:0.00}s / {activeSession.TotalDurationSeconds:0.00}s");
+                    EditorGUILayout.LabelField("Target Mode", activeSession.TargetMode.ToString());
+
+                    if (activeSession.PreviewCamera != null)
+                        EditorGUILayout.ObjectField("Preview Camera", activeSession.PreviewCamera, typeof(UnityEngine.Camera), true);
+
+                    EditorGUILayout.HelpBox("Preview 中に point を編集した場合は Restart Preview で再解決してください。Action は実行されません。", MessageType.None);
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    GUI.enabled = resolveResult.CanPreview;
+                    if (GUILayout.Button(isPreviewingThisTarget ? "Restart Preview" : "Play Preview"))
+                    {
+                        if (CameraPathSequencePreviewSession.TryStart(
+                            TypedTarget,
+                            resolveResult.Sequence,
+                            previewTargetMode,
+                            resolveResult.ResolveModeLabel,
+                            resolveResult.Message,
+                            out string startMessage))
+                        {
+                            if (!string.IsNullOrWhiteSpace(startMessage))
+                                Debug.LogWarning(startMessage, TypedTarget);
+
+                            RepaintSceneView();
+                        }
+                        else
+                        {
+                            Debug.LogWarning(startMessage, TypedTarget);
+                        }
+                    }
+
+                    GUI.enabled = isPreviewingThisTarget;
+                    if (GUILayout.Button("Stop Preview"))
+                    {
+                        CameraPathSequencePreviewSession.StopIfOwner(TypedTarget);
+                        RepaintSceneView();
+                    }
+
+                    GUI.enabled = isPreviewingThisTarget && activeSession?.PreviewCamera != null;
+                    if (GUILayout.Button("Select Preview Camera"))
+                    {
+                        Selection.activeObject = activeSession.PreviewCamera.gameObject;
+                        EditorGUIUtility.PingObject(activeSession.PreviewCamera.gameObject);
+                    }
+
+                    GUI.enabled = true;
+                }
+            }
         }
 
         private void DrawPointInspector(int index, ref int removeIndex, ref int insertAfterIndex)

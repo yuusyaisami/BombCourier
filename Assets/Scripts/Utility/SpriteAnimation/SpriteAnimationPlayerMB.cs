@@ -30,15 +30,6 @@ namespace BC.Base
         [SerializeField]
         private Image image;
 
-        [Title("Initial Animation")]
-        [SerializeReference]
-        [InlineProperty]
-        private IAnimationSpriteClipSource initialClip =
-            new InlineAnimationSpriteClipSource();
-
-        [EnumToggleButtons]
-        [SerializeField]
-        private SpriteAnimationPlayMode initialPlayMode = SpriteAnimationPlayMode.Loop;
 
         [ShowIf(nameof(IsInitialOnceToLoop))]
         [SerializeReference]
@@ -60,6 +51,15 @@ namespace BC.Base
 
         [SerializeField]
         private bool clearSpriteWhenStopped;
+        [Title("Initial Animation")]
+        [SerializeReference, ShowIf(nameof(playOnEnable))]
+        [InlineProperty]
+        private IAnimationSpriteClipSource initialClip =
+            new InlineAnimationSpriteClipSource();
+
+        [EnumToggleButtons]
+        [SerializeField, ShowIf(nameof(playOnEnable))]
+        private SpriteAnimationPlayMode initialPlayMode = SpriteAnimationPlayMode.Loop;
 
         private AnimationSpriteClip currentClip;
         private AnimationSpriteClip loopAfterClip;

@@ -15,7 +15,7 @@ namespace BC.UI
         [SerializeField] private Slider reloadProgressSlider;
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField, Min(0f)] private float stationarySpeedThreshold = 0.05f;
-        [SerializeField, Min(0f)] private float stationaryGraceTime = 0.2f;
+        [SerializeField, Min(0f)] private float stationaryPromptDelay = 1.5f;
         [SerializeField, Min(0.01f)] private float requiredHoldTime = 1.5f;
 
         private PlayerMoveController playerMoveController;
@@ -65,8 +65,9 @@ namespace BC.UI
 
             bool isStationary = IsPlayerStationary();
             stationaryTimer = isStationary ? stationaryTimer + Time.deltaTime : 0f;
+            bool shouldForceShow = gameLogic.AreAllSceneBombsExploded();
 
-            bool shouldShow = stationaryTimer >= stationaryGraceTime || isInputPressed || reloadInputHoldTime > 0f;
+            bool shouldShow = shouldForceShow || stationaryTimer >= stationaryPromptDelay || isInputPressed || reloadInputHoldTime > 0f;
             SetVisible(shouldShow, retryMode);
 
             if (!isVisible)

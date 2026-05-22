@@ -25,6 +25,7 @@ namespace BC.Base
         [SerializeField] private MonoBehaviour ragdollControllerSource;
         [SerializeField] private MonoBehaviour animatorControllerSource;
         [SerializeField] private PlayerItemHandleStateMB playerItemHandleState;
+        [SerializeField] private EntityFacingControllerMB facingController;
 
         [Header("Hard Landing Detection")]
         [SerializeField, Min(0.0f)] private float minimumDownwardImpactSpeed = 12.0f;
@@ -52,6 +53,9 @@ namespace BC.Base
         [Header("Item Drop Reaction")]
         [SerializeField] private bool dropHeldItemOnHardLanding;
         [SerializeField] private Vector3 additionalDropVelocityLocal = Vector3.zero;
+        [SerializeField, Min(0.0f)] private float hardLandingDropForwardSpeed = 1.2f;
+        [SerializeField, Min(0.0f)] private float hardLandingDropUpwardSpeed = 1.0f;
+        [SerializeField, Range(0.0f, 1.0f)] private float hardLandingCarrierPlanarVelocityFactor = 0.25f;
 
         [Header("Runtime Debug")]
         [SerializeField] private float lastLandingDownwardSpeed;
@@ -109,6 +113,9 @@ namespace BC.Base
             moveSpeedMultiplier = Mathf.Clamp01(moveSpeedMultiplier);
             jumpHeightMultiplier = Mathf.Clamp01(jumpHeightMultiplier);
             penaltyDuration = Mathf.Max(0.0f, penaltyDuration);
+            hardLandingDropForwardSpeed = Mathf.Max(0.0f, hardLandingDropForwardSpeed);
+            hardLandingDropUpwardSpeed = Mathf.Max(0.0f, hardLandingDropUpwardSpeed);
+            hardLandingCarrierPlanarVelocityFactor = Mathf.Clamp01(hardLandingCarrierPlanarVelocityFactor);
         }
 
         private void FixedUpdate()
@@ -229,8 +236,32 @@ namespace BC.Base
             if (playerItemHandleState == null)
                 return;
 
-            Vector3 releaseVelocity = landingVelocity + transform.TransformDirection(additionalDropVelocityLocal);
+            Vector3 facingDirection = ResolveFacingForwardDirection();
+            Vector3 carrierPlanarVelocity = landingVelocity;
+            carrierPlanarVelocity.y = 0.0f;
+            carrierPlanarVelocity *= hardLandingCarrierPlanarVelocityFactor;
+
+            Vector3 releaseVelocity =
+                (facingDirection * hardLandingDropForwardSpeed) +
+                (Vector3.up * hardLandingDropUpwardSpeed) +
+                carrierPlanarVelocity +
+                transform.TransformDirection(additionalDropVelocityLocal);
+
             playerItemHandleState.ForceReleaseCurrentItem(releaseVelocity);
+        }
+
+        private Vector3 ResolveFacingForwardDirection()
+        {
+            if (facingController != null && facingController.TryGetWorldFrontDirection(out Vector3 worldFront))
+                return worldFront;
+
+            Vector3 forward = transform.forward;
+            forward.y = 0.0f;
+
+            if (forward.sqrMagnitude <= 0.0001f)
+                return Vector3.forward;
+
+            return forward.normalized;
         }
 
         private void StartPenaltyRoutine()

@@ -208,11 +208,11 @@ namespace BC.Base
         {
             gameObject.SetActive(true);
             ResolveReferences();
+            // Playerのアニメーションパラメーターを設定
+            animationController.SetBool("IsSpawn", intro);
 
             Transform modelRoot = PlayerMoveController.ModelRoot;
             Vector3 targetLocalPosition = PlayerMoveController.ModelInitialPosition;
-
-            Debug.Log($"ModelInitialPosition: {targetLocalPosition}");
 
             // 親を持つ modelRoot は local 座標で演出しないと、world 座標 tween で着地点がずれる。
             modelRoot.DOKill();
@@ -225,6 +225,9 @@ namespace BC.Base
             PlayerAnimationController?.PlayRaiseBody();
             PlayerAnimationController?.SetSpawnActive(false);
             await UniTask.Delay(700); // アニメーションの完了を待つ
+            // Playerのアニメーションパラメーターを設定
+            animationController.SetBool("IsSpawn", false);
+            await UniTask.Delay(500); // アニメーションの完了を待つ
         }
 
         private void PlayShowLandingImpact()
@@ -251,6 +254,25 @@ namespace BC.Base
         }
         public void TeleportToSpawnPoint(Vector3 position = default, Quaternion rotation = default)
         {
+            ResolveReferences();
+
+            if (moveController != null)
+            {
+                moveController.CancelAutoMove();
+                moveController.ClearMoveIntent();
+                moveController.SetPlanarVelocity(Vector3.zero);
+                moveController.SetVerticalVelocity(0.0f);
+                moveController.ClearExternalVelocity();
+            }
+
+            if (bodyRigidbody != null)
+            {
+                bodyRigidbody.position = position;
+                bodyRigidbody.rotation = rotation;
+                bodyRigidbody.linearVelocity = Vector3.zero;
+                bodyRigidbody.angularVelocity = Vector3.zero;
+            }
+
             transform.position = position;
             transform.rotation = rotation;
         }

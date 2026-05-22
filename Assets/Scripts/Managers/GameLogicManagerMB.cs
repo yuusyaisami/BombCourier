@@ -16,6 +16,8 @@ using Unity.Cinemachine;
 using UnityEngine;
 namespace BC.Manager
 {
+    // ゲーム進行全体をまとめるメインの司令塔。
+    // ステージ読み込み、プレイヤー生成、爆弾進行、ゴール演出、リトライ、UI への通知をここで束ねる。
     public enum RetryActionMode
     {
         None,
@@ -23,13 +25,13 @@ namespace BC.Manager
         ReloadCheckpoint,
     }
 
+    // 個別の system に散らすより、ゲームの状態遷移を 1 か所で追いやすくするための管理 MonoBehaviour。
     public class GameLogicManagerMB : UnityEngine.MonoBehaviour
     {
-        // ゲームのロジックを管理するクラス
-        // 例えば、ゲームの状態管理、スコア管理、レベル管理などを担当することができます。
         public static GameLogicManagerMB Instance { get; private set; }
         private void Awake()
         {
+            // singleton 前提。重複があれば新しい方を破棄する。
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
@@ -38,41 +40,60 @@ namespace BC.Manager
             Instance = this;
         }
         [Header("References")]
-        [SerializeField] private UIFadeEffectMB uiFadeEffectMB; // UIのフェードエフェクトを管理するクラス。シーン全体のフェードイン・フェードアウトなどを担当する。
-        [SerializeField] private UIGameSceneManagerMB uiGameSceneManagerMB; // ゲームシーンのUIを管理するクラス。ステージ選択画面やゲームオーバー画面などのUIを担当する。
-        [SerializeField] private EntityMB playerPrefab; // プレイヤーのプレハブ
-        [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用のステージインスタンス。エディタで直接割り当てることができます。
-        // 爆弾Ref
+        [SerializeField] private UIFadeEffectMB uiFadeEffectMB; // 画面フェードを担当する UI 側の制御。
+        [SerializeField] private UIGameSceneManagerMB uiGameSceneManagerMB; // ゲーム中 UI 全体の表示/非表示を担う。
+        [SerializeField] private EntityMB playerPrefab; // スポーン用プレイヤー prefab。
+        [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用に直接参照する stage instance。
+        // 現在のゲーム進行にぶら下がる主要参照群。
         private BombMB currentBomb;
 
-        private GodHandObjectMB currentGodHand; // 現在つかまっているGodHandの参照。複数のGodHandが存在する場合に、どのGodHandにつかまっているかを管理するために使用する。
-        private MapRuntimeMB currentMapRuntime; // 現在ロードされているマップのランタイム参照。
-        private GameObject stageInstance; // 現在のステージのインスタンス。ステージをリセットするときに使用する。
-        private PlayerMB playerInstance; // プレイヤーのインスタンス。プレイヤーをスポーンさせるときに使用する。
-        private GoalData currentGoalData; // 現在のゴールのデータ。ゴールに到達したときの処理に使用する。
-        private CameraPathSequenceAuthoringMB currentCameraPath; // 現在のカメラパス。
-        private EntityRef playerRef; // プレイヤーのEntityRef。プレイヤーの状態を管理するために使用する。
-        public Action<PlayerMB> OnPlayerSpawned; // プレイヤーがスポーンしたときに呼び出されるイベント
-        public Action<BombMB> OnCurrentBombChanged; // 現在の爆弾が変わったときに呼び出されるイベント
-        public Action<BombMB> OnStartBombFuse; // 爆弾のカウントダウンが開始されたときに呼び出されるイベント
-        public Action OnEndBombFuse; // 爆弾のカウントダウンが終了したときに呼び出されるイベント
-        public Action ReloadState; // ステージをリロードする必要があるときに呼び出されるイベント
-        public Action ExplodedState; // 爆弾が爆発したときに呼び出されるイベント
-        public Action ExplodedBeforeGoalOpenedState; // 爆弾が爆発し、かつGoal Gateがまだ開いていないときに呼び出されるイベント
-        private SceneKernel sceneKernel; // シーンカーネルの参照。シーン全体の状態を管理するために使用する。
-        private float timeSinceStartBomb; //爆弾のカウントダウンが開始してからの経過時間を管理するための変数
-        private float currentClearTimeThreshold = 60f; // 爆弾のカウントダウンが開始してからこの時間以内にゴールした場合、Fast Clear とみなすための閾値。必要に応じて調整してください。
-        private EntityRef gameLogicManagerRef; // GameLogicManager自身のEntityRef。シーンカーネルに登録している場合に使用する。
-        public EntityRef SelfEntityRef => gameLogicManagerRef; // GameLogicManagerのEntityRefを外部から参照できるようにするプロパティ
-        private BonusObjectMB currentBonusObject; // 現在のステージのBonusObjectへの参照。スコア計算などに使用する。
+        private GodHandObjectMB currentGodHand; // つかまっている GodHand の参照。
+        private MapRuntimeMB currentMapRuntime; // 現在ロード中の map runtime。
+        private GameObject stageInstance; // 現在の stage instance。
+        private PlayerMB playerInstance; // 現在の player instance。
+        private GoalData currentGoalData; // 現在のゴールデータ。
+        private CameraPathSequenceAuthoringMB currentCameraPath; // 現在の camera path。
+        private EntityRef playerRef; // player の EntityRef。
+        public Action<PlayerMB> OnPlayerSpawned; // player spawn 通知。
+        public Action<BombMB> OnCurrentBombChanged; // current bomb 変更通知。
+        public Action<BombMB> OnStartBombFuse; // fuse 開始通知。
+        public Action OnEndBombFuse; // fuse 終了通知。
+        public Action ReloadState; // reload 要求通知。
+        public Action ExplodedState; // 爆発通知。
+        public Action ExplodedBeforeGoalOpenedState; // ゴール前爆発通知。
+        private SceneKernel sceneKernel; // Scene 全体で共有する kernel。
+        private float timeSinceStartBomb; // 爆弾開始からの経過時間。
+        private float currentClearTimeThreshold = 60f; // fast clear 判定の閾値。
+        private EntityRef gameLogicManagerRef; // 自身の EntityRef。
+        public EntityRef SelfEntityRef => gameLogicManagerRef; // 外部参照用の self entity。
+        private BonusObjectMB currentBonusObject; // 現在の bonus object。
         private int currentGameStage;
         private readonly Stack<RetryCheckpointSnapshot> retryCheckpointStack = new();
+        private BombMB lastCapturedFuseBomb;
         private bool resetArmed;
 
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
         public RetryActionMode CurrentRetryActionMode => ResolveRetryActionMode();
+        public bool HasRetryCheckpoint => retryCheckpointStack.Count > 0;
 
+        public bool AreAllSceneBombsExploded()
+        {
+            if (currentMapRuntime == null || currentMapRuntime.Bombs == null || currentMapRuntime.Bombs.Count == 0)
+                return false;
+
+            for (int i = 0; i < currentMapRuntime.Bombs.Count; i++)
+            {
+                // Destroy 済みの Bomb 参照は Unity 上 null 扱いになるので、null も爆発済みとして扱う。
+                BombMB bomb = currentMapRuntime.Bombs[i];
+                if (bomb != null && !bomb.HasExploded)
+                    return false;
+            }
+
+            return true;
+        }
+
+        // 現在の状態から、どのリトライ操作を提示すべきかを返す。
         public bool TryGetRetryActionMode(out RetryActionMode mode)
         {
             mode = RetryActionMode.None;
@@ -84,18 +105,26 @@ namespace BC.Manager
             return mode != RetryActionMode.None;
         }
 
+        // checkpoint があれば ReloadCheckpoint を優先し、なければ ResetStage を返す。
         private RetryActionMode ResolveRetryActionMode()
         {
             if (retryCheckpointStack.Count > 0)
                 return RetryActionMode.ReloadCheckpoint;
 
-            return resetArmed ? RetryActionMode.ResetStage : RetryActionMode.None;
+            return resetArmed || AreAllSceneBombsExploded()
+                ? RetryActionMode.ResetStage
+                : RetryActionMode.None;
         }
 
+        // リトライを許可するゲーム状態かを判断する。
         public bool IsRetryActionAvailable()
         {
             GameStateManagerMB stateManager = GameStateManagerMB.Instance;
             if (stateManager == null)
+                return false;
+
+            // ゴールゲート破壊後は checkpoint/retry を案内しない。
+            if (IsGoalGateOpened())
                 return false;
 
             return stateManager.CurrentState == GameState.SetupPlaying ||
@@ -103,6 +132,7 @@ namespace BC.Manager
                    stateManager.CurrentState == GameState.Exploded;
         }
 
+        // UI などからリトライを要求されたときの入口。
         public void RequestRetryAction()
         {
             if (!TryGetRetryActionMode(out RetryActionMode mode) || GameStateManagerMB.Instance == null)
@@ -114,6 +144,7 @@ namespace BC.Manager
                     : GameState.ResetStage);
         }
 
+        // 爆弾取得前の snapshot を積む。リロード時にこの snapshot を使って戻る。
         public void CaptureRetryCheckpointBeforeBombPickup(BombMB bomb)
         {
             PlayerMB resolvedPlayer = ResolvePlayerInstance();
@@ -125,7 +156,7 @@ namespace BC.Manager
                 Debug.LogError($"{nameof(GameLogicManagerMB)}: retry checkpoint capture prerequisites are missing.", this);
                 return;
             }
-
+            // リトライチェックポイントをキャプチャしてスタックに積む。これには、ステージの状態、プレイヤーの位置と回転、そしてターゲットとなる爆弾の参照が含まれる。
             StageCheckpointSnapshot stageCheckpoint = stageManager.CaptureStageCheckpointSnapshot();
             if (!stageCheckpoint.IsValid)
             {
@@ -137,39 +168,89 @@ namespace BC.Manager
                 stageCheckpoint,
                 resolvedPlayer.transform.position,
                 resolvedPlayer.transform.rotation,
-                targetBomb));
+                targetBomb,
+                CaptureRetryBombSnapshots()));
 
             resetArmed = false;
             SetCurrentBomb(targetBomb);
         }
 
+        // Player の参照が無効ならシーン内から探し直してキャッシュする。
         private PlayerMB ResolvePlayerInstance()
         {
-            if (playerInstance != null)
+            if (TryResolveBoundPlayerRef(playerInstance, out EntityRef cachedPlayerRef))
             {
+                playerRef = cachedPlayerRef;
                 return playerInstance;
             }
 
-            PlayerMB foundPlayer = transform.GetComponentInChildren<PlayerMB>(true);
+            playerInstance = null;
+            playerRef = default;
+
+            PlayerMB foundPlayer = FindBoundPlayerInHierarchy(transform);
 
             if (foundPlayer == null)
             {
-                foundPlayer = UnityEngine.Object.FindAnyObjectByType<PlayerMB>();
+                foundPlayer = FindBoundPlayerInScene();
             }
 
-            if (foundPlayer != null)
+            if (TryResolveBoundPlayerRef(foundPlayer, out EntityRef resolvedPlayerRef))
             {
                 playerInstance = foundPlayer;
-
-                EntityMB entityMB = foundPlayer.GetComponent<EntityMB>();
-                playerRef = entityMB != null ? entityMB.Entity : default;
+                playerRef = resolvedPlayerRef;
             }
 
             return playerInstance;
         }
 
+        // pool に戻って unbind 済みの Player を再利用すると invalid EntityRef を掴むので、bind 済みだけを候補にする。
+        private static PlayerMB FindBoundPlayerInHierarchy(Transform root)
+        {
+            if (root == null)
+                return null;
+
+            PlayerMB[] players = root.GetComponentsInChildren<PlayerMB>(true);
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (TryResolveBoundPlayerRef(players[i], out _))
+                    return players[i];
+            }
+
+            return null;
+        }
+
+        private static PlayerMB FindBoundPlayerInScene()
+        {
+            PlayerMB[] players = UnityEngine.Object.FindObjectsByType<PlayerMB>(FindObjectsInactive.Include);
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (TryResolveBoundPlayerRef(players[i], out _))
+                    return players[i];
+            }
+
+            return null;
+        }
+
+        private static bool TryResolveBoundPlayerRef(PlayerMB candidate, out EntityRef entity)
+        {
+            entity = default;
+
+            if (candidate == null)
+                return false;
+
+            EntityMB entityMB = candidate.GetComponent<EntityMB>();
+            if (entityMB == null || !entityMB.HasEntity)
+                return false;
+
+            entity = entityMB.Entity;
+            return entity.IsValid;
+        }
+
         private void Start()
         {
+            // scene kernel を起点に、ゲーム進行と state machine の接続を作る。
             sceneKernel = transform.GetComponentInChildren<SceneKernelMB>().Kernel;
             GameStateManagerMB stateManager = GameStateManagerMB.Instance;
             gameLogicManagerRef = GetComponent<EntityMB>() != null ? GetComponent<EntityMB>().Entity : default;
@@ -200,12 +281,14 @@ namespace BC.Manager
         }
         private void Update()
         {
+            // 爆弾が進行中のときだけ経過時間を積む。
             if (currentBomb != null && GameStateManagerMB.Instance.CurrentState == GameState.FusePlaying)
             {
                 timeSinceStartBomb += Time.deltaTime;
             }
         }
 
+        // GameState の変化に応じて、stage 読み込み、UI 切り替え、演出開始を振り分ける。
         public void OnStageChanged(GameState newState)
         {
             if (newState == GameState.Starting)
@@ -218,7 +301,7 @@ namespace BC.Manager
             }
             else if (newState == GameState.SetupPlaying)
             {
-                sceneKernel.Cameras?.EndGoalPresentation();
+                sceneKernel.Cameras?.ClearPresentationCamera();
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, true);
@@ -295,8 +378,7 @@ namespace BC.Manager
             }
 
             // ゴール演出中のカメラ切り替えは scene camera service に一本化する。
-            Debug.Log("Switching to goal camera: " + currentGoalData.GoalCamera.name);
-            sceneKernel.Cameras?.BeginGoalPresentation(currentGoalData.GoalCamera, playerRef);
+            sceneKernel.Cameras?.ShowPresentationCamera(currentGoalData.GoalCamera, playerRef);
 
             // UIを非表示にする
             uiGameSceneManagerMB.ShowTopPanel(false); // ゲームシーンのUIを非表示にする
@@ -320,6 +402,7 @@ namespace BC.Manager
         }
         private async UniTask NextStageAsync()
         {
+            InputManagerMB.Instance?.LockCursor(); // プレイヤーの入力を無効にする
             PlayerAnimationMB playerAnimationController = playerInstance.GetComponentInChildren<PlayerAnimationMB>();
             playerAnimationController?.SetNextStageActive(true); // プレイヤーのアニメーションパラメーターを更新して、次のステージに進むためのアニメーションを再生する
             currentGodHand.Catch(playerInstance); // プレイヤーをGodHandにつかまらせる
@@ -354,6 +437,7 @@ namespace BC.Manager
 
             await UniTask.CompletedTask;
         }
+        // ステージをロードするための内部ロジック。ステージのインスタンス化、プレイヤーのスポーン、カメラの初期化などを行う。
         private async UniTask LoadStageAsync(int stageIndex, bool playIntro = true)
         {
             currentGameStage = stageIndex;
@@ -361,6 +445,7 @@ namespace BC.Manager
 
             await UniTask.CompletedTask;
         }
+        // ゲームステージをロードするための具体的な処理
         private async UniTask PlayCameraPathSequence()
         {
             if (CameraManager.Instance == null)
@@ -374,6 +459,13 @@ namespace BC.Manager
                 Debug.LogError("GameLogicManagerMB: Camera path is not resolved from MapRuntimeMB.", this);
                 return;
             }
+
+            // Intro 開始前から path camera を最前面にし、初期フレームの priority 競合を防ぐ。
+            sceneKernel?.Cameras?.ShowPresentationCamera(CameraManager.Instance.PathCamera, playerRef);
+
+            // さきにカメラの位置を初期化しておく。これがないと、カメラパスの開始地点がプレイヤーの位置に引っ張られてしまう。
+            CameraManager.Instance.SetPathCameraPosition(currentCameraPath, playerRef);
+            await UniTask.Delay(200);
             uiGameSceneManagerMB.ShowTopPanel(false, 0f); // ゲームシーンのUIを表示する
             uiGameSceneManagerMB.ShowBottomPanel(false, 0f); // ゲームシーンのUIを表示する
             await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
@@ -382,22 +474,36 @@ namespace BC.Manager
                 // カメラパスの再生が完了した後の処理
                 await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードインさせる
             });
+
+            // Intro path 再生が終わったら、SetupPlaying まで待たずに presentation を解除する。
+            // これで Player Spawn 演出中は TPS カメラが有効になる。
+            sceneKernel?.Cameras?.ClearPresentationCamera();
+
             PlayerMB resolvedPlayer = ResolvePlayerInstance();
             if (resolvedPlayer != null)
             {
                 resolvedPlayer.PlayRespawnEffect(); // プレイヤーのスポーンエフェクトを再生する
+                RegisterThirdPersonTargetForHandoff(resolvedPlayer, useCameraTarget: false);
             }
+            // Intro から TPS に戻る瞬間の 180 度スナップを防ぐため、
+            // TPS look yaw を intro 終了時の camera forward に揃えておく。
+            AlignThirdPersonYawToCurrentCamera(resolvedPlayer);
             // 少し待つ
             await UniTask.Delay(800);
             await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0f, 0.5f); // フェードインさせる
 
             await UniTask.Delay(200);
             await resolvedPlayer.ShowPlayerAsync(true); // プレイヤーを表示する
+            RegisterThirdPersonTargetForHandoff(resolvedPlayer, useCameraTarget: true);
+
+
             uiGameSceneManagerMB.ShowTopPanel(true); // ゲームシーンのUIを表示する
             uiGameSceneManagerMB.ShowBottomPanel(true); // ゲームシーンのUIを表示する
             GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
 
         }
+
+        // リロードするためのもの、マップの作り替えではなく、マップ内にあるcapture対象とPlayer、Bombなどの状態を戻す
         private async UniTask ReloadStageAsync()
         {
             if (retryCheckpointStack.Count == 0)
@@ -418,7 +524,11 @@ namespace BC.Manager
                 : null;
             itemHandleState?.RestoreRetryCheckpointState();
 
+
+            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードインさせる
             StageManagerMB.Instance.ReloadStage(retryCheckpoint.StageCheckpoint);
+            RestoreRetryBombSnapshots(retryCheckpoint.BombSnapshots);
+            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0f, 0.5f); // フェードインさせる
 
             if (resolvedPlayer != null)
             {
@@ -426,7 +536,7 @@ namespace BC.Manager
                 resolvedPlayer.TeleportToSpawnPoint(retryCheckpoint.PlayerPosition, retryCheckpoint.PlayerRotation);
             }
 
-            BombMB retryBomb = ResolveRetryBomb(retryCheckpoint.Bomb);
+            BombMB retryBomb = ResolveRetryBomb(retryCheckpoint.PreferredBomb);
 
             SetCurrentBomb(retryBomb);
             timeSinceStartBomb = 0f;
@@ -442,7 +552,7 @@ namespace BC.Manager
             LoadGameStage(playIntro: false);
             await UniTask.CompletedTask;
         }
-
+        // ステージをリセットするための内部ロジック。現在のステージを完全にリセットして、初期状態に戻す。
         private BombMB ResolveDefaultCurrentBomb()
         {
             if (currentMapRuntime == null || currentMapRuntime.Bombs == null || currentMapRuntime.Bombs.Count == 0)
@@ -465,6 +575,72 @@ namespace BC.Manager
             return ResolveDefaultCurrentBomb();
         }
 
+        private RetryBombSnapshot[] CaptureRetryBombSnapshots()
+        {
+            if (currentMapRuntime == null || currentMapRuntime.Bombs == null || currentMapRuntime.Bombs.Count == 0)
+                return Array.Empty<RetryBombSnapshot>();
+
+            var snapshots = new List<RetryBombSnapshot>(currentMapRuntime.Bombs.Count);
+
+            for (int i = 0; i < currentMapRuntime.Bombs.Count; i++)
+            {
+                BombMB bomb = currentMapRuntime.Bombs[i];
+                RetryBombSnapshot snapshot = CaptureRetryBombSnapshot(bomb);
+                if (!snapshot.IsValid)
+                    continue;
+
+                snapshots.Add(snapshot);
+            }
+
+            return snapshots.ToArray();
+        }
+
+        private static RetryBombSnapshot CaptureRetryBombSnapshot(BombMB bomb)
+        {
+            if (bomb == null)
+                return default;
+
+            Transform bombTransform = bomb.transform;
+            return new RetryBombSnapshot(
+                bomb,
+                bombTransform.parent,
+                bombTransform.localPosition,
+                bombTransform.localRotation,
+                bombTransform.localScale,
+                bomb.gameObject.activeSelf,
+                bomb.CaptureRetryCheckpointState());
+        }
+
+        private static void RestoreRetryBombSnapshots(IReadOnlyList<RetryBombSnapshot> snapshots)
+        {
+            if (snapshots == null || snapshots.Count == 0)
+                return;
+
+            for (int i = 0; i < snapshots.Count; i++)
+                RestoreRetryBombSnapshot(snapshots[i]);
+        }
+
+        private static void RestoreRetryBombSnapshot(in RetryBombSnapshot snapshot)
+        {
+            if (!snapshot.IsValid)
+                return;
+
+            BombMB bomb = snapshot.Bomb;
+            if (bomb == null)
+                return;
+
+            Transform bombTransform = bomb.transform;
+
+            if (bombTransform.parent != snapshot.Parent)
+                bombTransform.SetParent(snapshot.Parent, false);
+
+            bombTransform.localPosition = snapshot.LocalPosition;
+            bombTransform.localRotation = snapshot.LocalRotation;
+            bombTransform.localScale = snapshot.LocalScale;
+            bomb.gameObject.SetActive(snapshot.ActiveSelf);
+            bomb.RestoreCheckpointState(snapshot.CheckpointState);
+        }
+        // currentBombをセットするためのメソッド。currentBombが変わるたびに、関連するイベントハンドラの登録と解除を行い、currentBombが変わったことを通知するイベントを発火する。
         public void SetCurrentBomb(BombMB bomb)
         {
             if (currentBomb != null)
@@ -483,6 +659,14 @@ namespace BC.Manager
         private void HandleCurrentBombStartedFuse(BombMB bomb)
         {
             if (bomb != currentBomb) return; // currentBomb以外の爆弾が起爆した場合は無視する
+
+            // retry checkpoint は原則「起爆開始時の接触」を基準に積む。
+            if (bomb != null && bomb != lastCapturedFuseBomb)
+            {
+                CaptureRetryCheckpointBeforeBombPickup(bomb);
+                lastCapturedFuseBomb = bomb;
+            }
+
             GameStateManagerMB.Instance.ChangeState(GameState.FusePlaying);
             OnStartBombFuse?.Invoke(currentBomb); // 爆弾のカウントダウンが開始されたことを通知するイベントを発火する
             timeSinceStartBomb = 0; // 爆弾のカウントダウン開始からの経過時間をリセットする
@@ -511,7 +695,7 @@ namespace BC.Manager
 
         public void LoadGameStage(bool playIntro = true)
         {
-            sceneKernel?.Cameras?.ResetPresentationState();
+            sceneKernel?.Cameras?.ResetRuntimeState();
 
             if (stageInstance != null && debugStageInstance == null)
             {
@@ -546,7 +730,7 @@ namespace BC.Manager
                 playerInstance = ResolvePlayerInstance();
                 OnPlayerSpawned?.Invoke(playerInstance);
                 playerRef = playerInstance != null ? playerInstance.GetComponent<EntityMB>().Entity : default;
-                sceneKernel.Cameras?.SetPlayerEntity(playerRef);
+                sceneKernel.Cameras?.SetTrackedPlayer(playerRef);
 
                 // デバッグ用
                 if (!playerRef.IsValid) Debug.LogError("GameLogicManagerMB: PlayerRef is not valid.", this);
@@ -586,6 +770,52 @@ namespace BC.Manager
             bootstrapper.RegisterSceneEntities();
         }
 
+        private static void AlignThirdPersonYawToCurrentCamera(PlayerMB player)
+        {
+            if (player == null || CameraManager.Instance == null)
+                return;
+
+            ThirdPersonCameraController controller = player.GetComponentInChildren<ThirdPersonCameraController>(true);
+            if (controller == null)
+                return;
+
+            Transform referenceTransform = CameraManager.Instance.PathCamera != null
+                ? CameraManager.Instance.PathCamera.transform
+                : CameraManager.Instance.ThirdPersonCamera != null
+                    ? CameraManager.Instance.ThirdPersonCamera.transform
+                    : null;
+
+            if (referenceTransform == null)
+                return;
+
+            Vector3 forward = referenceTransform.forward;
+            forward.y = 0.0f;
+
+            if (forward.sqrMagnitude <= 0.0001f)
+                return;
+
+            controller.SyncYawToWorldForward(forward.normalized);
+        }
+
+        // Player 非表示中は camera target が無効化されることがあるため、
+        // handoff 中だけ root を追従し、表示後に本来の camera target へ戻す。
+        private static void RegisterThirdPersonTargetForHandoff(PlayerMB player, bool useCameraTarget)
+        {
+            if (player == null || CameraManager.Instance == null)
+                return;
+
+            Transform target = player.transform;
+
+            if (useCameraTarget)
+            {
+                ThirdPersonCameraController controller = player.GetComponentInChildren<ThirdPersonCameraController>(true);
+                if (controller != null && controller.CameraTarget != null)
+                    target = controller.CameraTarget;
+            }
+
+            CameraManager.Instance.RegisterThirdPersonTarget(target);
+        }
+
         private void UnregisterStageEntities(GameObject rootObject)
         {
             if (sceneKernel == null || rootObject == null)
@@ -602,14 +832,21 @@ namespace BC.Manager
         private void ResetPlayer()
         {
             // プレイヤーを削除する
-            if (playerInstance != null)
+            EntityRef playerEntity = playerRef;
+            if (!playerEntity.IsValid)
             {
-                sceneKernel.Spawner.Despawn(playerRef);
-                playerInstance = null;
-                playerRef = default;
+                TryResolveBoundPlayerRef(playerInstance, out playerEntity);
             }
 
-            sceneKernel?.Cameras?.SetPlayerEntity(default);
+            if (playerEntity.IsValid)
+            {
+                sceneKernel.Spawner.Despawn(playerEntity, EntityDespawnMode.Destroy);
+            }
+
+            playerInstance = null;
+            playerRef = default;
+
+            sceneKernel?.Cameras?.SetTrackedPlayer(default);
         }
 
         private async UniTask StartGameplayWithoutIntroAsync()
@@ -622,7 +859,9 @@ namespace BC.Manager
             }
 
             resolvedPlayer.PlayRespawnEffect();
+            RegisterThirdPersonTargetForHandoff(resolvedPlayer, useCameraTarget: false);
             await resolvedPlayer.ShowPlayerAsync(false);
+            RegisterThirdPersonTargetForHandoff(resolvedPlayer, useCameraTarget: true);
             uiGameSceneManagerMB.ShowTopPanel(true);
             uiGameSceneManagerMB.ShowBottomPanel(true);
             GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
@@ -631,6 +870,7 @@ namespace BC.Manager
         private void ResetRetryActionContext()
         {
             retryCheckpointStack.Clear();
+            lastCapturedFuseBomb = null;
             resetArmed = false;
             timeSinceStartBomb = 0f;
             StageManagerMB.Instance?.ClearStageCheckpoint();
@@ -646,13 +886,13 @@ namespace BC.Manager
             }
 
             PlayerMB existingPlayer = ResolvePlayerInstance();
-            if (existingPlayer != null)
+            if (TryResolveBoundPlayerRef(existingPlayer, out EntityRef existingPlayerRef))
             {
                 existingPlayer.TeleportToSpawnPoint(position, rotation);
                 playerInstance = existingPlayer;
                 OnPlayerSpawned?.Invoke(playerInstance);
-                playerRef = existingPlayer.GetComponent<EntityMB>().Entity;
-                sceneKernel.Cameras?.SetPlayerEntity(playerRef);
+                playerRef = existingPlayerRef;
+                sceneKernel.Cameras?.SetTrackedPlayer(playerRef);
             }
             else
             {
@@ -667,7 +907,7 @@ namespace BC.Manager
 
                 OnPlayerSpawned?.Invoke(playerInstance);
                 playerRef = result.Entity;
-                sceneKernel.Cameras?.SetPlayerEntity(playerRef);
+                sceneKernel.Cameras?.SetTrackedPlayer(playerRef);
             }
             // 一時的にPlayerの動きを止める
             if (!playerRef.IsValid)
@@ -679,6 +919,7 @@ namespace BC.Manager
             {
                 Debug.Log("Hiding player during spawn/teleport.");
                 playerInstance.HidePlayer();
+                RegisterThirdPersonTargetForHandoff(playerInstance, useCameraTarget: false);
             }
             sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
             sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, false);
@@ -711,17 +952,50 @@ namespace BC.Manager
             StageCheckpointSnapshot stageCheckpoint,
             Vector3 playerPosition,
             Quaternion playerRotation,
-            BombMB bomb)
+            BombMB preferredBomb,
+            RetryBombSnapshot[] bombSnapshots)
         {
             StageCheckpoint = stageCheckpoint;
             PlayerPosition = playerPosition;
             PlayerRotation = playerRotation;
-            Bomb = bomb;
+            PreferredBomb = preferredBomb;
+            BombSnapshots = bombSnapshots ?? Array.Empty<RetryBombSnapshot>();
         }
 
         public StageCheckpointSnapshot StageCheckpoint { get; }
         public Vector3 PlayerPosition { get; }
         public Quaternion PlayerRotation { get; }
+        public BombMB PreferredBomb { get; }
+        public IReadOnlyList<RetryBombSnapshot> BombSnapshots { get; }
+    }
+
+    internal readonly struct RetryBombSnapshot
+    {
+        public RetryBombSnapshot(
+            BombMB bomb,
+            Transform parent,
+            Vector3 localPosition,
+            Quaternion localRotation,
+            Vector3 localScale,
+            bool activeSelf,
+            object checkpointState)
+        {
+            Bomb = bomb;
+            Parent = parent;
+            LocalPosition = localPosition;
+            LocalRotation = localRotation;
+            LocalScale = localScale;
+            ActiveSelf = activeSelf;
+            CheckpointState = checkpointState;
+        }
+
         public BombMB Bomb { get; }
+        public Transform Parent { get; }
+        public Vector3 LocalPosition { get; }
+        public Quaternion LocalRotation { get; }
+        public Vector3 LocalScale { get; }
+        public bool ActiveSelf { get; }
+        public object CheckpointState { get; }
+        public bool IsValid => Bomb != null && CheckpointState != null;
     }
 }

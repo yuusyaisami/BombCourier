@@ -2,7 +2,7 @@ using BC.Editor.Foundation;
 using UnityEditor;
 using Object = UnityEngine.Object;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     internal readonly struct ActionInlineWindowLaunchRequest
     {
@@ -29,9 +29,9 @@ namespace BC.Editor.Action
 
     internal static class ActionInlineWindowLauncher
     {
-        private const string TargetKey = "BC.Editor.Action.ActionInlineWindowLauncher.TargetInstanceId";
-        private const string PropertyPathKey = "BC.Editor.Action.ActionInlineWindowLauncher.PropertyPath";
-        private const string BindingKeyKey = "BC.Editor.Action.ActionInlineWindowLauncher.BindingKey";
+        private const string TargetKey = "BC.Editor.ActionSystem.ActionInlineWindowLauncher.TargetInstanceId";
+        private const string PropertyPathKey = "BC.Editor.ActionSystem.ActionInlineWindowLauncher.PropertyPath";
+        private const string BindingKeyKey = "BC.Editor.ActionSystem.ActionInlineWindowLauncher.BindingKey";
 
         internal static bool CanLaunch(SerializedProperty inlineActionProperty)
         {

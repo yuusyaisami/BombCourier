@@ -3,6 +3,7 @@ using BC.ActionSystem;
 using BC.Base;
 using BC.Player;
 using BC.Rendering;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -35,6 +36,7 @@ namespace BC.Character
         [SerializeField] private UnityEvent interactionCompleted;
 
         private bool activeInteractionFacingOwnsChannel;
+        private bool isInteractionInProgress;
 
         public event Action<NPCObjectMB> Interacted;
 
@@ -45,6 +47,7 @@ namespace BC.Character
         public Vector3 PromptWorldOffset => promptWorldOffset;
         public bool AllowInteractionSourceFacing => requestInteractorToFaceTarget;
         public Transform InteractionFacingTransform => InteractionTransform;
+        public bool IsInteractionInProgress => isInteractionInProgress;
 
         private void Reset()
         {
@@ -100,6 +103,8 @@ namespace BC.Character
 
         public void OnInteractionStarted(InteractionEventData eventData)
         {
+            isInteractionInProgress = true;
+
             if (!faceInteractorOnInteraction)
                 return;
 
@@ -120,6 +125,7 @@ namespace BC.Character
 
         public void OnInteractionCanceled(InteractionEventData eventData)
         {
+            isInteractionInProgress = false;
             ClearInteractionFacing(force: false);
         }
 
@@ -130,24 +136,60 @@ namespace BC.Character
                 Debug.Log($"{nameof(NPCObjectMB)} '{name}' was interacted with.", this);
             }
 
+            Interacted?.Invoke(this);
+            interactionCompleted?.Invoke();
+
             if (TryGetSelfEntity(out EntityRef selfEntity))
             {
-                // Interact 完了から action を起動して、会話などの振る舞いを差し込めるようにする。
-                InlineActionExecutionUtility.ExecuteAndForget(this, selfEntity, interactionAction, eventData.SourceEntity, $"NPC interact '{name}'");
+                // Interact 完了後の action 実行中も interaction 扱いを維持して、
+                // NeckLook の suspendWhileNpcInteractionActive が会話開始中にも効くようにする。
+                RunInteractionActionAsync(selfEntity, eventData.SourceEntity).Forget();
+                return;
             }
-            else if (interactionAction != null)
+
+            if (interactionAction != null)
             {
                 Debug.LogWarning($"{nameof(NPCObjectMB)}: interaction action was skipped because EntityMB is missing or not bound.", this);
             }
 
-            activeInteractionFacingOwnsChannel = false;
+            ClearInteractionFacing(force: true);
+            isInteractionInProgress = false;
+        }
 
-            Interacted?.Invoke(this);
-            interactionCompleted?.Invoke();
+        private async UniTaskVoid RunInteractionActionAsync(EntityRef selfEntity, EntityRef sourceEntity)
+        {
+            try
+            {
+                if (interactionAction != null)
+                {
+                    ActionExecutionResult result = await InlineActionExecutionUtility.ExecuteAsync(
+                        this,
+                        selfEntity,
+                        interactionAction,
+                        sourceEntity);
+
+                    if (result.IsFailed)
+                    {
+                        Debug.LogWarning($"{nameof(NPCObjectMB)}: interaction action failed. {result.Message}", this);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
+            finally
+            {
+                ClearInteractionFacing(force: true);
+                // 念のため ownership flag も落として、後続 interaction へ状態を持ち越さない。
+                activeInteractionFacingOwnsChannel = false;
+                isInteractionInProgress = false;
+            }
         }
 
         private void OnDisable()
         {
+            isInteractionInProgress = false;
             ClearInteractionFacing(force: true);
         }
 

@@ -59,16 +59,22 @@ namespace BC.ActionSystem
                         return ActionNodeStatus.Failed;
                     }
 
-                    TalkSystemManagerMB talkSystemManager = TalkSystemManagerMB.Instance;
-                    if (talkSystemManager == null)
+                    if (context.SceneKernel == null || context.SceneKernel.EntityComponents == null)
                     {
-                        Debug.LogWarning($"{nameof(ShowTalkStepRuntime)}: {nameof(TalkSystemManagerMB)} is not available.");
+                        Debug.LogWarning($"{nameof(ShowTalkStepRuntime)}: scene kernel entity components are not available.");
+                        failed = true;
+                        return ActionNodeStatus.Failed;
+                    }
+
+                    if (!context.SceneKernel.EntityComponents.TryResolve(context.ActorEntity, out TalkAdapterMB talkAdapter))
+                    {
+                        Debug.LogWarning($"{nameof(ShowTalkStepRuntime)}: {nameof(TalkAdapterMB)} was not found on {context.ActorEntity}.");
                         failed = true;
                         return ActionNodeStatus.Failed;
                     }
 
                     cancellationTokenSource = new CancellationTokenSource();
-                    RunAsync(talkSystemManager, context.ActorEntity, context.TriggerEntity, cancellationTokenSource.Token).Forget();
+                    RunAsync(talkAdapter, context.TriggerEntity, cancellationTokenSource.Token).Forget();
                 }
 
                 return ActionNodeStatus.Running;
@@ -80,15 +86,14 @@ namespace BC.ActionSystem
             }
 
             private async UniTaskVoid RunAsync(
-                TalkSystemManagerMB talkSystemManager,
-                EntityRef actor,
+                TalkAdapterMB talkAdapter,
                 EntityRef viewer,
                 CancellationToken cancellationToken)
             {
                 try
                 {
-                    await talkSystemManager.ShowTalk(actor, viewer, talkRequestData).AttachExternalCancellation(cancellationToken);
-                    completed = true;
+                    completed = await talkAdapter.TryShowTalkAsync(viewer, talkRequestData, cancellationToken);
+                    failed = !completed;
                 }
                 catch (OperationCanceledException)
                 {

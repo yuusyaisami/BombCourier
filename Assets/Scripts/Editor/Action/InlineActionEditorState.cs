@@ -3,14 +3,37 @@ using BC.Editor.Foundation;
 using UnityEditor;
 using UnityEngine;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     internal static class InlineActionEditorState
     {
-        private const string ActiveRenameKey = "BC.Editor.Action.InlineAction.ActiveRename";
-        private const string RenameTextPrefix = "BC.Editor.Action.InlineAction.RenameText.";
-        private const string RenameFocusPrefix = "BC.Editor.Action.InlineAction.RenameFocus.";
-        private const string RenameFocusedPrefix = "BC.Editor.Action.InlineAction.RenameFocused.";
+        // SessionState keeps IMGUI row state stable across repaints without leaking it into runtime data.
+        private const string ActiveRowKey = "BC.Editor.ActionSystem.InlineAction.ActiveRow";
+        private const string ActiveRenameKey = "BC.Editor.ActionSystem.InlineAction.ActiveRename";
+        private const string RenameTextPrefix = "BC.Editor.ActionSystem.InlineAction.RenameText.";
+        private const string RenameFocusPrefix = "BC.Editor.ActionSystem.InlineAction.RenameFocus.";
+        private const string RenameFocusedPrefix = "BC.Editor.ActionSystem.InlineAction.RenameFocused.";
+
+        internal static bool IsActive(SerializedProperty stepProperty)
+        {
+            return string.Equals(
+                SessionState.GetString(ActiveRowKey, string.Empty),
+                GetActiveRowKey(stepProperty),
+                StringComparison.Ordinal);
+        }
+
+        internal static void SetActive(SerializedProperty stepProperty)
+        {
+            if (stepProperty == null)
+                return;
+
+            SessionState.SetString(ActiveRowKey, GetActiveRowKey(stepProperty));
+        }
+
+        internal static void ClearActive()
+        {
+            SessionState.SetString(ActiveRowKey, string.Empty);
+        }
 
         internal static bool IsExpanded(SerializedProperty stepProperty)
         {
@@ -137,6 +160,11 @@ namespace BC.Editor.Action
         internal static string GetRenameControlName(SerializedProperty stepProperty)
         {
             return $"InlineActionRename_{GetRenameRowKey(stepProperty)}";
+        }
+
+        private static string GetActiveRowKey(SerializedProperty stepProperty)
+        {
+            return EditorStateKey.ForProperty(stepProperty, "active");
         }
 
         private static string GetExpandedStateKey(SerializedProperty stepProperty)

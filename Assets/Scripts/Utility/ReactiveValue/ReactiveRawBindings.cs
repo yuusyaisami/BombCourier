@@ -352,4 +352,121 @@ namespace BC.Base
             return result;
         }
     }
+
+    public sealed class ReactiveShapeExpressionIdBinding : ReactiveBindingBase<ShapeExpressionId>
+    {
+        private readonly ReactiveShapeExpressionId spec;
+        private readonly ReactiveEvaluationMode evaluationMode;
+        private readonly ReactiveFailurePolicy failurePolicy;
+        private ValueWatchHandle<ShapeExpressionId> watchedHandle;
+        private ReactiveResult<ShapeExpressionId> watchedResult;
+        private int watchedVersion;
+        private bool hasWatchedResult;
+
+        public ReactiveShapeExpressionIdBinding(
+            ReactiveValueResolverService resolver,
+            in ReactiveEvalContext context,
+            in ReactiveShapeExpressionId spec)
+            : this(resolver, context, spec, spec.EvaluationMode, spec.FailurePolicy)
+        {
+        }
+
+        public ReactiveShapeExpressionIdBinding(
+            ReactiveValueResolverService resolver,
+            in ReactiveEvalContext context,
+            in ReactiveShapeExpressionId spec,
+            ReactiveEvaluationMode evaluationMode,
+            ReactiveFailurePolicy failurePolicy)
+            : base(resolver, context)
+        {
+            this.spec = spec;
+            this.evaluationMode = evaluationMode;
+            this.failurePolicy = failurePolicy;
+        }
+
+        protected override ReactiveEvaluationMode EvaluationMode => evaluationMode;
+
+        protected override ReactiveFailurePolicy FailurePolicy => failurePolicy;
+
+        public override bool IsDirty
+        {
+            get
+            {
+                if (EvaluationMode != ReactiveEvaluationMode.Watched)
+                    return base.IsDirty;
+
+                if (!IsValid)
+                    return false;
+
+                if (watchedHandle == null || !hasWatchedResult)
+                    return true;
+
+                return watchedHandle.Version != watchedVersion;
+            }
+        }
+
+        public override ReactiveResult<ShapeExpressionId> Read()
+        {
+            if (EvaluationMode != ReactiveEvaluationMode.Watched)
+                return base.Read();
+
+            if (!IsValid)
+                throw new ObjectDisposedException(GetType().Name);
+
+            return ReadWatched();
+        }
+
+        protected override ReactiveResult<ShapeExpressionId> ResolveCore()
+        {
+            return Resolver.ResolveShapeExpressionId(Context, spec);
+        }
+
+        protected override bool TryGetFallbackValue(out ShapeExpressionId value)
+        {
+            value = spec.FallbackValue;
+            return true;
+        }
+
+        protected override void OnDispose()
+        {
+            watchedHandle = null;
+            watchedResult = default;
+            watchedVersion = 0;
+            hasWatchedResult = false;
+        }
+
+        private ReactiveResult<ShapeExpressionId> ReadWatched()
+        {
+            ReactiveResult<ValueWatchHandle<ShapeExpressionId>> handleResult = EnsureWatchedHandle();
+
+            if (!handleResult.Success)
+            {
+                DirtyState = true;
+                return ApplyFailurePolicy(ReactiveResult<ShapeExpressionId>.Fail(handleResult.Error));
+            }
+
+            if (!hasWatchedResult || watchedHandle.Version != watchedVersion)
+            {
+                watchedVersion = watchedHandle.Version;
+                watchedResult = ReactiveResult<ShapeExpressionId>.Ok(watchedHandle.CurrentValue, watchedVersion);
+                hasWatchedResult = true;
+            }
+
+            DirtyState = false;
+            return watchedResult;
+        }
+
+        private ReactiveResult<ValueWatchHandle<ShapeExpressionId>> EnsureWatchedHandle()
+        {
+            if (watchedHandle != null)
+                return ReactiveResult<ValueWatchHandle<ShapeExpressionId>>.Ok(watchedHandle, watchedHandle.Version);
+
+            ReactiveResult<ValueWatchHandle<ShapeExpressionId>> result = Resolver.ResolveShapeExpressionIdWatch(Context, spec);
+
+            if (result.Success)
+                watchedHandle = result.Value;
+
+            return result;
+        }
+    }
 }

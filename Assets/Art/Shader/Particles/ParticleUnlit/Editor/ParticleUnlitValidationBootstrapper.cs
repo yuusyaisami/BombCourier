@@ -3009,7 +3009,8 @@ namespace BC.Rendering
             textureSheetAnimation.numTilesX = tilesX;
             textureSheetAnimation.numTilesY = tilesY;
             textureSheetAnimation.cycleCount = 1;
-            textureSheetAnimation.useRandomRow = false;
+            textureSheetAnimation.rowMode = ParticleSystemAnimationRowMode.Custom;
+            textureSheetAnimation.rowIndex = 0;
             textureSheetAnimation.startFrame = new ParticleSystem.MinMaxCurve(0f, 1f);
             textureSheetAnimation.frameOverTime = new ParticleSystem.MinMaxCurve(1f, frameCurve);
         }

@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using BC.Editor.Foundation.IMGUI;
 using UnityEditor;
 
-namespace BC.Editor.Action
+namespace BC.Editor.ActionSystem
 {
     internal static class ActionStepContextMenuUtility
     {
@@ -13,13 +14,45 @@ namespace BC.Editor.Action
 
             UnityEngine.Object[] targets = stepProperty.serializedObject.targetObjects;
             string stepPropertyPath = stepProperty.propertyPath;
-            string listPropertyPath = ResolveParentListPropertyPath(stepPropertyPath);
+            string listPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(stepPropertyPath);
             string renameRowKey = InlineActionEditorState.GetRenameRowKey(stepProperty);
             string currentDisplayName = stepProperty.FindPropertyRelative("DisplayName")?.stringValue ?? string.Empty;
             bool hasCustomLabel = !string.IsNullOrWhiteSpace(currentDisplayName);
             int arraySize = ResolveArraySize(stepProperty);
+            IReadOnlyList<Type> stepTypes = ActionStepManagedReferenceUtility.GetStepTypes();
 
             ContextMenuBuilder menu = new();
+            // Structural commands come first so right-click can replace the old inline footer buttons.
+            for (int i = 0; i < stepTypes.Count; i++)
+            {
+                Type stepType = stepTypes[i];
+                menu.AddItem(
+                    $"Add Step/{ActionStepManagedReferenceUtility.GetStepTypeLabel(stepType)}",
+                    !string.IsNullOrWhiteSpace(listPropertyPath),
+                    () => ActionStepManagedReferenceUtility.AddStep(targets, listPropertyPath, stepType, index + 1));
+            }
+
+            menu.AddSeparator();
+            menu.AddItem(
+                "Delete",
+                !string.IsNullOrWhiteSpace(listPropertyPath),
+                () =>
+                {
+                    InlineActionEditorState.CancelRename(renameRowKey);
+                    InlineActionEditorState.ClearActive();
+                    ActionStepManagedReferenceUtility.DeleteStep(targets, listPropertyPath, index);
+                });
+            menu.AddItem(
+                "Copy",
+                stepProperty.managedReferenceValue != null,
+                () => ActionStepManagedReferenceUtility.CopyStep(stepProperty));
+            menu.AddItem(
+                "Paste",
+                !string.IsNullOrWhiteSpace(listPropertyPath) && ActionStepManagedReferenceUtility.CanPasteStep(),
+                () => ActionStepManagedReferenceUtility.PasteStep(targets, listPropertyPath, index + 1));
+
+            menu.AddSeparator();
+            // Renaming and label management stay secondary because they do not change the tree structure.
             menu.AddItem(
                 "Rename Label",
                 stepProperty.managedReferenceValue != null,
@@ -33,14 +66,6 @@ namespace BC.Editor.Action
                 "Duplicate Step",
                 !string.IsNullOrWhiteSpace(listPropertyPath),
                 () => ActionStepManagedReferenceUtility.DuplicateStep(targets, listPropertyPath, index));
-            menu.AddItem(
-                "Delete Step",
-                !string.IsNullOrWhiteSpace(listPropertyPath),
-                () =>
-                {
-                    InlineActionEditorState.CancelRename(renameRowKey);
-                    ActionStepManagedReferenceUtility.DeleteStep(targets, listPropertyPath, index);
-                });
             menu.AddSeparator();
             menu.AddItem(
                 "Move Up",
@@ -55,18 +80,9 @@ namespace BC.Editor.Action
 
         private static int ResolveArraySize(SerializedProperty stepProperty)
         {
-            string listPropertyPath = ResolveParentListPropertyPath(stepProperty.propertyPath);
+            string listPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(stepProperty.propertyPath);
             SerializedProperty listProperty = stepProperty.serializedObject.FindProperty(listPropertyPath);
             return listProperty != null && listProperty.isArray ? listProperty.arraySize : 0;
-        }
-
-        private static string ResolveParentListPropertyPath(string stepPropertyPath)
-        {
-            if (string.IsNullOrWhiteSpace(stepPropertyPath))
-                return string.Empty;
-
-            int markerIndex = stepPropertyPath.LastIndexOf(".Array.data[", StringComparison.Ordinal);
-            return markerIndex < 0 ? string.Empty : stepPropertyPath.Substring(0, markerIndex);
         }
     }
 }

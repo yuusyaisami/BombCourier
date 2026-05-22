@@ -33,6 +33,7 @@
 #define TOY_DIORAMA_DEBUG_BEFORE_BLOOM 29
 #define TOY_DIORAMA_DEBUG_AFTER_BLOOM 30
 
+// ブルーム前パス内だけで完結して表示できるデバッグモード群です。
 bool ToyDiorama_IsPreBloomDebugView(int debugView)
 {
     return debugView == TOY_DIORAMA_DEBUG_SOURCE_COLOR ||
@@ -56,6 +57,7 @@ bool ToyDiorama_IsPreBloomDebugView(int debugView)
         debugView == TOY_DIORAMA_DEBUG_BEFORE_BLOOM;
 }
 
+    // ブルーム専用パイプライン内で生成されるデバッグモード群です。
 bool ToyDiorama_IsBloomDebugView(int debugView)
 {
     return debugView == TOY_DIORAMA_DEBUG_BLOOM_PREFILTER ||
@@ -64,6 +66,7 @@ bool ToyDiorama_IsBloomDebugView(int debugView)
         debugView == TOY_DIORAMA_DEBUG_HALATION_MASK;
 }
 
+    // ブルーム前系のデバッグIDを対応する中間バッファへ割り当てます。
 float3 ToyDiorama_ApplyPreBloomDebugView(float3 beforeColorGrade, ToyDiorama_ColorPipelineData pipelineData, float2 uv)
 {
     int debugView = (int)round(_ToyDioramaDebugView);
@@ -176,6 +179,7 @@ float3 ToyDiorama_ApplyPreBloomDebugView(float3 beforeColorGrade, ToyDiorama_Col
     return pipelineData.beforeBloom;
 }
 
+// 最終パス系のデバッグIDを割り当てます（ブルーム/エッジ/グレインを含む）。
 float3 ToyDiorama_ApplyFinalDebugView(float3 preBloomColor, ToyDiorama_FinalColorPipelineData pipelineData)
 {
     int debugView = (int)round(_ToyDioramaDebugView);
@@ -236,6 +240,7 @@ float3 ToyDiorama_ApplyFinalDebugView(float3 preBloomColor, ToyDiorama_FinalColo
     return pipelineData.afterColorGrade;
 }
 
+// 単一デバッグ関数を期待する旧呼び出し向けの互換エイリアスです。
 float3 ToyDiorama_ApplyDebugView(float3 beforeColorGrade, ToyDiorama_ColorPipelineData pipelineData, float2 uv)
 {
     return ToyDiorama_ApplyPreBloomDebugView(beforeColorGrade, pipelineData, uv);

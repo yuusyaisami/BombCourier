@@ -7,6 +7,7 @@ struct ToyDiorama_CreamHighlightData
 	float mask;
 };
 
+// クリーム色ハイライトへの再配色に使うソフトしきい値マスクです。
 float ToyDiorama_CalculateCreamHighlightMask(float3 color)
 {
 	float luminance = ToyDiorama_Luminance(color);
@@ -17,6 +18,7 @@ float ToyDiorama_CalculateCreamHighlightMask(float3 color)
 		luminance);
 }
 
+// 輝度を保持したまま暖色ハイライトを適用し、過度な発光感を防ぎます。
 ToyDiorama_CreamHighlightData ToyDiorama_ApplyCreamHighlight(float3 color)
 {
 	ToyDiorama_CreamHighlightData data;

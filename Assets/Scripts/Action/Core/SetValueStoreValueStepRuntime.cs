@@ -19,6 +19,7 @@ namespace BC.ActionSystem
         private readonly ReactiveEntityRef entityValue;
         private readonly ReactiveFaceExpressionId faceExpressionValue;
         private readonly ReactiveEntityMoveState entityMoveStateValue;
+        private readonly ReactiveShapeExpressionId shapeExpressionValue;
 
         public SetValueStoreValueStepRuntime(
             ValueStoreWriteStoreScope storeScope,
@@ -31,7 +32,8 @@ namespace BC.ActionSystem
             ReactiveString stringValue,
             ReactiveEntityRef entityValue,
             ReactiveFaceExpressionId faceExpressionValue,
-            ReactiveEntityMoveState entityMoveStateValue)
+            ReactiveEntityMoveState entityMoveStateValue,
+            ReactiveShapeExpressionId shapeExpressionValue)
         {
             this.storeScope = storeScope;
             this.target = target;
@@ -44,6 +46,7 @@ namespace BC.ActionSystem
             this.entityValue = entityValue;
             this.faceExpressionValue = faceExpressionValue;
             this.entityMoveStateValue = entityMoveStateValue;
+            this.shapeExpressionValue = shapeExpressionValue;
         }
 
         public IActionNodeRuntime CreateRuntime()
@@ -59,7 +62,8 @@ namespace BC.ActionSystem
                 stringValue,
                 entityValue,
                 faceExpressionValue,
-                entityMoveStateValue);
+                entityMoveStateValue,
+                shapeExpressionValue);
         }
 
         private sealed class Runtime : IActionNodeRuntime
@@ -75,6 +79,7 @@ namespace BC.ActionSystem
             private readonly ReactiveEntityRef entityValue;
             private readonly ReactiveFaceExpressionId faceExpressionValue;
             private readonly ReactiveEntityMoveState entityMoveStateValue;
+            private readonly ReactiveShapeExpressionId shapeExpressionValue;
 
             private List<EntityRef> resolvedTargets;
 
@@ -89,7 +94,8 @@ namespace BC.ActionSystem
                 ReactiveString stringValue,
                 ReactiveEntityRef entityValue,
                 ReactiveFaceExpressionId faceExpressionValue,
-                ReactiveEntityMoveState entityMoveStateValue)
+                ReactiveEntityMoveState entityMoveStateValue,
+                ReactiveShapeExpressionId shapeExpressionValue)
             {
                 this.storeScope = storeScope;
                 this.target = target;
@@ -102,6 +108,7 @@ namespace BC.ActionSystem
                 this.entityValue = entityValue;
                 this.faceExpressionValue = faceExpressionValue;
                 this.entityMoveStateValue = entityMoveStateValue;
+                this.shapeExpressionValue = shapeExpressionValue;
             }
 
             public ActionNodeStatus Tick(in ActionExecutionContext context, ref int remainingOperations)
@@ -121,6 +128,7 @@ namespace BC.ActionSystem
                     ValueStoreWriteValueKind.EntityRef => WriteEntityRef(context, descriptor),
                     ValueStoreWriteValueKind.FaceExpressionId => WriteFaceExpressionId(context, descriptor),
                     ValueStoreWriteValueKind.EntityMoveState => WriteEntityMoveState(context, descriptor),
+                    ValueStoreWriteValueKind.ShapeExpressionId => WriteShapeExpressionId(context, descriptor),
                     _ => ActionNodeStatus.Failed,
                 };
             }
@@ -200,6 +208,13 @@ namespace BC.ActionSystem
                 using ReactiveEntityMoveStateBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), entityMoveStateValue);
                 ReactiveResult<EntityMoveState> result = binding.Read();
                 return result.Success ? ApplyValue(context, descriptor.GetKey<EntityMoveState>(), result.Value) : ActionNodeStatus.Failed;
+            }
+
+            private ActionNodeStatus WriteShapeExpressionId(in ActionExecutionContext context, ValueKeyDescriptor descriptor)
+            {
+                using ReactiveShapeExpressionIdBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), shapeExpressionValue);
+                ReactiveResult<ShapeExpressionId> result = binding.Read();
+                return result.Success ? ApplyValue(context, descriptor.GetKey<ShapeExpressionId>(), result.Value) : ActionNodeStatus.Failed;
             }
 
             private ActionNodeStatus ApplyValue<T>(in ActionExecutionContext context, ValueKey<T> resolvedKey, T value)

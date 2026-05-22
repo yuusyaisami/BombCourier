@@ -38,6 +38,8 @@ namespace BC.ActionSystem
 
         public override void Validate(ActionValidationContext context)
         {
+            if (talkRequestData.talkStateId == TalkStateId.None)
+                context.AddError("Talk state is required.");
         }
 
         public override void Compile(ActionCompileContext context)

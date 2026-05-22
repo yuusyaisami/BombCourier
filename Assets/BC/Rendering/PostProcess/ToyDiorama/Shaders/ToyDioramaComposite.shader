@@ -59,6 +59,8 @@ Shader "BC/PostProcess/ToyDioramaComposite"
         _ToyDioramaGrainScale ("Grain Scale", Range(0.25, 8)) = 1
         _ToyDioramaGrainResponse ("Grain Response", Range(0, 1)) = 0.60
         _ToyDioramaGrainTemporalStrength ("Grain Temporal Strength", Range(0, 1)) = 0.10
+
+        // シーン上の光に関するもｎ
     }
 
     SubShader

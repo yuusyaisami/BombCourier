@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using BC.Base;
 using BC.Managers;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -9,30 +10,30 @@ namespace BC.ActionSystem
     [Serializable]
     public sealed class HideTalkStepRuntime : IActionNodeDefinition
     {
-        private readonly float duration;
+        private readonly HideTalkRequestData requestData;
 
-        public HideTalkStepRuntime(float duration)
+        public HideTalkStepRuntime(HideTalkRequestData requestData)
         {
-            this.duration = Mathf.Max(0f, duration);
+            this.requestData = requestData;
         }
 
         public IActionNodeRuntime CreateRuntime()
         {
-            return new Runtime(duration);
+            return new Runtime(requestData);
         }
 
         private sealed class Runtime : IActionNodeRuntime
         {
-            private readonly float duration;
+            private readonly HideTalkRequestData requestData;
 
             private CancellationTokenSource cancellationTokenSource;
             private bool started;
             private bool completed;
             private bool failed;
 
-            public Runtime(float duration)
+            public Runtime(HideTalkRequestData requestData)
             {
-                this.duration = Mathf.Max(0f, duration);
+                this.requestData = requestData;
             }
 
             public ActionNodeStatus Tick(in ActionExecutionContext context, ref int remainingOperations)
@@ -51,16 +52,22 @@ namespace BC.ActionSystem
                 {
                     started = true;
 
-                    TalkSystemManagerMB talkSystemManager = TalkSystemManagerMB.Instance;
-                    if (talkSystemManager == null)
+                    if (context.SceneKernel == null || context.SceneKernel.EntityComponents == null)
                     {
-                        Debug.LogWarning($"{nameof(HideTalkStepRuntime)}: {nameof(TalkSystemManagerMB)} is not available.");
+                        Debug.LogWarning($"{nameof(HideTalkStepRuntime)}: scene kernel entity components are not available.");
+                        failed = true;
+                        return ActionNodeStatus.Failed;
+                    }
+
+                    if (!context.SceneKernel.EntityComponents.TryResolve(context.ActorEntity, out TalkAdapterMB talkAdapter))
+                    {
+                        Debug.LogWarning($"{nameof(HideTalkStepRuntime)}: {nameof(TalkAdapterMB)} was not found on {context.ActorEntity}.");
                         failed = true;
                         return ActionNodeStatus.Failed;
                     }
 
                     cancellationTokenSource = new CancellationTokenSource();
-                    RunAsync(talkSystemManager, cancellationTokenSource.Token).Forget();
+                    RunAsync(talkAdapter, cancellationTokenSource.Token).Forget();
                 }
 
                 return ActionNodeStatus.Running;
@@ -71,12 +78,14 @@ namespace BC.ActionSystem
                 CancelPendingTask();
             }
 
-            private async UniTaskVoid RunAsync(TalkSystemManagerMB talkSystemManager, CancellationToken cancellationToken)
+            private async UniTaskVoid RunAsync(
+                TalkAdapterMB talkAdapter,
+                CancellationToken cancellationToken)
             {
                 try
                 {
-                    await talkSystemManager.HideTalk(duration).AttachExternalCancellation(cancellationToken);
-                    completed = true;
+                    completed = await talkAdapter.TryHideTalkAsync(requestData, cancellationToken);
+                    failed = !completed;
                 }
                 catch (OperationCanceledException)
                 {

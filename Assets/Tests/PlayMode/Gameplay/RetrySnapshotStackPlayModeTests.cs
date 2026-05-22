@@ -13,6 +13,7 @@ namespace BC.Gameplay.PlayModeTests
         private const string GameLogicManagerTypeName = "BC.Manager.GameLogicManagerMB";
         private const string GameStateManagerTypeName = "BC.Manager.GameStateManagerMB";
         private const string StageManagerTypeName = "BC.Manager.StageManagerMB";
+        private const string MapRuntimeTypeName = "BC.Stage.MapRuntimeMB";
         private const string StageCheckpointServiceTypeName = "BC.Stage.StageCheckpointServiceMB";
         private const string StageSaveMarkTypeName = "BC.Stage.StageSaveMarkMB";
         private const string PlayerTypeName = "BC.Base.PlayerMB";
@@ -107,6 +108,21 @@ namespace BC.Gameplay.PlayModeTests
             Assert.AreEqual("Reload", GetPropertyValue<object>(fixture.GameStateManager, "CurrentState").ToString());
         }
 
+        [Test]
+        public void AllSceneBombsExploded_EnablesResetRetryAction()
+        {
+            RetryFixture fixture = CreateFixture();
+            SetGameState(fixture.GameStateManager, "Exploded");
+
+            SetPrivateField(fixture.BombA, "exploded", true);
+            SetPrivateField(fixture.BombB, "exploded", true);
+
+            InvokeMethod(fixture.GameLogicManager, "RequestRetryAction");
+
+            Assert.AreEqual("ResetStage", GetPropertyValue<object>(fixture.GameLogicManager, "CurrentRetryActionMode").ToString());
+            Assert.AreEqual("ResetStage", GetPropertyValue<object>(fixture.GameStateManager, "CurrentState").ToString());
+        }
+
         private RetryFixture CreateFixture()
         {
             GameObject stageManagerObject = new GameObject("StageManagerRoot");
@@ -146,6 +162,10 @@ namespace BC.Gameplay.PlayModeTests
 
             Component bombA = CreateBomb("BombA", stageRootObject.transform, new Vector3(-1f, 0.5f, 0f));
             Component bombB = CreateBomb("BombB", stageRootObject.transform, new Vector3(1f, 0.5f, 0f));
+            Component mapRuntime = stageRootObject.AddComponent(FindRuntimeType(MapRuntimeTypeName));
+
+            SetPrivateField(mapRuntime, "bombs", CreateTypedList(FindRuntimeType(BombTypeName), bombA, bombB));
+            SetPrivateField(gameLogicManager, "currentMapRuntime", mapRuntime);
 
             return new RetryFixture
             {
@@ -228,6 +248,17 @@ namespace BC.Gameplay.PlayModeTests
             FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.IsNotNull(field, $"Expected private field on {target.GetType().Name}: {fieldName}");
             field.SetValue(target, value);
+        }
+
+        private static object CreateTypedList(Type elementType, params object[] items)
+        {
+            IList list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(elementType));
+            for (int i = 0; i < items.Length; i++)
+            {
+                list.Add(items[i]);
+            }
+
+            return list;
         }
 
         private static void InvokeMethod(object target, string methodName, params object[] args)
