@@ -25,6 +25,7 @@ struct ESL_DepthNormalsVaryings
 	UNITY_VERTEX_OUTPUT_STEREO
 };
 
+// DepthNormals用頂点シェーダ。ワールド法線/接線を補間可能な形で渡します。
 ESL_DepthNormalsVaryings ESL_DepthNormalsVertex(ESL_DepthNormalsAttributes input)
 {
 	ESL_DepthNormalsVaryings output = (ESL_DepthNormalsVaryings)0;
@@ -42,6 +43,7 @@ ESL_DepthNormalsVaryings ESL_DepthNormalsVertex(ESL_DepthNormalsAttributes input
 	return output;
 }
 
+// URP/GBuffer設定に合わせて法線をエンコードします。
 half4 ESL_EncodeDepthNormal(float3 normalWS)
 {
 	float3 normalizedNormalWS = NormalizeNormalPerPixel(normalWS);
@@ -55,6 +57,7 @@ half4 ESL_EncodeDepthNormal(float3 normalWS)
 	#endif
 }
 
+// アルファクリップ考慮で法線を書き出すDepthNormalsフラグメントです。
 half4 ESL_DepthNormalsFragment(ESL_DepthNormalsVaryings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);

@@ -12,6 +12,7 @@ struct ESL_TriplanarData
 	float3 axisSign;
 };
 
+// キーワード有効時のみトライプラナー機能をONにします。
 bool ESL_IsTriplanarBaseMapEnabled()
 {
 	#if defined(_ESL_TRIPLANAR_BASEMAP)
@@ -39,6 +40,7 @@ bool ESL_IsTriplanarNoiseEnabled()
 	#endif
 }
 
+// UVのスケール・オフセット変換。
 float2 ESL_TransformTriplanarUV(float2 uv, float2 scale, float2 offset)
 {
 	return uv * scale + offset;
@@ -49,6 +51,8 @@ float2 ESL_TransformTriplanarUV(float2 uv)
 	return ESL_TransformTriplanarUV(uv, _BaseMap_ST.xy * _TriplanarScale, _BaseMap_ST.zw);
 }
 
+// 法線ベースの重みを作り、X/Y/Z投影用UVを構築します。
+// BlendSharpnessを上げるほど軸境界がシャープになります。
 ESL_TriplanarData ESL_BuildTriplanarData(float3 positionWS, float3 normalWS, float2 uvScale, float2 uvOffset)
 {
 	ESL_TriplanarData triplanarData;
@@ -69,6 +73,7 @@ ESL_TriplanarData ESL_BuildTriplanarData(float3 positionWS, float3 normalWS)
 	return ESL_BuildTriplanarData(positionWS, normalWS, _BaseMap_ST.xy * _TriplanarScale, _BaseMap_ST.zw);
 }
 
+// 3軸テクスチャを重み付き合成してベース色を返します。
 half4 ESL_SampleTriplanarBaseColor(float3 positionWS, float3 normalWS)
 {
 	ESL_TriplanarData triplanarData = ESL_BuildTriplanarData(positionWS, normalWS);
@@ -81,6 +86,7 @@ half4 ESL_SampleTriplanarBaseColor(float3 positionWS, float3 normalWS)
 	return blendedSample * half4(_BaseColor);
 }
 
+// 各投影軸で、タンジェント法線を対応するワールド軸へ再配置します。
 float3 ESL_ReorientTriplanarNormalX(float3 tangentNormal, float axisSign)
 {
 	tangentNormal.xy *= float2(axisSign, 1.0);
@@ -99,6 +105,7 @@ float3 ESL_ReorientTriplanarNormalZ(float3 tangentNormal, float axisSign)
 	return normalize(float3(tangentNormal.x, tangentNormal.y, tangentNormal.z * axisSign));
 }
 
+// 3軸法線を再配置後に重み付き合成し、最終ワールド法線を得ます。
 float3 ESL_SampleTriplanarNormalWS(float3 positionWS, float3 normalWS)
 {
 	ESL_TriplanarData triplanarData = ESL_BuildTriplanarData(positionWS, normalWS);

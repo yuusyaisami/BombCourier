@@ -97,6 +97,8 @@ namespace BC.Character
 
         [Header("Authored Expressions")]
         [SerializeField] private ShapeExpressionEntry[] expressions = Array.Empty<ShapeExpressionEntry>();
+        [Header("Debug")]
+        [SerializeField] private ShapeExpressionId debugExpressionId; // 現在の表情を表示するためだけのフィールド。実行中に変更して動作確認できる。
 
         private ValueStoreService valueStore;
         private EntityRef entityRef;
@@ -172,6 +174,8 @@ namespace BC.Character
 
         private void LateUpdate()
         {
+            // デバッグ用
+            debugExpressionId = currentExpression;
             if (!started || activeEntryIndex < 0 || sampledWeights.Length == 0)
                 return;
 

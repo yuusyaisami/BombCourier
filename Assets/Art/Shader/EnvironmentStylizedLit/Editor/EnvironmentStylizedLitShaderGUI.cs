@@ -210,6 +210,31 @@ namespace BC.Rendering
             DrawProperty("_AdditionalLightIntensity");
             DrawProperty("_AdditionalLightShadowInfluence");
             DrawProperty("_AdditionalLightColorInfluence");
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Light Band Emission", EditorStyles.boldLabel);
+            DrawProperty("_LightBandEmissionEnabled");
+            DrawProperty("_LightBandEmissionColor");
+            DrawProperty("_LightBandEmissionIntensity");
+            DrawProperty("_LightBandEmissionMin");
+            DrawProperty("_LightBandEmissionMax");
+            DrawProperty("_LightBandEmissionFeather");
+            DrawProperty("_LightBandEmissionStepMin");
+            DrawProperty("_LightBandEmissionStepMax");
+            DrawProperty("_LightBandEmissionBandStepBlend");
+            DrawProperty("_LightBandEmissionAdditionalWeight");
+            DrawProperty("_LightBandEmissionResponse");
+            DrawProperty("_LightBandEmissionSpecialMaskInfluence");
+            DrawProperty("_LightBandEmissionGradientInfluence");
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Simple Boost Emission", EditorStyles.boldLabel);
+            DrawProperty("_SimpleBoostEmissionEnabled");
+            DrawProperty("_SimpleBoostEmissionColor");
+            DrawProperty("_SimpleBoostEmissionIntensity");
+            DrawProperty("_SimpleBoostFresnelStrength");
+            DrawProperty("_SimpleBoostFresnelPower");
+            DrawProperty("_SimpleBoostFresnelInvert");
         }
 
         private void DrawShadowSection()

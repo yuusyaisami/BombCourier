@@ -28,6 +28,7 @@ struct ESL_MetaVaryings
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
+// Metaパス頂点シェーダ。ベイク用アルベド/エミッション参照座標を構築します。
 ESL_MetaVaryings ESL_MetaPassVertex(ESL_MetaAttributes input)
 {
 	ESL_MetaVaryings output = (ESL_MetaVaryings)0;
@@ -44,6 +45,7 @@ ESL_MetaVaryings ESL_MetaPassVertex(ESL_MetaAttributes input)
 	return output;
 }
 
+// Metaパスフラグメント。ライトマップベイク向けにAlbedo/Emissionを返します。
 half4 ESL_MetaPassFragment(ESL_MetaVaryings input) : SV_Target
 {
 	UNITY_SETUP_INSTANCE_ID(input);

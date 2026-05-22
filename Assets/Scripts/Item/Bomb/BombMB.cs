@@ -251,23 +251,23 @@ namespace BC.Bomb
                 rb != null ? rb.angularVelocity : Vector3.zero);
         }
 
-            // Retry checkpoint では「起爆開始時接触」を基準に、未起爆状態へ戻せるスナップショットを使う。
-            public object CaptureRetryCheckpointState()
-            {
-                return new BombCheckpointState(
-                transform.parent,
-                false,
-                false,
-                isHandled,
-                fuseTime,
-                0f,
-                lastImpactThreshold,
-                rb != null && rb.isKinematic,
-                rb != null && rb.useGravity,
-                rb == null || rb.detectCollisions,
-                Vector3.zero,
-                Vector3.zero);
-            }
+        // Retry checkpoint では「起爆開始時接触」を基準に、未起爆状態へ戻せるスナップショットを使う。
+        public object CaptureRetryCheckpointState()
+        {
+            return new BombCheckpointState(
+            transform.parent,
+            false,
+            false,
+            isHandled,
+            fuseTime,
+            0f,
+            lastImpactThreshold,
+            rb != null && rb.isKinematic,
+            rb != null && rb.useGravity,
+            rb == null || rb.detectCollisions,
+            Vector3.zero,
+            Vector3.zero);
+        }
 
         public void RestoreCheckpointState(object state)
         {

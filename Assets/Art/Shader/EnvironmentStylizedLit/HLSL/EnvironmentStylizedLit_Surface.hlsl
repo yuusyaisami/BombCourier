@@ -39,6 +39,7 @@ struct ESL_SurfaceContext
 	float4 vertexColor;
 };
 
+// SurfaceDataを既定値で初期化します。
 void ESL_InitializeSurfaceData(out ESL_SurfaceData surfaceData)
 {
 	surfaceData.albedo = 1.0;
@@ -63,6 +64,7 @@ void ESL_InitializeSurfaceData(out ESL_SurfaceData surfaceData)
 	surfaceData.hasNormalWSOverride = 0.0;
 }
 
+// ノイズ値でアルベドを明暗変調します（強度0なら無効）。
 float3 ESL_ApplyAlbedoNoise(float3 albedo, float surfaceNoise)
 {
 	if (_AlbedoNoiseStrength <= 1e-4 || abs(surfaceNoise) <= 1e-4)
@@ -74,6 +76,7 @@ float3 ESL_ApplyAlbedoNoise(float3 albedo, float surfaceNoise)
 	return albedo * albedoNoiseScale;
 }
 
+// ワールドYに基づく0..1グラデーションマスクを返します。
 float ESL_EvaluateWorldYGradientMask(float positionY)
 {
 	if (_WorldYGradientEnabled <= 0.5)
@@ -87,6 +90,7 @@ float ESL_EvaluateWorldYGradientMask(float positionY)
 	return saturate((positionY - gradientMin) / gradientRange);
 }
 
+// ワールドYグラデーション色をアルベドへ乗算します。
 void ESL_ApplyWorldYGradient(inout ESL_SurfaceData surfaceData, float3 positionWS)
 {
 	surfaceData.worldYGradientMask = ESL_EvaluateWorldYGradientMask(positionWS.y);
@@ -100,6 +104,7 @@ void ESL_ApplyWorldYGradient(inout ESL_SurfaceData surfaceData, float3 positionW
 	surfaceData.albedo *= lerp(1.0.xxx, gradientTint, saturate(_WorldYGradientStrength));
 }
 
+// 頂点カラーの各チャンネルを、空洞/色変化/帯オフセットに割り当てます。
 void ESL_ApplyVertexColorMasks(inout ESL_SurfaceData surfaceData)
 {
 	if (_VertexColorEnabled <= 0.5)
@@ -122,11 +127,13 @@ void ESL_ApplyVertexColorMasks(inout ESL_SurfaceData surfaceData)
 	surfaceData.localBandOffset = (bandOffsetMask * 2.0 - 1.0) * saturate(_VertexColorBandOffsetStrength);
 }
 
+// ライト帯域オフセットの最終値（グローバル + 局所）を返します。
 float ESL_EvaluateSurfaceBandOffset(ESL_SurfaceData surfaceData)
 {
 	return _BandOffset + surfaceData.localBandOffset;
 }
 
+// テクスチャ/ノイズ/頂点色を統合して最終SurfaceDataを構築します。
 ESL_SurfaceData ESL_BuildSurfaceData(ESL_SurfaceContext surfaceContext)
 {
 	ESL_SurfaceData surfaceData;
@@ -140,6 +147,7 @@ ESL_SurfaceData ESL_BuildSurfaceData(ESL_SurfaceContext surfaceContext)
 	surfaceData.normalTS = ESL_SampleNormalTS(surfaceContext.uv);
 	if (ESL_IsTriplanarNormalMapEnabled())
 	{
+		// トライプラナー法線使用時はワールド法線を直接上書きします。
 		surfaceData.normalWSOverride = ESL_SampleTriplanarNormalWS(surfaceContext.positionWS, surfaceContext.normalWS);
 		surfaceData.hasNormalWSOverride = 1.0;
 	}

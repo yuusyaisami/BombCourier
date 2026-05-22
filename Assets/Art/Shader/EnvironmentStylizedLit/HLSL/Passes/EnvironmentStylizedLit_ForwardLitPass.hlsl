@@ -47,6 +47,7 @@ struct ESL_Varyings
 	UNITY_VERTEX_OUTPUT_STEREO
 };
 
+// 端末回転プリトランスフォーム時も正しい正規化画面UVを返します。
 float2 ESL_GetNormalizedScreenSpaceUV(float4 positionHCS)
 {
     #if defined(UNITY_PRETRANSFORM_TO_DISPLAY_ORIENTATION)
@@ -69,6 +70,8 @@ float2 ESL_GetNormalizedScreenSpaceUV(float4 positionHCS)
     #endif
 }
 
+// SurfaceDataをもとにライティング入力を構築します。
+// GI経路はコンパイル条件（スクリーンGI/ライトマップ/APV）で分岐します。
 ESL_InputData ESL_BuildInputData(ESL_Varyings input, ESL_SurfaceData surfaceData, float faceSign)
 {
     float3 faceNormalWS = input.normalWS * faceSign;
@@ -119,6 +122,7 @@ ESL_InputData ESL_BuildInputData(ESL_Varyings input, ESL_SurfaceData surfaceData
     return inputData;
 }
 
+// ForwardLit頂点シェーダ。ライティングに必要な補間値を生成します。
 ESL_Varyings ESL_Vertex(ESL_Attributes input)
 {
     ESL_Varyings output = (ESL_Varyings)0;
@@ -150,6 +154,7 @@ ESL_Varyings ESL_Vertex(ESL_Attributes input)
     return output;
 }
 
+// バリセントリック座標から線エッジ用マスクを算出します。
 half ESL_EvaluateEdgeMask(float3 barycentric)
 {
     float barycentricSum = barycentric.x + barycentric.y + barycentric.z;
@@ -163,6 +168,7 @@ half ESL_EvaluateEdgeMask(float3 barycentric)
     return saturate(1.0 - min(smoothed.x, min(smoothed.y, smoothed.z)));
 }
 
+// 面色と線色をアルファ合成し、エッジ専用表示モードの出力色を作ります。
 half4 ESL_ComposeFaceAndEdge(half3 faceColor, half faceAlpha, half3 edgeColor, half edgeAlpha)
 {
     half clampedFaceAlpha = saturate(faceAlpha);
@@ -179,6 +185,8 @@ half4 ESL_ComposeFaceAndEdge(half3 faceColor, half faceAlpha, half3 edgeColor, h
     return half4(premultipliedColor / finalAlpha, finalAlpha);
 }
 
+// ForwardLitフラグメント本体。
+// Surface生成 -> StylizedDiffuse評価 -> Debug/Fog -> 必要ならエッジ合成の順で処理します。
 half4 ESL_Fragment(ESL_Varyings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_Target
 {
 	UNITY_SETUP_INSTANCE_ID(input);
@@ -194,7 +202,8 @@ half4 ESL_Fragment(ESL_Varyings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMAN
     ESL_InputData inputData = ESL_BuildInputData(input, surfaceData, faceSign);
     ESL_StylizedDiffuseData diffuseData = ESL_EvaluateStylizedDiffuse(inputData, surfaceData);
 
-    half3 color = half3(diffuseData.diffuseColor + surfaceData.emission);
+    // 既存Emissionに、新規2系統の発光加算を重ねて最終発光を作ります。
+    half3 color = half3(diffuseData.diffuseColor + surfaceData.emission + diffuseData.emissionAddColor);
     color = ESL_ApplyDebugView(color, diffuseData);
 
     if (!ESL_IsDebugViewActive())

@@ -2,6 +2,7 @@
 #define BC_ENVIRONMENT_STYLIZED_LIT_INPUT_INCLUDED
 
 CBUFFER_START(UnityPerMaterial)
+    // Base/Surface
     float4 _BaseColor;
     float4 _BaseMap_ST;
     float _FaceAlpha;
@@ -70,6 +71,27 @@ CBUFFER_START(UnityPerMaterial)
     float _AdditionalLightShadowInfluence;
     float _AdditionalLightColorInfluence;
 
+    float _LightBandEmissionEnabled;
+    float4 _LightBandEmissionColor;
+    float _LightBandEmissionIntensity;
+    float _LightBandEmissionMin;
+    float _LightBandEmissionMax;
+    float _LightBandEmissionFeather;
+    float _LightBandEmissionStepMin;
+    float _LightBandEmissionStepMax;
+    float _LightBandEmissionBandStepBlend;
+    float _LightBandEmissionAdditionalWeight;
+    float _LightBandEmissionResponse;
+    float _LightBandEmissionSpecialMaskInfluence;
+    float _LightBandEmissionGradientInfluence;
+
+    float _SimpleBoostEmissionEnabled;
+    float4 _SimpleBoostEmissionColor;
+    float _SimpleBoostEmissionIntensity;
+    float _SimpleBoostFresnelStrength;
+    float _SimpleBoostFresnelPower;
+    float _SimpleBoostFresnelInvert;
+
     float _TriplanarBaseMapEnabled;
     float _TriplanarNormalMapEnabled;
     float _TriplanarNoiseEnabled;
@@ -113,6 +135,7 @@ SAMPLER(sampler_OcclusionMap);
 TEXTURE2D(_EmissionMap);
 SAMPLER(sampler_EmissionMap);
 
+// SurfaceMode判定ヘルパー群。C#側と同じ閾値規約を使います。
 bool ESL_IsTransparentSurfaceMode()
 {
     return _SurfaceMode > 0.5 && _SurfaceMode < 1.5;

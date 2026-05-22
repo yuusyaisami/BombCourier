@@ -14,11 +14,13 @@ struct ESL_AmbientData
 	float3 bounceColor;
 };
 
+// バウンス光方向を安全に正規化して返します。
 float3 ESL_GetBounceDirectionWS()
 {
 	return ESL_SafeNormalize(_BounceDirection.xyz, float3(0.0, 1.0, 0.0));
 }
 
+// 法線Y成分から、上/側面/下の3色を重み付きで合成します。
 float3 ESL_EvaluateDirectionalAmbient(float3 normalWS)
 {
 	float upWeight = saturate(normalWS.y);
@@ -30,12 +32,14 @@ float3 ESL_EvaluateDirectionalAmbient(float3 normalWS)
 		+ _AmbientBottomColor.rgb * downWeight) * saturate(_AmbientStrength);
 }
 
+// バウンス方向との内積をラップ補正して、反射寄与係数を作ります。
 float ESL_EvaluateBounceFactor(float3 normalWS)
 {
 	float bounceNdot = saturate(dot(normalWS, ESL_GetBounceDirectionWS()));
 	return ESL_ComputeWrappedLight(bounceNdot, saturate(_BounceWrap));
 }
 
+// 間接光計算で使う補助データをまとめて評価します。
 ESL_AmbientData ESL_EvaluateAmbientData(ESL_InputData inputData)
 {
 	ESL_AmbientData ambientData;

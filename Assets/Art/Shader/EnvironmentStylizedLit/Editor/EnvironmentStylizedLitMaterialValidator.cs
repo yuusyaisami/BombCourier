@@ -70,6 +70,27 @@ namespace BC.Rendering
             changed |= ClampFloat(material, "_AdditionalLightShadowInfluence", 0f, 1f, applyChanges);
             changed |= ClampFloat(material, "_AdditionalLightColorInfluence", 0f, 1f, applyChanges);
 
+            changed |= ClampFloat(material, "_LightBandEmissionEnabled", 0f, 1f, applyChanges, true);
+            changed |= ClampFloat(material, "_LightBandEmissionIntensity", 0f, 20f, applyChanges);
+            changed |= ClampFloat(material, "_LightBandEmissionMin", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_LightBandEmissionMax", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_LightBandEmissionFeather", 0f, 0.5f, applyChanges);
+            changed |= ClampFloat(material, "_LightBandEmissionStepMin", 1f, 5f, applyChanges, true);
+            changed |= ClampFloat(material, "_LightBandEmissionStepMax", 1f, 5f, applyChanges, true);
+            changed |= ClampFloat(material, "_LightBandEmissionBandStepBlend", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_LightBandEmissionAdditionalWeight", 0f, 2f, applyChanges);
+            changed |= ClampFloat(material, "_LightBandEmissionResponse", 0.25f, 8f, applyChanges);
+            changed |= ClampFloat(material, "_LightBandEmissionSpecialMaskInfluence", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_LightBandEmissionGradientInfluence", 0f, 1f, applyChanges);
+            changed |= NormalizeMinMaxPair(material, "_LightBandEmissionMin", "_LightBandEmissionMax", applyChanges, 0f);
+            changed |= NormalizeMinMaxPair(material, "_LightBandEmissionStepMin", "_LightBandEmissionStepMax", applyChanges, 1f);
+
+            changed |= ClampFloat(material, "_SimpleBoostEmissionEnabled", 0f, 1f, applyChanges, true);
+            changed |= ClampFloat(material, "_SimpleBoostEmissionIntensity", 0f, 25f, applyChanges);
+            changed |= ClampFloat(material, "_SimpleBoostFresnelStrength", 0f, 4f, applyChanges);
+            changed |= ClampFloat(material, "_SimpleBoostFresnelPower", 0.25f, 8f, applyChanges);
+            changed |= ClampFloat(material, "_SimpleBoostFresnelInvert", 0f, 1f, applyChanges, true);
+
             changed |= ClampFloat(material, "_TriplanarBaseMapEnabled", 0f, 1f, applyChanges, true);
             changed |= ClampFloat(material, "_TriplanarNormalMapEnabled", 0f, 1f, applyChanges, true);
             changed |= ClampFloat(material, "_TriplanarNoiseEnabled", 0f, 1f, applyChanges, true);
@@ -94,7 +115,7 @@ namespace BC.Rendering
             changed |= ClampFloat(material, "_LightBandNoiseScale", 0.01f, 8f, applyChanges);
             changed |= NormalizeMinMaxPair(material, "_NoiseDistanceFadeStart", "_NoiseDistanceFadeEnd", applyChanges, 0f);
 
-            changed |= ClampFloat(material, "_DebugView", 0f, 6f, applyChanges, true);
+            changed |= ClampFloat(material, "_DebugView", 0f, 9f, applyChanges, true);
 
             changed |= SyncKeyword(material, "_TriplanarBaseMapEnabled", TriplanarBaseKeyword, applyChanges);
             changed |= SyncKeyword(material, "_TriplanarNormalMapEnabled", TriplanarNormalKeyword, applyChanges);
@@ -373,6 +394,9 @@ namespace BC.Rendering
                 4 => "BandColor",
                 5 => "WorldNoise",
                 6 => "BandNoise",
+                7 => "CombinedLightIntensity",
+                8 => "LightBandEmissionMask",
+                9 => "SimpleBoostFresnel",
                 _ => "Off"
             };
         }

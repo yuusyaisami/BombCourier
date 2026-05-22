@@ -24461,8 +24461,8 @@ MonoBehaviour:
     - isTalking
     applyTalkingShapeExpression: 1
     talkingShapeExpressionId: 50
-    applyNonTalkingShapeExpression: 0
-    nonTalkingShapeExpressionId: 0
+    applyNonTalkingShapeExpression: 1
+    nonTalkingShapeExpressionId: 10
     restoreStateShapeExpressionOnStop: 1
 --- !u!136 &1856734663592672570
 CapsuleCollider:
@@ -24866,6 +24866,7 @@ MonoBehaviour:
         weight: 100
       - alias: Open
         weight: 0
+  debugExpressionId: 0
 --- !u!1 &7166930228997097929
 GameObject:
   m_ObjectHideFlags: 0

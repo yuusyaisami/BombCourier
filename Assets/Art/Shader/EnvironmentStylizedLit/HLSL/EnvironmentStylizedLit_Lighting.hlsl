@@ -47,11 +47,13 @@ int ESL_GetAdditionalLightMode()
 	return (int)round(_AdditionalLightMode);
 }
 
+// 追加光のシャドウ影響度をブレンドします（1=影無視、0=完全反映）。
 float ESL_EvaluateAdditionalLightShadowAttenuation(float shadowAttenuation)
 {
 	return lerp(1.0, saturate(shadowAttenuation), saturate(_AdditionalLightShadowInfluence));
 }
 
+// 追加光色の彩度影響を制御します（輝度寄りに倒す用途）。
 float3 ESL_EvaluateAdditionalLightColor(float3 lightColor)
 {
 	float luminance = dot(lightColor, float3(0.2126, 0.7152, 0.0722));
@@ -63,8 +65,49 @@ float ESL_EvaluateAdditionalLightLuminance(float3 lightColor)
 	return dot(max(lightColor, 0.0), float3(0.2126, 0.7152, 0.0722));
 }
 
+// 主光+追加光の合算強度を、発光判定に使う0..1へ正規化します。
+float ESL_EvaluateCombinedLightIntensity(float steppedLight, ESL_MainLightData mainLightData, float shadowAttenuation, float3 additionalCombinedColor)
+{
+	float mainLightLuminance = ESL_EvaluateAdditionalLightLuminance(mainLightData.color)
+		* saturate(mainLightData.distanceAttenuation)
+		* saturate(shadowAttenuation)
+		* saturate(steppedLight);
+	float additionalLightLuminance = ESL_EvaluateAdditionalLightLuminance(additionalCombinedColor) * max(_LightBandEmissionAdditionalWeight, 0.0);
+	float combinedLuminance = max(mainLightLuminance + additionalLightLuminance, 0.0);
+	float response = max(_LightBandEmissionResponse, 1e-3);
+	return saturate(1.0 - exp2(-combinedLuminance * response));
+}
+
+float ESL_EvaluateLightBandRangeMask(float combinedLightIntensity)
+{
+	float rangeMin = min(_LightBandEmissionMin, _LightBandEmissionMax);
+	float rangeMax = max(_LightBandEmissionMin, _LightBandEmissionMax);
+	float feather = max(_LightBandEmissionFeather, 1e-4);
+	float lower = smoothstep(rangeMin - feather, rangeMin + feather, combinedLightIntensity);
+	float upper = 1.0 - smoothstep(rangeMax - feather, rangeMax + feather, combinedLightIntensity);
+	return saturate(lower * upper);
+}
+
+float ESL_EvaluateLightBandStepMask(float combinedLightIntensity)
+{
+	float stepCount = max(round(_LightStepCount), 1.0);
+	float stepIndex = floor(saturate(combinedLightIntensity) * (stepCount - 1.0) + 1.0);
+	float stepMin = min(round(_LightBandEmissionStepMin), round(_LightBandEmissionStepMax));
+	float stepMax = max(round(_LightBandEmissionStepMin), round(_LightBandEmissionStepMax));
+	return step(stepMin - 0.5, stepIndex) * (1.0 - step(stepMax + 0.5, stepIndex));
+}
+
+float ESL_EvaluateLightBandEmissionMask(float combinedLightIntensity)
+{
+	float rangeMask = ESL_EvaluateLightBandRangeMask(combinedLightIntensity);
+	float stepMask = ESL_EvaluateLightBandStepMask(combinedLightIntensity);
+	float bandStepBlend = saturate(_LightBandEmissionBandStepBlend);
+	return lerp(rangeMask, rangeMask * stepMask, bandStepBlend);
+}
+
 float ESL_EvaluateAdditionalFillMask(float mainShadowAttenuation, float mainNdotL)
 {
+	// 主光の影/未照射を優先して埋めるため、どちらか大きい方を採用します。
 	float shadowMask = 1.0 - saturate(mainShadowAttenuation);
 	float unlitMask = 1.0 - saturate(mainNdotL);
 	return saturate(max(shadowMask, unlitMask));
@@ -72,12 +115,14 @@ float ESL_EvaluateAdditionalFillMask(float mainShadowAttenuation, float mainNdot
 
 float ESL_EvaluateAdditionalDominanceMask(float mainShadowAttenuation, float mainNdotL)
 {
+	// 主光が強い面では追加光をやや抑え、主光優位の見た目を維持します。
 	float mainLightMask = saturate(mainShadowAttenuation * saturate(mainNdotL));
 	return lerp(1.0, 0.6, mainLightMask);
 }
 
 float3 ESL_AccumulateAdditionalLight(float3 accumulatedColor, float3 contribution)
 {
+	// 累積が明るくなるほど寄与を圧縮し、過飽和を抑制します。
 	float accumulatedLuminance = ESL_EvaluateAdditionalLightLuminance(accumulatedColor);
 	return accumulatedColor + contribution * rcp(1.0 + accumulatedLuminance);
 }
@@ -100,8 +145,8 @@ float ESL_EvaluateAdditionalLightModeTerm(int additionalLightMode, float ndotl, 
 {
 	if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_FILL_ONLY)
 	{
-		// Fill-only keeps the shadow/unlit masking behavior, but the light term itself
-		// is still quantized so Light Step Count controls point/spot contribution.
+		// FillOnlyは「主光の影・未照射を補う」用途。
+		// ただし光量そのものは量子化し、LightStepCountで段数を制御します。
 		return ESL_EvaluateAdditionalQuantizedTerm(ndotl) * ESL_EvaluateAdditionalFillMask(mainShadowAttenuation, mainNdotL);
 	}
 
@@ -129,6 +174,7 @@ ESL_AdditionalLightingData ESL_EvaluateAdditionalLighting(ESL_InputData inputDat
 	}
 
 	#if defined(_ADDITIONAL_LIGHTS_VERTEX) && !defined(_ADDITIONAL_LIGHTS)
+	// 頂点追加光パスでは、補間済みVertexLightingをモード別に再解釈します。
 	float3 vertexLighting = max(inputData.vertexLighting, 0.0) * inputData.directAmbientOcclusion;
 	float vertexLightLuminance = ESL_EvaluateAdditionalLightLuminance(vertexLighting);
 
@@ -172,6 +218,7 @@ ESL_AdditionalLightingData ESL_EvaluateAdditionalLighting(ESL_InputData inputDat
 	return additionalLightingData;
 	#endif
 
+	// ピクセル追加光パス。ライトレイヤー一致時のみ寄与を加算します。
 	int additionalLightsCount = GetAdditionalLightsCount();
 	uint meshRenderingLayers = GetMeshRenderingLayer();
 
@@ -244,6 +291,7 @@ float3 ESL_EvaluateStylizedBakedGI(float3 bakedGI, float3 indirectShadowTint)
 
 ESL_MainLightData ESL_GetMainLightData(inout ESL_InputData inputData)
 {
+	// シャドウ有無に応じて主光取得APIを切り替えます。
 	#if defined(_MAIN_LIGHT_SHADOWS) || defined(_MAIN_LIGHT_SHADOWS_CASCADE) || defined(_MAIN_LIGHT_SHADOWS_SCREEN)
 	Light mainLight = GetMainLight(inputData.shadowCoord, inputData.positionWS, inputData.shadowMask);
 	#else
@@ -261,6 +309,7 @@ ESL_MainLightData ESL_GetMainLightData(inout ESL_InputData inputData)
 	return mainLightData;
 }
 
+// 影の柔らかさ/影響度を反映した実効シャドウ減衰。
 float ESL_EvaluateShadowAttenuation(float rawShadowAttenuation)
 {
 	float softenedShadow = lerp(saturate(rawShadowAttenuation), 1.0, saturate(_ShadowSoftFill));
@@ -284,6 +333,7 @@ float3 ESL_ApplyShadowColorBlend(float3 bandColor, float shadowAttenuation)
 	return lerp(bandColor, shadowColor, saturate(_ShadowColorBlend) * shadowMask);
 }
 
+// 影色ブレンドを適用した段階色を返します。
 float3 ESL_EvaluateShadowedBandColor(float3 bandColor, float rawShadowAttenuation, out float shadowAttenuation)
 {
 	shadowAttenuation = ESL_EvaluateShadowAttenuation(rawShadowAttenuation);
@@ -295,6 +345,7 @@ float ESL_EvaluateIndirectMask(float shadowAttenuation, float ndotl)
 	return saturate(max(ESL_EvaluateShadowMask(shadowAttenuation), 1.0 - saturate(ndotl)));
 }
 
+// 間接光（環境光/バウンス/ベイクGI）をスタイライズして合成します。
 ESL_IndirectLightingData ESL_EvaluateIndirectLighting(ESL_InputData inputData, ESL_SurfaceData surfaceData, float shadowAttenuation, float ndotl)
 {
 	ESL_AmbientData ambientData = ESL_EvaluateAmbientData(inputData);
@@ -312,6 +363,7 @@ ESL_IndirectLightingData ESL_EvaluateIndirectLighting(ESL_InputData inputData, E
 	return indirectLightingData;
 }
 
+// 主光由来のスペキュラ評価を委譲します。
 ESL_SpecularData ESL_EvaluateSpecularLighting(ESL_InputData inputData, ESL_MainLightData mainLightData, float shadowAttenuation)
 {
 	return ESL_EvaluateSpecularData(
@@ -322,18 +374,21 @@ ESL_SpecularData ESL_EvaluateSpecularLighting(ESL_InputData inputData, ESL_MainL
 		shadowAttenuation);
 }
 
+// ライト段階値へコントラスト・オフセットを適用します。
 float ESL_ApplyBandContrastAndOffset(float value)
 {
 	float contrastedValue = (saturate(value) - 0.5) * max(_BandContrast, 0.0001) + 0.5 + _BandOffset;
 	return saturate(contrastedValue);
 }
 
+// ローカルオフセット版（頂点カラー等の局所制御用）。
 float ESL_ApplyBandContrastAndOffset(float value, float bandOffset)
 {
 	float contrastedValue = (saturate(value) - 0.5) * max(_BandContrast, 0.0001) + 0.5 + bandOffset;
 	return saturate(contrastedValue);
 }
 
+// 段階値から5色グラデーション（DeepShadow〜Highlight）を評価します。
 float3 ESL_EvaluateBandColor(float steppedLight)
 {
 	float clampedLight = saturate(steppedLight);

@@ -74,6 +74,27 @@ Shader "BC/EnvironmentStylizedLit"
         _AdditionalLightShadowInfluence ("Additional Light Shadow Influence", Range(0, 1)) = 0.65
         _AdditionalLightColorInfluence ("Additional Light Color Influence", Range(0, 1)) = 0.75
 
+        [Toggle] _LightBandEmissionEnabled ("Light Band Emission", Float) = 0
+        [HDR] _LightBandEmissionColor ("Light Band Emission Color", Color) = (1.4, 1.2, 1.0, 1)
+        _LightBandEmissionIntensity ("Light Band Emission Intensity", Range(0, 20)) = 2
+        _LightBandEmissionMin ("Light Band Emission Min", Range(0, 1)) = 0.55
+        _LightBandEmissionMax ("Light Band Emission Max", Range(0, 1)) = 1
+        _LightBandEmissionFeather ("Light Band Emission Feather", Range(0, 0.5)) = 0.08
+        _LightBandEmissionStepMin ("Light Band Emission Step Min", Range(1, 5)) = 3
+        _LightBandEmissionStepMax ("Light Band Emission Step Max", Range(1, 5)) = 5
+        _LightBandEmissionBandStepBlend ("Light Band/Step Blend", Range(0, 1)) = 1
+        _LightBandEmissionAdditionalWeight ("Light Band Additional Weight", Range(0, 2)) = 1
+        _LightBandEmissionResponse ("Light Band Response", Range(0.25, 8)) = 2
+        _LightBandEmissionSpecialMaskInfluence ("Light Band Vertex A Influence", Range(0, 1)) = 0
+        _LightBandEmissionGradientInfluence ("Light Band Gradient Influence", Range(0, 1)) = 0
+
+        [Toggle] _SimpleBoostEmissionEnabled ("Simple Boost Emission", Float) = 0
+        [HDR] _SimpleBoostEmissionColor ("Simple Boost Emission Color", Color) = (1.0, 0.95, 0.9, 1)
+        _SimpleBoostEmissionIntensity ("Simple Boost Emission Intensity", Range(0, 25)) = 4
+        _SimpleBoostFresnelStrength ("Simple Boost Fresnel Strength", Range(0, 4)) = 1
+        _SimpleBoostFresnelPower ("Simple Boost Fresnel Power", Range(0.25, 8)) = 2
+        [Toggle] _SimpleBoostFresnelInvert ("Simple Boost Fresnel Invert", Float) = 0
+
         [Toggle(_ESL_TRIPLANAR_BASEMAP)] _TriplanarBaseMapEnabled ("Triplanar Base Map", Float) = 0
         [Toggle(_ESL_TRIPLANAR_NORMALMAP)] _TriplanarNormalMapEnabled ("Triplanar Normal Map", Float) = 0
         [Toggle(_ESL_TRIPLANAR_NOISE)] _TriplanarNoiseEnabled ("Triplanar Noise", Float) = 0
@@ -102,7 +123,7 @@ Shader "BC/EnvironmentStylizedLit"
         _NoiseDistanceFadeStart ("Noise Distance Fade Start", Range(0, 100)) = 12
         _NoiseDistanceFadeEnd ("Noise Distance Fade End", Range(0, 100)) = 32
 
-        [Enum(Off,0,NdotL,1,WrappedLight,2,SteppedLight,3,BandColor,4,WorldNoise,5,BandNoise,6)] _DebugView ("Debug View", Float) = 0
+        [Enum(Off,0,NdotL,1,WrappedLight,2,SteppedLight,3,BandColor,4,WorldNoise,5,BandNoise,6,CombinedLightIntensity,7,LightBandEmissionMask,8,SimpleBoostFresnel,9)] _DebugView ("Debug View", Float) = 0
     }
 
     SubShader

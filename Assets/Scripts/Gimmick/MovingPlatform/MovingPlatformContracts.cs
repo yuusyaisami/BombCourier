@@ -1271,42 +1271,42 @@ namespace BC.Gimmick.MovingPlatform
             switch (segment.Kind)
             {
                 case MovingPlatformRailLayerRoute.ResolvedStepKind.Move:
-                {
-                    MovingPlatformBasePose poseBase = hasRailReferencePose
-                        ? railReferencePose
-                        : new MovingPlatformBasePose(currentPose.Position, currentPose.Rotation, currentPose.LocalScale);
-                    Vector3 targetPosition = graph.GetWorldPosition(poseBase, segment.ToNodeIndex);
-                    return new MovingPlatformPose(targetPosition, currentPose.Rotation, currentPose.LocalScale);
-                }
+                    {
+                        MovingPlatformBasePose poseBase = hasRailReferencePose
+                            ? railReferencePose
+                            : new MovingPlatformBasePose(currentPose.Position, currentPose.Rotation, currentPose.LocalScale);
+                        Vector3 targetPosition = graph.GetWorldPosition(poseBase, segment.ToNodeIndex);
+                        return new MovingPlatformPose(targetPosition, currentPose.Rotation, currentPose.LocalScale);
+                    }
 
                 case MovingPlatformRailLayerRoute.ResolvedStepKind.Rotate:
-                {
-                    Quaternion targetRotation = currentPose.Rotation * Quaternion.Euler(segment.RotationEulerDelta);
-                    if (!segment.UsePivotOffset)
-                        return new MovingPlatformPose(currentPose.Position, targetRotation, currentPose.LocalScale);
+                    {
+                        Quaternion targetRotation = currentPose.Rotation * Quaternion.Euler(segment.RotationEulerDelta);
+                        if (!segment.UsePivotOffset)
+                            return new MovingPlatformPose(currentPose.Position, targetRotation, currentPose.LocalScale);
 
-                    Vector3 pivotOffsetLocal = ResolveReactiveVector3(segment.PivotLocalOffset);
-                    Vector3 pivotWorld = currentPose.Position + currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
-                    Vector3 rotatedPivotVector = targetRotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
-                    Vector3 targetPosition = pivotWorld - rotatedPivotVector;
-                    return new MovingPlatformPose(targetPosition, targetRotation, currentPose.LocalScale);
-                }
+                        Vector3 pivotOffsetLocal = ResolveReactiveVector3(segment.PivotLocalOffset);
+                        Vector3 pivotWorld = currentPose.Position + currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
+                        Vector3 rotatedPivotVector = targetRotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
+                        Vector3 targetPosition = pivotWorld - rotatedPivotVector;
+                        return new MovingPlatformPose(targetPosition, targetRotation, currentPose.LocalScale);
+                    }
 
                 case MovingPlatformRailLayerRoute.ResolvedStepKind.Scale:
-                {
-                    Vector3 targetScale = segment.ScaleMode == MovingPlatformScaleMode.Multiply
-                        ? Vector3.Scale(currentPose.LocalScale, segment.ScaleTarget)
-                        : segment.ScaleTarget;
+                    {
+                        Vector3 targetScale = segment.ScaleMode == MovingPlatformScaleMode.Multiply
+                            ? Vector3.Scale(currentPose.LocalScale, segment.ScaleTarget)
+                            : segment.ScaleTarget;
 
-                    if (!segment.UsePivotOffset)
-                        return new MovingPlatformPose(currentPose.Position, currentPose.Rotation, targetScale);
+                        if (!segment.UsePivotOffset)
+                            return new MovingPlatformPose(currentPose.Position, currentPose.Rotation, targetScale);
 
-                    Vector3 pivotOffsetLocal = ResolveReactiveVector3(segment.PivotLocalOffset);
-                    Vector3 pivotWorld = currentPose.Position + currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
-                    Vector3 scaledPivotVector = currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, targetScale);
-                    Vector3 targetPosition = pivotWorld - scaledPivotVector;
-                    return new MovingPlatformPose(targetPosition, currentPose.Rotation, targetScale);
-                }
+                        Vector3 pivotOffsetLocal = ResolveReactiveVector3(segment.PivotLocalOffset);
+                        Vector3 pivotWorld = currentPose.Position + currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, currentPose.LocalScale);
+                        Vector3 scaledPivotVector = currentPose.Rotation * Vector3.Scale(pivotOffsetLocal, targetScale);
+                        Vector3 targetPosition = pivotWorld - scaledPivotVector;
+                        return new MovingPlatformPose(targetPosition, currentPose.Rotation, targetScale);
+                    }
 
                 default:
                     return currentPose;

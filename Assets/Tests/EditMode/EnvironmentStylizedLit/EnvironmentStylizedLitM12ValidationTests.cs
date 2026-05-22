@@ -64,7 +64,7 @@ namespace BC.Rendering.Tests
                 MethodInfo normalizeMethod = GetStaticMethod(validatorType, "Normalize", typeof(Material));
                 Assert.IsTrue((bool)normalizeMethod.Invoke(null, new object[] { material }));
 
-                Assert.AreEqual(6f, material.GetFloat("_DebugView"));
+                Assert.AreEqual(9f, material.GetFloat("_DebugView"));
                 Assert.AreEqual(1f, material.GetFloat("_TriplanarBaseMapEnabled"));
                 Assert.AreEqual(0f, material.GetFloat("_TriplanarNormalMapEnabled"));
                 Assert.AreEqual(1f, material.GetFloat("_TriplanarNoiseEnabled"));
@@ -76,7 +76,7 @@ namespace BC.Rendering.Tests
                 Assert.IsFalse(material.IsKeywordEnabled("_ESL_TRIPLANAR_NORMALMAP"));
                 Assert.IsTrue(material.IsKeywordEnabled("_ESL_TRIPLANAR_NOISE"));
 
-                AssertWarningContains(validatorType, "TryGetDebugViewAuthoringWarning", material, "BandNoise");
+                AssertWarningContains(validatorType, "TryGetDebugViewAuthoringWarning", material, "SimpleBoostFresnel");
                 AssertWarningContains(validatorType, "TryGetTriplanarPerformanceWarning", material, "Base Map");
                 AssertWarningContains(validatorType, "TryGetTriplanarPerformanceWarning", material, "Noise");
             }

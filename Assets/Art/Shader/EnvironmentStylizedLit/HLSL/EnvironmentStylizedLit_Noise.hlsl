@@ -17,11 +17,13 @@ struct ESL_NoiseData
 	float distanceFade;
 };
 
+// ノイズ座標系（ワールド/オブジェクト）を取得します。
 int ESL_GetNoiseSpace()
 {
 	return (int)round(_NoiseSpace);
 }
 
+// 3D/2D値ノイズ用のハッシュ関数。
 float ESL_Hash13(float3 value)
 {
 	value = frac(value * 0.1031);
@@ -36,6 +38,7 @@ float ESL_Hash12(float2 value)
 	return frac((value3.x + value3.y) * value3.z);
 }
 
+// 3D value noise（格子8点を補間）を生成します。
 float ESL_SampleValueNoise(float3 samplePosition)
 {
 	float3 cell = floor(samplePosition);
@@ -60,6 +63,7 @@ float ESL_SampleValueNoise(float3 samplePosition)
 	return lerp(noiseY0, noiseY1, smoothFraction.z);
 }
 
+// 2D value noise（格子4点を補間）を生成します。
 float ESL_SampleValueNoise2D(float2 samplePosition)
 {
 	float2 cell = floor(samplePosition);
@@ -76,12 +80,14 @@ float ESL_SampleValueNoise2D(float2 samplePosition)
 	return lerp(noiseX0, noiseX1, smoothFraction.y);
 }
 
+// ノイズ分布のコントラストを調整します。
 float ESL_ApplyNoiseContrast(float noiseValue)
 {
 	float contrastedValue = (saturate(noiseValue) - 0.5) * max(_WorldNoiseContrast, 0.0001) + 0.5;
 	return saturate(contrastedValue);
 }
 
+// カメラ距離に応じたノイズ減衰マスクを計算します。
 float ESL_EvaluateNoiseDistanceFade(float3 positionWS)
 {
 	float fadeStart = max(_NoiseDistanceFadeStart, 0.0);
@@ -96,6 +102,7 @@ float ESL_EvaluateNoiseDistanceFade(float3 positionWS)
 	return 1.0 - saturate((cameraDistance - fadeStart) / (fadeEnd - fadeStart));
 }
 
+// 値ノイズを -1..1 の符号付きノイズへ変換します。
 float ESL_EvaluateSignedNoise(float3 samplePosition, float noiseStrength)
 {
 	if (noiseStrength <= 1e-4)
@@ -108,6 +115,7 @@ float ESL_EvaluateSignedNoise(float3 samplePosition, float noiseStrength)
 	return (contrastedNoise - 0.5) * 2.0 * saturate(noiseStrength);
 }
 
+// ワールド座標ノイズ評価。
 float ESL_EvaluateScaledWorldNoise(float3 positionWS, float noiseScale, float noiseStrength)
 {
 	if (noiseScale <= 1e-4)
@@ -118,6 +126,7 @@ float ESL_EvaluateScaledWorldNoise(float3 positionWS, float noiseScale, float no
 	return ESL_EvaluateSignedNoise(positionWS * noiseScale, noiseStrength);
 }
 
+// トライプラナー合成で符号付きノイズを評価します。
 float ESL_EvaluateSignedTriplanarNoise(float3 positionWS, float3 normalWS, float noiseScale, float noiseStrength)
 {
 	if (noiseScale <= 1e-4 || noiseStrength <= 1e-4)
@@ -133,6 +142,7 @@ float ESL_EvaluateSignedTriplanarNoise(float3 positionWS, float3 normalWS, float
 	return (contrastedNoise - 0.5) * 2.0 * saturate(noiseStrength);
 }
 
+// オブジェクト空間ノイズ評価。
 float ESL_EvaluateScaledObjectSpaceNoise(float3 positionWS, float noiseScale, float noiseStrength)
 {
 	if (noiseScale <= 1e-4)
@@ -144,6 +154,7 @@ float ESL_EvaluateScaledObjectSpaceNoise(float3 positionWS, float noiseScale, fl
 	return ESL_EvaluateSignedNoise(positionOS * noiseScale, noiseStrength);
 }
 
+// 用途別のノイズ公開関数群。
 float ESL_EvaluateWorldNoise(float3 positionWS)
 {
 	float distanceFade = ESL_EvaluateNoiseDistanceFade(positionWS);
@@ -166,6 +177,7 @@ float ESL_EvaluateNoiseBySpace(float3 positionWS, float noiseScale, float noiseS
 	return ESL_EvaluateScaledWorldNoise(positionWS, noiseScale, noiseStrength);
 }
 
+// ベース色へ掛けるサーフェスノイズ。
 float ESL_EvaluateSurfaceNoise(float3 positionWS, float3 normalWS)
 {
 	float distanceFade = ESL_EvaluateNoiseDistanceFade(positionWS);
@@ -179,6 +191,7 @@ float ESL_EvaluateSurfaceNoise(float3 positionWS, float3 normalWS)
 	return ESL_EvaluateNoiseBySpace(positionWS, _WorldNoiseScale, _WorldNoiseStrength, noiseSpace) * distanceFade;
 }
 
+// ライト段差に加える帯域ノイズ。
 float ESL_EvaluateBandNoise(float3 positionWS, float3 normalWS)
 {
 	float distanceFade = ESL_EvaluateNoiseDistanceFade(positionWS);
@@ -198,6 +211,7 @@ float ESL_EvaluateBandNoise(float3 positionWS, float3 normalWS)
 	return selectedNoise * saturate(_LightBandNoiseStrength) * distanceFade;
 }
 
+// デバッグ/他段再利用のため、各ノイズ寄与を一括評価します。
 ESL_NoiseData ESL_EvaluateNoiseData(float3 positionWS, float3 normalWS)
 {
 	ESL_NoiseData noiseData;

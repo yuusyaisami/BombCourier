@@ -22,6 +22,7 @@ struct ESL_DepthOnlyVaryings
 	UNITY_VERTEX_OUTPUT_STEREO
 };
 
+// DepthOnly頂点シェーダ。Depth出力に必要な座標とAlphaClip用情報を渡します。
 ESL_DepthOnlyVaryings ESL_DepthOnlyVertex(ESL_DepthOnlyAttributes input)
 {
 	ESL_DepthOnlyVaryings output = (ESL_DepthOnlyVaryings)0;
@@ -36,6 +37,7 @@ ESL_DepthOnlyVaryings ESL_DepthOnlyVertex(ESL_DepthOnlyAttributes input)
 	return output;
 }
 
+// トライプラナー対応のAlphaClipを行ったうえで深度を書き出します。
 half ESL_DepthOnlyFragment(ESL_DepthOnlyVaryings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);

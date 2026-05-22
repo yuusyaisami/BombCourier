@@ -24,6 +24,7 @@ struct ESL_ShadowVaryings
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
+// シャドウマップ空間への変換（バイアス/クランプ込み）を行います。
 float4 ESL_GetShadowPositionHClip(ESL_ShadowAttributes input)
 {
 	float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
@@ -39,6 +40,7 @@ float4 ESL_GetShadowPositionHClip(ESL_ShadowAttributes input)
 	return ApplyShadowClamping(positionCS);
 }
 
+// ShadowCaster頂点シェーダ。AlphaClipに必要な情報も同時に補間します。
 ESL_ShadowVaryings ESL_ShadowPassVertex(ESL_ShadowAttributes input)
 {
 	ESL_ShadowVaryings output = (ESL_ShadowVaryings)0;
@@ -51,6 +53,7 @@ ESL_ShadowVaryings ESL_ShadowPassVertex(ESL_ShadowAttributes input)
 	return output;
 }
 
+// ShadowCasterフラグメント。AlphaClipのみ評価し、深度は固定パイプラインへ委譲します。
 half4 ESL_ShadowPassFragment(ESL_ShadowVaryings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);
