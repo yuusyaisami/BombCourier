@@ -17,6 +17,9 @@ namespace BC.Managers
         Surprised = 30,
         Happy = 40,
         Narrow = 50,
+        Sad = 60,
+        Angry = 70,
+        Laugh = 80,
     }
 
     [Serializable]
@@ -29,7 +32,10 @@ namespace BC.Managers
     [Serializable]
     public struct TalkRequestData
     {
+        private const int ActionToggleVersionEnabled = 1;
+
         public TalkStateId talkStateId; // 会話中の actor presentation を選ぶ状態。
+        public CharacterIdReference speakerCharacter;
         public string speakerName;
         [TextArea]
         public string dialogueText;
@@ -37,8 +43,45 @@ namespace BC.Managers
         public TextEffectData textEffectData; // 文字サイズなど、会話テキストの見た目を制御する設定。
 
         public bool isWaitingActionCompleted; // 会話前後の inline action を完了待ちするか。
+        public bool useOnStartTalkAction;
         public InlineAction onStartTalkAction; // 会話開始時に走らせる action。
+        public bool useOnCompleteTalkAction;
         public InlineAction onCompleteTalkAction; // 会話終了時に走らせる action。
+
+        [SerializeField, HideInInspector] private int actionToggleVersion;
+
+        public InlineAction OnStartTalkAction => useOnStartTalkAction ? onStartTalkAction : null;
+        public InlineAction OnCompleteTalkAction => useOnCompleteTalkAction ? onCompleteTalkAction : null;
+        public bool HasSpeakerCharacter => speakerCharacter.IsAssigned;
+
+        public string ResolveSpeakerDisplayName()
+        {
+            if (CharacterIdRegistry.TryGetDescriptor(speakerCharacter, out CharacterIdDescriptor descriptor))
+            {
+                if (!string.IsNullOrWhiteSpace(descriptor.DisplayName))
+                    return descriptor.DisplayName;
+
+                if (!string.IsNullOrWhiteSpace(descriptor.Path))
+                    return descriptor.Path;
+            }
+
+            if (!string.IsNullOrWhiteSpace(speakerName))
+                return speakerName;
+
+            return speakerCharacter.IsAssigned
+                ? speakerCharacter.ToString()
+                : string.Empty;
+        }
+
+        public void EnsureInlineActionFlagsInitialized()
+        {
+            if (actionToggleVersion >= ActionToggleVersionEnabled)
+                return;
+
+            useOnStartTalkAction = false; // 既存の会話アクションはすべてオフにする。必要なものだけオンにしてもらう。
+            useOnCompleteTalkAction = false;
+            actionToggleVersion = ActionToggleVersionEnabled;
+        }
     }
 
     [Serializable]
@@ -121,7 +164,10 @@ namespace BC.Managers
 
         private CancellationTokenSource cancellationTokenSource;
         private EntityRef activeTalkActor;
+        private bool isConversationFocusActive;
+        private SceneCameraFocusContext activeConversationFocusContext;
         private SceneKernel sceneKernel;
+        private readonly CharacterDataBaseService characterDataBase = new();
 
         private void Awake()
         {
@@ -159,6 +205,9 @@ namespace BC.Managers
         // 重複会話が来たら、古い処理を止めて新しい会話へ切り替える。
         public async UniTask ShowTalk(EntityRef actor, EntityRef viewer, TalkRequestData talkRequestData)
         {
+            talkRequestData.EnsureInlineActionFlagsInitialized();
+            talkRequestData.speakerName = talkRequestData.ResolveSpeakerDisplayName();
+
             if (talkSystemUIManagerMB == null)
             {
                 Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: ShowTalk skipped because {nameof(talkSystemUIManagerMB)} is null.", this);
@@ -181,7 +230,7 @@ namespace BC.Managers
             await ExecuteInlineActionAsync(
                 actor,
                 viewer,
-                talkRequestData.onStartTalkAction,
+                talkRequestData.OnStartTalkAction,
                 talkRequestData.isWaitingActionCompleted,
                 currentTalkCancellation.Token,
                 "start");
@@ -208,11 +257,51 @@ namespace BC.Managers
             await ExecuteInlineActionAsync(
                 actor,
                 viewer,
-                talkRequestData.onCompleteTalkAction,
+                talkRequestData.OnCompleteTalkAction,
                 talkRequestData.isWaitingActionCompleted,
                 CancellationToken.None,
                 "complete");
 
+        }
+
+        public void RegisterTalkAdapter(CharacterIdReference characterId, EntityRef entity, TalkAdapterMB adapter)
+        {
+            characterDataBase.Register(characterId, entity, adapter);
+        }
+
+        public void UnregisterTalkAdapter(TalkAdapterMB adapter)
+        {
+            characterDataBase.Unregister(adapter);
+        }
+
+        public bool TryResolveSpeakerAdapter(TalkRequestData talkRequestData, out TalkAdapterMB adapter, out EntityRef speakerEntity)
+        {
+            adapter = null;
+            speakerEntity = default;
+
+            if (!talkRequestData.HasSpeakerCharacter)
+                return false;
+
+            if (!TryResolveSceneKernel(out SceneKernel resolvedSceneKernel))
+            {
+                Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: failed to resolve scene kernel for speaker lookup.", this);
+                return false;
+            }
+
+            bool resolved = characterDataBase.TryResolveTalkAdapter(
+                talkRequestData.speakerCharacter,
+                resolvedSceneKernel,
+                out adapter,
+                out speakerEntity);
+
+            if (!resolved)
+            {
+                Debug.LogWarning(
+                    $"{nameof(TalkSystemManagerMB)}: speaker '{talkRequestData.speakerCharacter}' is not registered in {nameof(CharacterDataBaseService)}.",
+                    this);
+            }
+
+            return resolved;
         }
 
         public async UniTask HideTalk(EntityRef actor, HideTalkRequestData requestData)
@@ -283,10 +372,31 @@ namespace BC.Managers
 
         private void BeginConversationCameraFocus(EntityRef actor, EntityRef viewer)
         {
-            EndConversationCameraFocus();
+            SceneCameraFocusContext nextContext = new SceneCameraFocusContext(actor, viewer);
+
+            // ShowTalk が連続で呼ばれても、同じ会話対象なら talk camera を再初期化しない。
+            // HideTalk まで同じフォーカスを維持して、毎行ごとの位置リセットを防ぐ。
+            if (isConversationFocusActive &&
+                activeConversationFocusContext.FocusTargetEntity.Equals(nextContext.FocusTargetEntity) &&
+                activeConversationFocusContext.ObserverEntity.Equals(nextContext.ObserverEntity))
+            {
+                return;
+            }
 
             if (TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) && resolvedSceneKernel.Cameras != null)
-                resolvedSceneKernel.Cameras.BeginFocus(new SceneCameraFocusContext(actor, viewer));
+            {
+                // 会話中に話者だけ変わるケースでは、focus target だけ更新して
+                // talk camera の初期化/priority リセットを避ける。
+                bool observerChanged = isConversationFocusActive &&
+                                      !activeConversationFocusContext.ObserverEntity.Equals(nextContext.ObserverEntity);
+
+                if (observerChanged)
+                    resolvedSceneKernel.Cameras.EndFocus();
+
+                resolvedSceneKernel.Cameras.BeginFocus(nextContext);
+                activeConversationFocusContext = nextContext;
+                isConversationFocusActive = true;
+            }
         }
 
         private UniTask ExecuteInlineActionAsync(
@@ -330,6 +440,9 @@ namespace BC.Managers
         {
             if (TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) && resolvedSceneKernel.Cameras != null)
                 resolvedSceneKernel.Cameras.EndFocus();
+
+            activeConversationFocusContext = default;
+            isConversationFocusActive = false;
         }
 
         private bool TryResolveSceneKernel(out SceneKernel resolvedSceneKernel)

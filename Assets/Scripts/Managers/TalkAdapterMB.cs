@@ -13,17 +13,66 @@ namespace BC.Managers
     {
         public EntityAnimatorParameterWriteMode writeMode;
         public string parameterName;
+        [ShowIf(nameof(SupportsAutoReset))] public bool applyAutoReset;
+        [SerializeField, HideInInspector] private bool autoResetInitialized;
         [ShowIf(nameof(writeMode), EntityAnimatorParameterWriteMode.SetBool)] public bool boolValue;
         [ShowIf(nameof(writeMode), EntityAnimatorParameterWriteMode.SetFloat)] public float floatValue;
         [ShowIf(nameof(writeMode), EntityAnimatorParameterWriteMode.SetInteger)] public int intValue;
+        [ShowIf(nameof(ShouldShowManualResetBool))] public bool resetBoolValue;
+        [ShowIf(nameof(ShouldShowManualResetFloat))] public float resetFloatValue;
+        [ShowIf(nameof(ShouldShowManualResetInt))] public int resetIntValue;
 
-        public void Apply(EntityAnimationMB entityAnimation)
+        public void ApplyEnter(EntityAnimationMB entityAnimation)
         {
             if (entityAnimation == null || string.IsNullOrWhiteSpace(parameterName))
                 return;
 
             entityAnimation.TryApplyParameter(writeMode, parameterName, boolValue, floatValue, intValue);
         }
+
+        public void ApplyExit(EntityAnimationMB entityAnimation)
+        {
+            if (entityAnimation == null || string.IsNullOrWhiteSpace(parameterName) || !SupportsAutoReset)
+                return;
+
+            switch (writeMode)
+            {
+                case EntityAnimatorParameterWriteMode.SetBool:
+                    entityAnimation.SetBool(parameterName, applyAutoReset ? false : resetBoolValue);
+                    break;
+
+                case EntityAnimatorParameterWriteMode.SetFloat:
+                    entityAnimation.SetFloat(parameterName, applyAutoReset ? 0f : resetFloatValue);
+                    break;
+
+                case EntityAnimatorParameterWriteMode.SetInteger:
+                    entityAnimation.SetInteger(parameterName, applyAutoReset ? 0 : resetIntValue);
+                    break;
+            }
+        }
+
+        public void Apply(EntityAnimationMB entityAnimation)
+        {
+            ApplyEnter(entityAnimation);
+        }
+
+        public void EnsureDefaultAutoReset()
+        {
+            if (autoResetInitialized)
+                return;
+
+            applyAutoReset = true;
+            autoResetInitialized = true;
+        }
+
+        private bool SupportsAutoReset =>
+            writeMode == EntityAnimatorParameterWriteMode.SetBool ||
+            writeMode == EntityAnimatorParameterWriteMode.SetFloat ||
+            writeMode == EntityAnimatorParameterWriteMode.SetInteger;
+
+        private bool ShouldShowManualResetBool => SupportsAutoReset && !applyAutoReset && writeMode == EntityAnimatorParameterWriteMode.SetBool;
+        private bool ShouldShowManualResetFloat => SupportsAutoReset && !applyAutoReset && writeMode == EntityAnimatorParameterWriteMode.SetFloat;
+        private bool ShouldShowManualResetInt => SupportsAutoReset && !applyAutoReset && writeMode == EntityAnimatorParameterWriteMode.SetInteger;
     }
 
     [Serializable]
@@ -38,7 +87,7 @@ namespace BC.Managers
         public ShapeExpressionId shapeExpressionId;
         public TalkAnimatorParameterWrite[] parameterWrites;
 
-        public void Apply(EntityAnimationMB entityAnimation, ValueStoreService valueStore, EntityRef entity)
+        public void ApplyEnter(EntityAnimationMB entityAnimation, ValueStoreService valueStore, EntityRef entity)
         {
             if (applyFaceExpression && valueStore != null && entity.IsValid)
                 valueStore.Set(entity, ValueKeys.Runtime.FaceExpression, faceExpressionId);
@@ -50,7 +99,21 @@ namespace BC.Managers
                 return;
 
             for (int i = 0; i < parameterWrites.Length; i++)
-                parameterWrites[i].Apply(entityAnimation);
+                parameterWrites[i].ApplyEnter(entityAnimation);
+        }
+
+        public void ApplyExit(EntityAnimationMB entityAnimation)
+        {
+            if (parameterWrites == null || entityAnimation == null)
+                return;
+
+            for (int i = 0; i < parameterWrites.Length; i++)
+                parameterWrites[i].ApplyExit(entityAnimation);
+        }
+
+        public void Apply(EntityAnimationMB entityAnimation, ValueStoreService valueStore, EntityRef entity)
+        {
+            ApplyEnter(entityAnimation, valueStore, entity);
         }
     }
 
@@ -94,6 +157,9 @@ namespace BC.Managers
         [SerializeField] private EntityAnimationMB entityAnimation;
         [SerializeField] private SceneKernelMB sceneKernelMB;
 
+        [Header("Character")]
+        [SerializeField] private CharacterIdReference characterId;
+
         [Header("Presentation")]
         [SerializeField] private TalkStateId defaultIdleTalkState = TalkStateId.None;
         [SerializeField] private TalkStatePresentationEntry[] statePresentations = Array.Empty<TalkStatePresentationEntry>();
@@ -105,9 +171,30 @@ namespace BC.Managers
         private bool missingValueStoreWarningLogged;
         private bool hasLastStateShapeExpression;
         private ShapeExpressionId lastStateShapeExpression;
+        private bool hasCurrentTalkStatePresentation;
+        private TalkStateId currentTalkStateId;
         private bool isTalkingActivityActive;
+        private bool isCharacterRegistered;
 
         public EntityRef Entity => entityMB != null && entityMB.HasEntity ? entityMB.Entity : entityRef;
+        public CharacterIdReference CharacterId => characterId;
+
+        private void OnEnable()
+        {
+            TryRegisterCharacterMapping();
+        }
+
+        private void OnDisable()
+        {
+            TalkSystemManagerMB.Instance?.UnregisterTalkAdapter(this);
+            isCharacterRegistered = false;
+        }
+
+        private void LateUpdate()
+        {
+            if (!isCharacterRegistered)
+                TryRegisterCharacterMapping();
+        }
 
         private void Reset()
         {
@@ -117,6 +204,7 @@ namespace BC.Managers
         private void OnValidate()
         {
             ResolveSerializedReferences();
+            NormalizePresentationDefaults();
         }
 
         public async UniTask<bool> TryShowTalkAsync(
@@ -126,6 +214,28 @@ namespace BC.Managers
         {
             if (!TryResolveRuntimeDependencies(out EntityRef actor, out TalkSystemManagerMB talkSystemManager))
                 return false;
+
+            if (requestData.HasSpeakerCharacter)
+            {
+                if (!talkSystemManager.TryResolveSpeakerAdapter(requestData, out TalkAdapterMB targetAdapter, out _))
+                    return false;
+
+                if (targetAdapter != null && !ReferenceEquals(targetAdapter, this))
+                {
+                    EntityRef redirectedViewer = viewer;
+
+                    // speaker を別 adapter へ委譲した結果、viewer まで speaker 自身になると
+                    // talk camera の pivot が speaker 単体に寄ってしまう。
+                    // この場合は元の actor を observer として引き継ぐ。
+                    if (redirectedViewer.IsValid && targetAdapter.Entity.IsValid && redirectedViewer.Equals(targetAdapter.Entity) &&
+                        actor.IsValid && !actor.Equals(targetAdapter.Entity))
+                    {
+                        redirectedViewer = actor;
+                    }
+
+                    return await targetAdapter.TryShowTalkAsync(redirectedViewer, requestData, cancellationToken);
+                }
+            }
 
             ApplyTalkState(requestData.talkStateId, logMissingState: true);
             ApplyTalkingActivity(true);
@@ -161,6 +271,8 @@ namespace BC.Managers
 
             await talkSystemManager.HideTalk(actor, requestData).AttachExternalCancellation(cancellationToken);
 
+            ClearCurrentTalkStatePresentation();
+
             if (requestData.applyTalkStateOverride)
                 ApplyTalkState(requestData.talkStateId, logMissingState: true);
             else
@@ -180,6 +292,66 @@ namespace BC.Managers
 
             if (sceneKernelMB == null)
                 sceneKernelMB = GetComponentInParent<SceneKernelMB>();
+
+            NormalizePresentationDefaults();
+        }
+
+        private void NormalizePresentationDefaults()
+        {
+            if (statePresentations == null)
+                return;
+
+            for (int i = 0; i < statePresentations.Length; i++)
+            {
+                TalkStatePresentationEntry presentation = statePresentations[i];
+                if (presentation.parameterWrites == null)
+                    continue;
+
+                for (int j = 0; j < presentation.parameterWrites.Length; j++)
+                {
+                    TalkAnimatorParameterWrite write = presentation.parameterWrites[j];
+                    write.EnsureDefaultAutoReset();
+                    presentation.parameterWrites[j] = write;
+                }
+
+                statePresentations[i] = presentation;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            TalkSystemManagerMB.Instance?.UnregisterTalkAdapter(this);
+            isCharacterRegistered = false;
+        }
+
+        private void TryRegisterCharacterMapping()
+        {
+            if (!characterId.IsAssigned)
+                return;
+
+            if (!TryResolveRuntimeDependenciesNoWarning(out EntityRef actor, out TalkSystemManagerMB talkSystemManager))
+                return;
+
+            talkSystemManager.RegisterTalkAdapter(characterId, actor, this);
+            isCharacterRegistered = true;
+        }
+
+        private bool TryResolveRuntimeDependenciesNoWarning(out EntityRef actor, out TalkSystemManagerMB talkSystemManager)
+        {
+            ResolveSerializedReferences();
+
+            talkSystemManager = TalkSystemManagerMB.Instance;
+            actor = default;
+
+            if (talkSystemManager == null)
+                return false;
+
+            if (entityMB == null || !entityMB.HasEntity)
+                return false;
+
+            actor = entityMB.Entity;
+            entityRef = actor;
+            return true;
         }
 
         private bool TryResolveRuntimeDependencies(out EntityRef actor, out TalkSystemManagerMB talkSystemManager)
@@ -203,6 +375,9 @@ namespace BC.Managers
 
             actor = entityMB.Entity;
             entityRef = actor;
+
+            talkSystemManager.RegisterTalkAdapter(characterId, actor, this);
+            isCharacterRegistered = true;
 
             if (sceneKernelMB?.Kernel?.EntityValueStore != null)
             {
@@ -234,6 +409,9 @@ namespace BC.Managers
                 return;
             }
 
+            if (hasCurrentTalkStatePresentation && currentTalkStateId != talkStateId)
+                ClearCurrentTalkStatePresentation();
+
             if (entityAnimation == null && HasAnimatorWrites(presentation) && !missingAnimationWarningLogged)
             {
                 Debug.LogWarning($"{nameof(TalkAdapterMB)}: {nameof(EntityAnimationMB)} is missing, so talk animator parameters will be skipped.", this);
@@ -242,11 +420,25 @@ namespace BC.Managers
 
             hasLastStateShapeExpression = presentation.applyShapeExpression;
             lastStateShapeExpression = presentation.shapeExpressionId;
-            presentation.Apply(entityAnimation, valueStore, Entity);
+            presentation.ApplyEnter(entityAnimation, valueStore, Entity);
+            currentTalkStateId = talkStateId;
+            hasCurrentTalkStatePresentation = true;
 
             // talk 専用 bool は state 側の parameter write で上書きさせない。
             if (!isTalkingActivityActive && entityAnimation != null)
                 activityPresentation.Apply(entityAnimation, false);
+        }
+
+        private void ClearCurrentTalkStatePresentation()
+        {
+            if (!hasCurrentTalkStatePresentation)
+                return;
+
+            if (TryFindPresentation(currentTalkStateId, out TalkStatePresentationEntry currentPresentation))
+                currentPresentation.ApplyExit(entityAnimation);
+
+            hasCurrentTalkStatePresentation = false;
+            currentTalkStateId = default;
         }
 
         private void ApplyTalkingActivity(bool isTalking)

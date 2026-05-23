@@ -153,6 +153,10 @@ namespace BC.Editor.ActionSystem
                 ActionStepAuthoring step = steps[i];
                 string stepPropertyPath = $"{actionPropertyPath}._steps.Array.data[{i}]";
                 ActionBranchKey stepKey = branchKey.Append(BuildStepKeySegment(rootSerializedObject, stepPropertyPath, i));
+                IReadOnlyList<ActionChildSlotDescriptor> childSlots = step != null
+                    ? step.GetChildActionSlots()
+                    : null;
+                bool hasChildBranches = childSlots != null && childSlots.Count > 0;
 
                 items.Add(new ActionBlockTreeItem(
                     ActionBlockTreeItemKind.Step,
@@ -165,25 +169,24 @@ namespace BC.Editor.ActionSystem
                     default,
                     stepPropertyPath,
                     step == null,
-                    false));
+                    hasChildBranches));
 
                 if (step == null)
                     continue;
 
-                AddChildSlots(rootSerializedObject, step, stepPropertyPath, stepKey, depth + 1, ancestry);
+                AddChildSlots(rootSerializedObject, step, childSlots, stepPropertyPath, stepKey, depth + 1, ancestry);
             }
         }
 
         private void AddChildSlots(
             SerializedObject rootSerializedObject,
             ActionStepAuthoring step,
+            IReadOnlyList<ActionChildSlotDescriptor> sourceSlots,
             string stepPropertyPath,
             ActionBranchKey stepKey,
             int depth,
             HashSet<InlineAction> ancestry)
         {
-            IReadOnlyList<ActionChildSlotDescriptor> sourceSlots = step.GetChildActionSlots();
-
             if (sourceSlots == null || sourceSlots.Count == 0)
                 return;
 

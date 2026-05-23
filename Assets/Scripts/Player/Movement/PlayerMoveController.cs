@@ -14,6 +14,7 @@ namespace BC.Base
     public sealed class PlayerMoveController : MonoBehaviour, IBombImpactReceiver
     {
         private static readonly ValueModifierTagId DeadMoveLockTag = new ValueModifierTagId(10001);
+        private const string ExpectedMoveActionName = "Move";
 
         [Header("References")]
         [SerializeField] private EntityMoveMotorMB moveMotor;
@@ -78,14 +79,14 @@ namespace BC.Base
 
         private void OnEnable()
         {
-            moveInputAction?.action?.Enable();
+            ResolveMoveInputAction()?.Enable();
             jumpInputAction?.action?.Enable();
             sprintInputAction?.action?.Enable();
         }
 
         private void OnDisable()
         {
-            moveInputAction?.action?.Disable();
+            ResolveMoveInputAction()?.Disable();
             jumpInputAction?.action?.Disable();
             sprintInputAction?.action?.Disable();
             moveMotor?.ClearMoveIntent();
@@ -129,10 +130,11 @@ namespace BC.Base
 
             bool canReceiveInput = moveMotor.CanProcessMoveInput;
             Vector2 moveInput = Vector2.zero;
+            InputAction resolvedMoveAction = ResolveMoveInputAction();
 
-            if (canReceiveInput && moveInputAction != null && moveInputAction.action != null)
+            if (canReceiveInput && resolvedMoveAction != null)
             {
-                moveInput = moveInputAction.action.ReadValue<Vector2>();
+                moveInput = resolvedMoveAction.ReadValue<Vector2>();
                 moveInput = Vector2.ClampMagnitude(moveInput, 1.0f);
             }
 
@@ -357,6 +359,22 @@ namespace BC.Base
                 moveMotor = gameObject.AddComponent<EntityMoveMotorMB>();
 
             return moveMotor;
+        }
+
+        // 参照が崩れても Move 以外を読まないよう、同じ asset 内から期待アクション名を引き直す。
+        private InputAction ResolveMoveInputAction()
+        {
+            InputAction assignedAction = moveInputAction != null ? moveInputAction.action : null;
+            if (assignedAction == null)
+                return null;
+
+            if (assignedAction.name == ExpectedMoveActionName)
+                return assignedAction;
+
+            InputActionAsset actionAsset = assignedAction.actionMap != null ? assignedAction.actionMap.asset : null;
+            return actionAsset != null
+                ? actionAsset.FindAction($"Player/{ExpectedMoveActionName}", throwIfNotFound: false)
+                : assignedAction;
         }
 
         private void ResolveReferences()

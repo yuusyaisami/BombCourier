@@ -34,6 +34,9 @@ namespace BC.Editor.Camera
         private const float PointHandleRadiusMultiplier = 1.5f;
         private const float PointPickRadiusMultiplier = 2.25f;
         private const float ArrowLengthMultiplier = 6.875f;
+        private const float CutIndicatorAlpha = 0.38f;
+        private const float CutDashLength = 0.75f;
+        private const float CutDashGap = 0.45f;
 
         private SerializedProperty pointsProperty;
         private SerializedProperty selectedPointIndexProperty;
@@ -244,7 +247,10 @@ namespace BC.Editor.Camera
                 if (hasPrevious)
                 {
                     Handles.color = SceneHandleStyleTokens.LineColor;
-                    Handles.DrawAAPolyLine(4.0f, previousPosition, position);
+                    if (IsCutTransition(pointProperty))
+                        DrawCutDashedIndicator(previousPosition, position);
+                    else
+                        Handles.DrawAAPolyLine(4.0f, previousPosition, position);
                 }
 
                 Handles.color = selected ? SceneHandleStyleTokens.SelectedColor : SceneHandleStyleTokens.LineColor;
@@ -267,6 +273,47 @@ namespace BC.Editor.Camera
                 previousPosition = position;
                 hasPrevious = true;
             }
+        }
+
+        private bool IsCutTransition(SerializedProperty pointProperty)
+        {
+            SerializedProperty transitionProperty = pointProperty.FindPropertyRelative(TransitionFieldName);
+
+            if (transitionProperty == null)
+                return false;
+
+            SerializedProperty kindProperty = transitionProperty.FindPropertyRelative(TransitionKindFieldName);
+            if (kindProperty == null)
+                return false;
+
+            return kindProperty.intValue == (int)CameraPathTransitionKind.Cut;
+        }
+
+        private static void DrawCutDashedIndicator(Vector3 start, Vector3 end)
+        {
+            Vector3 direction = end - start;
+            float distance = direction.magnitude;
+
+            if (distance <= 0.0001f)
+                return;
+
+            // Cut は「移動」ではなく「遷移先の参照」を示すため、薄い破線で表示する。
+            Color original = Handles.color;
+            Handles.color = new Color(original.r, original.g, original.b, original.a * CutIndicatorAlpha);
+
+            float step = Mathf.Max(0.01f, CutDashLength + CutDashGap);
+            Vector3 unit = direction / distance;
+
+            for (float d = 0.0f; d < distance; d += step)
+            {
+                float from = d;
+                float to = Mathf.Min(d + CutDashLength, distance);
+                Vector3 segmentStart = start + unit * from;
+                Vector3 segmentEnd = start + unit * to;
+                Handles.DrawAAPolyLine(2.0f, segmentStart, segmentEnd);
+            }
+
+            Handles.color = original;
         }
 
         private void DrawSelectedTransformHandle(CameraPathSequenceAuthoringMB sequence)

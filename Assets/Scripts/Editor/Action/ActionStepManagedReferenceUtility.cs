@@ -63,6 +63,8 @@ namespace BC.Editor.ActionSystem
             if (stepType == null)
                 return;
 
+            ActionAuthoringSystemDataStore.RecordStepSelection(stepType);
+
             // Inline and window UIs both insert relative to the current selection, so centralize the index handling here.
             ApplyListMutation(targets, listPropertyPath, "Add Action Step", listProperty =>
             {
@@ -128,6 +130,20 @@ namespace BC.Editor.ActionSystem
             });
         }
 
+        internal static void DeleteSteps(UnityEngine.Object[] targets, string listPropertyPath, IReadOnlyList<int> indices)
+        {
+            if (indices == null || indices.Count <= 0)
+                return;
+
+            ApplyListMutation(targets, listPropertyPath, "Delete Action Steps", listProperty =>
+            {
+                List<int> sortedUnique = BuildSortedUniqueIndices(indices, listProperty.arraySize);
+
+                for (int i = sortedUnique.Count - 1; i >= 0; i--)
+                    ManagedReferenceListController.DeleteElement(listProperty, sortedUnique[i]);
+            });
+        }
+
         internal static void ClearSteps(UnityEngine.Object[] targets, string listPropertyPath)
         {
             ApplyListMutation(targets, listPropertyPath, "Clear Action Steps", listProperty =>
@@ -165,6 +181,143 @@ namespace BC.Editor.ActionSystem
 
                 ManagedReferenceListController.MoveElement(listProperty, sourceIndex, destinationIndex);
             });
+        }
+
+        internal static void MoveStepBetweenLists(
+            UnityEngine.Object[] targets,
+            string sourceListPropertyPath,
+            int sourceIndex,
+            string destinationListPropertyPath,
+            int destinationInsertIndex)
+        {
+            if (targets == null ||
+                string.IsNullOrWhiteSpace(sourceListPropertyPath) ||
+                string.IsNullOrWhiteSpace(destinationListPropertyPath))
+            {
+                return;
+            }
+
+            UndoApplyUtility.ApplyToTargets(
+                targets,
+                "Move Action Step",
+                serializedObject =>
+                {
+                    SerializedProperty sourceListProperty = serializedObject.FindProperty(sourceListPropertyPath);
+                    SerializedProperty destinationListProperty = serializedObject.FindProperty(destinationListPropertyPath);
+
+                    if (sourceListProperty == null || !sourceListProperty.isArray ||
+                        destinationListProperty == null || !destinationListProperty.isArray)
+                    {
+                        return;
+                    }
+
+                    if (sourceIndex < 0 || sourceIndex >= sourceListProperty.arraySize)
+                        return;
+
+                    bool isSameList = string.Equals(
+                        sourceListPropertyPath,
+                        destinationListPropertyPath,
+                        StringComparison.Ordinal);
+
+                    if (isSameList)
+                    {
+                        int moveToIndex = ResolveInsertIndex(sourceListProperty, destinationInsertIndex);
+
+                        if (moveToIndex > sourceIndex)
+                            moveToIndex -= 1;
+
+                        if (moveToIndex == sourceIndex)
+                            return;
+
+                        ManagedReferenceListController.MoveElement(sourceListProperty, sourceIndex, moveToIndex);
+                        return;
+                    }
+
+                    object sourceStep = sourceListProperty.GetArrayElementAtIndex(sourceIndex).managedReferenceValue;
+                    object clone = ManagedReferenceListController.CloneManagedReference(sourceStep);
+
+                    int insertIndex = ResolveInsertIndex(destinationListProperty, destinationInsertIndex);
+                    destinationListProperty.InsertArrayElementAtIndex(insertIndex);
+                    destinationListProperty.GetArrayElementAtIndex(insertIndex).managedReferenceValue = clone;
+
+                    ManagedReferenceListController.DeleteElement(sourceListProperty, sourceIndex);
+                });
+        }
+
+        internal static void MoveStepsBetweenLists(
+            UnityEngine.Object[] targets,
+            string sourceListPropertyPath,
+            IReadOnlyList<int> sourceIndices,
+            string destinationListPropertyPath,
+            int destinationInsertIndex)
+        {
+            if (targets == null ||
+                string.IsNullOrWhiteSpace(sourceListPropertyPath) ||
+                string.IsNullOrWhiteSpace(destinationListPropertyPath) ||
+                sourceIndices == null ||
+                sourceIndices.Count <= 0)
+            {
+                return;
+            }
+
+            UndoApplyUtility.ApplyToTargets(
+                targets,
+                "Move Action Steps",
+                serializedObject =>
+                {
+                    SerializedProperty sourceListProperty = serializedObject.FindProperty(sourceListPropertyPath);
+                    SerializedProperty destinationListProperty = serializedObject.FindProperty(destinationListPropertyPath);
+
+                    if (sourceListProperty == null || !sourceListProperty.isArray ||
+                        destinationListProperty == null || !destinationListProperty.isArray)
+                    {
+                        return;
+                    }
+
+                    List<int> sortedUnique = BuildSortedUniqueIndices(sourceIndices, sourceListProperty.arraySize);
+
+                    if (sortedUnique.Count <= 0)
+                        return;
+
+                    bool isSameList = string.Equals(
+                        sourceListPropertyPath,
+                        destinationListPropertyPath,
+                        StringComparison.Ordinal);
+
+                    List<object> clones = new(sortedUnique.Count);
+
+                    for (int i = 0; i < sortedUnique.Count; i++)
+                    {
+                        int sourceIndex = sortedUnique[i];
+                        object sourceStep = sourceListProperty.GetArrayElementAtIndex(sourceIndex).managedReferenceValue;
+                        clones.Add(ManagedReferenceListController.CloneManagedReference(sourceStep));
+                    }
+
+                    for (int i = sortedUnique.Count - 1; i >= 0; i--)
+                        ManagedReferenceListController.DeleteElement(sourceListProperty, sortedUnique[i]);
+
+                    int insertIndex = ResolveInsertIndex(destinationListProperty, destinationInsertIndex);
+
+                    if (isSameList)
+                    {
+                        int removedBeforeInsert = 0;
+
+                        for (int i = 0; i < sortedUnique.Count; i++)
+                        {
+                            if (sortedUnique[i] < insertIndex)
+                                removedBeforeInsert++;
+                        }
+
+                        insertIndex = Math.Max(0, insertIndex - removedBeforeInsert);
+                    }
+
+                    for (int i = 0; i < clones.Count; i++)
+                    {
+                        int currentInsert = Math.Min(insertIndex + i, destinationListProperty.arraySize);
+                        destinationListProperty.InsertArrayElementAtIndex(currentInsert);
+                        destinationListProperty.GetArrayElementAtIndex(currentInsert).managedReferenceValue = clones[i];
+                    }
+                });
         }
 
         internal static void ClearDisplayName(UnityEngine.Object[] targets, string stepPropertyPath)
@@ -240,6 +393,30 @@ namespace BC.Editor.ActionSystem
             return insertIndex < 0
                 ? listProperty.arraySize
                 : Math.Min(Math.Max(insertIndex, 0), listProperty.arraySize);
+        }
+
+        private static List<int> BuildSortedUniqueIndices(IReadOnlyList<int> indices, int maxExclusive)
+        {
+            List<int> sortedUnique = new();
+
+            if (indices == null || maxExclusive <= 0)
+                return sortedUnique;
+
+            HashSet<int> uniqueSet = new();
+
+            for (int i = 0; i < indices.Count; i++)
+            {
+                int index = indices[i];
+
+                if (index < 0 || index >= maxExclusive)
+                    continue;
+
+                if (uniqueSet.Add(index))
+                    sortedUnique.Add(index);
+            }
+
+            sortedUnique.Sort();
+            return sortedUnique;
         }
     }
 }

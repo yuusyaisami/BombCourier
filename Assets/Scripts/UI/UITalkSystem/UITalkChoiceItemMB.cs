@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace BC.UI
 {
     [DisallowMultipleComponent]
-    public sealed class UITalkChoiceItemMB : MonoBehaviour, IPointerClickHandler
+    public sealed class UITalkChoiceItemMB : MonoBehaviour, IPointerClickHandler, IPointerDownHandler
     {
         [SerializeField] private Image backgroundImage;
         [SerializeField] private TextMeshProUGUI choiceText;
@@ -110,12 +110,29 @@ namespace BC.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
-            {
+            TryInvokeSelection(eventData);
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            TryInvokeSelection(eventData);
+        }
+
+        private void TryInvokeSelection(PointerEventData eventData)
+        {
+            if (!IsSupportedPointer(eventData))
                 return;
-            }
 
             clickCallback?.Invoke(choiceIndex);
+        }
+
+        private static bool IsSupportedPointer(PointerEventData eventData)
+        {
+            if (eventData == null)
+                return false;
+
+            // PointerId >= 0 covers touch/pen pointers; left mouse click remains supported for desktop.
+            return eventData.pointerId >= 0 || eventData.button == PointerEventData.InputButton.Left;
         }
 
         private void ResolveReferences()

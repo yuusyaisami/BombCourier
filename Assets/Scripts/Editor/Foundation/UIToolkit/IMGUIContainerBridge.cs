@@ -11,6 +11,9 @@ namespace BC.Editor.Foundation.UIToolkit
         private SerializedObject serializedObject;
         private string propertyPath;
         private string emptyMessage;
+        private bool autoExpandOnNextDraw;
+
+        public event Action Applied;
 
         public IMGUIContainerBridge(string emptyMessage = null)
         {
@@ -28,6 +31,7 @@ namespace BC.Editor.Foundation.UIToolkit
         {
             serializedObject = sourceSerializedObject;
             propertyPath = sourcePropertyPath;
+            autoExpandOnNextDraw = true;
             container.MarkDirtyRepaint();
         }
 
@@ -62,11 +66,20 @@ namespace BC.Editor.Foundation.UIToolkit
                     return;
                 }
 
+                if (autoExpandOnNextDraw)
+                {
+                    AutoExpandArrayElements(property);
+                    autoExpandOnNextDraw = false;
+                }
+
                 EditorGUI.BeginChangeCheck();
                 EditorGUILayout.PropertyField(property, true);
 
                 if (EditorGUI.EndChangeCheck())
+                {
                     UndoApplyUtility.ApplyModifiedProperties(serializedObject);
+                    Applied?.Invoke();
+                }
             }
             catch (ObjectDisposedException)
             {
@@ -74,6 +87,29 @@ namespace BC.Editor.Foundation.UIToolkit
                 serializedObject = null;
                 propertyPath = null;
                 EditorGUILayout.HelpBox("The selected item changed. Select it again.", MessageType.Info);
+            }
+        }
+
+        private static void AutoExpandArrayElements(SerializedProperty rootProperty)
+        {
+            if (rootProperty == null)
+                return;
+
+            if (rootProperty.isArray)
+                rootProperty.isExpanded = true;
+
+            SerializedProperty iterator = rootProperty.Copy();
+            SerializedProperty endProperty = iterator.GetEndProperty();
+            bool enterChildren = true;
+
+            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, endProperty))
+            {
+                enterChildren = false;
+
+                if (!iterator.isArray && !SerializedPropertyPathUtility.IsArrayElement(iterator))
+                    continue;
+
+                iterator.isExpanded = true;
             }
         }
     }

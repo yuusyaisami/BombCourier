@@ -15,25 +15,37 @@ namespace BC.ActionSystem
 
         public override IReadOnlyList<ActionChildSlotDescriptor> GetChildActionSlots()
         {
-            return new[]
+            talkRequestData.EnsureInlineActionFlagsInitialized();
+
+            List<ActionChildSlotDescriptor> slots = null;
+
+            if (talkRequestData.useOnStartTalkAction)
             {
-                new ActionChildSlotDescriptor(
+                slots ??= new List<ActionChildSlotDescriptor>();
+                slots.Add(new ActionChildSlotDescriptor(
                     StartSlotId,
                     "Start Talk",
                     0,
-                    talkRequestData.onStartTalkAction,
-                    talkRequestData.onStartTalkAction != null,
+                    talkRequestData.OnStartTalkAction,
+                    talkRequestData.OnStartTalkAction != null,
                     "Start",
-                    "talkRequestData.onStartTalkAction"),
-                new ActionChildSlotDescriptor(
+                    "talkRequestData.onStartTalkAction"));
+            }
+
+            if (talkRequestData.useOnCompleteTalkAction)
+            {
+                slots ??= new List<ActionChildSlotDescriptor>();
+                slots.Add(new ActionChildSlotDescriptor(
                     CompleteSlotId,
                     "Complete Talk",
                     1,
-                    talkRequestData.onCompleteTalkAction,
-                    talkRequestData.onCompleteTalkAction != null,
+                    talkRequestData.OnCompleteTalkAction,
+                    talkRequestData.OnCompleteTalkAction != null,
                     "Complete",
-                    "talkRequestData.onCompleteTalkAction"),
-            };
+                    "talkRequestData.onCompleteTalkAction"));
+            }
+
+            return slots ?? (IReadOnlyList<ActionChildSlotDescriptor>)Array.Empty<ActionChildSlotDescriptor>();
         }
 
         public override void Validate(ActionValidationContext context)
@@ -44,6 +56,7 @@ namespace BC.ActionSystem
 
         public override void Compile(ActionCompileContext context)
         {
+            talkRequestData.EnsureInlineActionFlagsInitialized();
             context.AddStep(new ShowTalkStepRuntime(talkRequestData));
         }
     }

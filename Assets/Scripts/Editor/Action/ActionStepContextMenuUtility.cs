@@ -22,13 +22,21 @@ namespace BC.Editor.ActionSystem
             IReadOnlyList<Type> stepTypes = ActionStepManagedReferenceUtility.GetStepTypes();
 
             ContextMenuBuilder menu = new();
+            bool canAddStep = !string.IsNullOrWhiteSpace(listPropertyPath);
+
+            ActionStepRecentSelectionUtility.AppendRecentStepMenuItems(
+                menu,
+                "Add Step",
+                canAddStep,
+                stepType => ActionStepManagedReferenceUtility.AddStep(targets, listPropertyPath, stepType, index + 1));
+
             // Structural commands come first so right-click can replace the old inline footer buttons.
             for (int i = 0; i < stepTypes.Count; i++)
             {
                 Type stepType = stepTypes[i];
                 menu.AddItem(
                     $"Add Step/{ActionStepManagedReferenceUtility.GetStepTypeLabel(stepType)}",
-                    !string.IsNullOrWhiteSpace(listPropertyPath),
+                    canAddStep,
                     () => ActionStepManagedReferenceUtility.AddStep(targets, listPropertyPath, stepType, index + 1));
             }
 

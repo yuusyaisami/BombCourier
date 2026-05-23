@@ -17,11 +17,31 @@ MonoBehaviour:
   actionIconSets:
   - actionReference: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     fallbackKeyboardMouseIcon: {fileID: 408643573, guid: 8726478bf0640964ea3c7a0ddb76f7eb, type: 3}
-    fallbackGamepadIcon: {fileID: 889946587, guid: 8726478bf0640964ea3c7a0ddb76f7eb, type: 3}
+    fallbackGamepadIcon: {fileID: 282831864, guid: 11e1638ebdd438f458ccb6a0483d4902, type: 3}
     bindingIcons:
     - deviceKind: 1
       controlPath: <Keyboard>/e
       icon: {fileID: 408643573, guid: 8726478bf0640964ea3c7a0ddb76f7eb, type: 3}
     - deviceKind: 2
       controlPath: <Gamepad>/buttonSouth
-      icon: {fileID: 889946587, guid: 8726478bf0640964ea3c7a0ddb76f7eb, type: 3}
+      icon: {fileID: 282831864, guid: 11e1638ebdd438f458ccb6a0483d4902, type: 3}
+  - actionReference: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    fallbackKeyboardMouseIcon: {fileID: -957879399, guid: 8726478bf0640964ea3c7a0ddb76f7eb, type: 3}
+    fallbackGamepadIcon: {fileID: 666196276, guid: 11e1638ebdd438f458ccb6a0483d4902, type: 3}
+    bindingIcons:
+    - deviceKind: 1
+      controlPath: 
+      icon: {fileID: -957879399, guid: 8726478bf0640964ea3c7a0ddb76f7eb, type: 3}
+    - deviceKind: 2
+      controlPath: 
+      icon: {fileID: 666196276, guid: 11e1638ebdd438f458ccb6a0483d4902, type: 3}
+  - actionReference: {fileID: 7040659881675835329, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    fallbackKeyboardMouseIcon: {fileID: 1721298693105865587, guid: 7c7b6ba9e5b96264692a64e79d963769, type: 3}
+    fallbackGamepadIcon: {fileID: -1238684030, guid: 11e1638ebdd438f458ccb6a0483d4902, type: 3}
+    bindingIcons:
+    - deviceKind: 1
+      controlPath: 
+      icon: {fileID: 1721298693105865587, guid: 7c7b6ba9e5b96264692a64e79d963769, type: 3}
+    - deviceKind: 2
+      controlPath: 
+      icon: {fileID: -1238684030, guid: 11e1638ebdd438f458ccb6a0483d4902, type: 3}

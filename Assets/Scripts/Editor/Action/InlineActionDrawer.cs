@@ -324,13 +324,20 @@ namespace BC.Editor.ActionSystem
             string stepsPropertyPath = stepsProperty?.propertyPath;
             ContextMenuBuilder menu = new();
             IReadOnlyList<Type> stepTypes = ActionStepManagedReferenceUtility.GetStepTypes();
+            bool canAddStep = targets != null && !string.IsNullOrWhiteSpace(stepsPropertyPath);
+
+            ActionStepRecentSelectionUtility.AppendRecentStepMenuItems(
+                menu,
+                "Add Step",
+                canAddStep,
+                stepType => ActionStepManagedReferenceUtility.AddStep(targets, stepsPropertyPath, stepType));
 
             for (int i = 0; i < stepTypes.Count; i++)
             {
                 Type stepType = stepTypes[i];
                 menu.AddItem(
                     $"Add Step/{ActionStepManagedReferenceUtility.GetStepTypeLabel(stepType)}",
-                    targets != null && !string.IsNullOrWhiteSpace(stepsPropertyPath),
+                    canAddStep,
                     () => ActionStepManagedReferenceUtility.AddStep(targets, stepsPropertyPath, stepType));
             }
 

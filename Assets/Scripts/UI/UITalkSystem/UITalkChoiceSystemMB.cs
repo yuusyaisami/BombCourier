@@ -24,6 +24,7 @@ namespace BC.UI
         [SerializeField, Range(0.1f, 1f)] private float navigationDeadZone = 0.5f;
 
         private readonly List<UITalkChoiceItemMB> activeItems = new();
+        private readonly List<UITalkChoiceItemMB> pooledItems = new();
         private VerticalLayoutGroup verticalLayoutGroup;
         private ContentSizeFitter contentSizeFitter;
         private UITalkChoiceItemMB runtimeChoiceTemplate;
@@ -56,6 +57,7 @@ namespace BC.UI
             moveSelectionInputAction?.action.Disable();
             submitChoiceInputAction?.action.Disable();
             ClearChoicesImmediate();
+            DestroyPooledChoicesImmediate();
         }
 
         private void OnValidate()
@@ -131,8 +133,12 @@ namespace BC.UI
         {
             for (int i = 0; i < activeItems.Count; i++)
             {
-                if (activeItems[i] != null)
-                    Destroy(activeItems[i].gameObject);
+                UITalkChoiceItemMB item = activeItems[i];
+                if (item == null)
+                    continue;
+
+                item.gameObject.SetActive(false);
+                pooledItems.Add(item);
             }
 
             activeItems.Clear();
@@ -176,7 +182,7 @@ namespace BC.UI
             TalkChoiceOptionRequestData[] options = requestData.Options;
             for (int i = 0; i < options.Length; i++)
             {
-                UITalkChoiceItemMB item = Instantiate(template, ChoiceRoot, false);
+                UITalkChoiceItemMB item = AcquireChoiceItem(template);
                 item.gameObject.name = $"TalkChoiceItem_{i}";
                 item.gameObject.SetActive(true);
                 item.Initialize(
@@ -194,6 +200,34 @@ namespace BC.UI
                 return 0;
 
             return Mathf.Clamp(requestData.DefaultSelectionIndex, 0, activeItems.Count - 1);
+        }
+
+        private UITalkChoiceItemMB AcquireChoiceItem(UITalkChoiceItemMB template)
+        {
+            for (int i = pooledItems.Count - 1; i >= 0; i--)
+            {
+                UITalkChoiceItemMB pooled = pooledItems[i];
+                pooledItems.RemoveAt(i);
+
+                if (pooled == null)
+                    continue;
+
+                pooled.transform.SetParent(ChoiceRoot, false);
+                return pooled;
+            }
+
+            return Instantiate(template, ChoiceRoot, false);
+        }
+
+        private void DestroyPooledChoicesImmediate()
+        {
+            for (int i = 0; i < pooledItems.Count; i++)
+            {
+                if (pooledItems[i] != null)
+                    Destroy(pooledItems[i].gameObject);
+            }
+
+            pooledItems.Clear();
         }
 
         private UITalkChoiceItemMB EnsureChoiceTemplate()

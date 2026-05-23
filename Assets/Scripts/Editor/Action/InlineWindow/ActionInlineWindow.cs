@@ -20,12 +20,18 @@ namespace BC.Editor.ActionSystem
         private const float TreeIndentWidth = 8f;
         private const float ExpansionSlotWidth = 14f;
         private const float ExpansionSlotSpacing = 4f;
+        private const float DragHandleWidth = 12f;
+        private const float DragHandleSpacing = 4f;
         private const float IndexColumnWidth = 24f;
         private const float IndexColumnSpacing = 4f;
         private const float StepSummaryIndent = 52f;
         private const float IndentGuideOffset = 10f;
+        private const float DragStartHoldSeconds = 0.4f;
+        private const float DragHoverAutoExpandSeconds = 0.4f;
+        private const float DropEdgeRatio = 0.35f;
         private static readonly GUIContent AddStepButtonLabel = new("Add Step");
         private static readonly GUIContent ClearBranchButtonLabel = new("Clear Branch");
+        private static readonly Color DropIndicatorColor = new(0.32f, 0.67f, 1.0f, 0.95f);
 
         private readonly SerializedObjectBridge serializedObjectBridge = new();
         private readonly ActionBlockTreeViewModel treeViewModel = new();
@@ -41,6 +47,58 @@ namespace BC.Editor.ActionSystem
         private int validationCount;
         private int missingBranchCount;
         private bool isBoundTargetDirty;
+        private DragRuntimeState dragState;
+        private ActionBlockTreeItem pendingDragItem;
+        private double pendingDragStartTime;
+        private string dragSourceListPropertyPath;
+        private readonly List<int> dragSourceIndices = new();
+        private ActionDropTarget currentDropTarget;
+        private ActionBlockTreeItem hoverExpandItem;
+        private double hoverExpandStartTime;
+        private readonly List<string> pendingSelectStepPropertyPaths = new();
+        private bool hasPendingDetailRefresh;
+
+        private enum DragRuntimeState
+        {
+            None = 0,
+            Pending = 1,
+            Dragging = 2,
+        }
+
+        private enum DropPlacement
+        {
+            None = 0,
+            BeforeStep = 1,
+            AfterStep = 2,
+            IntoContainer = 3,
+        }
+
+        private readonly struct ActionDropTarget
+        {
+            internal ActionDropTarget(
+                string listPropertyPath,
+                int insertIndex,
+                string inlineActionPropertyPath,
+                string visualPropertyPath,
+                ActionBlockTreeItemKind visualKind,
+                DropPlacement placement)
+            {
+                ListPropertyPath = listPropertyPath ?? string.Empty;
+                InsertIndex = insertIndex;
+                InlineActionPropertyPath = inlineActionPropertyPath ?? string.Empty;
+                VisualPropertyPath = visualPropertyPath ?? string.Empty;
+                VisualKind = visualKind;
+                Placement = placement;
+            }
+
+            internal string ListPropertyPath { get; }
+            internal int InsertIndex { get; }
+            internal string InlineActionPropertyPath { get; }
+            internal string VisualPropertyPath { get; }
+            internal ActionBlockTreeItemKind VisualKind { get; }
+            internal DropPlacement Placement { get; }
+            internal bool IsValid => !string.IsNullOrWhiteSpace(ListPropertyPath) && InsertIndex >= 0;
+        }
 
         [MenuItem("Window/BombCourier/Inline Action")]
         private static void OpenWindow()
@@ -102,6 +160,7 @@ namespace BC.Editor.ActionSystem
             treeScrollView.style.flexGrow = 1f;
             treeScrollView.focusable = true;
             treeScrollView.RegisterCallback<KeyDownEvent>(HandleTreeKeyDown);
+            treeScrollView.RegisterCallback<MouseUpEvent>(HandleTreeMouseUp);
             root.Add(treeScrollView);
         }
 
@@ -111,8 +170,28 @@ namespace BC.Editor.ActionSystem
             detailToolbarContainer.style.marginBottom = EditorThemeTokens.SectionSpacing;
             root.Add(detailToolbarContainer);
 
-            detailBridge ??= new IMGUIContainerBridge("Select a block, step, or branch to edit.");
+            if (detailBridge == null)
+            {
+                detailBridge = new IMGUIContainerBridge("Select a block, step, or branch to edit.");
+                detailBridge.Applied += HandleDetailPropertyApplied;
+            }
+
             root.Add(detailBridge.Root);
+        }
+
+        private void Update()
+        {
+            if (!hasPendingDetailRefresh)
+                return;
+
+            hasPendingDetailRefresh = false;
+            RefreshWindow();
+        }
+
+        private void HandleDetailPropertyApplied()
+        {
+            // Defer refresh so tree rebuild runs outside IMGUI drawing and picks up dynamic child-slot changes.
+            hasPendingDetailRefresh = true;
         }
 
         protected override void BuildFooter(VisualElement root)
@@ -127,6 +206,7 @@ namespace BC.Editor.ActionSystem
             if (!request.IsValid)
                 return;
 
+            CancelDragState();
             serializedObjectBridge.Bind(request.ResolveTarget(), request.PropertyPath);
             selectionState.Clear();
 
@@ -152,6 +232,7 @@ namespace BC.Editor.ActionSystem
 
             if (!serializedObjectBridge.TryGetProperty(out SerializedProperty rootProperty))
             {
+                CancelDragState();
                 treeViewModel.Rebuild(string.Empty, null);
                 treeScrollView.Clear();
                 treeScrollView.Add(CreateEmptyStateLabel(EmptyWindowMessage));
@@ -177,6 +258,11 @@ namespace BC.Editor.ActionSystem
 
         private void EnsureSelection()
         {
+            TrySelectPendingMovedSteps();
+
+            List<ActionBlockTreeItem> stepItems = GetStepItemsInTreeOrder();
+            selectionState.SyncStepSelection(stepItems);
+
             if (TryFindSelectedItem(out _))
                 return;
 
@@ -186,11 +272,57 @@ namespace BC.Editor.ActionSystem
                 selectionState.Clear();
         }
 
+        private void TrySelectPendingMovedSteps()
+        {
+            if (pendingSelectStepPropertyPaths.Count <= 0)
+                return;
+
+            List<ActionBlockTreeItem> pendingSelectionItems = new();
+            ActionBlockTreeItem focusedItem = null;
+
+            for (int i = 0; i < treeViewModel.Items.Count; i++)
+            {
+                ActionBlockTreeItem item = treeViewModel.Items[i];
+
+                if (item.Kind != ActionBlockTreeItemKind.Step)
+                    continue;
+
+                for (int pendingIndex = 0; pendingIndex < pendingSelectStepPropertyPaths.Count; pendingIndex++)
+                {
+                    if (!string.Equals(item.PropertyPath, pendingSelectStepPropertyPaths[pendingIndex], StringComparison.Ordinal))
+                        continue;
+
+                    pendingSelectionItems.Add(item);
+
+                    if (focusedItem == null)
+                        focusedItem = item;
+
+                    break;
+                }
+            }
+
+            if (pendingSelectionItems.Count > 0)
+                selectionState.SetStepSelection(pendingSelectionItems, focusedItem, focusedItem);
+
+            pendingSelectStepPropertyPaths.Clear();
+        }
+
         private bool TryFindSelectedItem(out ActionBlockTreeItem selectedItem)
         {
             for (int i = 0; i < treeViewModel.Items.Count; i++)
             {
                 ActionBlockTreeItem item = treeViewModel.Items[i];
+
+                if (selectionState.Kind == ActionWindowSelectionKind.Step)
+                {
+                    if (string.Equals(item.PropertyPath, selectionState.PropertyPath, StringComparison.Ordinal))
+                    {
+                        selectedItem = item;
+                        return true;
+                    }
+
+                    continue;
+                }
 
                 if (!item.BranchKey.Equals(selectionState.BranchKey))
                     continue;
@@ -198,7 +330,6 @@ namespace BC.Editor.ActionSystem
                 if (MapSelectionKind(item.Kind) != selectionState.Kind)
                     continue;
 
-                selectionState.Select(item);
                 selectedItem = item;
                 return true;
             }
@@ -253,6 +384,7 @@ namespace BC.Editor.ActionSystem
             row.style.paddingTop = 4f;
             row.style.paddingBottom = 4f;
             row.style.backgroundColor = ResolveRowBackground(item, selected);
+            ApplyDropIndicatorStyle(row, item);
 
             // Draw guide lines before the content so block/branch/step rows all share the same depth scaffold.
             AddIndentGuides(row, item.Depth);
@@ -278,21 +410,11 @@ namespace BC.Editor.ActionSystem
 
             row.RegisterCallback<MouseDownEvent>(evt =>
             {
-                if (evt.button == 1)
-                {
-                    SelectItem(item);
-                    treeScrollView?.Focus();
-                    ShowContextMenu(item);
-                    evt.StopImmediatePropagation();
-                    return;
-                }
-
-                if (evt.button != 0)
-                    return;
-
-                SelectItem(item);
-                treeScrollView?.Focus();
+                HandleRowMouseDown(evt, item);
             });
+
+            row.RegisterCallback<MouseMoveEvent>(evt => HandleRowMouseMove(evt, item, row));
+            row.RegisterCallback<MouseUpEvent>(evt => HandleRowMouseUp(evt));
 
             return row;
         }
@@ -354,7 +476,8 @@ namespace BC.Editor.ActionSystem
                 : Array.Empty<ActionStepBadge>();
 
             VisualElement header = CreateHorizontalRow();
-            header.Add(CreateExpansionSpacer());
+            header.Add(CreateExpansionIndicator(item));
+            header.Add(CreateDragHandleLabel());
             header.Add(CreateIndexLabel(item.StepIndex));
             header.Add(CreateBadgeLabel(typeLabel, EditorThemeTokens.TypeBadgeBackground));
             header.Add(CreateSpacer());
@@ -422,6 +545,463 @@ namespace BC.Editor.ActionSystem
             return spacer;
         }
 
+        private static Label CreateDragHandleLabel()
+        {
+            Label handle = new("||");
+            handle.style.minWidth = DragHandleWidth;
+            handle.style.marginRight = DragHandleSpacing;
+            handle.style.unityTextAlign = TextAnchor.MiddleCenter;
+            handle.style.color = EditorGUIUtility.isProSkin
+                ? new StyleColor(new Color(0.75f, 0.75f, 0.75f, 0.95f))
+                : new StyleColor(new Color(0.25f, 0.25f, 0.25f, 0.95f));
+            return handle;
+        }
+
+        private void HandleRowMouseDown(MouseDownEvent evt, ActionBlockTreeItem item)
+        {
+            if (evt == null || item == null)
+                return;
+
+            if (evt.button == 1)
+            {
+                if (dragState == DragRuntimeState.Dragging)
+                    return;
+
+                if (!(item.Kind == ActionBlockTreeItemKind.Step && selectionState.IsStepSelected(item)))
+                    SelectItem(item);
+
+                treeScrollView?.Focus();
+                ShowContextMenu(item);
+                evt.StopImmediatePropagation();
+                return;
+            }
+
+            if (evt.button != 0)
+                return;
+
+            if (item.Kind == ActionBlockTreeItemKind.Step)
+                ApplyStepSelectionFromMouse(item, evt.shiftKey, evt.ctrlKey || evt.commandKey);
+            else
+                SelectItem(item);
+
+            treeScrollView?.Focus();
+
+            if (item.Kind == ActionBlockTreeItemKind.Step)
+                BeginDragPending(item);
+            else
+                CancelPendingDrag();
+        }
+
+        private void HandleRowMouseMove(MouseMoveEvent evt, ActionBlockTreeItem item, VisualElement row)
+        {
+            if (evt == null || item == null || row == null)
+                return;
+
+            if (dragState == DragRuntimeState.Pending)
+            {
+                if ((evt.pressedButtons & 1) == 0)
+                {
+                    CancelPendingDrag();
+                    return;
+                }
+
+                double elapsed = EditorApplication.timeSinceStartup - pendingDragStartTime;
+                if (elapsed >= DragStartHoldSeconds)
+                {
+                    BeginDragging();
+                    RebuildTreeRows();
+                }
+            }
+
+            if (dragState != DragRuntimeState.Dragging)
+                return;
+
+            float rowHeight = Mathf.Max(1f, row.layout.height);
+            UpdateDropTarget(item, evt.localMousePosition.y, rowHeight);
+            TryAutoExpandDuringDrag(item);
+        }
+
+        private void HandleRowMouseUp(MouseUpEvent evt)
+        {
+            if (evt == null || evt.button != 0)
+                return;
+
+            if (dragState == DragRuntimeState.Dragging)
+            {
+                CommitDragDrop();
+                evt.StopImmediatePropagation();
+                return;
+            }
+
+            CancelPendingDrag();
+        }
+
+        private void HandleTreeMouseUp(MouseUpEvent evt)
+        {
+            if (evt == null || evt.button != 0)
+                return;
+
+            if (dragState == DragRuntimeState.Dragging)
+            {
+                CommitDragDrop();
+                evt.StopImmediatePropagation();
+                return;
+            }
+
+            CancelPendingDrag();
+        }
+
+        private void BeginDragPending(ActionBlockTreeItem item)
+        {
+            dragState = DragRuntimeState.Pending;
+            pendingDragItem = item;
+            pendingDragStartTime = EditorApplication.timeSinceStartup;
+            dragSourceListPropertyPath = string.Empty;
+            dragSourceIndices.Clear();
+            currentDropTarget = default;
+            hoverExpandItem = null;
+            hoverExpandStartTime = 0d;
+        }
+
+        private void BeginDragging()
+        {
+            if (pendingDragItem == null || pendingDragItem.Kind != ActionBlockTreeItemKind.Step)
+            {
+                CancelDragState();
+                return;
+            }
+
+            string sourceListPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(pendingDragItem.PropertyPath);
+            if (string.IsNullOrWhiteSpace(sourceListPath))
+            {
+                CancelDragState();
+                return;
+            }
+
+            dragState = DragRuntimeState.Dragging;
+            dragSourceListPropertyPath = sourceListPath;
+            dragSourceIndices.Clear();
+
+            List<ActionBlockTreeItem> selectedItems = GetSelectedStepItemsInTreeOrder();
+            bool includeMultiSelection = selectionState.IsStepSelected(pendingDragItem) && selectedItems.Count > 1;
+
+            if (includeMultiSelection)
+            {
+                for (int i = 0; i < selectedItems.Count; i++)
+                {
+                    ActionBlockTreeItem selectedItem = selectedItems[i];
+                    string selectedListPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(selectedItem.PropertyPath);
+
+                    if (!string.Equals(selectedListPropertyPath, sourceListPath, StringComparison.Ordinal))
+                        continue;
+
+                    dragSourceIndices.Add(selectedItem.StepIndex);
+                }
+            }
+
+            if (dragSourceIndices.Count <= 0)
+                dragSourceIndices.Add(pendingDragItem.StepIndex);
+
+            pendingDragItem = null;
+            currentDropTarget = default;
+            hoverExpandItem = null;
+            hoverExpandStartTime = 0d;
+        }
+
+        private void UpdateDropTarget(ActionBlockTreeItem hoverItem, float localY, float rowHeight)
+        {
+            ActionDropTarget nextTarget = BuildDropTarget(hoverItem, localY, rowHeight);
+
+            if (AreSameDropTarget(currentDropTarget, nextTarget))
+                return;
+
+            currentDropTarget = nextTarget;
+            RebuildTreeRows();
+            UpdateFooter();
+        }
+
+        private ActionDropTarget BuildDropTarget(ActionBlockTreeItem hoverItem, float localY, float rowHeight)
+        {
+            if (dragState != DragRuntimeState.Dragging || hoverItem == null)
+                return default;
+
+            if (hoverItem.Kind == ActionBlockTreeItemKind.Step)
+            {
+                string targetListPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(hoverItem.PropertyPath);
+                if (string.IsNullOrWhiteSpace(targetListPath))
+                    return default;
+
+                float ratio = Mathf.Clamp01(localY / Mathf.Max(1f, rowHeight));
+                DropPlacement placement = ratio < DropEdgeRatio
+                    ? DropPlacement.BeforeStep
+                    : DropPlacement.AfterStep;
+                int insertIndex = hoverItem.StepIndex + (placement == DropPlacement.AfterStep ? 1 : 0);
+
+                ActionDropTarget candidate = new(
+                    targetListPath,
+                    insertIndex,
+                    ResolveInlineActionPropertyPathFromListPath(targetListPath),
+                    hoverItem.PropertyPath,
+                    hoverItem.Kind,
+                    placement);
+
+                return IsValidDropTarget(candidate)
+                    ? candidate
+                    : default;
+            }
+
+            if (hoverItem.Kind == ActionBlockTreeItemKind.Block || hoverItem.Kind == ActionBlockTreeItemKind.Branch)
+            {
+                string targetListPath = ResolveInlineActionStepsListPath(hoverItem.PropertyPath);
+                if (string.IsNullOrWhiteSpace(targetListPath))
+                    return default;
+
+                int insertIndex = GetStepCountFromListPath(targetListPath);
+                ActionDropTarget candidate = new(
+                    targetListPath,
+                    insertIndex,
+                    hoverItem.PropertyPath,
+                    hoverItem.PropertyPath,
+                    hoverItem.Kind,
+                    DropPlacement.IntoContainer);
+
+                return IsValidDropTarget(candidate)
+                    ? candidate
+                    : default;
+            }
+
+            return default;
+        }
+
+        private bool IsValidDropTarget(ActionDropTarget target)
+        {
+            if (!target.IsValid)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(dragSourceListPropertyPath) || dragSourceIndices.Count <= 0)
+                return false;
+
+            if (!string.Equals(target.ListPropertyPath, dragSourceListPropertyPath, StringComparison.Ordinal))
+                return true;
+
+            if (dragSourceIndices.Count == 1)
+            {
+                int sourceIndex = dragSourceIndices[0];
+                return target.InsertIndex != sourceIndex && target.InsertIndex != sourceIndex + 1;
+            }
+
+            return true;
+        }
+
+        private void TryAutoExpandDuringDrag(ActionBlockTreeItem hoverItem)
+        {
+            if (dragState != DragRuntimeState.Dragging || hoverItem == null)
+                return;
+
+            if (!hoverItem.CanExpand || selectionState.IsExpanded(hoverItem))
+            {
+                hoverExpandItem = null;
+                hoverExpandStartTime = 0d;
+                return;
+            }
+
+            if (!IsSameTreeItem(hoverExpandItem, hoverItem))
+            {
+                hoverExpandItem = hoverItem;
+                hoverExpandStartTime = EditorApplication.timeSinceStartup;
+                return;
+            }
+
+            if (EditorApplication.timeSinceStartup - hoverExpandStartTime < DragHoverAutoExpandSeconds)
+                return;
+
+            selectionState.SetExpanded(hoverItem, true);
+            hoverExpandItem = null;
+            hoverExpandStartTime = 0d;
+            RebuildTreeRows();
+        }
+
+        private void CommitDragDrop()
+        {
+            if (dragState != DragRuntimeState.Dragging)
+            {
+                CancelDragState();
+                return;
+            }
+
+            ActionDropTarget target = currentDropTarget;
+            bool hasValidTarget = target.IsValid &&
+                                  !string.IsNullOrWhiteSpace(dragSourceListPropertyPath) &&
+                                  dragSourceIndices.Count > 0 &&
+                                  serializedObjectBridge.SerializedObject != null;
+
+            if (!hasValidTarget)
+            {
+                CancelDragState();
+                RebuildTreeRows();
+                UpdateFooter();
+                return;
+            }
+
+            List<int> sortedIndices = new(dragSourceIndices);
+            sortedIndices.Sort();
+
+            int finalInsertIndex = Mathf.Max(0, target.InsertIndex);
+
+            if (string.Equals(dragSourceListPropertyPath, target.ListPropertyPath, StringComparison.Ordinal))
+            {
+                int removedBeforeInsert = 0;
+
+                for (int i = 0; i < sortedIndices.Count; i++)
+                {
+                    if (sortedIndices[i] < finalInsertIndex)
+                        removedBeforeInsert++;
+                }
+
+                finalInsertIndex = Mathf.Max(0, finalInsertIndex - removedBeforeInsert);
+            }
+
+            pendingSelectStepPropertyPaths.Clear();
+
+            for (int i = 0; i < sortedIndices.Count; i++)
+                pendingSelectStepPropertyPaths.Add(BuildStepPropertyPath(target.ListPropertyPath, finalInsertIndex + i));
+
+            ActionStepManagedReferenceUtility.MoveStepsBetweenLists(
+                serializedObjectBridge.SerializedObject.targetObjects,
+                dragSourceListPropertyPath,
+                sortedIndices,
+                target.ListPropertyPath,
+                target.InsertIndex);
+
+            CancelDragState();
+            RefreshAfterMutation();
+        }
+
+        private void CancelPendingDrag()
+        {
+            if (dragState != DragRuntimeState.Pending)
+                return;
+
+            CancelDragState();
+        }
+
+        private void CancelDragState()
+        {
+            dragState = DragRuntimeState.None;
+            pendingDragItem = null;
+            pendingDragStartTime = 0d;
+            dragSourceListPropertyPath = string.Empty;
+            dragSourceIndices.Clear();
+            currentDropTarget = default;
+            hoverExpandItem = null;
+            hoverExpandStartTime = 0d;
+        }
+
+        private static string BuildStepPropertyPath(string listPropertyPath, int index)
+        {
+            return string.IsNullOrWhiteSpace(listPropertyPath)
+                ? string.Empty
+                : $"{listPropertyPath}.Array.data[{Mathf.Max(0, index)}]";
+        }
+
+        private string ResolveInlineActionStepsListPath(string inlineActionPropertyPath)
+        {
+            if (string.IsNullOrWhiteSpace(inlineActionPropertyPath) || serializedObjectBridge.SerializedObject == null)
+                return string.Empty;
+
+            SerializedObject serializedObject = serializedObjectBridge.SerializedObject;
+            serializedObject.UpdateIfRequiredOrScript();
+            SerializedProperty inlineActionProperty = serializedObject.FindProperty(inlineActionPropertyPath);
+            SerializedProperty stepsProperty = inlineActionProperty?.FindPropertyRelative("_steps");
+            return stepsProperty != null && stepsProperty.isArray
+                ? stepsProperty.propertyPath
+                : string.Empty;
+        }
+
+        private int GetStepCountFromListPath(string listPropertyPath)
+        {
+            if (string.IsNullOrWhiteSpace(listPropertyPath) || serializedObjectBridge.SerializedObject == null)
+                return 0;
+
+            SerializedObject serializedObject = serializedObjectBridge.SerializedObject;
+            serializedObject.UpdateIfRequiredOrScript();
+            SerializedProperty listProperty = serializedObject.FindProperty(listPropertyPath);
+            return listProperty != null && listProperty.isArray
+                ? listProperty.arraySize
+                : 0;
+        }
+
+        private static string ResolveInlineActionPropertyPathFromListPath(string listPropertyPath)
+        {
+            const string suffix = "._steps";
+            return !string.IsNullOrWhiteSpace(listPropertyPath) && listPropertyPath.EndsWith(suffix, StringComparison.Ordinal)
+                ? listPropertyPath.Substring(0, listPropertyPath.Length - suffix.Length)
+                : string.Empty;
+        }
+
+        private static bool IsSameTreeItem(ActionBlockTreeItem left, ActionBlockTreeItem right)
+        {
+            if (ReferenceEquals(left, right))
+                return true;
+
+            if (left == null || right == null)
+                return false;
+
+            return left.Kind == right.Kind &&
+                   left.StepIndex == right.StepIndex &&
+                   left.BranchKey.Equals(right.BranchKey) &&
+                   string.Equals(left.PropertyPath, right.PropertyPath, StringComparison.Ordinal);
+        }
+
+        private static bool AreSameDropTarget(ActionDropTarget left, ActionDropTarget right)
+        {
+            return left.InsertIndex == right.InsertIndex &&
+                   left.VisualKind == right.VisualKind &&
+                   left.Placement == right.Placement &&
+                   string.Equals(left.ListPropertyPath, right.ListPropertyPath, StringComparison.Ordinal) &&
+                   string.Equals(left.VisualPropertyPath, right.VisualPropertyPath, StringComparison.Ordinal);
+        }
+
+        private void ApplyDropIndicatorStyle(VisualElement row, ActionBlockTreeItem item)
+        {
+            if (row == null || item == null)
+                return;
+
+            row.style.borderTopWidth = 0f;
+            row.style.borderBottomWidth = 0f;
+            row.style.borderLeftWidth = 0f;
+            row.style.borderTopColor = Color.clear;
+            row.style.borderBottomColor = Color.clear;
+            row.style.borderLeftColor = Color.clear;
+
+            if (dragState != DragRuntimeState.Dragging || !currentDropTarget.IsValid)
+                return;
+
+            if (currentDropTarget.VisualKind != item.Kind ||
+                !string.Equals(currentDropTarget.VisualPropertyPath, item.PropertyPath, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            switch (currentDropTarget.Placement)
+            {
+                case DropPlacement.BeforeStep:
+                    row.style.borderTopWidth = 2f;
+                    row.style.borderTopColor = DropIndicatorColor;
+                    break;
+
+                case DropPlacement.AfterStep:
+                    row.style.borderBottomWidth = 2f;
+                    row.style.borderBottomColor = DropIndicatorColor;
+                    break;
+
+                case DropPlacement.IntoContainer:
+                    row.style.borderLeftWidth = 3f;
+                    row.style.borderLeftColor = DropIndicatorColor;
+                    break;
+            }
+        }
+
         private void HandleTreeKeyDown(KeyDownEvent evt)
         {
             if (evt == null)
@@ -451,6 +1031,120 @@ namespace BC.Editor.ActionSystem
         private void SelectItem(ActionBlockTreeItem item)
         {
             selectionState.Select(item);
+            RefreshSelectionView();
+        }
+
+        private void ApplyStepSelectionFromMouse(ActionBlockTreeItem item, bool shiftSelect, bool toggleSelect)
+        {
+            if (item == null || item.Kind != ActionBlockTreeItemKind.Step)
+                return;
+
+            if (shiftSelect && TryBuildRangeSelection(item, out List<ActionBlockTreeItem> rangeSelection, out ActionBlockTreeItem anchorItem))
+            {
+                selectionState.SetStepSelection(rangeSelection, item, anchorItem);
+                RefreshSelectionView();
+                return;
+            }
+
+            if (toggleSelect)
+            {
+                List<ActionBlockTreeItem> selectedItems = GetSelectedStepItemsInTreeOrder();
+                bool isSelected = selectionState.IsStepSelected(item);
+
+                if (isSelected)
+                {
+                    for (int i = selectedItems.Count - 1; i >= 0; i--)
+                    {
+                        if (!string.Equals(selectedItems[i].PropertyPath, item.PropertyPath, StringComparison.Ordinal))
+                            continue;
+
+                        selectedItems.RemoveAt(i);
+                    }
+                }
+                else
+                {
+                    selectedItems.Add(item);
+                }
+
+                ActionBlockTreeItem focusedItem = selectedItems.Count > 0
+                    ? selectedItems[selectedItems.Count - 1]
+                    : null;
+                ActionBlockTreeItem anchor = ResolveAnchorItem(selectedItems, focusedItem);
+
+                selectionState.SetStepSelection(selectedItems, focusedItem, anchor);
+                RefreshSelectionView();
+                return;
+            }
+
+            selectionState.Select(item);
+            RefreshSelectionView();
+        }
+
+        private bool TryBuildRangeSelection(
+            ActionBlockTreeItem targetItem,
+            out List<ActionBlockTreeItem> rangeSelection,
+            out ActionBlockTreeItem anchorItem)
+        {
+            rangeSelection = new List<ActionBlockTreeItem>();
+            anchorItem = null;
+
+            if (targetItem == null || targetItem.Kind != ActionBlockTreeItemKind.Step)
+                return false;
+
+            if (!selectionState.TryGetStepAnchor(out string anchorListPropertyPath, out int anchorIndex))
+                return false;
+
+            string targetListPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(targetItem.PropertyPath);
+
+            if (!string.Equals(anchorListPropertyPath, targetListPropertyPath, StringComparison.Ordinal))
+                return false;
+
+            int minIndex = Mathf.Min(anchorIndex, targetItem.StepIndex);
+            int maxIndex = Mathf.Max(anchorIndex, targetItem.StepIndex);
+            List<ActionBlockTreeItem> stepItems = GetStepItemsInTreeOrder();
+
+            for (int i = 0; i < stepItems.Count; i++)
+            {
+                ActionBlockTreeItem stepItem = stepItems[i];
+                string listPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(stepItem.PropertyPath);
+
+                if (!string.Equals(listPropertyPath, anchorListPropertyPath, StringComparison.Ordinal))
+                    continue;
+
+                if (stepItem.StepIndex < minIndex || stepItem.StepIndex > maxIndex)
+                    continue;
+
+                rangeSelection.Add(stepItem);
+
+                if (stepItem.StepIndex == anchorIndex)
+                    anchorItem = stepItem;
+            }
+
+            return rangeSelection.Count > 0;
+        }
+
+        private ActionBlockTreeItem ResolveAnchorItem(List<ActionBlockTreeItem> selectedItems, ActionBlockTreeItem fallback)
+        {
+            if (selectionState.TryGetStepAnchor(out string anchorListPropertyPath, out int anchorIndex))
+            {
+                for (int i = 0; i < selectedItems.Count; i++)
+                {
+                    ActionBlockTreeItem selectedItem = selectedItems[i];
+                    string listPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(selectedItem.PropertyPath);
+
+                    if (!string.Equals(listPropertyPath, anchorListPropertyPath, StringComparison.Ordinal))
+                        continue;
+
+                    if (selectedItem.StepIndex == anchorIndex)
+                        return selectedItem;
+                }
+            }
+
+            return fallback;
+        }
+
+        private void RefreshSelectionView()
+        {
             RebuildTreeRows();
             BindDetailPane();
             detailToolbarContainer?.MarkDirtyRepaint();
@@ -483,7 +1177,7 @@ namespace BC.Editor.ActionSystem
             AddStepMenuItems(menu, stepType =>
             {
                 ActionStepManagedReferenceUtility.AddStep(targets, listPropertyPath, stepType, item.StepIndex + 1);
-                RefreshWindow();
+                RefreshAfterMutation();
             }, canMutate);
 
             menu.AddSeparator();
@@ -493,8 +1187,15 @@ namespace BC.Editor.ActionSystem
                 () =>
                 {
                     PrepareForDestructiveMutation();
+
+                    if (selectionState.IsStepSelected(item) && selectionState.SelectedStepCount > 1)
+                    {
+                        DeleteSelectedSteps();
+                        return;
+                    }
+
                     ActionStepManagedReferenceUtility.DeleteStep(targets, listPropertyPath, item.StepIndex);
-                    RefreshWindow();
+                    RefreshAfterMutation();
                 });
             menu.AddItem(
                 "Copy",
@@ -506,7 +1207,7 @@ namespace BC.Editor.ActionSystem
                 () =>
                 {
                     ActionStepManagedReferenceUtility.PasteStep(targets, listPropertyPath, item.StepIndex + 1);
-                    RefreshWindow();
+                    RefreshAfterMutation();
                 });
         }
 
@@ -518,7 +1219,7 @@ namespace BC.Editor.ActionSystem
             AddStepMenuItems(menu, stepType =>
             {
                 AddStepToInlineAction(item.PropertyPath, stepType);
-                RefreshWindow();
+                RefreshAfterMutation();
             }, canAdd);
 
             menu.AddSeparator();
@@ -528,7 +1229,7 @@ namespace BC.Editor.ActionSystem
                 () =>
                 {
                     DeleteContainer(item);
-                    RefreshWindow();
+                    RefreshAfterMutation();
                 });
             menu.AddItem(
                 "Paste",
@@ -536,13 +1237,19 @@ namespace BC.Editor.ActionSystem
                 () =>
                 {
                     PasteStepToInlineAction(item.PropertyPath);
-                    RefreshWindow();
+                    RefreshAfterMutation();
                 });
         }
 
         private void AddStepMenuItems(ContextMenuBuilder menu, Action<Type> addStep, bool enabled)
         {
             IReadOnlyList<Type> stepTypes = ActionStepManagedReferenceUtility.GetStepTypes();
+
+            ActionStepRecentSelectionUtility.AppendRecentStepMenuItems(
+                menu,
+                "Add Step",
+                enabled,
+                stepType => addStep?.Invoke(stepType));
 
             if (stepTypes.Count == 0)
             {
@@ -565,25 +1272,56 @@ namespace BC.Editor.ActionSystem
 
             if (item.Kind == ActionBlockTreeItemKind.Step)
             {
-                string listPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(item.PropertyPath);
-
-                if (string.IsNullOrWhiteSpace(listPropertyPath) || serializedObjectBridge.SerializedObject == null)
-                    return false;
-
                 PrepareForDestructiveMutation();
-                ActionStepManagedReferenceUtility.DeleteStep(
-                    serializedObjectBridge.SerializedObject.targetObjects,
-                    listPropertyPath,
-                    item.StepIndex);
-                RefreshWindow();
-                return true;
+                return DeleteSelectedSteps();
             }
 
             if (!CanDeleteContainer(item))
                 return false;
 
             DeleteContainer(item);
-            RefreshWindow();
+            RefreshAfterMutation();
+            return true;
+        }
+
+        private bool DeleteSelectedSteps()
+        {
+            SerializedObject serializedObject = serializedObjectBridge.SerializedObject;
+
+            if (serializedObject == null)
+                return false;
+
+            List<ActionBlockTreeItem> selectedStepItems = GetSelectedStepItemsInTreeOrder();
+
+            if (selectedStepItems.Count <= 0)
+                return false;
+
+            Dictionary<string, List<int>> groupedIndices = new(StringComparer.Ordinal);
+
+            for (int i = 0; i < selectedStepItems.Count; i++)
+            {
+                ActionBlockTreeItem stepItem = selectedStepItems[i];
+                string listPropertyPath = ActionStepManagedReferenceUtility.ResolveParentListPropertyPath(stepItem.PropertyPath);
+
+                if (string.IsNullOrWhiteSpace(listPropertyPath))
+                    continue;
+
+                if (!groupedIndices.TryGetValue(listPropertyPath, out List<int> indices))
+                {
+                    indices = new List<int>();
+                    groupedIndices.Add(listPropertyPath, indices);
+                }
+
+                indices.Add(stepItem.StepIndex);
+            }
+
+            if (groupedIndices.Count <= 0)
+                return false;
+
+            foreach (KeyValuePair<string, List<int>> pair in groupedIndices)
+                ActionStepManagedReferenceUtility.DeleteSteps(serializedObject.targetObjects, pair.Key, pair.Value);
+
+            RefreshAfterMutation();
             return true;
         }
 
@@ -617,7 +1355,7 @@ namespace BC.Editor.ActionSystem
                     serializedObjectBridge.SerializedObject.targetObjects,
                     listPropertyPath,
                     item.StepIndex + 1);
-                RefreshWindow();
+                RefreshAfterMutation();
                 return true;
             }
 
@@ -625,7 +1363,7 @@ namespace BC.Editor.ActionSystem
                 return false;
 
             PasteStepToInlineAction(item.PropertyPath);
-            RefreshWindow();
+            RefreshAfterMutation();
             return true;
         }
 
@@ -706,6 +1444,12 @@ namespace BC.Editor.ActionSystem
             selectionState.Clear();
             detailBridge?.Clear("Select a block, step, or branch to edit.");
             detailToolbarContainer?.MarkDirtyRepaint();
+        }
+
+        private void RefreshAfterMutation()
+        {
+            RefreshWindow();
+            hasPendingDetailRefresh = true;
         }
 
         private static bool IsActionShortcut(KeyDownEvent evt)
@@ -986,9 +1730,18 @@ namespace BC.Editor.ActionSystem
                 : string.IsNullOrWhiteSpace(selectionState.PropertyPath)
                     ? selectionState.Kind.ToString()
                     : selectionState.PropertyPath;
+            string selectionCountLabel = selectionState.Kind == ActionWindowSelectionKind.Step
+                ? $" ({selectionState.SelectedStepCount} selected)"
+                : string.Empty;
+
+            string dragStatus = dragState == DragRuntimeState.Dragging
+                ? currentDropTarget.IsValid
+                    ? $"Dragging: {dragSourceListPropertyPath}[{FormatDragSourceIndices()}] -> {currentDropTarget.ListPropertyPath}[{currentDropTarget.InsertIndex}]"
+                    : "Dragging: no drop target"
+                : "Dragging: inactive";
 
             footerLabel.text =
-                $"Selection: {selectionPath} | Validation: {validationCount} | Missing branches: {missingBranchCount} | Dirty: {(isBoundTargetDirty ? "Yes" : "No")}";
+                $"Selection: {selectionPath}{selectionCountLabel} | Validation: {validationCount} | Missing branches: {missingBranchCount} | Dirty: {(isBoundTargetDirty ? "Yes" : "No")} | {dragStatus}";
         }
 
         private void UpdateDiagnostics(SerializedProperty rootProperty)
@@ -1026,9 +1779,59 @@ namespace BC.Editor.ActionSystem
 
         private bool IsSelected(ActionBlockTreeItem item)
         {
-            return item != null &&
-                   item.BranchKey.Equals(selectionState.BranchKey) &&
+            if (item == null)
+                return false;
+
+            if (item.Kind == ActionBlockTreeItemKind.Step)
+                return selectionState.IsStepSelected(item);
+
+            return item.BranchKey.Equals(selectionState.BranchKey) &&
                    MapSelectionKind(item.Kind) == selectionState.Kind;
+        }
+
+        private List<ActionBlockTreeItem> GetStepItemsInTreeOrder()
+        {
+            List<ActionBlockTreeItem> stepItems = new();
+
+            for (int i = 0; i < treeViewModel.Items.Count; i++)
+            {
+                ActionBlockTreeItem item = treeViewModel.Items[i];
+
+                if (item.Kind == ActionBlockTreeItemKind.Step)
+                    stepItems.Add(item);
+            }
+
+            return stepItems;
+        }
+
+        private List<ActionBlockTreeItem> GetSelectedStepItemsInTreeOrder()
+        {
+            List<ActionBlockTreeItem> selectedItems = new();
+            List<ActionBlockTreeItem> stepItems = GetStepItemsInTreeOrder();
+
+            for (int i = 0; i < stepItems.Count; i++)
+            {
+                ActionBlockTreeItem stepItem = stepItems[i];
+
+                if (selectionState.IsStepSelected(stepItem))
+                    selectedItems.Add(stepItem);
+            }
+
+            return selectedItems;
+        }
+
+        private string FormatDragSourceIndices()
+        {
+            if (dragSourceIndices.Count <= 0)
+                return string.Empty;
+
+            List<int> sorted = new(dragSourceIndices);
+            sorted.Sort();
+
+            if (sorted.Count == 1)
+                return sorted[0].ToString();
+
+            return $"{sorted[0]}..{sorted[sorted.Count - 1]} ({sorted.Count})";
         }
 
         private static ActionWindowSelectionKind MapSelectionKind(ActionBlockTreeItemKind kind)

@@ -122,11 +122,24 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: KeyUI-Sheet_0
+      name: KeyUI-Sheet_D
       rect:
         serializedVersion: 2
         x: 0
@@ -148,7 +161,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_1
+      name: KeyUI-Sheet_S
       rect:
         serializedVersion: 2
         x: 17
@@ -170,7 +183,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_2
+      name: KeyUI-Sheet_A
       rect:
         serializedVersion: 2
         x: 34
@@ -192,7 +205,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_3
+      name: KeyUI-Sheet_W
       rect:
         serializedVersion: 2
         x: 51
@@ -214,7 +227,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_4
+      name: KeyUI-Sheet_E
       rect:
         serializedVersion: 2
         x: 68
@@ -236,7 +249,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_5
+      name: KeyUI-Sheet_T
       rect:
         serializedVersion: 2
         x: 85
@@ -258,7 +271,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_6
+      name: KeyUI-Sheet_Q
       rect:
         serializedVersion: 2
         x: 102
@@ -280,7 +293,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_7
+      name: KeyUI-Sheet_LeftClick
       rect:
         serializedVersion: 2
         x: 119
@@ -302,7 +315,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_9
+      name: KeyUI-Sheet_RightClick
       rect:
         serializedVersion: 2
         x: 140
@@ -346,7 +359,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_11
+      name: KeyUI-Sheet_Z
       rect:
         serializedVersion: 2
         x: 182
@@ -368,11 +381,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_12
+      name: KeyUI-Sheet_Tab
       rect:
         serializedVersion: 2
-        x: 199
-        y: 15
+        x: 200
+        y: 14
         width: 21
         height: 15
       alignment: 0
@@ -390,7 +403,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_13
+      name: KeyUI-Sheet_Space
       rect:
         serializedVersion: 2
         x: 220
@@ -412,7 +425,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_14
+      name: KeyUI-Sheet_P_D
       rect:
         serializedVersion: 2
         x: 0
@@ -434,7 +447,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_15
+      name: KeyUI-Sheet_P_S
       rect:
         serializedVersion: 2
         x: 17
@@ -456,7 +469,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_16
+      name: KeyUI-Sheet_P_A
       rect:
         serializedVersion: 2
         x: 34
@@ -478,7 +491,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_17
+      name: KeyUI-Sheet_P_W
       rect:
         serializedVersion: 2
         x: 51
@@ -500,7 +513,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_18
+      name: KeyUI-Sheet_P_E
       rect:
         serializedVersion: 2
         x: 68
@@ -522,7 +535,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_19
+      name: KeyUI-Sheet_P_T
       rect:
         serializedVersion: 2
         x: 85
@@ -544,7 +557,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_20
+      name: KeyUI-Sheet_P_Q
       rect:
         serializedVersion: 2
         x: 102
@@ -566,7 +579,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_21
+      name: KeyUI-Sheet_P_LeftClick
       rect:
         serializedVersion: 2
         x: 119
@@ -588,7 +601,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_23
+      name: KeyUI-Sheet_P_RightClick
       rect:
         serializedVersion: 2
         x: 140
@@ -632,7 +645,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: KeyUI-Sheet_25
+      name: KeyUI-Sheet_P_Z
       rect:
         serializedVersion: 2
         x: 182
@@ -713,34 +726,34 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":17.0,"y":15.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      KeyUI-Sheet_0: 6625402061002286121
-      KeyUI-Sheet_1: 698967802
       KeyUI-Sheet_10: 1861144450
-      KeyUI-Sheet_11: -241016561
-      KeyUI-Sheet_12: -284309414
-      KeyUI-Sheet_13: -957879399
-      KeyUI-Sheet_14: -1490792906
-      KeyUI-Sheet_15: 642735269
-      KeyUI-Sheet_16: 909854821
-      KeyUI-Sheet_17: 1578403881
-      KeyUI-Sheet_18: 1615036500
-      KeyUI-Sheet_19: 1455546942
-      KeyUI-Sheet_2: 240455759
-      KeyUI-Sheet_20: 732311254
-      KeyUI-Sheet_21: -675817389
       KeyUI-Sheet_22: -377454380
-      KeyUI-Sheet_23: 4538461
       KeyUI-Sheet_24: 540729661
-      KeyUI-Sheet_25: -546321854
       KeyUI-Sheet_26: -246854905
       KeyUI-Sheet_27: -1260386371
-      KeyUI-Sheet_3: 1145976633
-      KeyUI-Sheet_4: 408643573
-      KeyUI-Sheet_5: 952350980
-      KeyUI-Sheet_6: -1760205799
-      KeyUI-Sheet_7: 889946587
       KeyUI-Sheet_8: -1341457748
-      KeyUI-Sheet_9: 551065827
+      KeyUI-Sheet_A: 240455759
+      KeyUI-Sheet_D: 6625402061002286121
+      KeyUI-Sheet_E: 408643573
+      KeyUI-Sheet_LeftClick: 889946587
+      KeyUI-Sheet_P_A: 909854821
+      KeyUI-Sheet_P_D: -1490792906
+      KeyUI-Sheet_P_E: 1615036500
+      KeyUI-Sheet_P_LeftClick: -675817389
+      KeyUI-Sheet_P_Q: 732311254
+      KeyUI-Sheet_P_RightClick: 4538461
+      KeyUI-Sheet_P_S: 642735269
+      KeyUI-Sheet_P_T: 1455546942
+      KeyUI-Sheet_P_W: 1578403881
+      KeyUI-Sheet_P_Z: -546321854
+      KeyUI-Sheet_Q: -1760205799
+      KeyUI-Sheet_RightClick: 551065827
+      KeyUI-Sheet_S: 698967802
+      KeyUI-Sheet_Space: -957879399
+      KeyUI-Sheet_T: 952350980
+      KeyUI-Sheet_Tab: -284309414
+      KeyUI-Sheet_W: 1145976633
+      KeyUI-Sheet_Z: -241016561
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

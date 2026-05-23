@@ -145,9 +145,24 @@ namespace BC.UI
                 canvasGroup.blocksRaycasts = true;
             }
 
+            // 直前の台詞で使った submit が同一フレームに持ち越されると、
+            // 次の台詞を即時確定して二重に進んだように見えるため、解除まで待機する。
+            bool waitForSubmitRelease = IsSubmitActuated();
+
             // 本文アニメーション中の入力は skip に使い、表示完了後の入力で次へ進む。
             while (!cancellationToken.IsCancellationRequested)
             {
+                if (waitForSubmitRelease)
+                {
+                    if (IsSubmitActuated())
+                    {
+                        await UniTask.Yield();
+                        continue;
+                    }
+
+                    waitForSubmitRelease = false;
+                }
+
                 if (bodyTextCompleted)
                 {
                     PlayNextIndicator();
@@ -176,6 +191,12 @@ namespace BC.UI
 
                 await UniTask.Yield();
             }
+        }
+
+        private bool IsSubmitActuated()
+        {
+            InputAction action = nextTalkInputAction != null ? nextTalkInputAction.action : null;
+            return action != null && action.IsPressed();
         }
 
         // Typewriter の本文表示が完了した時に呼ばれる。Inspector からの登録でもコード登録でも使える。

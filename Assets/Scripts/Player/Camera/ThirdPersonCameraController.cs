@@ -12,6 +12,8 @@ namespace BC.Camera
     }
     public sealed class ThirdPersonCameraController : MonoBehaviour, ICameraController
     {
+        private const string ExpectedLookActionName = "Look";
+
         [Header("Target")]
         [SerializeField] private Transform cameraTarget;
 
@@ -69,7 +71,7 @@ namespace BC.Camera
 
         private void OnEnable()
         {
-            lookAction?.action?.Enable();
+            ResolveLookInputAction()?.Enable();
             RegisterCameraTarget();
         }
 
@@ -80,10 +82,11 @@ namespace BC.Camera
             if (!currentCanLookByInput)
                 return;
 
-            if (lookAction == null || lookAction.action == null)
+            InputAction resolvedLookAction = ResolveLookInputAction();
+            if (resolvedLookAction == null)
                 return;
 
-            Vector2 look = lookAction.action.ReadValue<Vector2>();
+            Vector2 look = resolvedLookAction.ReadValue<Vector2>();
 
             bool isMouse = Mouse.current != null && Mouse.current.delta.ReadValue() == look;
 
@@ -210,9 +213,25 @@ namespace BC.Camera
 
         private void OnDisable()
         {
-            lookAction?.action?.Disable();
+            ResolveLookInputAction()?.Disable();
 
             CameraManager.Instance?.UnregisterThirdPersonTarget(cameraTarget);
+        }
+
+        // 参照が崩れても Look 以外を読まないよう、同じ asset 内から期待アクション名を引き直す。
+        private InputAction ResolveLookInputAction()
+        {
+            InputAction assignedAction = lookAction != null ? lookAction.action : null;
+            if (assignedAction == null)
+                return null;
+
+            if (assignedAction.name == ExpectedLookActionName)
+                return assignedAction;
+
+            InputActionAsset actionAsset = assignedAction.actionMap != null ? assignedAction.actionMap.asset : null;
+            return actionAsset != null
+                ? actionAsset.FindAction($"Player/{ExpectedLookActionName}", throwIfNotFound: false)
+                : assignedAction;
         }
     }
 }

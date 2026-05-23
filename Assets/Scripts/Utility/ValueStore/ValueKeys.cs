@@ -7,10 +7,11 @@ namespace BC.Base
         Angry = 2,
         Hurt = 3,
         Dead = 4,
-        CarryingItem = 5,
+        Surprised = 5,
         CannotMove = 6,
         Falling = 7,
-        Running = 8
+        Running = 8,
+        Narrow = 9,
     }
 
     public enum ShapeExpressionId
@@ -20,6 +21,7 @@ namespace BC.Base
         Open = 30,
         Close = 40,
         Talk = 50,
+        Mu = 60,
     }
 
     public static class ValueKeys

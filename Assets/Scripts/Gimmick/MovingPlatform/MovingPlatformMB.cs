@@ -960,9 +960,7 @@ namespace BC.Gimmick.MovingPlatform
                 ? layers[nextSelectedLayerIndex].LayerName
                 : "None";
 
-            Debug.Log(
-                $"{nameof(MovingPlatformMB)}[{name}] layer selection: index={nextSelectedLayerIndex}, name={selectedLayerName}, useRailRouting={useRailRouting}, railControllerValid={(railController != null && railController.IsValid)}",
-                this);
+
 
             for (int i = 0; i < runtimes.Length; i++)
             {
@@ -983,9 +981,6 @@ namespace BC.Gimmick.MovingPlatform
                     ? "selected-candidate"
                     : BuildInactiveReason(runtime, playable, routeValid);
 
-                Debug.Log(
-                    $"{nameof(MovingPlatformMB)}[{name}] layer[{i}] '{runtime.LayerName}': priority={runtime.Priority}, activeOnStart={runtime.ActiveOnStart}, useSignalGate={runtime.UseSignalGate}, signalGateActive={runtime.SignalGateActive}, useKernelBoolCondition={runtime.UseKernelBoolCondition}, kernelHandleReady={runtime.KernelHandleReady}, kernelCurrent={kernelCurrentValueText}, activeWhenValue={runtime.ActiveWhenValue}, playable={playable}, routeValid={routeValid}, routeIssue={routeIssue}, routeDistance={routeDistance:F3}, result={reason}",
-                    this);
             }
         }
 

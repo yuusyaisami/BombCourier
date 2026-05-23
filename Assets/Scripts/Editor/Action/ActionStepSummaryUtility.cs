@@ -128,6 +128,13 @@ namespace BC.Editor.ActionSystem
 
             string talkState = BuildTalkStateSummary(requestProperty.FindPropertyRelative("talkStateId"));
             string speaker = Normalize(requestProperty.FindPropertyRelative("speakerName")?.stringValue);
+
+            if (string.IsNullOrWhiteSpace(speaker))
+            {
+                SerializedProperty speakerCharacterProperty = requestProperty.FindPropertyRelative("speakerCharacter");
+                speaker = Normalize(speakerCharacterProperty?.FindPropertyRelative("path")?.stringValue);
+            }
+
             string text = BuildTextSnippet(requestProperty.FindPropertyRelative("dialogueText")?.stringValue, "Empty talk");
             string bodySummary = text;
 

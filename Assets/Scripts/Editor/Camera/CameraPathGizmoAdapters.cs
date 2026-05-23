@@ -10,6 +10,9 @@ namespace BC.Editor.Camera
     {
         private const float PointRadius = 0.18f;
         private const float DirectionLength = 1.0f;
+        private const float CutIndicatorAlpha = 0.38f;
+        private const float CutDashLength = 0.75f;
+        private const float CutDashGap = 0.45f;
 
         protected override void DrawGizmos(CameraPathSequenceAuthoringMB target, bool selected)
         {
@@ -40,13 +43,44 @@ namespace BC.Editor.Camera
                     Gizmos.DrawLine(position, position + (rotation * Vector3.forward * DirectionLength));
 
                 if (hasPrevious)
-                    Gizmos.DrawLine(previousPosition, position);
+                {
+                    if (point.TransitionFromPrevious.Kind == CameraPathTransitionKind.Cut)
+                        DrawCutDashedIndicator(previousPosition, position);
+                    else
+                        Gizmos.DrawLine(previousPosition, position);
+                }
 
                 previousPosition = position;
                 hasPrevious = true;
             }
 
             Gizmos.color = previousColor;
+        }
+
+        private static void DrawCutDashedIndicator(Vector3 start, Vector3 end)
+        {
+            Vector3 direction = end - start;
+            float distance = direction.magnitude;
+
+            if (distance <= 0.0001f)
+                return;
+
+            Color original = Gizmos.color;
+            Gizmos.color = new Color(original.r, original.g, original.b, original.a * CutIndicatorAlpha);
+
+            float step = Mathf.Max(0.01f, CutDashLength + CutDashGap);
+            Vector3 unit = direction / distance;
+
+            for (float d = 0.0f; d < distance; d += step)
+            {
+                float from = d;
+                float to = Mathf.Min(d + CutDashLength, distance);
+                Vector3 segmentStart = start + unit * from;
+                Vector3 segmentEnd = start + unit * to;
+                Gizmos.DrawLine(segmentStart, segmentEnd);
+            }
+
+            Gizmos.color = original;
         }
     }
 

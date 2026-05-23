@@ -246,8 +246,6 @@ namespace BC.Base
                 expression = FaceExpressionId.Dead;
             else if (isNextStageActive)
                 expression = FaceExpressionId.CannotMove;
-            else if (isHandlingItem)
-                expression = FaceExpressionId.CarryingItem;
             else if (state == EntityMoveState.Jumping || state == EntityMoveState.Falling)
                 expression = FaceExpressionId.Falling;
             else if (moveSource.IsSprinting)

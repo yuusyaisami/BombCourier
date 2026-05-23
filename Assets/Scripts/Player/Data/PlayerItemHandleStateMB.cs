@@ -13,77 +13,106 @@ namespace BC.Player
     public sealed class PlayerItemHandleStateMB : MonoBehaviour, IEntityHandleItemAnimationSource, IInteractionSource
     {
         [Header("Detection")]
+        [Tooltip("アイテムを拾える最大距離です。")]
         [SerializeField] private float handleItemDistance = 1.5f;
+        [Tooltip("アイテムを拾うときに許容する正面角度です。")]
         [SerializeField] private float handleItemAngleThreshold = 45f;
+        [Tooltip("拾える対象アイテムのレイヤーマスクです。")]
         [SerializeField] private LayerMask itemLayerMask = ~0;
+        [Tooltip("所持アイテムを持つ手元の基準 Transform です。")]
         [SerializeField] private Transform handleItemPoint;
+        [Tooltip("プレイヤーモデルの Root です。投擲方向や表示制御に使います。")]
         [SerializeField] private GameObject playerModel;
 
         [Header("Input")]
+        [Tooltip("アイテム取得・投擲に使う入力アクションです。")]
         [SerializeField] private InputActionReference handleItemAction;
 
         [Header("Interaction Facing")]
+        [Tooltip("交互作用開始時に対象へ向きを合わせるかを指定します。")]
         [SerializeField] private bool faceInteractionTargetOnStart = true;
+        [Tooltip("交互作用時の向き制御を行う Facing Controller です。")]
         [SerializeField] private EntityFacingControllerMB facingController;
 
         [Header("Throw")]
+        [Tooltip("投擲時の最大速度です。")]
         [SerializeField] private float maxThrowForce = 12f;
+        [Tooltip("最低投擲速度です。")]
         [SerializeField] private float minThrowForce = 4f;
+        [Tooltip("短押しをドロップ扱いにするための保持猶予です。")]
         [SerializeField, Min(0.01f)] private float throwChargeActivationHoldTime = 0.1f;
+        [Tooltip("チャージに応じて投擲速度が伸びる時間です。")]
         [SerializeField] private float throwForceChargeTime = 1.5f;
+        [Tooltip("ドロップ時に前方へ出す速度です。")]
         [SerializeField, Min(0f)] private float dropForwardVelocity = 0.75f;
+        [Tooltip("ドロップ時にキャリア速度へ掛ける平面成分の割合です。")]
         [SerializeField, Range(0f, 1f)] private float dropCarrierPlanarVelocityFactor = 0.35f;
+        [Tooltip("手ぶら状態で投擲予測を出し始めるまでの保持時間です。")]
         [SerializeField, Min(0f)] private float emptyHandThrowPreviewHoldTime = 0.2f;
+        [Tooltip("カメラ forward に加える上向き補正角度です。")]
         [SerializeField, Range(0f, 30f)] private float throwUpwardCompensationAngle = 8f;
 
         [Header("Trajectory")]
+        [Tooltip("投擲予測線を描画する LineRenderer です。")]
         [SerializeField] private LineRenderer trajectoryLineRenderer;
+        [Tooltip("投擲予測の当たり判定に使うレイヤーマスクです。")]
         [SerializeField] private LayerMask trajectoryCollisionMask = ~0;
+        [Tooltip("投擲軌跡のサンプル点数です。")]
         [SerializeField, Min(2)] private int trajectoryPointCount = 32;
+        [Tooltip("投擲軌跡のサンプリング時間間隔です。")]
         [SerializeField, Min(0.01f)] private float trajectoryTimeStep = 0.08f;
+        [Tooltip("投擲予測の判定半径です。")]
         [SerializeField, Min(0.01f)] private float trajectoryProbeRadius = 0.45f;
+        [Tooltip("投擲予測ラインの太さです。")]
         [SerializeField, Min(0.001f)] private float trajectoryLineWidth = 0.04f;
+        [Tooltip("投擲予測ラインの色です。")]
         [SerializeField] private Color trajectoryColor = new Color(1.0f, 0.62f, 0.08f, 0.9f);
+        [Tooltip("トリガーコライダーを予測判定に含めるかを指定します。")]
         [SerializeField] private bool includeTriggerCollidersInTrajectory = true;
+        [Tooltip("着地点マーカーを表示し始める最小距離です。")]
         [SerializeField, Min(0f)] private float trajectoryHitMarkerMinDistance = 1.0f;
+        [Tooltip("着地点マーカーの直径です。")]
         [SerializeField, Min(0.01f)] private float trajectoryHitMarkerDiameter = 0.24f;
+        [Tooltip("着地点マーカーの色です。")]
         [SerializeField] private Color trajectoryHitMarkerColor = new Color(1.0f, 0.82f, 0.24f, 0.95f);
 
         [Header("Runtime Debug")]
+        [Tooltip("現在インタラクト可能かをデバッグ表示するための runtime 値です。")]
         [SerializeField] private bool currentCanInteract = true;
+        [Tooltip("現在アイテム所持中かをデバッグ表示するための runtime 値です。")]
         [SerializeField] private bool isHandlingItem;
 
 
         private static readonly ValueModifierTagId CarryItemJumpPenaltyTag = new ValueModifierTagId(10003);
         private const int MaxTrajectoryHits = 16;
         // アイテムを拾った後、プレイヤーが入力を離すまで次のアイテムを拾えないようにするためのフラグ。これがないと、例えば爆弾を投げた瞬間にもう一度掴んでしまう。
-        private bool waitForPickupInputRelease;
-        private bool isThrowChargePending;
-        private bool isThrowCharging;
-        private bool carryJumpPenaltyApplied;
-        private bool activeInteractionFacingOwnsChannel;
+        private bool waitForPickupInputRelease; // 拾い直後の入力を投擲へ流さないための抑止フラグ。
+        private bool isThrowChargePending; // 短押し / 長押しの判定待ち状態。
+        private bool isThrowCharging; // 投擲チャージ中かどうか。
+        private bool carryJumpPenaltyApplied; // 所持アイテム由来のジャンプ補正を適用済みかどうか。
+        private bool activeInteractionFacingOwnsChannel; // interaction facing の制御権をこのコンポーネントが持っているか。
 
         private readonly RaycastHit[] trajectoryHits = new RaycastHit[MaxTrajectoryHits];
         private readonly Collider[] trajectoryOverlapHits = new Collider[MaxTrajectoryHits];
 
-        private ValueStoreService valueStore;
-        private EntityRef entityRef;
-        private ValueWatchHandle<bool> canInteractHandle;
-        private ValueWatchHandle<bool> fatigueInteractHandle;
-        private ICarryableItem currentlyHandledItem;
-        private IEntityVelocitySource velocitySource;
-        private PlayerInteractionController interactionController;
-        private float emptyHandThrowPreviewTimer;
-        private float throwChargePendingTimer;
-        private float throwForceChargeTimer;
-        private Vector3[] trajectoryPoints = new Vector3[32];
-        private Material ownedTrajectoryMaterial;
-        private Material ownedTrajectoryHitMarkerMaterial;
-        private Transform trajectoryHitMarkerTransform;
-        private Renderer trajectoryHitMarkerRenderer;
-        private bool isEmptyHandThrowPreviewActive;
-        private int throwSequence;
-        private int lastConsumedInputPressSequence;
+        private ValueStoreService valueStore; // Runtime の値ストア参照。
+        private EntityRef entityRef; // このプレイヤーの EntityRef。
+        private ValueWatchHandle<bool> canInteractHandle; // Interaction.CanInteract の監視ハンドル。
+        private ValueWatchHandle<bool> fatigueInteractHandle; // 疲労インタラクト状態の監視ハンドル。
+        private ICarryableItem currentlyHandledItem; // 現在持っているアイテム。
+        private IEntityVelocitySource velocitySource; // 投擲速度の参照元。
+        private PlayerInteractionController interactionController; // アイテム操作の入力・候補管理。
+        private float emptyHandThrowPreviewTimer; // 手ぶら投擲予測の経過時間。
+        private float throwChargePendingTimer; // 投擲 pending の保持時間。
+        private float throwForceChargeTimer; // 投擲チャージ時間。
+        private Vector3[] trajectoryPoints = new Vector3[32]; // 軌跡描画用の点列。
+        private Material ownedTrajectoryMaterial; // 軌跡用に内部生成した材質。
+        private Material ownedTrajectoryHitMarkerMaterial; // 着地点マーカー用の内部生成材質。
+        private Transform trajectoryHitMarkerTransform; // 着地点マーカーの Transform。
+        private Renderer trajectoryHitMarkerRenderer; // 着地点マーカーの Renderer。
+        private bool isEmptyHandThrowPreviewActive; // 手ぶら投擲予測が有効かどうか。
+        private int throwSequence; // 投擲回数のシーケンス値。
+        private int lastConsumedInputPressSequence; // 最後に投擲判定へ消費した入力シーケンス。
 
         public ICarryableItem CurrentHandledItem => currentlyHandledItem;
         public bool IsHandlingItem => isHandlingItem;
@@ -123,6 +152,7 @@ namespace BC.Player
             }
         }
 
+        // 参照の初期解決と入力コントローラ生成を行う。
         private void Awake()
         {
             ResolveFacingController();
@@ -149,12 +179,14 @@ namespace BC.Player
             ResolveRuntimeReferences(logMissingEntity: true);
         }
 
+        // 有効化時に入力系を復帰し、操作状態を再接続する。
         private void OnEnable()
         {
             handleItemAction?.action?.Enable();
             interactionController?.Bind();
         }
 
+        // 無効化時は入力と一時状態を必ず落とす。
         private void OnDisable()
         {
             ClearInteractionFacing(force: true);
@@ -198,6 +230,7 @@ namespace BC.Player
             }
         }
 
+        // 毎フレーム、所持状態・投擲予測・入力ゲートを更新する。
         private void Update()
         {
             if (handleItemAction == null || handleItemAction.action == null)
@@ -234,6 +267,7 @@ namespace BC.Player
             PublishRuntimeValues();
         }
 
+        // 手ぶらで押し続けたときだけ投擲予測を出す。
         private void TickEmptyHandThrowPreview(float dt)
         {
             if (GetCurrentBestCarryableItem() != null || IsFatigueInteracting())
@@ -254,6 +288,7 @@ namespace BC.Player
                 isEmptyHandThrowPreviewActive = true;
         }
 
+        // 所持中のアイテムに対して、ドロップ / チャージ / 投擲を切り替える。
         private void TickThrow()
         {
             if (currentlyHandledItem == null ||
@@ -326,6 +361,7 @@ namespace BC.Player
             ReleaseCurrentItem(HeldItemReleaseKind.Throw);
         }
 
+        // 2回目の押下直後に、短押し判定待ちへ入る。
         private void BeginThrowChargePending()
         {
             isThrowChargePending = true;
@@ -333,6 +369,7 @@ namespace BC.Player
             throwForceChargeTimer = 0f;
         }
 
+        // 投擲チャージに入る。短押し分の時間を引き継ぐ。
         private void StartThrowCharge(float initialChargeTime)
         {
             isThrowChargePending = false;
@@ -347,6 +384,7 @@ namespace BC.Player
             UpdateThrowTrajectory();
         }
 
+        // 投擲チャージを終了する。
         private void EndThrowCharge()
         {
             if (!isThrowCharging)
@@ -356,6 +394,7 @@ namespace BC.Player
             OnThrowChargeEnd?.Invoke();
         }
 
+        // アイテム取得の確定処理を行う。爆弾の場合は retry checkpoint を先に積む。
         private void HandleItem(ICarryableItem item)
         {
             if (item == null || item.ItemTransform == null)
@@ -395,6 +434,7 @@ namespace BC.Player
             PublishRuntimeValues();
         }
 
+        // 現在の所持アイテムを指定種別で手放す。
         private void ReleaseCurrentItem(HeldItemReleaseKind releaseKind)
         {
             if (currentlyHandledItem == null)
@@ -415,6 +455,7 @@ namespace BC.Player
             ClearHeldState();
         }
 
+        // 外部要因で現在の所持アイテムを強制的に放す。
         public bool ForceReleaseCurrentItem(Vector3 releaseVelocity)
         {
             if (currentlyHandledItem == null)
@@ -433,6 +474,7 @@ namespace BC.Player
             return true;
         }
 
+        // 現在持っているアイテムの tag を取得する。
         public bool TryGetHeldItemTag(out EntityTagId heldItemTag)
         {
             heldItemTag = default;
@@ -449,6 +491,7 @@ namespace BC.Player
             return true;
         }
 
+        // 指定 tag のアイテムを持っているか判定する。
         public bool IsHoldingItemWithTag(EntityTagId tagId)
         {
             return tagId.IsValid &&
@@ -456,6 +499,7 @@ namespace BC.Player
                    heldItemTag.Equals(tagId);
         }
 
+        // 所持・チャージ・予測線など、アイテム操作の runtime 状態をまとめて初期化する。
         private void ClearHeldState()
         {
             SetCurrentHandledItem(null);
@@ -473,6 +517,7 @@ namespace BC.Player
             PublishRuntimeValues();
         }
 
+        // Retry 復帰時は所持状態だけを安全に初期化する。
         public void RestoreRetryCheckpointState()
         {
             // Retry 復帰では item 側の transform / rigidbody を checkpoint restore に任せる。
@@ -480,6 +525,7 @@ namespace BC.Player
             ClearHeldState();
         }
 
+        // 現在所持アイテムを更新し、変更通知を出す。
         private void SetCurrentHandledItem(ICarryableItem item)
         {
             if (EqualityComparer<ICarryableItem>.Default.Equals(currentlyHandledItem, item))
@@ -489,17 +535,20 @@ namespace BC.Player
             CurrentHandledItemChanged?.Invoke(currentlyHandledItem);
         }
 
+        // 現在のチャージ量から投擲速度を計算する。
         private float CalculateThrowForce()
         {
             float chargeRatio = Mathf.Clamp01(throwForceChargeTimer / Mathf.Max(0.01f, throwForceChargeTime));
             return Mathf.Lerp(minThrowForce, maxThrowForce, chargeRatio);
         }
 
+        // 投擲用の最終速度を構築する。
         private Vector3 BuildThrowVelocity()
         {
             return BuildThrowDirection() * CalculateThrowForce() + GetCarrierVelocity();
         }
 
+        // 落とすときの最終速度を構築する。
         private Vector3 BuildDropVelocity()
         {
             Vector3 carrierVelocity = GetCarrierVelocity();
@@ -509,6 +558,7 @@ namespace BC.Player
             return BuildDropDirection() * Mathf.Max(0f, dropForwardVelocity) + carrierVelocity;
         }
 
+        // 所持中のキャリア速度を取得する。
         private Vector3 GetCarrierVelocity()
         {
             if (velocitySource == null)
@@ -517,6 +567,7 @@ namespace BC.Player
             return velocitySource != null ? velocitySource.CurrentVelocity : Vector3.zero;
         }
 
+        // 速度の参照元となるコンポーネントを親階層から探す。
         private IEntityVelocitySource ResolveVelocitySource()
         {
             MonoBehaviour[] behaviours = GetComponentsInParent<MonoBehaviour>();
@@ -530,6 +581,7 @@ namespace BC.Player
             return null;
         }
 
+        // カメラ向き基準の投擲方向を作る。
         private Vector3 BuildThrowDirection()
         {
             UnityEngine.Camera mainCamera = UnityEngine.Camera.main;
@@ -558,6 +610,7 @@ namespace BC.Player
                 throwUpwardCompensationAngle);
         }
 
+        // ドロップ時の前方方向を作る。
         private Vector3 BuildDropDirection()
         {
             Vector3 forward = playerModel != null
@@ -593,6 +646,7 @@ namespace BC.Player
             return (compensationRotation * normalizedForward).normalized;
         }
 
+        // 一部アイテム所持時のジャンプ補正を適用する。
         private void ApplyCarryJumpPenaltyIfNeeded(ICarryableItem item)
         {
             if (item is not ICarryMoveModifier moveModifier)
@@ -619,6 +673,7 @@ namespace BC.Player
             carryJumpPenaltyApplied = true;
         }
 
+        // 所持補正を解除する。
         private void RemoveCarryJumpPenalty()
         {
             if (!carryJumpPenaltyApplied)
@@ -637,6 +692,7 @@ namespace BC.Player
             carryJumpPenaltyApplied = false;
         }
 
+        // 投擲予測線を更新する。
         private void UpdateThrowTrajectory()
         {
             if (currentlyHandledItem == null || currentlyHandledItem.ItemTransform == null)
@@ -703,6 +759,7 @@ namespace BC.Player
             }
         }
 
+        // 投擲予測の区間内ヒットを検出する。
         private bool TryFindTrajectoryHit(Vector3 from, Vector3 to, out Vector3 hitPoint)
         {
             hitPoint = to;
@@ -775,6 +832,7 @@ namespace BC.Player
             return true;
         }
 
+        // 所持者や所持アイテム自身への当たりを予測判定から除外する。
         private bool IsIgnoredTrajectoryCollider(Collider hit)
         {
             if (hit == null)
@@ -789,6 +847,7 @@ namespace BC.Player
             return itemTransform != null && hit.transform.IsChildOf(itemTransform);
         }
 
+        // 所持者ルートを解決する。
         private Transform ResolveTrajectoryHolderRoot()
         {
             if (handleItemPoint == null)
@@ -803,6 +862,7 @@ namespace BC.Player
             return handleItemPoint.root != null ? handleItemPoint.root : transform;
         }
 
+        // 軌跡描画用 LineRenderer を遅延生成・初期化する。
         private void EnsureTrajectoryRenderer()
         {
             if (trajectoryLineRenderer == null)
@@ -835,6 +895,7 @@ namespace BC.Player
             }
         }
 
+        // 着地点マーカーを遅延生成・初期化する。
         private void EnsureTrajectoryHitMarker()
         {
             if (trajectoryHitMarkerTransform == null)
@@ -876,6 +937,7 @@ namespace BC.Player
             }
         }
 
+        // 着地点マーカーを表示する。
         private void ShowTrajectoryHitMarker(Vector3 hitPoint)
         {
             EnsureTrajectoryHitMarker();
@@ -888,6 +950,7 @@ namespace BC.Player
             trajectoryHitMarkerTransform.gameObject.SetActive(true);
         }
 
+        // 着地点マーカーを非表示にする。
         private void HideTrajectoryHitMarker()
         {
             if (trajectoryHitMarkerTransform == null)
@@ -896,6 +959,7 @@ namespace BC.Player
             trajectoryHitMarkerTransform.gameObject.SetActive(false);
         }
 
+        // 軌跡描画をまとめて隠す。
         private void HideTrajectory()
         {
             if (trajectoryLineRenderer == null)
@@ -909,6 +973,7 @@ namespace BC.Player
             HideTrajectoryHitMarker();
         }
 
+        // Interaction イベントを受けて、向き制御と所持開始を振り分ける。
         private void HandleInteractionEvent(InteractionEventData eventData)
         {
             switch (eventData.EventType)
@@ -930,6 +995,7 @@ namespace BC.Player
             }
         }
 
+        // 交互作用開始時に対象へ向きを合わせる。
         private void TryApplyInteractionFacing(InteractionEventData eventData)
         {
             if (!faceInteractionTargetOnStart)
@@ -951,6 +1017,7 @@ namespace BC.Player
             activeInteractionFacingOwnsChannel = true;
         }
 
+        // interaction facing の ownership を見て向き制御を解除する。
         private void ClearInteractionFacing(bool force)
         {
             if (!force && !activeInteractionFacingOwnsChannel)
@@ -960,6 +1027,7 @@ namespace BC.Player
             ResolveFacingController()?.ClearFacing(EntityFacingChannels.Interaction);
         }
 
+        // Facing Controller を解決する。
         private EntityFacingControllerMB ResolveFacingController()
         {
             if (facingController == null)
@@ -968,6 +1036,7 @@ namespace BC.Player
             return facingController;
         }
 
+        // 現在の最良候補が所持可能アイテムかを取り出す。
         private ICarryableItem GetCurrentBestCarryableItem()
         {
             return CurrentBestInteractable is CarryableItemInteractableAdapter adapter
@@ -975,6 +1044,7 @@ namespace BC.Player
                 : null;
         }
 
+        // runtime 用のデバッグ値を ValueStore に反映する。
         private void PublishRuntimeValues()
         {
             ResolveRuntimeReferences(logMissingEntity: false);
@@ -989,6 +1059,7 @@ namespace BC.Player
             valueStore.Set(entityRef, ValueKeys.Runtime.CanInteract, currentCanInteract);
         }
 
+        // ValueStore / EntityRef / watch handle を安全に解決する。
         private void ResolveRuntimeReferences(bool logMissingEntity)
         {
             if (valueStore == null)
@@ -1020,12 +1091,14 @@ namespace BC.Player
                 fatigueInteractHandle = valueStore.GetHandle(entityRef, ValueKeys.Runtime.IsFatigueInteracting);
         }
 
+        // 疲労インタラクト中かどうかを判定する。
         private bool IsFatigueInteracting()
         {
             ResolveRuntimeReferences(logMissingEntity: false);
             return fatigueInteractHandle != null && fatigueInteractHandle.CurrentValue;
         }
 
+        // Interaction 可否の runtime 値を更新する。
         private bool RefreshInteractionGateDebugValue()
         {
             ResolveRuntimeReferences(logMissingEntity: false);
@@ -1033,6 +1106,7 @@ namespace BC.Player
             return currentCanInteract;
         }
 
+        // 入力由来の投擲 / チャージを中断する。
         private void CancelInputDrivenItemAction()
         {
             isThrowChargePending = false;
@@ -1044,22 +1118,26 @@ namespace BC.Player
             HideTrajectory();
         }
 
+        // 投擲予測やチャージ pose が有効かを判定する。
         private bool IsThrowPoseActive()
         {
             return isThrowCharging || isEmptyHandThrowPreviewActive;
         }
 
+        // 実際に投擲チャージ中かを判定する。
         private bool IsItemThrowAiming()
         {
             return isHandlingItem && currentlyHandledItem != null && isThrowCharging;
         }
 
+        // 手ぶら投擲予測の runtime 状態を初期化する。
         private void ResetEmptyHandThrowPreview()
         {
             emptyHandThrowPreviewTimer = 0f;
             isEmptyHandThrowPreviewActive = false;
         }
 
+        // まだ未消費の押下入力だけを1回分消費する。
         private bool ConsumeInputPress()
         {
             int currentSequence = InputPressSequence;

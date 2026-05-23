@@ -13,13 +13,18 @@ MonoBehaviour:
   m_Name: StageRegistry
   m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageRegistrySO
   stageData:
-  - stageName: "\u306F\u3058\u3081\u306B\u8A00\u8449\u3042\u308A\u304D"
+  - stageName: "\u666E\u901A\u306E\u30C0\u30F3\u30B8\u30E7\u30F3\u30BA"
     stageDescription: "\u96D1\u9B5A\u306E\u304A\u307E\u3048\u306E\u305F\u3081\u306E\u30B9\u30C6\u30FC\u30B8"
     stageDifficulty: 0
     clearTimeThreshold: 6
     stagePrefab: {fileID: 2650056577534689671, guid: b04adfd443287f54daee122c974b5e03, type: 3}
-  - stageName: 
+  - stageName: "\u9AD8\u4F4E\u5DEE"
     stageDescription: 
     stageDifficulty: 0
     clearTimeThreshold: 6
     stagePrefab: {fileID: 2650056577534689671, guid: e97e7e98249d8774095aa548b72fdc46, type: 3}
+  - stageName: "\u6163\u6027"
+    stageDescription: 
+    stageDifficulty: 0
+    clearTimeThreshold: 4
+    stagePrefab: {fileID: 2650056577534689671, guid: 6a346da4e6837e648bdd3b31d88639ac, type: 3}

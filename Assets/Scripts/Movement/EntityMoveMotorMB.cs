@@ -25,62 +25,99 @@ namespace BC.Base
         public static readonly ValueModifierTagId GameLogicTag = new ValueModifierTagId(10002);
 
         [Header("References")]
+        [Tooltip("この移動モーターが直接制御する Rigidbody です。")]
         [SerializeField] private Rigidbody bodyRigidbody;
+        [Tooltip("地面判定とカプセル形状の基準にする CapsuleCollider です。")]
         [SerializeField] private CapsuleCollider bodyCollider;
 
         [Header("Speed")]
+        [Tooltip("移動速度のデフォルト値。ValueStore に値が無いときの fallback です。")]
         [SerializeField] private float fallbackMoveSpeed = 5.0f;
+        [Tooltip("ダッシュ倍率のデフォルト値。ValueStore に値が無いときの fallback です。")]
         [SerializeField] private float fallbackSprintMultiplier = 1.5f;
 
         [Header("Acceleration")]
+        [Tooltip("接地時の前進加速です。")]
         [SerializeField] private float groundAcceleration = 35.0f;
+        [Tooltip("接地時の減速です。")]
         [SerializeField] private float groundDeceleration = 45.0f;
+        [Tooltip("接地時に逆方向へ向きを変えるときの加速です。")]
         [SerializeField] private float groundTurnAcceleration = 55.0f;
+        [Tooltip("空中での移動加速です。")]
         [SerializeField] private float airAcceleration = 12.0f;
+        [Tooltip("空中で入力が無いときの減速です。")]
         [SerializeField] private float airDeceleration = 4.0f;
+        [Tooltip("空中での水平速度上限です。")]
         [SerializeField] private float maxAirHorizontalSpeed = 8.0f;
 
         [Header("Jump / Gravity")]
+        [Tooltip("基本ジャンプの高さです。")]
         [SerializeField] private float jumpHeight = 1.4f;
+        [Tooltip("重力加速度です。負値で下方向に働きます。")]
         [SerializeField] private float gravity = -28.0f;
+        [Tooltip("接地時に少し下方向へ押し付ける速度です。")]
         [SerializeField] private float groundedStickVelocity = -3.0f;
+        [Tooltip("接地判定が切れてから猶予としてジャンプや段差処理を許す時間です。")]
         [SerializeField] private float coyoteTime = 0.12f;
+        [Tooltip("ジャンプ入力を少し早押ししても拾うためのバッファ時間です。")]
         [SerializeField] private float jumpBufferTime = 0.12f;
 
         [Header("Ground Probe")]
+        [Tooltip("地面判定に使うレイヤーマスクです。")]
         [SerializeField] private LayerMask groundMask = ~0;
+        [Tooltip("地面判定を少しだけ深く取るための追加距離です。")]
         [SerializeField] private float groundProbeExtraDistance = 0.18f;
+        [Tooltip("地面判定カプセルの半径から差し引く縮小量です。")]
         [SerializeField] private float groundProbeRadiusShrink = 0.03f;
+        [Tooltip("地面として認識する最大角度です。")]
         [SerializeField] private float maxGroundAngle = 55.0f;
 
         [Header("Step Assist")]
+        [Tooltip("段差を登る補助処理を有効にするかを指定します。")]
         [SerializeField] private bool enableStepAssist = true;
+        [Tooltip("登れる最大の段差高さです。")]
         [SerializeField, Min(0.05f)] private float maxStepHeight = 0.3f;
+        [Tooltip("段差判定で前方に見る距離です。")]
         [SerializeField, Min(0.02f)] private float stepAssistForwardDistance = 0.16f;
+        [Tooltip("段差補助を始める最小水平速度です。")]
         [SerializeField, Min(0.01f)] private float minStepAssistSpeed = 0.1f;
 
         [Header("Moving Platform")]
+        [Tooltip("移動足場の速度をジャンプ後に継承するかを指定します。")]
         [SerializeField] private bool inheritMovingPlatformVelocityOnJump = true;
+        [Tooltip("足場速度をジャンプにどの程度反映するかの倍率です。")]
         [SerializeField] private float platformJumpVelocityInheritance = 1.0f;
+        [Tooltip("足場上のサンプル点を平滑化する強さです。0 で無効になります。")]
         [SerializeField, Min(0.0f)] private float platformSupportSampleSmoothing = 0.0f;
+        [Tooltip("足場回転由来の微小な追従を無視する角度のしきい値です。")]
         [SerializeField, Min(0.0f)] private float platformCarryRotationDeadZoneDegrees = 0.05f;
 
         [Header("External Momentum")]
+        [Tooltip("外力や一時速度の減衰速度です。")]
         [SerializeField] private float externalVelocityDamping = 6.0f;
+        [Tooltip("この値未満の外部速度は 0 扱いにします。")]
         [SerializeField] private float minExternalVelocity = 0.03f;
 
         [Header("Cushion")]
+        [Tooltip("クッション接触の連続反応を抑えるクールダウンです。")]
         [SerializeField, Min(0.0f)] private float cushionImpactCooldown = 0.12f;
 
         [Header("Contact Push")]
+        [Tooltip("接触した相手を押し返す処理を有効にするかを指定します。")]
         [SerializeField] private bool pushRigidbodiesOnContact = true;
+        [Tooltip("接触押し返しの固定インパルスです。")]
         [SerializeField, Min(0.0f)] private float contactPushImpulse = 0.35f;
+        [Tooltip("接触時の移動速度に応じて追加される押し返し係数です。")]
         [SerializeField, Min(0.0f)] private float contactPushSpeedMultiplier = 0.2f;
+        [Tooltip("接触押し返しの最大インパルスです。")]
         [SerializeField, Min(0.0f)] private float maxContactPushImpulse = 2.0f;
+        [Tooltip("この速度未満では押し返しを行いません。")]
         [SerializeField, Min(0.0f)] private float minContactPushSpeed = 0.1f;
 
         [Header("Runtime Debug")]
+        [Tooltip("現在の Move.CanMoveByInput をデバッグ表示する値です。")]
         [SerializeField] private bool currentCanMoveByInput;
+        [Tooltip("現在の Move.CanMoveBySystem をデバッグ表示する値です。")]
         [SerializeField] private bool currentCanMoveBySystem;
 
         private const int MaxGroundHits = 8;
@@ -141,8 +178,10 @@ namespace BC.Base
         public Vector3 PlanarVelocity => planarVelocity;
         public float VerticalVelocity => verticalVelocity;
         public Vector3 ExternalVelocity => externalVelocity;
+        /// <summary>接地している足場の移動速度を返します。</summary>
         public Vector3 PlatformVelocity => platformVelocity;
 
+        /// <summary>このモーターが最終的に身体へ与えている速度を返します。</summary>
         public Vector3 CurrentVelocity => GetBodyVelocity() + platformVelocity;
         public bool CanMoveByInput => currentCanMoveByInput;
         public bool CanMoveBySystem => currentCanMoveBySystem;
@@ -186,6 +225,7 @@ namespace BC.Base
             }
         }
 
+        // 依存コンポーネントの存在を保証する。
         private void Awake()
         {
             EnsureMovementBody();
@@ -207,17 +247,20 @@ namespace BC.Base
             entityMB = GetComponentInParent<EntityMB>();
         }
 
+        // 再有効化時に Rigidbody / Collider を再取得する。
         private void OnEnable()
         {
             EnsureMovementBody();
         }
 
+        // 無効化時に自動移動と入力状態を解除する。
         private void OnDisable()
         {
             CancelAutoMove();
             ClearMoveIntent();
         }
 
+        // 毎物理 tick の中心処理。ここで入力、接地、足場、速度をまとめて更新する。
         private void FixedUpdate()
         {
             if (!IsRuntimeReady || bodyRigidbody == null || bodyCollider == null)
@@ -248,6 +291,7 @@ namespace BC.Base
             PublishRuntimeValues();
         }
 
+        // 外部入力から移動意図を受け取り、ジャンプバッファもここで保持する。
         public void SetMoveIntent(Vector3 worldMoveDirection, bool wantsSprint, bool jumpPressedThisFrame, bool jumpHeldInput, float deltaTime)
         {
             if (autoMoveActive)
@@ -281,6 +325,7 @@ namespace BC.Base
             jumpBufferCounter -= deltaTime;
         }
 
+        // 入力の残りを消して、次の tick に影響しないようにする。
         public void ClearMoveIntent()
         {
             moveDirection = Vector3.zero;
@@ -290,6 +335,7 @@ namespace BC.Base
             ClearPendingCushionHighJump();
         }
 
+        // 通常時の移動更新。接地、足場、水平移動、垂直移動を順に処理する。
         private void TickMotor(float dt)
         {
             suppressPlatformVelocityInjectionThisTick = false;
@@ -327,6 +373,7 @@ namespace BC.Base
             wasGroundedLastMotorTick = ground.IsValid;
         }
 
+        // 水平方向の速度を、入力と接地状態に応じて滑らかに更新する。
         private void UpdatePlanarVelocity(float dt, bool isGrounded)
         {
             Vector3 desiredDirection = GetDesiredMoveDirection();
@@ -382,6 +429,7 @@ namespace BC.Base
             }
         }
 
+        // ジャンプ、重力、接地時の貼り付き速度を更新する。
         private void UpdateVerticalVelocity(float dt, bool isGrounded)
         {
             if (TryConsumePendingCushionHighJump())
@@ -414,6 +462,7 @@ namespace BC.Base
             verticalVelocity += gravity * dt;
         }
 
+        // 受けた外力を徐々に減衰させる。
         private void UpdateExternalVelocity(float dt)
         {
             if (externalVelocity.sqrMagnitude <= minExternalVelocity * minExternalVelocity)
@@ -428,6 +477,7 @@ namespace BC.Base
                 1.0f - Mathf.Exp(-externalVelocityDamping * dt));
         }
 
+        // キャラクター下方へ SphereCast を飛ばして接地候補を探す。
         private void ProbeGround()
         {
             ground = default;
@@ -465,6 +515,7 @@ namespace BC.Base
             }
         }
 
+        // カプセル Collider を地面判定用の検索形状へ変換する。
         private void GetGroundProbeParameters(out Vector3 center, out float radius, out float distance)
         {
             Vector3 lossyScale = transform.lossyScale;
@@ -480,6 +531,7 @@ namespace BC.Base
             distance = Mathf.Max(0.01f, colliderHalfHeight - colliderRadius + groundProbeExtraDistance);
         }
 
+        // 足場の移動量を算出し、キャラへ渡すべきプラットフォーム速度を更新する。
         private void UpdatePlatformMotion(float dt, bool isGrounded)
         {
             platformDelta = Vector3.zero;
@@ -545,6 +597,7 @@ namespace BC.Base
             currentPlatform = platform;
         }
 
+        // 足場のどの位置を追従基準として使うかを決める。
         private Vector3 ResolveSupportSamplePoint(Transform platform, float dt)
         {
             Vector3 desiredWorldPoint = bodyRigidbody != null
@@ -565,6 +618,7 @@ namespace BC.Base
             return platform.TransformPoint(supportSampleLocalPoint);
         }
 
+        // 足場ローカル座標で追従点を保存し、必要なら平滑化する。
         private void UpdateSupportSamplePoint(Transform sourceTransform, Vector3 desiredWorldPoint, float dt)
         {
             if (sourceTransform == null)
@@ -595,6 +649,7 @@ namespace BC.Base
             supportSampleLocalPoint = Vector3.Lerp(supportSampleLocalPoint, desiredLocalPoint, Mathf.Clamp01(blend));
         }
 
+        // 足場から離れた瞬間の運動量を、ジャンプ用の継承速度として保存する。
         private void CapturePlatformInertiaOnLeaveGround()
         {
             if (!inheritMovingPlatformVelocityOnJump ||
@@ -607,6 +662,7 @@ namespace BC.Base
             inheritedPlatformVelocity = platformVelocity * platformJumpVelocityInheritance;
         }
 
+        // ジャンプ開始時に、その場の足場速度をキャラ速度へ足し込む。
         private void InheritCurrentPlatformVelocity()
         {
             if (!inheritMovingPlatformVelocityOnJump || inheritedPlatformVelocity.sqrMagnitude > 0.0001f)
@@ -618,6 +674,7 @@ namespace BC.Base
             suppressPlatformVelocityInjectionThisTick = true;
         }
 
+        // 着地時に、継承済みの足場速度を現在の足場速度へ合わせ直す。
         private void RebaseInheritedPlatformMomentumOnLanding()
         {
             if (inheritedPlatformVelocity.sqrMagnitude <= 0.0001f)
@@ -629,6 +686,7 @@ namespace BC.Base
             inheritedPlatformVelocity = Vector3.zero;
         }
 
+        // 次回 tick の差分計算に使うため、足場の現在姿勢を保存する。
         private void StorePlatformPose()
         {
             if (currentPlatform == null)
@@ -642,6 +700,7 @@ namespace BC.Base
             hasPlatformPose = true;
         }
 
+        // 現在速度と接地状態から、見た目上の移動状態を更新する。
         private void UpdateMoveState()
         {
             if (motionLocked)
@@ -669,6 +728,7 @@ namespace BC.Base
                 StateMachine.ChangeState(EntityMoveState.Falling);
         }
 
+        // motion lock 中でも、足場追従や外力の反映だけは維持する。
         private void TickLockedMotion(float dt)
         {
             suppressPlatformVelocityInjectionThisTick = false;
@@ -690,6 +750,7 @@ namespace BC.Base
             wasGroundedLastMotorTick = ground.IsValid;
         }
 
+        // system movement lock 中は入力と通常移動を止め、状態だけ整える。
         private void TickSystemMovementLocked(float dt)
         {
             suppressPlatformVelocityInjectionThisTick = false;
@@ -714,6 +775,7 @@ namespace BC.Base
             wasGroundedLastMotorTick = ground.IsValid;
         }
 
+        // 計算済みの速度を Rigidbody に反映する。必要なら足場速度を重ねる。
         private void ApplyCurrentVelocityToBody(Vector3 velocity, bool injectPlatformVelocity = false)
         {
             if (bodyRigidbody == null)
@@ -827,6 +889,7 @@ namespace BC.Base
                 nextCushionImpactTime = Time.time + cushionImpactCooldown;
         }
 
+        // 衝突面から、壁滑り・接地貼り付き・天井頭打ちを処理する。
         private void ResolveCollisionVelocityConstraints(Collision collision)
         {
             if (collision == null)
@@ -856,6 +919,7 @@ namespace BC.Base
             }
         }
 
+        // 壁へ入り込む速度成分を取り除く。
         private void RemoveIntoWallVelocity(Vector3 surfaceNormal)
         {
             Vector3 wallNormal = Vector3.ProjectOnPlane(surfaceNormal, Vector3.up);
@@ -879,6 +943,7 @@ namespace BC.Base
             return velocity + surfaceNormal * intoSurfaceSpeed;
         }
 
+        // 小さな段差を越えられるか試す。地形の引っかかりを減らすための補助処理。
         private bool TryStepUp(float dt, Vector3 bodyVelocity, bool isGrounded)
         {
             if (!enableStepAssist ||
@@ -992,6 +1057,7 @@ namespace BC.Base
             return true;
         }
 
+        // 自動移動の完了を await できるようにする。到達判定は水平距離で行う。
         public override async UniTask<bool> MoveToAsync(Vector3 targetPosition, float arriveDistance = 0.1f, CancellationToken cancellationToken = default)
         {
             if (IsAlreadyAtAutoMoveTarget(targetPosition, arriveDistance))
@@ -1036,6 +1102,7 @@ namespace BC.Base
             return reachedTarget;
         }
 
+        // 外部から開始された自動移動を中断する。
         public void CancelAutoMove()
         {
             if (activeAutoMoveCancellationTokenSource != null)
@@ -1045,6 +1112,7 @@ namespace BC.Base
             autoMoveReachedTarget = false;
         }
 
+        // 自動移動を始めても安全かを確認する。
         private bool CanStartAutoMove()
         {
             return IsRuntimeReady &&
@@ -1055,6 +1123,7 @@ namespace BC.Base
                    CanApplySystemMovement();
         }
 
+        // すでに目標地点へ十分近いなら、移動処理を始めない。
         private bool IsAlreadyAtAutoMoveTarget(Vector3 targetPosition, float arriveDistance)
         {
             if (bodyRigidbody == null)
@@ -1066,6 +1135,7 @@ namespace BC.Base
             return toTarget.sqrMagnitude <= Mathf.Max(0.0001f, arriveDistance * arriveDistance);
         }
 
+        // 通常入力と自動移動のどちらを使うかをまとめて返す。
         private Vector3 GetDesiredMoveDirection()
         {
             if (autoMoveActive)
@@ -1074,6 +1144,7 @@ namespace BC.Base
             return moveDirection;
         }
 
+        // 自動移動先へ向かう正規化済みベクトルを作る。
         private Vector3 BuildAutoMoveDirection()
         {
             if (bodyRigidbody == null)
@@ -1090,6 +1161,7 @@ namespace BC.Base
             return toTarget.normalized;
         }
 
+        // 既存の自動移動を止めて、新しいキャンセル元を作る。
         private CancellationTokenSource BeginNewAutoMove()
         {
             if (activeAutoMoveCancellationTokenSource != null)
@@ -1099,6 +1171,7 @@ namespace BC.Base
             return activeAutoMoveCancellationTokenSource;
         }
 
+        // 自動移動用のキャンセルソースを安全に破棄する。
         private void CompleteAutoMove(CancellationTokenSource autoMoveCancellationTokenSource)
         {
             if (ReferenceEquals(activeAutoMoveCancellationTokenSource, autoMoveCancellationTokenSource))
@@ -1107,11 +1180,13 @@ namespace BC.Base
             autoMoveCancellationTokenSource.Dispose();
         }
 
+        // 目標到達時に自動移動を終了する。
         private void CompleteAutoMoveTarget()
         {
             autoMoveActive = false;
         }
 
+        // 移動先に他のコライダーが重ならないかを確認する。
         private bool CanOccupyCapsule(Vector3 bodyPosition, float candidateFeetY)
         {
             GetCapsuleGeometry(bodyPosition, out Vector3 capsuleBottom, out Vector3 capsuleTop, out float capsuleRadius);
@@ -1142,6 +1217,7 @@ namespace BC.Base
             return true;
         }
 
+        // 段差を登った後に着地できる地面を再探索する。
         private bool TryFindStepGround(Vector3 candidatePosition, out Vector3 snappedPosition, out GroundInfo stepGround)
         {
             snappedPosition = default;
@@ -1184,6 +1260,7 @@ namespace BC.Base
             return true;
         }
 
+        // Body の位置から、各種カプセル判定に使う幾何形状を作る。
         private void GetCapsuleGeometry(Vector3 bodyPosition, out Vector3 capsuleBottom, out Vector3 capsuleTop, out float capsuleRadius)
         {
             Vector3 lossyScale = transform.lossyScale;
@@ -1200,6 +1277,7 @@ namespace BC.Base
             capsuleTop = capsuleCenter + Vector3.up * cylinderHalfHeight;
         }
 
+        // 接触した相手へ、進行方向ベースの押し返しを与える。
         private void TryApplyContactPush(Collision collision)
         {
             if (!pushRigidbodiesOnContact || isDead || motionLocked)
@@ -1241,6 +1319,7 @@ namespace BC.Base
                 impactResponse.TryApplyImpact(impactData);
         }
 
+        // 押し返しに使う方向を、現在速度や接触法線から決める。
         private Vector3 ResolveContactPushDirection(Collision collision, Vector3 contactNormal)
         {
             Vector3 direction = CurrentVelocity;
@@ -1258,6 +1337,7 @@ namespace BC.Base
             return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
         }
 
+        // クッションで完全停止するときの速度リセットを行う。
         private void ApplyCushionStop()
         {
             ClearPendingCushionHighJump();
@@ -1268,6 +1348,7 @@ namespace BC.Base
             ApplyCurrentVelocityToBody(GetBodyVelocity());
         }
 
+        // クッションで跳ねるときの反応を適用する。
         private void ApplyCushionBounce(CushionImpactResult impactResult)
         {
             ClearPendingCushionHighJump();
@@ -1290,6 +1371,7 @@ namespace BC.Base
             ApplyCurrentVelocityToBody(GetBodyVelocity());
         }
 
+        // バッファされた高跳び入力があれば、着地反応を強化して消費する。
         private bool TryConsumePendingCushionHighJump()
         {
             if (Time.time > pendingCushionHighJumpExpireTime)
@@ -1314,6 +1396,7 @@ namespace BC.Base
             return true;
         }
 
+        // 通常のバウンス速度を、高跳び入力に応じて増幅できるか判定する。
         private bool TryBuildHighJumpBounceVelocity(
             Vector3 normalBounceVelocity,
             float bounceSpeedLimit,
@@ -1342,6 +1425,7 @@ namespace BC.Base
             return true;
         }
 
+        // 高跳び入力の猶予時間を設定し、次の入力を待てるようにする。
         private void ArmPendingCushionHighJump(CushionImpactResult impactResult)
         {
             if (impactResult.ResponseKind != CushionResponseKind.Bounce ||
@@ -1359,6 +1443,7 @@ namespace BC.Base
             pendingCushionHighJumpMultiplier = impactResult.HighJumpSpeedMultiplier;
         }
 
+        // 高跳び待機状態を初期化する。
         private void ClearPendingCushionHighJump()
         {
             pendingCushionHighJumpExpireTime = -999.0f;
@@ -1368,11 +1453,13 @@ namespace BC.Base
             pendingCushionHighJumpMultiplier = 1.0f;
         }
 
+        // 高跳びに使えるジャンプ入力が残っているか確認する。
         private bool HasBufferedHighJumpInput()
         {
             return jumpHeld || jumpBufferCounter > 0.0f;
         }
 
+        // 高跳び用の入力を消費し、ジャンプ遷移へ進める。
         private void ConsumeHighJumpInput()
         {
             jumpBufferCounter = 0.0f;
@@ -1381,6 +1468,7 @@ namespace BC.Base
             StateMachine.ChangeState(EntityMoveState.Jumping);
         }
 
+        // クッション衝撃判定に使うタグを解決する。
         private EntityTagId ResolveCushionImpactTag()
         {
             if (entityMB != null && entityMB.Tag.IsValid)
@@ -1389,17 +1477,20 @@ namespace BC.Base
             return default;
         }
 
+        // 平面速度だけを直接設定する。
         public void SetPlanarVelocity(Vector3 velocity)
         {
             velocity.y = 0.0f;
             planarVelocity = velocity;
         }
 
+        // 垂直速度だけを直接設定する。
         public void SetVerticalVelocity(float velocity)
         {
             verticalVelocity = velocity;
         }
 
+        // 移動の主処理を止めて、演出や拘束状態へ切り替える。
         public void EnterMotionLock(EntityMoveState lockedState)
         {
             if (motionLocked)
@@ -1410,6 +1501,7 @@ namespace BC.Base
             StateMachine.ChangeState(lockedState);
         }
 
+        // motion lock を解除し、保持していた速度を一部戻す。
         public void ExitMotionLock(Vector3 releaseImpulse, float preservedVelocityRate = 0.35f)
         {
             if (!motionLocked)
@@ -1423,6 +1515,7 @@ namespace BC.Base
             preservedVelocityWhenLocked = Vector3.zero;
         }
 
+        // 死亡状態へ入り、入力とシステム移動の両方を止める。
         public void EnterDeadState(ValueModifierTagId moveLockTag)
         {
             isDead = true;
@@ -1436,6 +1529,7 @@ namespace BC.Base
             }
         }
 
+        // リトライ後に死亡状態や拘束を解除して復帰する。
         public void ReviveFromCheckpoint()
         {
             isDead = false;
@@ -1462,18 +1556,21 @@ namespace BC.Base
             PublishRuntimeValues();
         }
 
+        // ValueStore 側の System 移動可否へタグ付きの上書きを掛ける。
         public void SetSystemMovementModifier(ValueModifierTagId tag, bool canMove)
         {
             if (IsRuntimeReady && SceneKernel.ValueStore != null)
                 SceneKernel.ValueStore.SetBoolModifier(Entity, ValueKeys.Move.CanMoveBySystem, tag, canMove);
         }
 
+        // System 移動可否のタグ上書きを外す。
         public void RemoveSystemMovementModifier(ValueModifierTagId tag)
         {
             if (IsRuntimeReady && SceneKernel.ValueStore != null)
                 SceneKernel.ValueStore.RemoveBoolModifier(Entity, ValueKeys.Move.CanMoveBySystem, tag);
         }
 
+        // Inspector デバッグ用の値を現在状態へ同期する。
         private void PublishRuntimeValues()
         {
             RefreshMoveGateDebugValues();
@@ -1491,6 +1588,7 @@ namespace BC.Base
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.CanMoveBySystem, currentCanMoveBySystem);
         }
 
+        // ValueStore のゲート状態をデバッグ表示へ反映する。
         private void RefreshMoveGateDebugValues()
         {
             currentCanMoveByInput = CanReceiveMoveInput();
@@ -1510,6 +1608,7 @@ namespace BC.Base
             lowFrictionContactMaterial = null;
         }
 
+        // Rigidbody / Collider / 古い CharacterController を一度だけ解決する。
         private void EnsureMovementBody()
         {
             if (bodyRigidbody == null)

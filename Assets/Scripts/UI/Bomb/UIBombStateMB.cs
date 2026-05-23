@@ -66,6 +66,12 @@ namespace BC.UI
             if (gameLogicManager == null)
                 TryBindGameLogic();
 
+            if (gameLogicManager != null && !gameLogicManager.HasAnyActiveSceneBomb())
+            {
+                ResetToInitialDisplayState();
+                return;
+            }
+
             if (bomb == null)
             {
                 if (hadBombLastFrame)
@@ -118,6 +124,26 @@ namespace BC.UI
             // 爆発範囲設定
             displayedImpactExplosionRatio = bomb.ImpactExplosionRatio;
             bombImpactExplosionSlider.value = displayedImpactExplosionRatio;
+        }
+
+        private void ResetToInitialDisplayState()
+        {
+            bomb = null;
+            lastKnownBomb = null;
+            hadBombLastFrame = false;
+            postExplodeImpactHoldRemaining = 0.0f;
+            displayedImpactExplosionRatio = 0.0f;
+
+            if (bombTimerSlider != null)
+                bombTimerSlider.value = 1.0f;
+
+            if (bombImpactExplosionSlider != null)
+                bombImpactExplosionSlider.value = 0.0f;
+
+            if (TimerIconStoppedClipSource != null && timerIconAnimationPlayer != null)
+                timerIconAnimationPlayer.Play(TimerIconStoppedClipSource, SpriteAnimationPlayMode.Loop);
+
+            isFuseStarted = false;
         }
 
         private void HandlePlayerSpawned(PlayerMB player)

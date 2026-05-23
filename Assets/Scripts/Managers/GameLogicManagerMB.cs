@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading;
 using BC.Animation;
 using BC.Base;
 using BC.Bomb;
@@ -38,12 +39,17 @@ namespace BC.Manager
                 return;
             }
             Instance = this;
+
+            // debug用のstageIndexを更新する
+            currentGameStage = debugStageIndex;
         }
         [Header("References")]
         [SerializeField] private UIFadeEffectMB uiFadeEffectMB; // 画面フェードを担当する UI 側の制御。
         [SerializeField] private UIGameSceneManagerMB uiGameSceneManagerMB; // ゲーム中 UI 全体の表示/非表示を担う。
+        [SerializeField] private UIIntroPathSkipMB introPathSkipUI; // Intro path 演出のステージ名/スキップ UI。
         [SerializeField] private EntityMB playerPrefab; // スポーン用プレイヤー prefab。
         [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用に直接参照する stage instance。
+        [Header("Debug")][SerializeField] private int debugStageIndex; // デバッグ用に直接指定する stage index。
         // 現在のゲーム進行にぶら下がる主要参照群。
         private BombMB currentBomb;
 
@@ -68,13 +74,20 @@ namespace BC.Manager
         public EntityRef SelfEntityRef => gameLogicManagerRef; // 外部参照用の self entity。
         private BonusObjectMB currentBonusObject; // 現在の bonus object。
         private int currentGameStage;
+        private string currentStageName = string.Empty;
         private readonly Stack<RetryCheckpointSnapshot> retryCheckpointStack = new();
+        private bool hasStartedAnyBombFuseThisStage;
         private bool resetArmed;
 
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
         public RetryActionMode CurrentRetryActionMode => ResolveRetryActionMode();
         public bool HasRetryCheckpoint => retryCheckpointStack.Count > 0;
+        public bool HasStartedAnyBombFuseThisStage => hasStartedAnyBombFuseThisStage;
+        public bool ShouldAutoShowResetPrompt =>
+            IsRetryActionAvailable() &&
+            ResolveRetryActionMode() == RetryActionMode.ResetStage &&
+            !hasStartedAnyBombFuseThisStage;
 
         public bool AreAllSceneBombsExploded()
         {
@@ -90,6 +103,38 @@ namespace BC.Manager
             }
 
             return true;
+        }
+
+        // UI 表示向け: 現在ステージに「未爆発で有効な爆弾」が残っているかを返す。
+        public bool HasAnyActiveSceneBomb()
+        {
+            if (currentMapRuntime == null || currentMapRuntime.Bombs == null || currentMapRuntime.Bombs.Count == 0)
+                return false;
+
+            for (int i = 0; i < currentMapRuntime.Bombs.Count; i++)
+            {
+                BombMB bomb = currentMapRuntime.Bombs[i];
+                if (bomb != null && bomb.gameObject.activeInHierarchy && !bomb.HasExploded)
+                    return true;
+            }
+
+            return false;
+        }
+
+        // ボーナス取得判定向け: シーン内に fuse 中(起動中)の爆弾が 1 つでもあるかを返す。
+        public bool HasAnyFusingSceneBomb()
+        {
+            if (currentMapRuntime == null || currentMapRuntime.Bombs == null || currentMapRuntime.Bombs.Count == 0)
+                return false;
+
+            for (int i = 0; i < currentMapRuntime.Bombs.Count; i++)
+            {
+                BombMB bomb = currentMapRuntime.Bombs[i];
+                if (bomb != null && bomb.gameObject.activeInHierarchy && bomb.FuseStarted && !bomb.HasExploded)
+                    return true;
+            }
+
+            return false;
         }
 
         // 現在の状態から、どのリトライ操作を提示すべきかを返す。
@@ -110,9 +155,8 @@ namespace BC.Manager
             if (retryCheckpointStack.Count > 0)
                 return RetryActionMode.ReloadCheckpoint;
 
-            return resetArmed || AreAllSceneBombsExploded()
-                ? RetryActionMode.ResetStage
-                : RetryActionMode.None;
+            // checkpoint が無いときは、ゲーム進行中(Setup/Fuse/Exploded)なら常に Reset を許可する。
+            return RetryActionMode.ResetStage;
         }
 
         // リトライを許可するゲーム状態かを判断する。
@@ -122,13 +166,22 @@ namespace BC.Manager
             if (stateManager == null)
                 return false;
 
-            // ゴールゲート破壊後は checkpoint/retry を案内しない。
-            if (IsGoalGateOpened())
+            // ゴールゲート破壊後は通常の checkpoint/retry を案内しないが、
+            // 破壊後にプレイヤーが死亡した場合だけは救済として retry を許可する。
+            if (IsGoalGateOpened() && !IsPlayerDeadForRetry())
                 return false;
 
             return stateManager.CurrentState == GameState.SetupPlaying ||
                    stateManager.CurrentState == GameState.FusePlaying ||
-                   stateManager.CurrentState == GameState.Exploded;
+                     stateManager.CurrentState == GameState.Exploded ||
+                     stateManager.CurrentState == GameState.GameOver;
+        }
+
+        private bool IsPlayerDeadForRetry()
+        {
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            PlayerMoveController moveController = resolvedPlayer != null ? resolvedPlayer.PlayerMoveController : null;
+            return moveController != null && moveController.MoveMotor != null && moveController.MoveMotor.IsDead;
         }
 
         // UI などからリトライを要求されたときの入口。
@@ -155,6 +208,15 @@ namespace BC.Manager
                 Debug.LogError($"{nameof(GameLogicManagerMB)}: retry checkpoint capture prerequisites are missing.", this);
                 return;
             }
+
+            // Fuse 開始後は checkpoint を上書きしない。
+            // 再所持時にここを許可すると、Reload の復帰地点が後ろへずれてしまう。
+            if (hasStartedAnyBombFuseThisStage || targetBomb.FuseStarted || targetBomb.HasExploded)
+            {
+                SetCurrentBomb(targetBomb);
+                return;
+            }
+
             // リトライチェックポイントをキャプチャしてスタックに積む。これには、ステージの状態、プレイヤーの位置と回転、そしてターゲットとなる爆弾の参照が含まれる。
             StageCheckpointSnapshot stageCheckpoint = stageManager.CaptureStageCheckpointSnapshot();
             if (!stageCheckpoint.IsValid)
@@ -292,7 +354,7 @@ namespace BC.Manager
         {
             if (newState == GameState.Starting)
             {
-                LoadStageAsync(0).Forget(); // 最初のステージをロードする
+                LoadStageAsync(currentGameStage).Forget(); // 最初のステージをロードする
             }
             else if (newState == GameState.Intro)
             {
@@ -468,11 +530,53 @@ namespace BC.Manager
             uiGameSceneManagerMB.ShowTopPanel(false, 0f); // ゲームシーンのUIを表示する
             uiGameSceneManagerMB.ShowBottomPanel(false, 0f); // ゲームシーンのUIを表示する
             await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
-            await CameraManager.Instance.PlayPathAsync(currentCameraPath, playerRef, async () =>
+
+            bool introCompletedActionInvoked = false;
+            async UniTask InvokeIntroCompletedActionAsync()
             {
-                // カメラパスの再生が完了した後の処理
+                if (introCompletedActionInvoked)
+                    return;
+
+                introCompletedActionInvoked = true;
                 await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードインさせる
-            });
+            }
+
+            UniTask introPathTask = CameraManager.Instance.PlayPathAsync(currentCameraPath, playerRef, async () =>
+            {
+                await InvokeIntroCompletedActionAsync();
+            }).Preserve();
+
+            CancellationTokenSource skipWaitCts = null;
+            UniTask introSkipTask = UniTask.Never(CancellationToken.None);
+
+            if (introPathSkipUI != null)
+            {
+                introPathSkipUI.SetStageName(currentStageName);
+                introPathSkipUI.SetStageIndex(currentGameStage + 1);
+                introPathSkipUI.Show();
+                skipWaitCts = new CancellationTokenSource();
+                introSkipTask = introPathSkipUI.WaitForSkipHoldAsync(skipWaitCts.Token);
+            }
+
+            int completedIndex = await UniTask.WhenAny(introPathTask, introSkipTask);
+
+            // Skip が先に成立したときは path 再生を即時キャンセルし、
+            // onComplete の async action をここで実行して終了フローを揃える。
+            if (completedIndex == 1)
+            {
+                CameraManager.Instance.CancelPath();
+                await InvokeIntroCompletedActionAsync();
+                await introPathTask;
+            }
+
+            if (skipWaitCts != null)
+            {
+                skipWaitCts.Cancel();
+                skipWaitCts.Dispose();
+            }
+
+            if (introPathSkipUI != null)
+                await introPathSkipUI.HideAsync();
 
             // Intro path 再生が終わったら、SetupPlaying まで待たずに presentation を解除する。
             // これで Player Spawn 演出中は TPS カメラが有効になる。
@@ -659,6 +763,8 @@ namespace BC.Manager
         {
             if (bomb != currentBomb) return; // currentBomb以外の爆弾が起爆した場合は無視する
 
+            hasStartedAnyBombFuseThisStage = true;
+
             GameStateManagerMB.Instance.ChangeState(GameState.FusePlaying);
             OnStartBombFuse?.Invoke(currentBomb); // 爆弾のカウントダウンが開始されたことを通知するイベントを発火する
             timeSinceStartBomb = 0; // 爆弾のカウントダウン開始からの経過時間をリセットする
@@ -735,6 +841,9 @@ namespace BC.Manager
             currentCameraPath = result.cameraPath;
             currentGodHand = result.godHandObjects.Count > 0 ? result.godHandObjects[0] : null;
             currentBonusObject = result.bonusObject;
+            currentStageName = string.IsNullOrWhiteSpace(result.StageName)
+                ? $"Stage {currentGameStage + 1}"
+                : result.StageName;
             SetCurrentBomb(result.bombs.Count > 0 ? result.bombs[0] : null);
             currentClearTimeThreshold = result.ClearTimeThreshold;
             ResetRetryActionContext();
@@ -862,6 +971,7 @@ namespace BC.Manager
         private void ResetRetryActionContext()
         {
             retryCheckpointStack.Clear();
+            hasStartedAnyBombFuseThisStage = false;
             resetArmed = false;
             timeSinceStartBomb = 0f;
             StageManagerMB.Instance?.ClearStageCheckpoint();

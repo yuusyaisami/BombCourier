@@ -11,6 +11,7 @@ namespace BC.Manager
     // ステージ prefab のロード、ランタイム参照の解決、チェックポイント操作をまとめる stage 司令塔。
     public struct StageLoadResult
     {
+        public string StageName; // ステージ表示名 (Intro UI などで使う)
         public List<BombMB> bombs; // ステージ内の爆弾のリスト
         public List<PlayerSpawnPointMB> spawnPoints; // ステージ内のプレイヤースポーンポイントのリスト
         public CameraPathSequenceAuthoringMB cameraPath; // カメラパス
@@ -90,6 +91,7 @@ namespace BC.Manager
 
             return new StageLoadResult
             {
+                StageName = data != null ? data.stageName : string.Empty,
                 bombs = new List<BombMB>(mapRuntime.Bombs),
                 spawnPoints = new List<PlayerSpawnPointMB>(mapRuntime.SpawnPoints),
                 cameraPath = mapRuntime.CameraPath,
@@ -162,6 +164,7 @@ namespace BC.Manager
         {
             return new StageLoadResult
             {
+                StageName = string.Empty,
                 bombs = new List<BombMB>(),
                 spawnPoints = new List<PlayerSpawnPointMB>(),
                 cameraPath = null,

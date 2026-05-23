@@ -1,0 +1,1950 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6430549957021245030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 336333623827802353}
+  - component: {fileID: 5365470571069668383}
+  - component: {fileID: 1302941564186950030}
+  - component: {fileID: 3754950426013316085}
+  - component: {fileID: 3487397158024839956}
+  - component: {fileID: 622733477899708039}
+  - component: {fileID: 1236832310485659635}
+  - component: {fileID: 3904174564077437625}
+  - component: {fileID: 1442804711417625640}
+  - component: {fileID: 2584835043207313473}
+  - component: {fileID: 5209755881118666292}
+  - component: {fileID: 2465475233750596340}
+  - component: {fileID: 4046345699374132947}
+  m_Layer: 6
+  m_Name: Ko-Usagi 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &336333623827802353
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8, y: 10, z: -1.25}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3740696063375159880}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5365470571069668383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e835f99c29e6964bb5eb0764d32e3f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.EntityMB
+  tagReference:
+    id: 0
+    path: 
+  flags: 0
+  autoInstallRigidbodySupportRiders: 1
+--- !u!114 &1302941564186950030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50a4b8dc2835a2144983d5c2ec5281fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.NPCObjectMB
+  interactionTransform: {fileID: 336333623827802353}
+  promptAnchor: {fileID: 336333623827802353}
+  visualTarget: {fileID: 3754950426013316085}
+  maxInteractionDistance: 2.5
+  maxInteractionAngle: 65
+  requiredHoldDuration: 0
+  promptWorldOffset: {x: 0, y: 1.5, z: 0}
+  requestInteractorToFaceTarget: 1
+  faceInteractorOnInteraction: 1
+  facingController: {fileID: 1236832310485659635}
+  interactionAction:
+    _steps:
+    - rid: 30532873569173524
+    - rid: 30532873569173525
+    - rid: 30532873569173526
+    - rid: 30532873569173685
+    - rid: 30532873569173856
+    - rid: 30532873569173942
+    - rid: 30532873569174096
+    - rid: 30532873569174165
+    - rid: 30532873569174285
+    - rid: 30532873569174405
+    - rid: 30532873569174508
+    - rid: 30532873827123283
+    - rid: 30532873827123812
+    - rid: 30532873827123369
+    - rid: 30532873569173527
+  logInteractionUntilTalkHooked: 1
+  interactionCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 30532873569173524
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 0
+            path: 
+          speakerName: "\u30D0\u30CB\u30E9"
+          dialogueText: "\u3053\u3093\u306B\u3061\u306F\u3001\u56DA\u308F\u308C\u306E\u30CD\u30BA\u30DF\u3055\u3093!"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569173525
+      type: {class: ShowTalkChoiceStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: "\u30CD\u30BA\u30DF"
+        options:
+        - stableId: 4524addef11a4c6eb51951536a094b3e
+          displayText: "\u3042\u306A\u305F\u306F\u3060\u308C\uFF1F\uFF01"
+          outcomeKind: 1
+          inlineAction:
+            _steps:
+            - rid: 30532873569173528
+            - rid: 30532873569173548
+          valueStoreWrite:
+            storeScope: 0
+            target:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            valueKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+            boolValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              entityAlive:
+                entity:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  targetReference:
+                    mode: 0
+                    selection: 0
+                    tag:
+                      id: 0
+                      path: 
+                  fallbackKind: 0
+              compareFloat:
+                left:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  literal: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  distance:
+                    fromEntity:
+                      sourceKind: 0
+                      evaluationMode: 0
+                      failurePolicy: 0
+                      entityValue:
+                        entitySourceKind: 0
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      localValue:
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      targetReference:
+                        mode: 0
+                        selection: 0
+                        tag:
+                          id: 0
+                          path: 
+                      fallbackKind: 0
+                    toEntity:
+                      sourceKind: 0
+                      evaluationMode: 0
+                      failurePolicy: 0
+                      entityValue:
+                        entitySourceKind: 0
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      localValue:
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      targetReference:
+                        mode: 0
+                        selection: 0
+                        tag:
+                          id: 0
+                          path: 
+                      fallbackKind: 0
+                  fallbackValue: 0
+                right:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  literal: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  distance:
+                    fromEntity:
+                      sourceKind: 0
+                      evaluationMode: 0
+                      failurePolicy: 0
+                      entityValue:
+                        entitySourceKind: 0
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      localValue:
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      targetReference:
+                        mode: 0
+                        selection: 0
+                        tag:
+                          id: 0
+                          path: 
+                      fallbackKind: 0
+                    toEntity:
+                      sourceKind: 0
+                      evaluationMode: 0
+                      failurePolicy: 0
+                      entityValue:
+                        entitySourceKind: 0
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      localValue:
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      targetReference:
+                        mode: 0
+                        selection: 0
+                        tag:
+                          id: 0
+                          path: 
+                      fallbackKind: 0
+                  fallbackValue: 0
+                comparison: 0
+                epsilon: 0
+              fallbackValue: 0
+            intValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 0
+            floatValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              distance:
+                fromEntity:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  targetReference:
+                    mode: 0
+                    selection: 0
+                    tag:
+                      id: 0
+                      path: 
+                  fallbackKind: 0
+                toEntity:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  targetReference:
+                    mode: 0
+                    selection: 0
+                    tag:
+                      id: 0
+                      path: 
+                  fallbackKind: 0
+              fallbackValue: 0
+            stringValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 
+            entityValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              targetReference:
+                mode: 0
+                selection: 0
+                tag:
+                  id: 0
+                  path: 
+              fallbackKind: 0
+            faceExpressionValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 0
+            entityMoveStateValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 0
+            shapeExpressionValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 0
+        - stableId: 2760fa77e73943d5aa30f53fb1b4be9e
+          displayText: "\u3053\u3053\u306F\u3069\u3053\uFF1F"
+          outcomeKind: 1
+          inlineAction:
+            _steps:
+            - rid: 30532873569173529
+            - rid: 30532873569173530
+          valueStoreWrite:
+            storeScope: 0
+            target:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            valueKind: 0
+            key:
+              id: 0
+              path: 
+              valueTypeName: 
+            boolValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              entityAlive:
+                entity:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  targetReference:
+                    mode: 0
+                    selection: 0
+                    tag:
+                      id: 0
+                      path: 
+                  fallbackKind: 0
+              compareFloat:
+                left:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  literal: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  distance:
+                    fromEntity:
+                      sourceKind: 0
+                      evaluationMode: 0
+                      failurePolicy: 0
+                      entityValue:
+                        entitySourceKind: 0
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      localValue:
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      targetReference:
+                        mode: 0
+                        selection: 0
+                        tag:
+                          id: 0
+                          path: 
+                      fallbackKind: 0
+                    toEntity:
+                      sourceKind: 0
+                      evaluationMode: 0
+                      failurePolicy: 0
+                      entityValue:
+                        entitySourceKind: 0
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      localValue:
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      targetReference:
+                        mode: 0
+                        selection: 0
+                        tag:
+                          id: 0
+                          path: 
+                      fallbackKind: 0
+                  fallbackValue: 0
+                right:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  literal: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  distance:
+                    fromEntity:
+                      sourceKind: 0
+                      evaluationMode: 0
+                      failurePolicy: 0
+                      entityValue:
+                        entitySourceKind: 0
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      localValue:
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      targetReference:
+                        mode: 0
+                        selection: 0
+                        tag:
+                          id: 0
+                          path: 
+                      fallbackKind: 0
+                    toEntity:
+                      sourceKind: 0
+                      evaluationMode: 0
+                      failurePolicy: 0
+                      entityValue:
+                        entitySourceKind: 0
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      localValue:
+                        key:
+                          id: 0
+                          path: 
+                          valueTypeName: 
+                      targetReference:
+                        mode: 0
+                        selection: 0
+                        tag:
+                          id: 0
+                          path: 
+                      fallbackKind: 0
+                  fallbackValue: 0
+                comparison: 0
+                epsilon: 0
+              fallbackValue: 0
+            intValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 0
+            floatValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              distance:
+                fromEntity:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  targetReference:
+                    mode: 0
+                    selection: 0
+                    tag:
+                      id: 0
+                      path: 
+                  fallbackKind: 0
+                toEntity:
+                  sourceKind: 0
+                  evaluationMode: 0
+                  failurePolicy: 0
+                  entityValue:
+                    entitySourceKind: 0
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  localValue:
+                    key:
+                      id: 0
+                      path: 
+                      valueTypeName: 
+                  targetReference:
+                    mode: 0
+                    selection: 0
+                    tag:
+                      id: 0
+                      path: 
+                  fallbackKind: 0
+              fallbackValue: 0
+            stringValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 
+            entityValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              targetReference:
+                mode: 0
+                selection: 0
+                tag:
+                  id: 0
+                  path: 
+              fallbackKind: 0
+            faceExpressionValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 0
+            entityMoveStateValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 0
+            shapeExpressionValue:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              literal: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              fallbackValue: 0
+        defaultSelectionIndex: 0
+        wrapSelection: 1
+    - rid: 30532873569173526
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 0
+            path: 
+          speakerName: "\u30D0\u30CB\u30E9"
+          dialogueText: "\u79C1\u306F\u306D\u3001\u77AC\u9593\u3092\u5207\u308A\u53D6\u3063\u3066\u3001\u305D\u308C\u3092\u5199\u3059\n\u305D\u3057\u3066\u305D\u308C\u3092\u98FE\u3063\u3066\u308B\u306E\uFF01"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569173527
+      type: {class: HideTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        requestData:
+          duration: 0.3
+          applyTalkStateOverride: 0
+          talkStateId: 0
+    - rid: 30532873569173528
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 0
+            path: 
+          speakerName: "\u30D0\u30CB\u30E9"
+          dialogueText: "\u8A00\u308F\u305A\u3082\u304C\u306A\u3001\u82B8\u8853\u5BB6\u306E\u30D0\u30CB\u30E9\u3088\uFF01\u3046\u3093\uFF01"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569173529
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 0
+            path: 
+          speakerName: "\u30D0\u30CB\u30E9"
+          dialogueText: "\u3053\u3053\u306F\u79C1\u306E\u30A2\u30C8\u30EA\u30A8\u3088\uFF01\n"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569173530
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 0
+            path: 
+          speakerName: "\u30CD\u30BA\u30DF"
+          dialogueText: "(\u305D\u3046\u3060\u3063\u305F\u306E\u304B)"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569173548
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 2003
+            path: Npc.Nezumi
+          speakerName: 
+          dialogueText: "(\u8A00\u308F\u305A\u3082\u304C\u306A...? \u3067\u3082\u305D\u308C\u306B\u89E6\u308C\u305F\u3089\u53EF\u54C0\u305D\u3046\u3060\u3088\u306D)"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 1
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 1
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569173685
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 20
+          speakerCharacter:
+            id: 2001
+            path: Npc.Vanilla
+          speakerName: 
+          dialogueText: "\u3068 \u304F \u306B\uFF01\n\u4EBA\u304C\u5931\u6557\u3057\u305F\u3068\u3053\u308D\u3092\u5199\u3059\u306E\u304C\u3068\u3066\u3082\u597D\u304D\u306A\u306E\uFF01"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569173856
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 2003
+            path: Npc.Nezumi
+          speakerName: 
+          dialogueText: "(\u3084\u3070\u3044\u4EBA... \u82B8\u8853\u5BB6\u306E\u6BBB\u3092\u88AB\u3063\u305F\u30B5\u30C7\u30A3\u30B9\u30C8\u3063\u3066\u3053\u3068\u306A\u306E\u304B!?)"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569173942
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 2001
+            path: Npc.Vanilla
+          speakerName: 
+          dialogueText: "\u305D\u3046\u306D\u3048... \u6B21\u306B\u3042\u306A\u305F\u306F\u305D\u3053\u306E\u5D16\u304B\u3089\u3001\u7206\u5F3E\u3092\u6301\u3061\u306A\u304C\u3089\u843D\u3061\u3066\u3001\n\u843D\u4E0B\u306E\u885D\u6483\u3067\u843D\u3068\u3057\u3061\u3083\u3063\u3066\u3001\u7206\u6B7B\u3059\u308B\u308F\uFF01\u304D\u3063\u3068\u306D\uFF01"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569174096
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 2003
+            path: Npc.Nezumi
+          speakerName: 
+          dialogueText: "(\u9055\u3063\u305F\uFF01\u5371\u967A\u3092\u77E5\u3089\u305B\u3066\u304F\u308C\u308B\u512A\u3057\u3044\u4EBA\u3060\uFF01)"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569174165
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 50
+          speakerCharacter:
+            id: 2001
+            path: Npc.Vanilla
+          speakerName: 
+          dialogueText: "\u3044\u3044\u3053\u3068\uFF1F\u79C1\u304C\u4E88\u8A00\u3057\u305F\u901A\u308A\u306B\u3057\u306A\u3055\u3044\u3088\uFF1F\n\u3053\u308C\u306F\u547D\u4EE4\u3060\u304B\u3089\u306D\uFF1F\u7D76\u5BFE\u3060\u3088\uFF01"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569174285
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 10
+          speakerCharacter:
+            id: 2003
+            path: Npc.Nezumi
+          speakerName: 
+          dialogueText: "(\u9055\u3063\u305F! \u3084\u3063\u3071\u308A\u3084\u3070\u3044\u4EBA\u3060)"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569174405
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 20
+          speakerCharacter:
+            id: 2001
+            path: Npc.Vanilla
+          speakerName: 
+          dialogueText: "\u7D76\u5BFE\u306B\uFF01\u30B5\u30D6\u30EC\u30AF\u30C3\u30B7\u30E7\u30F3\u306E\u4E0A\u306B\u7740\u5730\u3057\u3061\u3083\u3060\u3081\u3088\uFF01\n"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873569174508
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 0
+          speakerCharacter:
+            id: 2001
+            path: Npc.Vanilla
+          speakerName: 
+          dialogueText: "\u3061\u306A\u307F\u306B\u30B5\u30D6\u30EC\u30AF\u30C3\u30B7\u30E7\u30F3\u3063\u3066\u3044\u3046\u306E\u306F\n\u79C1\u306E\u96A3\u306B\u3042\u308B\u5974\u306D\uFF01\u6301\u3066\u308B\u3084\u3064\uFF01"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873827123283
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 50
+          speakerCharacter:
+            id: 2003
+            path: Npc.Nezumi
+          speakerName: 
+          dialogueText: "(\u306A\u308B\u307B\u3069\uFF01\u30AF\u30C3\u30B7\u30E7\u30F3\u306E\u4E0A\u306B\u7740\u5730\u3059\u308C\u3070\u3001\u5927\u4E08\u592B\u306A\u306E\u304B\uFF01)"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873827123369
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 20
+          speakerCharacter:
+            id: 2001
+            path: Npc.Vanilla
+          speakerName: 
+          dialogueText: "\u3048\u3048\uFF01\u3059\u3079\u3066\u306E\u4EBA\u9593\u306F\u82B8\u8853\u5BB6\u3088"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 30532873827123812
+      type: {class: ShowTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        talkRequestData:
+          talkStateId: 20
+          speakerCharacter:
+            id: 2003
+            path: Npc.Nezumi
+          speakerName: 
+          dialogueText: "\u3042\u308A\u304C\u3068\u3046\uFF01\u53C2\u8003\u306B\u3059\u308B\u306D\uFF01"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          isWaitingActionCompleted: 0
+          useOnStartTalkAction: 0
+          onStartTalkAction:
+            _steps: []
+          useOnCompleteTalkAction: 0
+          onCompleteTalkAction:
+            _steps: []
+          actionToggleVersion: 1
+--- !u!114 &3754950426013316085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e314f8ef1b0e0184f98805fee1480d0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.InteractionVisualTargetMB
+  renderers:
+  - {fileID: 2504732973763791089}
+  - {fileID: 1220527828118814092}
+  - {fileID: 8998172288280492070}
+  - {fileID: 8545821119924261868}
+--- !u!114 &3487397158024839956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d596b20ab2141d1b2a856c3e782ba99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.FaceExpressionUvControllerMB
+  remapper: {fileID: 622733477899708039}
+  uvSet: {fileID: 11400000, guid: cf3b0ddd26f78034c8ff7247a1fe332c, type: 2}
+  bindToRuntimeFaceExpression: 1
+  enableBlink: 1
+  minBlinkInterval: 2.5
+  maxBlinkInterval: 5
+  blinkDuration: 0.08
+--- !u!114 &622733477899708039
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e49a1fec2a155641b83b301fc53c6a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.MeshUvRectRemapperMB
+  skinnedMeshRenderer: {fileID: 8998172288280492070}
+  meshFilter: {fileID: 0}
+--- !u!114 &1236832310485659635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1df4b4227f04b29878ca66db387d81f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.EntityFacingControllerMB
+  facingRoot: {fileID: 336333623827802353}
+  defaultTurnSharpness: 16
+  frontDirection: {x: -1, y: 0, z: 0}
+  usePlanarYawOnly: 1
+--- !u!114 &3904174564077437625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d1fa00a87f2e25418c6fa8688bd5951, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Animation.EntityAnimationMB
+  animator: {fileID: 7280547723597604914}
+--- !u!114 &1442804711417625640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fccd8195db1499247b59d788972164d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Managers.TalkAdapterMB
+  entityMB: {fileID: 5365470571069668383}
+  entityAnimation: {fileID: 3904174564077437625}
+  sceneKernelMB: {fileID: 0}
+  characterId:
+    id: 0
+    path: 
+  defaultIdleTalkState: 10
+  statePresentations:
+  - talkStateId: 10
+    applyFaceExpression: 1
+    faceExpressionId: 0
+    applyShapeExpression: 0
+    shapeExpressionId: 0
+    parameterWrites:
+    - writeMode: 0
+      parameterName: isNormal
+      boolValue: 0
+      floatValue: 0
+      intValue: 0
+  - talkStateId: 20
+    applyFaceExpression: 1
+    faceExpressionId: 2
+    applyShapeExpression: 0
+    shapeExpressionId: 0
+    parameterWrites: []
+  activityPresentation:
+    talkingBoolParameterNames:
+    - isTalking
+    applyTalkingShapeExpression: 1
+    talkingShapeExpressionId: 50
+    applyNonTalkingShapeExpression: 1
+    nonTalkingShapeExpressionId: 10
+    restoreStateShapeExpressionOnStop: 1
+--- !u!136 &2584835043207313473
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &5209755881118666292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e1437d95c3e4265a131ca37372227d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.NPCNeckLookControllerMB
+  facingController: {fileID: 1236832310485659635}
+  npcObject: {fileID: 1302941564186950030}
+  neckBone: {fileID: 7583991790868997571}
+  headBone: {fileID: 3613115078770182630}
+  lookOrigin: {fileID: 3740696063375159880}
+  suspendWhileNpcInteractionActive: 1
+  maxTrackingDistance: 4
+  maxTrackingAngle: 75
+  targetWorldOffset: {x: 0, y: 1.25, z: 0}
+  turnSharpness: 10
+  maxYawAngle: 40
+  upPitchAngle: 25
+  downPitchAngle: 15
+  neckYawWeight: 0.55
+  neckPitchWeight: 0.6
+  headYawWeight: 0.45
+  headPitchWeight: 0.4
+  localYawAxis: {x: 0, y: 1, z: 0}
+  localPitchAxis: {x: 1, y: 0, z: 0}
+  drawDebugGizmos: 1
+--- !u!114 &2465475233750596340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7f2b6ede49d9bb4e8fb2ebeecb2532e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.ShapeBlendMappingMB
+  bindings:
+  - alias: Basic
+    skinnedMeshRenderer: {fileID: 8545821119924261868}
+    blendShapeName: Mouth_Basis2
+    defaultWeight: 100
+  - alias: Smile
+    skinnedMeshRenderer: {fileID: 8545821119924261868}
+    blendShapeName: Mouth_Smile
+    defaultWeight: 0
+  - alias: Open
+    skinnedMeshRenderer: {fileID: 8545821119924261868}
+    blendShapeName: Mouth_Open
+    defaultWeight: 0
+  resetToDefaultOnDisable: 1
+--- !u!114 &4046345699374132947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430549957021245030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad3ef8d6e10ad5b47b3c9d30a53d8875, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Character.ShapeExpressionControllerMB
+  blendMapping: {fileID: 2465475233750596340}
+  bindToRuntimeShapeExpression: 1
+  expressions:
+  - expressionId: 10
+    playMode: 0
+    resetUnspecifiedToDefaultWeights: 0
+    enterTransition:
+      duration: 0.25
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    steps:
+    - duration: 0
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      points:
+      - alias: Basic
+        weight: 100
+      - alias: Smile
+        weight: 0
+      - alias: Open
+        weight: 0
+  - expressionId: 50
+    playMode: 1
+    resetUnspecifiedToDefaultWeights: 0
+    enterTransition:
+      duration: 0.25
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    steps:
+    - duration: 0.2
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      points:
+      - alias: Basic
+        weight: 0
+      - alias: Smile
+        weight: 0
+      - alias: Open
+        weight: 0
+    - duration: 0.2
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 2
+          outSlope: 2
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      points:
+      - alias: Basic
+        weight: 0
+      - alias: Smile
+        weight: 92.7
+      - alias: Open
+        weight: 0
+  - expressionId: 30
+    playMode: 0
+    resetUnspecifiedToDefaultWeights: 0
+    enterTransition:
+      duration: 0
+      ease:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    steps:
+    - duration: 0.25
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      points:
+      - alias: Basic
+        weight: 0
+      - alias: Smile
+        weight: 0
+      - alias: Open
+        weight: 100
+  - expressionId: 20
+    playMode: 0
+    resetUnspecifiedToDefaultWeights: 0
+    enterTransition:
+      duration: 0
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    steps:
+    - duration: 0.25
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      points:
+      - alias: Basic
+        weight: 0
+      - alias: Smile
+        weight: 0
+      - alias: Open
+        weight: 100
+  - expressionId: 40
+    playMode: 0
+    resetUnspecifiedToDefaultWeights: 0
+    enterTransition:
+      duration: 0
+      ease:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    steps:
+    - duration: 0.25
+      ease:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      points:
+      - alias: Basic
+        weight: 0
+      - alias: Smile
+        weight: 100
+      - alias: Open
+        weight: 0
+  debugExpressionId: 0
+--- !u!1001 &3774902957587355043
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 336333623827802353}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7288949955035441919, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -5845994456496264615, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -4396642182433536433, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: 'm_BlendShapeWeights.Array.data[0]'
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: -4396642182433536433, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: 'm_BlendShapeWeights.Array.data[1]'
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -4396642182433536433, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: 'm_BlendShapeWeights.Array.data[2]'
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -2931511143343592443, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -2839925501097561738, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -2225523919674767326, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -1657490407779299950, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -1018664272722485354, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -516098083770646512, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -259972160606440404, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 45214963226713483, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 391817288610566898, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 741808593568725213, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Name
+      value: Ko-Usagi
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1877460077775189951, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1900260166295449417, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3097306422619773705, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3774783274655595475, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: e61c2d2b183a1b14e87c634b3284f135, type: 2}
+    - target: {fileID: 6411343924958721569, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 6825028030569059473, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7036213049465896255, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7192638712889041440, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8416272007918961125, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+--- !u!137 &1220527828118814092 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 2635460834990549039, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+  m_PrefabInstance: {fileID: 3774902957587355043}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &2504732973763791089 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1630794972795428178, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+  m_PrefabInstance: {fileID: 3774902957587355043}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3613115078770182630 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 452465768997887045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+  m_PrefabInstance: {fileID: 3774902957587355043}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3740696063375159880 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+  m_PrefabInstance: {fileID: 3774902957587355043}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &7280547723597604914 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+  m_PrefabInstance: {fileID: 3774902957587355043}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7583991790868997571 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -2495866761356152736, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+  m_PrefabInstance: {fileID: 3774902957587355043}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &8545821119924261868 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -4396642182433536433, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+  m_PrefabInstance: {fileID: 3774902957587355043}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &8998172288280492070 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 5241284212654878085, guid: 38e766b69bab9cd4ca40d299fb9d57b2, type: 3}
+  m_PrefabInstance: {fileID: 3774902957587355043}
+  m_PrefabAsset: {fileID: 0}

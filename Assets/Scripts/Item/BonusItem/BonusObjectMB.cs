@@ -44,7 +44,7 @@ namespace BC.Item
         }
         private void Start()
         {
-            SetCanCollect(GameStateManagerMB.Instance != null && GameStateManagerMB.Instance.CurrentState == GameState.FusePlaying);
+            RefreshCanCollectFromSceneBombState();
 
             // 爆弾のカウントダウン開始と終了のイベントにリスナーを登録する
             if (GameLogicManagerMB.Instance != null)
@@ -66,13 +66,21 @@ namespace BC.Item
 
         private void OnStartBombFuse(BombMB _)
         {
-            SetCanCollect(true); // 爆弾のカウントダウンが開始されたらアイテムを取得できる状態にする
+            RefreshCanCollectFromSceneBombState();
         }
 
         private void OnEndBombFuse()
         {
-            SetCanCollect(false); // 爆弾のカウントダウンが終了したらアイテムを取得できない状態にする
+            RefreshCanCollectFromSceneBombState();
         }
+
+        // シーン内の Bomb 状態から、取得可能フラグを毎回再計算する。
+        private void RefreshCanCollectFromSceneBombState()
+        {
+            bool hasAnyFusingBomb = GameLogicManagerMB.Instance != null && GameLogicManagerMB.Instance.HasAnyFusingSceneBomb();
+            SetCanCollect(hasAnyFusingBomb);
+        }
+
         private void SetCanCollect(bool value)
         {
             canCollect = value;
@@ -86,6 +94,9 @@ namespace BC.Item
         }
         private void Update()
         {
+            // 複数 Bomb でも正しい取得可否になるよう、毎フレーム同期する。
+            RefreshCanCollectFromSceneBombState();
+
             // 一時的な加速が入っていても、毎フレーム基準速度へ戻していく。
             currentSpinSpeed = Mathf.MoveTowards(currentSpinSpeed, targetSpinSpeed, spinReturnConvergence * Time.deltaTime);
 
@@ -124,9 +135,6 @@ namespace BC.Item
             spinBaseSpeed = 0f; // アイテムが取得されたら回転を止める
             targetSpinSpeed = 0f; // アイテムが取得されたら回転速度の目標値も0にする
             currentSpinSpeed = 0f; // アイテムが取得されたら現在の回転速度も0にする
-
-            // カメラ取得
-            var mainCamera = UnityEngine.Camera.main;
 
             // エフェクト再生
             if (collectEffectPrefab != null)

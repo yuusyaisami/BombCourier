@@ -226,6 +226,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 119
   triggerInteraction: 1
+  ignoreTargetHierarchy: 1
   castOriginUpOffset: 0.5
   maxGroundDistance: 20
   sphereCastRadius: 0.18
@@ -288,6 +289,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  projectionVolumeAnchor: 1
+  projectorPivotXY: {x: 0, y: 0}
   positionSharpness: 0
   rotationSharpness: 0
   sizeSharpness: 18
@@ -405,6 +408,7 @@ GameObject:
   - component: {fileID: 8351279134957612125}
   - component: {fileID: 1469540994083200100}
   - component: {fileID: 9190420324000731801}
+  - component: {fileID: -1993309423423878992}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -496,7 +500,7 @@ MonoBehaviour:
   mouseSensitivity: 0.08
   gamepadSensitivity: 120
   minPitch: -35
-  maxPitch: 70
+  maxPitch: 85
   invertY: 0
   throwShoulderOffset: {x: 1.25, y: -0.5, z: 2.25}
   throwShoulderOffsetBlendSharpness: 12
@@ -791,7 +795,7 @@ MonoBehaviour:
   airAcceleration: 12
   airDeceleration: 4
   maxAirHorizontalSpeed: 8
-  jumpHeight: 1.4
+  jumpHeight: 2
   gravity: -28
   groundedStickVelocity: -3
   coyoteTime: 0.12
@@ -808,6 +812,8 @@ MonoBehaviour:
   minStepAssistSpeed: 0.1
   inheritMovingPlatformVelocityOnJump: 1
   platformJumpVelocityInheritance: 1
+  platformSupportSampleSmoothing: 0
+  platformCarryRotationDeadZoneDegrees: 0.05
   externalVelocityDamping: 6
   minExternalVelocity: 0.03
   cushionImpactCooldown: 0.12
@@ -855,9 +861,9 @@ MonoBehaviour:
   penaltyDuration: 1
   dropHeldItemOnHardLanding: 1
   additionalDropVelocityLocal: {x: 0, y: 0, z: 0}
-  hardLandingDropForwardSpeed: 1.2
-  hardLandingDropUpwardSpeed: 1
-  hardLandingCarrierPlanarVelocityFactor: 0.25
+  hardLandingDropForwardSpeed: 4
+  hardLandingDropUpwardSpeed: 2
+  hardLandingCarrierPlanarVelocityFactor: 0.448
   lastLandingDownwardSpeed: 0
   lastLandingFallDistance: 0
   lastLandingSuppressedByCushion: 0
@@ -888,6 +894,33 @@ MonoBehaviour:
   probeRadius: 0.2
   probeDistance: 2
   probeTriggerInteraction: 1
+--- !u!114 &-1993309423423878992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982850033400161385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fccd8195db1499247b59d788972164d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Managers.TalkAdapterMB
+  entityMB: {fileID: 0}
+  entityAnimation: {fileID: 8616279206525780107}
+  sceneKernelMB: {fileID: 0}
+  characterId:
+    id: 2003
+    path: Npc.Nezumi
+  defaultIdleTalkState: 10
+  statePresentations: []
+  activityPresentation:
+    talkingBoolParameterNames: []
+    applyTalkingShapeExpression: 0
+    talkingShapeExpressionId: 0
+    applyNonTalkingShapeExpression: 0
+    nonTalkingShapeExpressionId: 0
+    restoreStateShapeExpressionOnStop: 0
 --- !u!1 &8098859386636133588
 GameObject:
   m_ObjectHideFlags: 0

@@ -388,6 +388,136 @@ namespace BC.Editor.Tests
             Assert.AreEqual(0, CountTreeItems(model, "Start Talk", "Block"));
         }
 
+        [Test]
+        public void ActionBlockTreeViewModel_StepWithChildSlots_IsExpandable()
+        {
+            AddStep("BC.ActionSystem.ShowTalkStepAuthoring");
+            ApplyChanges();
+
+            SerializedProperty rootProperty = serializedObject.FindProperty("inlineAction");
+            Type modelType = GetTypeByFullName("BC.Editor.ActionSystem.ActionBlockTreeViewModel");
+            object model = Activator.CreateInstance(modelType);
+            InvokeDeclaredMethod(modelType, model, "Rebuild", rootProperty);
+
+            PropertyInfo itemsProperty = modelType.GetProperty("Items", BindingFlags.Instance | BindingFlags.Public);
+            IEnumerable items = itemsProperty?.GetValue(model) as IEnumerable;
+            Assert.IsNotNull(items, "Expected tree items.");
+
+            bool foundExpandableShowTalk = false;
+
+            foreach (object item in items)
+            {
+                if (item == null)
+                    continue;
+
+                PropertyInfo kindProperty = item.GetType().GetProperty("Kind", BindingFlags.Instance | BindingFlags.Public);
+                PropertyInfo titleProperty = item.GetType().GetProperty("Title", BindingFlags.Instance | BindingFlags.Public);
+                PropertyInfo expandableProperty = item.GetType().GetProperty("CanExpand", BindingFlags.Instance | BindingFlags.Public);
+
+                if ((int)(kindProperty?.GetValue(item) ?? -1) != 1)
+                    continue;
+
+                if (!string.Equals(titleProperty?.GetValue(item) as string, "Show Talk", StringComparison.Ordinal))
+                    continue;
+
+                foundExpandableShowTalk = (bool)(expandableProperty?.GetValue(item) ?? false);
+                break;
+            }
+
+            Assert.IsTrue(foundExpandableShowTalk);
+        }
+
+        [Test]
+        public void ActionStepManagedReferenceUtility_MoveStepBetweenLists_MovesStepAcrossBranch()
+        {
+            SerializedProperty firstStep = AddStep("BC.ActionSystem.WaitFramesStepAuthoring");
+            firstStep.FindPropertyRelative("DisplayName").stringValue = "First";
+
+            SerializedProperty secondStep = AddStep("BC.ActionSystem.WaitFramesStepAuthoring");
+            secondStep.FindPropertyRelative("DisplayName").stringValue = "Second";
+
+            SerializedProperty talkStep = AddStep("BC.ActionSystem.ShowTalkStepAuthoring");
+            SerializedProperty startBranchProperty = talkStep.FindPropertyRelative("talkRequestData").FindPropertyRelative("onStartTalkAction");
+            EnsureInlineAction(startBranchProperty);
+            ApplyChanges();
+
+            SerializedProperty rootStepsProperty = FindStepsProperty();
+            SerializedProperty startStepsProperty = startBranchProperty.FindPropertyRelative("_steps");
+            Assert.IsNotNull(startStepsProperty, "Expected start talk _steps property.");
+
+            Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepManagedReferenceUtility");
+            InvokeDeclaredMethod(
+                utilityType,
+                null,
+                "MoveStepBetweenLists",
+                serializedObject.targetObjects,
+                rootStepsProperty.propertyPath,
+                1,
+                startStepsProperty.propertyPath,
+                0);
+
+            serializedObject.Update();
+
+            rootStepsProperty = FindStepsProperty();
+            startStepsProperty = serializedObject.FindProperty(startStepsProperty.propertyPath);
+            Assert.IsNotNull(startStepsProperty, "Expected moved start talk _steps property.");
+
+            Assert.AreEqual(2, rootStepsProperty.arraySize);
+            Assert.AreEqual(1, startStepsProperty.arraySize);
+
+            SerializedProperty movedStep = startStepsProperty.GetArrayElementAtIndex(0);
+            Assert.AreEqual("Second", movedStep.FindPropertyRelative("DisplayName").stringValue);
+        }
+
+        [Test]
+        public void ActionAuthoringSystemData_RecordStepSelection_DeduplicatesAndSortsByLatestTimestamp()
+        {
+            Type dataType = GetTypeByFullName("BC.Editor.ActionSystem.ActionAuthoringSystemData");
+            Type waitFramesType = GetTypeByFullName("BC.ActionSystem.WaitFramesStepAuthoring");
+            Type showTalkType = GetTypeByFullName("BC.ActionSystem.ShowTalkStepAuthoring");
+
+            ScriptableObject data = ScriptableObject.CreateInstance(dataType);
+
+            try
+            {
+                string waitFramesTypeName = waitFramesType.AssemblyQualifiedName;
+                string showTalkTypeName = showTalkType.AssemblyQualifiedName;
+
+                InvokeDeclaredMethod(dataType, data, "RecordStepSelection", waitFramesTypeName, 100L);
+                InvokeDeclaredMethod(dataType, data, "RecordStepSelection", showTalkTypeName, 200L);
+                InvokeDeclaredMethod(dataType, data, "RecordStepSelection", waitFramesTypeName, 300L);
+
+                object recent = InvokeDeclaredMethod(dataType, data, "GetRecentStepSelections", 5);
+                Assert.IsNotNull(recent, "Expected recent selection entries.");
+
+                List<object> entries = new();
+                foreach (object entry in (IEnumerable)recent)
+                    entries.Add(entry);
+
+                Assert.AreEqual(2, entries.Count);
+
+                PropertyInfo typeNameProperty = entries[0].GetType().GetProperty("StepTypeName", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                PropertyInfo ticksProperty = entries[0].GetType().GetProperty("LastSelectedUtcTicks", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                PropertyInfo countProperty = entries[0].GetType().GetProperty("SelectedCount", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                Assert.IsNotNull(typeNameProperty, "Expected StepTypeName property.");
+                Assert.IsNotNull(ticksProperty, "Expected LastSelectedUtcTicks property.");
+                Assert.IsNotNull(countProperty, "Expected SelectedCount property.");
+
+                Assert.AreEqual(waitFramesTypeName, typeNameProperty.GetValue(entries[0]) as string);
+                Assert.AreEqual(300L, (long)(ticksProperty.GetValue(entries[0]) ?? 0L));
+                Assert.AreEqual(2, (int)(countProperty.GetValue(entries[0]) ?? 0));
+
+                Assert.AreEqual(showTalkTypeName, typeNameProperty.GetValue(entries[1]) as string);
+                Assert.AreEqual(200L, (long)(ticksProperty.GetValue(entries[1]) ?? 0L));
+                Assert.AreEqual(1, (int)(countProperty.GetValue(entries[1]) ?? 0));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(data);
+            }
+        }
+
         private SerializedProperty AddStep(string stepTypeName)
         {
             Type managedReferenceListType = GetTypeByFullName("BC.Editor.Foundation.IMGUI.ManagedReferenceListController");

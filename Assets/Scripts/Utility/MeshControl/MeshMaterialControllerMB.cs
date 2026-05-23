@@ -49,6 +49,11 @@ namespace BC.Utility
             SetAlpha(alpha);
         }
 
+        private void Reset()
+        {
+            targetRenderer = new List<Renderer>(GetComponentsInChildren<Renderer>());
+        }
+
         public void SetAlpha(float value)
         {
             alpha = Mathf.Clamp01(value);
