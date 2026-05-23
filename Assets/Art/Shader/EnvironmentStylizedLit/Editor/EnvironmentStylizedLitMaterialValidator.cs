@@ -69,6 +69,7 @@ namespace BC.Rendering
             changed |= ClampFloat(material, "_AdditionalLightIntensity", 0f, 1f, applyChanges);
             changed |= ClampFloat(material, "_AdditionalLightShadowInfluence", 0f, 1f, applyChanges);
             changed |= ClampFloat(material, "_AdditionalLightColorInfluence", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_ReceiveDecal", 0f, 1f, applyChanges, true);
 
             changed |= ClampFloat(material, "_LightBandEmissionEnabled", 0f, 1f, applyChanges, true);
             changed |= ClampFloat(material, "_LightBandEmissionIntensity", 0f, 20f, applyChanges);
@@ -179,6 +180,27 @@ namespace BC.Rendering
                 "Triplanar sampling increases texture and math cost. Enabled: " +
                 string.Join(", ", enabledModes) +
                 ". Keep it off on materials that already have stable UVs.";
+            return true;
+        }
+
+        internal static bool TryGetDecalSurfaceModeWarning(Material material, out string warningMessage)
+        {
+            if (material == null || !material.HasProperty("_ReceiveDecal") || !material.HasProperty("_SurfaceMode"))
+            {
+                warningMessage = null;
+                return false;
+            }
+
+            bool receiveDecal = material.GetFloat("_ReceiveDecal") > 0.5f;
+            int surfaceMode = Mathf.RoundToInt(material.GetFloat("_SurfaceMode"));
+
+            if (!receiveDecal || surfaceMode == 0)
+            {
+                warningMessage = null;
+                return false;
+            }
+
+            warningMessage = "Receive Decal is enabled, but decals are supported only on Opaque surface mode.";
             return true;
         }
 

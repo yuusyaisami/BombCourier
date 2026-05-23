@@ -73,6 +73,7 @@ Shader "BC/EnvironmentStylizedLit"
         _AdditionalLightIntensity ("Additional Light Intensity", Range(0, 1)) = 0.5
         _AdditionalLightShadowInfluence ("Additional Light Shadow Influence", Range(0, 1)) = 0.65
         _AdditionalLightColorInfluence ("Additional Light Color Influence", Range(0, 1)) = 0.75
+        [Toggle] _ReceiveDecal ("Receive Decal (Opaque Only)", Float) = 1
 
         [Toggle] _LightBandEmissionEnabled ("Light Band Emission", Float) = 0
         [HDR] _LightBandEmissionColor ("Light Band Emission Color", Color) = (1.4, 1.2, 1.0, 1)
@@ -249,11 +250,13 @@ Shader "BC/EnvironmentStylizedLit"
             #pragma shader_feature_local_fragment _ _ESL_TRIPLANAR_BASEMAP
             #pragma shader_feature_local_fragment _ _ESL_TRIPLANAR_NORMALMAP
             #pragma shader_feature_local_fragment _ _ESL_TRIPLANAR_NOISE
+            #pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile_fragment _ _SCREEN_SPACE_IRRADIANCE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fragment _ _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile_fragment _ _RENDER_PASS_ENABLED
             #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
@@ -267,6 +270,7 @@ Shader "BC/EnvironmentStylizedLit"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
             #include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"

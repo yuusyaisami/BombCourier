@@ -363,7 +363,11 @@ namespace BC.Player
 
             if (item is BombMB bomb && GameLogicManagerMB.Instance != null)
             {
-                // current bomb の追従だけ行い、retry checkpoint は起爆開始時に確定する。
+                // Reload は「掴む直前」へ戻す。ここで先に checkpoint を積むことで、
+                // 起爆開始後に手持ち状態を復元してしまう不整合を防ぐ。
+                GameLogicManagerMB.Instance.CaptureRetryCheckpointBeforeBombPickup(bomb);
+
+                // current bomb の追従を更新する。
                 GameLogicManagerMB.Instance.SetCurrentBomb(bomb);
             }
 

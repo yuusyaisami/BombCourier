@@ -121,10 +121,16 @@ namespace BC.Base
             }
 
             Vector3 supportVelocity = ClampMagnitude(supportMotion.PassengerVelocity, maxSupportVelocity);
+            float positionRate = Mathf.Clamp01(carryPositionRate);
+            float velocityRate = Mathf.Clamp01(carryVelocityRate);
 
-            if (carryPositionRate > 0f && supportMotion.PassengerDelta.sqrMagnitude > 0.0000001f)
+            // 位置補正と速度補正を同時に最大適用すると二重運搬になりやすい。
+            // 位置補正を優先し、残り分だけ速度補正へ配分する。
+            velocityRate *= 1.0f - positionRate;
+
+            if (positionRate > 0f && supportMotion.PassengerDelta.sqrMagnitude > 0.0000001f)
             {
-                Vector3 positionDelta = supportMotion.PassengerDelta * carryPositionRate;
+                Vector3 positionDelta = supportMotion.PassengerDelta * positionRate;
                 float maxDelta = maxCarryCorrectionSpeed > 0f ? maxCarryCorrectionSpeed * dt : positionDelta.magnitude;
 
                 if (maxDelta > 0f)
@@ -133,11 +139,17 @@ namespace BC.Base
                 targetRigidbody.position += positionDelta;
             }
 
-            if (carryVelocityRate > 0f)
+            if (velocityRate > 0f)
             {
                 Vector3 previousSupportVelocity = hasAppliedSupport ? appliedSupportVelocity : Vector3.zero;
-                Vector3 velocityDelta = (supportVelocity - previousSupportVelocity) * carryVelocityRate;
+                Vector3 velocityDelta = (supportVelocity - previousSupportVelocity) * velocityRate;
                 targetRigidbody.linearVelocity += velocityDelta;
+                appliedSupportVelocity = supportVelocity;
+                hasAppliedSupport = true;
+            }
+            else
+            {
+                // 速度補正を使わない場合でも、次フレーム比較用の基準は更新して急な差分注入を防ぐ。
                 appliedSupportVelocity = supportVelocity;
                 hasAppliedSupport = true;
             }

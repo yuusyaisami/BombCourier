@@ -62,6 +62,8 @@ namespace BC.Base
         [Header("Moving Platform")]
         [SerializeField] private bool inheritMovingPlatformVelocityOnJump = true;
         [SerializeField] private float platformJumpVelocityInheritance = 1.0f;
+        [SerializeField, Min(0.0f)] private float platformSupportSampleSmoothing = 0.0f;
+        [SerializeField, Min(0.0f)] private float platformCarryRotationDeadZoneDegrees = 0.05f;
 
         [Header("External Momentum")]
         [SerializeField] private float externalVelocityDamping = 6.0f;
@@ -113,6 +115,10 @@ namespace BC.Base
         private bool hasPlatformPose;
         private Vector3 platformDelta;
         private Vector3 platformVelocity;
+        private Transform supportSampleSource;
+        private Vector3 supportSampleLocalPoint;
+        private bool hasSupportSamplePoint;
+        private bool suppressPlatformVelocityInjectionThisTick;
         private bool wasGroundedLastMotorTick;
 
         private bool motionLocked;
@@ -286,6 +292,7 @@ namespace BC.Base
 
         private void TickMotor(float dt)
         {
+            suppressPlatformVelocityInjectionThisTick = false;
             ProbeGround();
 
             bool isGrounded = ground.IsValid;
@@ -301,7 +308,6 @@ namespace BC.Base
             if (isGrounded && !wasGroundedLastMotorTick)
                 RebaseInheritedPlatformMomentumOnLanding();
 
-            ApplyPlatformCarry();
             UpdatePlanarVelocity(dt, isGrounded);
             UpdateVerticalVelocity(dt, isGrounded);
             UpdateExternalVelocity(dt);
@@ -314,7 +320,7 @@ namespace BC.Base
 
             bodyVelocity = GetBodyVelocity();
 
-            ApplyCurrentVelocityToBody(bodyVelocity);
+            ApplyCurrentVelocityToBody(bodyVelocity, isGrounded);
 
             StorePlatformPose();
             UpdateMoveState();
@@ -483,20 +489,41 @@ namespace BC.Base
             {
                 currentPlatform = null;
                 hasPlatformPose = false;
+                supportSampleSource = null;
+                hasSupportSamplePoint = false;
                 return;
             }
 
             Transform platform = ground.Transform;
+            Vector3 supportSamplePoint = ResolveSupportSamplePoint(platform, dt);
+
             if (SupportMotionUtility.TryGetSupportMotion(
                     ground.Collider,
-                    transform.position,
+                    supportSamplePoint,
                     dt,
                     transform,
                     out SupportMotionSnapshot supportMotion))
             {
-                platformDelta = supportMotion.PassengerDelta;
-                platformVelocity = supportMotion.PassengerVelocity;
-                currentPlatform = supportMotion.SourceTransform != null ? supportMotion.SourceTransform : platform;
+                Transform supportSource = supportMotion.SourceTransform != null ? supportMotion.SourceTransform : platform;
+                UpdateSupportSamplePoint(supportSource, supportSamplePoint, dt);
+
+                Vector3 stabilizedPoint = hasSupportSamplePoint && supportSource != null
+                    ? supportSource.TransformPoint(supportSampleLocalPoint)
+                    : supportSamplePoint;
+
+                Vector3 sourceOffset = stabilizedPoint - supportMotion.SourceOrigin;
+                Vector3 stabilizedDelta = supportMotion.SourcePositionDelta +
+                                         supportMotion.SourceRotationDelta * sourceOffset -
+                                         sourceOffset;
+
+                if (Quaternion.Angle(supportMotion.SourceRotationDelta, Quaternion.identity) <= platformCarryRotationDeadZoneDegrees)
+                    stabilizedDelta = supportMotion.SourcePositionDelta;
+
+                platformDelta = stabilizedDelta;
+                if (dt > 0.0f)
+                    platformVelocity = stabilizedDelta / dt;
+
+                currentPlatform = supportSource;
                 return;
             }
 
@@ -518,12 +545,54 @@ namespace BC.Base
             currentPlatform = platform;
         }
 
-        private void ApplyPlatformCarry()
+        private Vector3 ResolveSupportSamplePoint(Transform platform, float dt)
         {
-            if (bodyRigidbody == null || platformDelta.sqrMagnitude <= 0.0f)
-                return;
+            Vector3 desiredWorldPoint = bodyRigidbody != null
+                ? bodyRigidbody.worldCenterOfMass
+                : transform.position;
 
-            bodyRigidbody.position += platformDelta;
+            if (!float.IsFinite(desiredWorldPoint.x) ||
+                !float.IsFinite(desiredWorldPoint.y) ||
+                !float.IsFinite(desiredWorldPoint.z))
+            {
+                desiredWorldPoint = transform.position;
+            }
+
+            if (platform == null)
+                return desiredWorldPoint;
+
+            UpdateSupportSamplePoint(platform, desiredWorldPoint, dt);
+            return platform.TransformPoint(supportSampleLocalPoint);
+        }
+
+        private void UpdateSupportSamplePoint(Transform sourceTransform, Vector3 desiredWorldPoint, float dt)
+        {
+            if (sourceTransform == null)
+            {
+                supportSampleSource = null;
+                hasSupportSamplePoint = false;
+                return;
+            }
+
+            Vector3 desiredLocalPoint = sourceTransform.InverseTransformPoint(desiredWorldPoint);
+
+            if (!hasSupportSamplePoint || supportSampleSource != sourceTransform)
+            {
+                supportSampleSource = sourceTransform;
+                supportSampleLocalPoint = desiredLocalPoint;
+                hasSupportSamplePoint = true;
+                return;
+            }
+
+            float smoothing = Mathf.Max(0.0f, platformSupportSampleSmoothing);
+            if (smoothing <= 0.0f)
+            {
+                supportSampleLocalPoint = desiredLocalPoint;
+                return;
+            }
+
+            float blend = 1.0f - Mathf.Exp(-smoothing * Mathf.Max(0.0001f, dt));
+            supportSampleLocalPoint = Vector3.Lerp(supportSampleLocalPoint, desiredLocalPoint, Mathf.Clamp01(blend));
         }
 
         private void CapturePlatformInertiaOnLeaveGround()
@@ -544,6 +613,9 @@ namespace BC.Base
                 return;
 
             inheritedPlatformVelocity = platformVelocity * platformJumpVelocityInheritance;
+
+            // このtickは継承済みなので、追加の足場速度注入を抑止して二重加算を防ぐ。
+            suppressPlatformVelocityInjectionThisTick = true;
         }
 
         private void RebaseInheritedPlatformMomentumOnLanding()
@@ -599,6 +671,7 @@ namespace BC.Base
 
         private void TickLockedMotion(float dt)
         {
+            suppressPlatformVelocityInjectionThisTick = false;
             ProbeGround();
             bool isGrounded = ground.IsValid;
 
@@ -610,16 +683,16 @@ namespace BC.Base
             if (isGrounded && !wasGroundedLastMotorTick)
                 RebaseInheritedPlatformMomentumOnLanding();
 
-            ApplyPlatformCarry();
             UpdateExternalVelocity(dt);
 
-            ApplyCurrentVelocityToBody(externalVelocity + inheritedPlatformVelocity);
+            ApplyCurrentVelocityToBody(externalVelocity + inheritedPlatformVelocity, isGrounded);
             StorePlatformPose();
             wasGroundedLastMotorTick = ground.IsValid;
         }
 
         private void TickSystemMovementLocked(float dt)
         {
+            suppressPlatformVelocityInjectionThisTick = false;
             CancelAutoMove();
             ClearMoveIntent();
 
@@ -632,8 +705,7 @@ namespace BC.Base
             bool isGrounded = ground.IsValid;
 
             UpdatePlatformMotion(dt, isGrounded);
-            ApplyPlatformCarry();
-            ApplyCurrentVelocityToBody(Vector3.zero);
+            ApplyCurrentVelocityToBody(Vector3.zero, isGrounded);
             StorePlatformPose();
 
             if (MoveState != EntityMoveState.Disabled && MoveState != EntityMoveState.Dead)
@@ -642,12 +714,16 @@ namespace BC.Base
             wasGroundedLastMotorTick = ground.IsValid;
         }
 
-        private void ApplyCurrentVelocityToBody(Vector3 velocity)
+        private void ApplyCurrentVelocityToBody(Vector3 velocity, bool injectPlatformVelocity = false)
         {
             if (bodyRigidbody == null)
                 return;
 
-            bodyRigidbody.linearVelocity = velocity;
+            Vector3 appliedVelocity = velocity;
+            if (injectPlatformVelocity && !suppressPlatformVelocityInjectionThisTick)
+                appliedVelocity += platformVelocity;
+
+            bodyRigidbody.linearVelocity = appliedVelocity;
         }
 
         private Vector3 GetBodyVelocity()

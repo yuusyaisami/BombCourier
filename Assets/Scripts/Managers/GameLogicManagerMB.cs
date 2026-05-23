@@ -69,7 +69,6 @@ namespace BC.Manager
         private BonusObjectMB currentBonusObject; // 現在の bonus object。
         private int currentGameStage;
         private readonly Stack<RetryCheckpointSnapshot> retryCheckpointStack = new();
-        private BombMB lastCapturedFuseBomb;
         private bool resetArmed;
 
         public BombMB CurrentBomb => currentBomb;
@@ -660,13 +659,6 @@ namespace BC.Manager
         {
             if (bomb != currentBomb) return; // currentBomb以外の爆弾が起爆した場合は無視する
 
-            // retry checkpoint は原則「起爆開始時の接触」を基準に積む。
-            if (bomb != null && bomb != lastCapturedFuseBomb)
-            {
-                CaptureRetryCheckpointBeforeBombPickup(bomb);
-                lastCapturedFuseBomb = bomb;
-            }
-
             GameStateManagerMB.Instance.ChangeState(GameState.FusePlaying);
             OnStartBombFuse?.Invoke(currentBomb); // 爆弾のカウントダウンが開始されたことを通知するイベントを発火する
             timeSinceStartBomb = 0; // 爆弾のカウントダウン開始からの経過時間をリセットする
@@ -870,7 +862,6 @@ namespace BC.Manager
         private void ResetRetryActionContext()
         {
             retryCheckpointStack.Clear();
-            lastCapturedFuseBomb = null;
             resetArmed = false;
             timeSinceStartBomb = 0f;
             StageManagerMB.Instance?.ClearStageCheckpoint();

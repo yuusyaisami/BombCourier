@@ -49,16 +49,19 @@ namespace BC.Rendering.Tests
                 AssertShaderHasProperty(shader, "_AdditionalLightIntensity");
                 AssertShaderHasProperty(shader, "_AdditionalLightShadowInfluence");
                 AssertShaderHasProperty(shader, "_AdditionalLightColorInfluence");
+                AssertShaderHasProperty(shader, "_ReceiveDecal");
 
                 material.SetFloat("_AdditionalLightMode", 2f);
                 material.SetFloat("_AdditionalLightIntensity", 0.4f);
                 material.SetFloat("_AdditionalLightShadowInfluence", 0.7f);
                 material.SetFloat("_AdditionalLightColorInfluence", 0.8f);
+                material.SetFloat("_ReceiveDecal", 1f);
 
                 Assert.AreEqual(2f, material.GetFloat("_AdditionalLightMode"));
                 Assert.AreEqual(0.4f, material.GetFloat("_AdditionalLightIntensity"));
                 Assert.AreEqual(0.7f, material.GetFloat("_AdditionalLightShadowInfluence"));
                 Assert.AreEqual(0.8f, material.GetFloat("_AdditionalLightColorInfluence"));
+                Assert.AreEqual(1f, material.GetFloat("_ReceiveDecal"));
             }
             finally
             {
@@ -75,6 +78,7 @@ namespace BC.Rendering.Tests
             string forwardLitSource = File.ReadAllText(ForwardLitPath);
 
             StringAssert.Contains("#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS", shaderSource);
+            StringAssert.Contains("#pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3", shaderSource);
             StringAssert.Contains("#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS", shaderSource);
             StringAssert.Contains("#pragma multi_compile _ _LIGHT_LAYERS", shaderSource);
             StringAssert.Contains("#pragma multi_compile _ _CLUSTER_LIGHT_LOOP", shaderSource);
@@ -99,6 +103,8 @@ namespace BC.Rendering.Tests
             StringAssert.Contains("diffuseData.additionalLightColor", stylizedDiffuseSource);
             StringAssert.Contains("ESL_EvaluateAdditionalLighting(inputData", stylizedDiffuseSource);
 
+            StringAssert.Contains("ApplyDecal(", forwardLitSource);
+            StringAssert.Contains("ESL_ApplyDecalToSurfaceData", forwardLitSource);
             StringAssert.DoesNotContain("GetAdditionalLight(", forwardLitSource);
             StringAssert.DoesNotContain("LIGHT_LOOP_BEGIN", forwardLitSource);
             StringAssert.Contains("fogFactorAndVertexLight", forwardLitSource);

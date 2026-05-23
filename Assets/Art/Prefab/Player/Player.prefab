@@ -142,6 +142,163 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!1 &1290291403558737248
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5580149211103674506}
+  - component: {fileID: 2001905215302858359}
+  - component: {fileID: 5008633009023400133}
+  m_Layer: 0
+  m_Name: Shadow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5580149211103674506
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290291403558737248}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 291749594262905700}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2001905215302858359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290291403558737248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DecalProjector
+  m_Material: {fileID: 2100000, guid: c652360e6d361e146bf74feb8ac27fca, type: 2}
+  m_DrawDistance: 40
+  m_FadeScale: 0.85
+  m_StartAngleFade: 70
+  m_EndAngleFade: 88
+  m_UVScale: {x: 1, y: 1}
+  m_UVBias: {x: 0, y: 0}
+  m_RenderingLayerMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ScaleMode: 0
+  m_Offset: {x: 0, y: 0, z: 0.5}
+  m_Size: {x: 1, y: 3.73, z: 1}
+  m_FadeFactor: 1
+  m_VisibleInScene: 1
+  version: 1
+  m_DecalLayerMask: 1
+--- !u!114 &5008633009023400133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290291403558737248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3932deaded15c0940af81de2a1286625, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Effects.GroundShadow.GroundDecalShadowProjectorMB
+  target: {fileID: 291749594262905700}
+  decalProjector: {fileID: 2001905215302858359}
+  orientationReference: {fileID: 291749594262905700}
+  updatePhase: 2
+  useUnscaledTime: 0
+  castMode: 1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 119
+  triggerInteraction: 1
+  castOriginUpOffset: 0.5
+  maxGroundDistance: 20
+  sphereCastRadius: 0.18
+  maxReceivableSurfaceAngle: 68
+  surfaceOffset: 0.1
+  lostGroundGraceTime: 0.08
+  baseWidth: 0.9
+  baseHeight: 1
+  maxWidthMultiplier: 1
+  maxHeightMultiplier: 1
+  projectionDepth: 8.04
+  fadeHeight: 6.75
+  minFadeFactor: 0.116
+  maxFadeFactor: 0.803
+  heightToSize:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  heightToFade:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  positionSharpness: 0
+  rotationSharpness: 0
+  sizeSharpness: 18
+  fadeSharpness: 18
+  forceScaleInvariant: 1
+  applyAngleFade: 1
+  startAngleFade: 70
+  endAngleFade: 88
+  drawDistance: 40
+  cameraFadeScale: 0.85
+  hideWhenMaterialMissing: 1
 --- !u!1 &3268160320658406219
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,6 +429,7 @@ Transform:
   - {fileID: 4030098536507247282}
   - {fileID: 62550680839768300}
   - {fileID: 8982348485735006091}
+  - {fileID: 5580149211103674506}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8771305875822061578
@@ -319,6 +477,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BC.Base.EntityFacingControllerMB
   facingRoot: {fileID: 4030098536507247282}
   defaultTurnSharpness: 16
+  frontDirection: {x: 0, y: 0, z: 1}
   usePlanarYawOnly: 1
 --- !u!114 &8817058509509781318
 MonoBehaviour:
@@ -678,6 +837,7 @@ MonoBehaviour:
   ragdollControllerSource: {fileID: 8542647148484008848}
   animatorControllerSource: {fileID: 8616279206525780107}
   playerItemHandleState: {fileID: 4490053635938583149}
+  facingController: {fileID: 0}
   minimumDownwardImpactSpeed: 12
   minimumFallDistance: 3
   reactionCooldown: 0.2
@@ -695,6 +855,9 @@ MonoBehaviour:
   penaltyDuration: 1
   dropHeldItemOnHardLanding: 1
   additionalDropVelocityLocal: {x: 0, y: 0, z: 0}
+  hardLandingDropForwardSpeed: 1.2
+  hardLandingDropUpwardSpeed: 1
+  hardLandingCarrierPlanarVelocityFactor: 0.25
   lastLandingDownwardSpeed: 0
   lastLandingFallDistance: 0
   lastLandingSuppressedByCushion: 0

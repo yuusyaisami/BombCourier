@@ -93,6 +93,7 @@ namespace BC.Gimmick.MovingPlatform
 
         private Vector3 accumulatedPositionDelta;
         private Quaternion accumulatedRotationDelta = Quaternion.identity;
+        private Vector3 accumulatedMotionOrigin;
         private bool hasAccumulatedMotion;
         private readonly List<Vector3> pathVisualizationPoints = new();
         private readonly List<MovingPlatformRailTransitionEvent> railTransitionEvents = new();
@@ -346,7 +347,7 @@ namespace BC.Gimmick.MovingPlatform
             motion = SupportMotionUtility.FromDelta(
                 MotionTransform,
                 null,
-                MotionTransform.position,
+                accumulatedMotionOrigin,
                 passengerWorldPosition,
                 accumulatedPositionDelta,
                 accumulatedRotationDelta,
@@ -1129,6 +1130,11 @@ namespace BC.Gimmick.MovingPlatform
 
         private void ApplyPose(in MovingPlatformPose pose)
         {
+            const float DynamicSnapDistanceSqr = 1.5f * 1.5f;
+            const float DynamicMaxAngularSpeed = 10.0f;
+            const float DeltaFallbackThresholdSqr = 0.000001f;
+            const float RotationFallbackAngleThreshold = 0.01f;
+
             if (motionTargetBindings == null || motionTargetBindings.Length == 0)
                 return;
 
@@ -1144,6 +1150,9 @@ namespace BC.Gimmick.MovingPlatform
                 poseScale.z / baseScale.z);
 
             float deltaTime = Mathf.Max(0.0001f, Time.fixedDeltaTime);
+            Vector3 referenceCommandedPosition = previousPosition;
+            Quaternion referenceCommandedRotation = previousRotation;
+            bool hasReferenceCommand = false;
 
             for (int i = 0; i < motionTargetBindings.Length; i++)
             {
@@ -1157,6 +1166,13 @@ namespace BC.Gimmick.MovingPlatform
                 Quaternion targetRotation = pose.Rotation * binding.LocalRotationFromReference;
                 Vector3 targetLocalScale = Vector3.Scale(binding.InitialLocalScale, scaleRatio);
 
+                if (i == 0)
+                {
+                    referenceCommandedPosition = targetPosition;
+                    referenceCommandedRotation = targetRotation;
+                    hasReferenceCommand = true;
+                }
+
                 if (target.isKinematic)
                 {
                     target.MovePosition(targetPosition);
@@ -1164,17 +1180,60 @@ namespace BC.Gimmick.MovingPlatform
                 }
                 else
                 {
-                    Vector3 previousTargetPosition = target.position;
-                    target.position = targetPosition;
-                    target.rotation = targetRotation;
-                    target.linearVelocity = (target.position - previousTargetPosition) / deltaTime;
+                    // Dynamic Rigidbody を毎フレーム直接テレポートすると接触解決で押しのけが発生しやすいため、
+                    // 基本は速度追従にし、大きな乖離時だけスナップで復帰させます。
+                    Vector3 currentPosition = target.position;
+                    Quaternion currentRotation = target.rotation;
+                    Vector3 positionError = targetPosition - currentPosition;
+                    Quaternion rotationError = targetRotation * Quaternion.Inverse(currentRotation);
+
+                    if (positionError.sqrMagnitude > DynamicSnapDistanceSqr)
+                    {
+                        target.position = targetPosition;
+                        target.rotation = targetRotation;
+                        target.linearVelocity = Vector3.zero;
+                        target.angularVelocity = Vector3.zero;
+                    }
+                    else
+                    {
+                        target.linearVelocity = positionError / deltaTime;
+                        Vector3 targetAngularVelocity = SupportMotionUtility.CalculateAngularVelocity(rotationError, deltaTime);
+                        target.angularVelocity = Vector3.ClampMagnitude(targetAngularVelocity, DynamicMaxAngularSpeed);
+                    }
                 }
 
                 targetTransform.localScale = targetLocalScale;
             }
 
-            Vector3 positionDelta = referenceTransform.position - previousPosition;
-            Quaternion rotationDelta = referenceTransform.rotation * Quaternion.Inverse(previousRotation);
+            Vector3 observedPositionDelta = referenceTransform.position - previousPosition;
+            Quaternion observedRotationDelta = referenceTransform.rotation * Quaternion.Inverse(previousRotation);
+
+            // 物理同期タイミングで observed delta が 0 になるフレームだけ、
+            // この tick で指示した参照ターゲット差分へフォールバックして運搬量を維持します。
+            Vector3 positionDelta = observedPositionDelta;
+            Quaternion rotationDelta = observedRotationDelta;
+
+            if (hasReferenceCommand)
+            {
+                Vector3 commandedPositionDelta = referenceCommandedPosition - previousPosition;
+                Quaternion commandedRotationDelta = referenceCommandedRotation * Quaternion.Inverse(previousRotation);
+
+                if (positionDelta.sqrMagnitude <= DeltaFallbackThresholdSqr &&
+                    commandedPositionDelta.sqrMagnitude > DeltaFallbackThresholdSqr)
+                {
+                    positionDelta = commandedPositionDelta;
+                }
+
+                if (Quaternion.Angle(rotationDelta, Quaternion.identity) <= RotationFallbackAngleThreshold &&
+                    Quaternion.Angle(commandedRotationDelta, Quaternion.identity) > RotationFallbackAngleThreshold)
+                {
+                    rotationDelta = commandedRotationDelta;
+                }
+            }
+
+            if (!hasAccumulatedMotion)
+                accumulatedMotionOrigin = previousPosition;
+
             accumulatedPositionDelta += positionDelta;
             accumulatedRotationDelta = rotationDelta * accumulatedRotationDelta;
 

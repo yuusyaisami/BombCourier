@@ -7561,8 +7561,8 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
+  m_UseGravity: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -23721,7 +23721,7 @@ Transform:
   m_GameObject: {fileID: 6429256292103274385}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.60876125, z: -0, w: 0.7933535}
-  m_LocalPosition: {x: 7.8150053, y: 10, z: 3.142702}
+  m_LocalPosition: {x: 7.65092, y: 10, z: 0.5984779}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -24262,7 +24262,7 @@ Transform:
   m_GameObject: {fileID: 7144600776787467037}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8, y: 10, z: 1.25}
+  m_LocalPosition: {x: 8, y: 10, z: -1.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

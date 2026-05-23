@@ -254,11 +254,13 @@ namespace BC.Bomb
         // Retry checkpoint では「起爆開始時接触」を基準に、未起爆状態へ戻せるスナップショットを使う。
         public object CaptureRetryCheckpointState()
         {
+            // Retry は「拾う前」の状態へ戻す前提のため、手持ちフラグは常に false で保存する。
+            // これにより Reload 復帰直後に held 判定で即爆発する経路を防ぐ。
             return new BombCheckpointState(
             transform.parent,
             false,
             false,
-            isHandled,
+            false,
             fuseTime,
             0f,
             lastImpactThreshold,

@@ -70,6 +70,7 @@ CBUFFER_START(UnityPerMaterial)
     float _AdditionalLightIntensity;
     float _AdditionalLightShadowInfluence;
     float _AdditionalLightColorInfluence;
+    float _ReceiveDecal;
 
     float _LightBandEmissionEnabled;
     float4 _LightBandEmissionColor;

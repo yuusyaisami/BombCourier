@@ -116,6 +116,11 @@ namespace BC.Rendering
                 {
                     warningMessages.Add(FormatWarning(material, triplanarWarning, materials.Length));
                 }
+
+                if (EnvironmentStylizedLitMaterialValidator.TryGetDecalSurfaceModeWarning(material, out string decalWarning))
+                {
+                    warningMessages.Add(FormatWarning(material, decalWarning, materials.Length));
+                }
             }
 
             return warningMessages.ToArray();
@@ -210,6 +215,7 @@ namespace BC.Rendering
             DrawProperty("_AdditionalLightIntensity");
             DrawProperty("_AdditionalLightShadowInfluence");
             DrawProperty("_AdditionalLightColorInfluence");
+            DrawProperty("_ReceiveDecal");
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Light Band Emission", EditorStyles.boldLabel);

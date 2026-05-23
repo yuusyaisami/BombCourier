@@ -51,6 +51,7 @@ namespace BC.Rendering.Tests
             StringAssert.DoesNotContain("_ESL_TIER_", shaderSource);
             StringAssert.DoesNotContain("_ESL_VERTEX_COLOR", shaderSource);
             StringAssert.DoesNotContain("_ESL_WORLD_Y_GRADIENT", shaderSource);
+            StringAssert.Contains("#pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3", shaderSource);
 
             StringAssert.Contains("TryGetDebugViewBuildError", buildValidatorSource);
             StringAssert.Contains("TryGetNonDevelopmentBuildError", buildValidatorSource);
