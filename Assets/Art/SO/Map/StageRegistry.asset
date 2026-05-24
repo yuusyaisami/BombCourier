@@ -33,8 +33,8 @@ MonoBehaviour:
     stageDifficulty: 0
     clearTimeThreshold: 0
     stagePrefab: {fileID: 2650056577534689671, guid: 17be5cab470d72c49a2643903b378470, type: 3}
-  - stageName: 
+  - stageName: "\u30AD\u30CE\u30B3"
     stageDescription: 
     stageDifficulty: 0
     clearTimeThreshold: 0
-    stagePrefab: {fileID: 0}
+    stagePrefab: {fileID: 2650056577534689671, guid: c730ccdafe447b34a96eaefaec09d5ff, type: 3}
