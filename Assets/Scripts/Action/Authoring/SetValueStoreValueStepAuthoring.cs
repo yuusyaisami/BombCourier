@@ -24,12 +24,22 @@ namespace BC.ActionSystem
         ShapeExpressionId = 8,
     }
 
+    public enum ValueStoreNumericOperation
+    {
+        Set = 0,
+        Add = 1,
+        Subtract = 2,
+        Multiply = 3,
+        Divide = 4,
+    }
+
     [Serializable]
     public sealed class ValueStoreWriteAuthoring
     {
         [SerializeField] private ValueStoreWriteStoreScope storeScope;
         [SerializeField] private EntityTargetReference target = EntityTargetReference.Self();
         [SerializeField] private ValueStoreWriteValueKind valueKind;
+        [SerializeField] private ValueStoreNumericOperation numericOperation;
         [SerializeField] private ValueKeyReference key;
         [SerializeField] private ReactiveBool boolValue = ReactiveBool.LiteralValue(false);
         [SerializeField] private ReactiveInt intValue = ReactiveInt.LiteralValue(0);
@@ -43,6 +53,7 @@ namespace BC.ActionSystem
         public ValueStoreWriteStoreScope StoreScope => storeScope;
         public EntityTargetReference Target => target;
         public ValueStoreWriteValueKind ValueKind => valueKind;
+        public ValueStoreNumericOperation NumericOperation => numericOperation;
         public ValueKeyReference Key => key;
         public ReactiveBool BoolValue => boolValue;
         public ReactiveInt IntValue => intValue;
@@ -261,6 +272,7 @@ namespace BC.ActionSystem
                 write.StoreScope,
                 write.Target,
                 write.ValueKind,
+                write.NumericOperation,
                 write.Key,
                 write.BoolValue,
                 write.IntValue,

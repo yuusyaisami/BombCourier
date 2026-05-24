@@ -1186,13 +1186,13 @@ namespace BC.Editor.ActionSystem
                 canMutate,
                 () =>
                 {
-                    PrepareForDestructiveMutation();
-
                     if (selectionState.IsStepSelected(item) && selectionState.SelectedStepCount > 1)
                     {
                         DeleteSelectedSteps();
                         return;
                     }
+
+                    PrepareForDestructiveMutation();
 
                     ActionStepManagedReferenceUtility.DeleteStep(targets, listPropertyPath, item.StepIndex);
                     RefreshAfterMutation();
@@ -1272,7 +1272,6 @@ namespace BC.Editor.ActionSystem
 
             if (item.Kind == ActionBlockTreeItemKind.Step)
             {
-                PrepareForDestructiveMutation();
                 return DeleteSelectedSteps();
             }
 
@@ -1318,6 +1317,8 @@ namespace BC.Editor.ActionSystem
             if (groupedIndices.Count <= 0)
                 return false;
 
+            PrepareForDestructiveMutation();
+
             foreach (KeyValuePair<string, List<int>> pair in groupedIndices)
                 ActionStepManagedReferenceUtility.DeleteSteps(serializedObject.targetObjects, pair.Key, pair.Value);
 
@@ -1329,6 +1330,27 @@ namespace BC.Editor.ActionSystem
         {
             if (!TryFindSelectedItem(out ActionBlockTreeItem item) || item.Kind != ActionBlockTreeItemKind.Step)
                 return false;
+
+            List<ActionBlockTreeItem> selectedStepItems = GetSelectedStepItemsInTreeOrder();
+
+            if (selectionState.IsStepSelected(item) && selectedStepItems.Count > 1)
+            {
+                List<SerializedProperty> stepProperties = new(selectedStepItems.Count);
+
+                for (int i = 0; i < selectedStepItems.Count; i++)
+                {
+                    SerializedProperty selectedProperty = FindItemProperty(selectedStepItems[i]);
+
+                    if (selectedProperty?.managedReferenceValue != null)
+                        stepProperties.Add(selectedProperty);
+                }
+
+                if (stepProperties.Count <= 0)
+                    return false;
+
+                ActionStepManagedReferenceUtility.CopySteps(stepProperties);
+                return true;
+            }
 
             SerializedProperty stepProperty = FindItemProperty(item);
 

@@ -503,5 +503,19 @@ namespace BC.Base
                     );
             }
         }
+        public static class GameLogic
+        {
+            public static class Talk
+            {
+                // 会話の回数 (会話開始時に1増える)
+                public static readonly ValueKey<int> TalkCount =
+                    new ValueKey<int>(
+                        new ValueKeyId(90001),
+                        "GameLogic.TalkCount",
+                        0,
+                        ValueCompositionMode.Raw
+                    );
+            }
+        }
     }
 }

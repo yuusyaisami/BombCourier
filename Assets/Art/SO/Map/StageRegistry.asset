@@ -28,3 +28,13 @@ MonoBehaviour:
     stageDifficulty: 0
     clearTimeThreshold: 4
     stagePrefab: {fileID: 2650056577534689671, guid: 6a346da4e6837e648bdd3b31d88639ac, type: 3}
+  - stageName: "\u6E96\u5099"
+    stageDescription: 
+    stageDifficulty: 0
+    clearTimeThreshold: 0
+    stagePrefab: {fileID: 2650056577534689671, guid: 17be5cab470d72c49a2643903b378470, type: 3}
+  - stageName: 
+    stageDescription: 
+    stageDifficulty: 0
+    clearTimeThreshold: 0
+    stagePrefab: {fileID: 0}

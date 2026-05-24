@@ -11,6 +11,7 @@ namespace BC.ActionSystem
         private readonly ValueStoreWriteStoreScope storeScope;
         private readonly EntityTargetReference target;
         private readonly ValueStoreWriteValueKind valueKind;
+        private readonly ValueStoreNumericOperation numericOperation;
         private readonly ValueKeyReference key;
         private readonly ReactiveBool boolValue;
         private readonly ReactiveInt intValue;
@@ -25,6 +26,7 @@ namespace BC.ActionSystem
             ValueStoreWriteStoreScope storeScope,
             EntityTargetReference target,
             ValueStoreWriteValueKind valueKind,
+            ValueStoreNumericOperation numericOperation,
             ValueKeyReference key,
             ReactiveBool boolValue,
             ReactiveInt intValue,
@@ -38,6 +40,7 @@ namespace BC.ActionSystem
             this.storeScope = storeScope;
             this.target = target;
             this.valueKind = valueKind;
+            this.numericOperation = numericOperation;
             this.key = key;
             this.boolValue = boolValue;
             this.intValue = intValue;
@@ -55,6 +58,7 @@ namespace BC.ActionSystem
                 storeScope,
                 target,
                 valueKind,
+                numericOperation,
                 key,
                 boolValue,
                 intValue,
@@ -71,6 +75,7 @@ namespace BC.ActionSystem
             private readonly ValueStoreWriteStoreScope storeScope;
             private readonly EntityTargetReference target;
             private readonly ValueStoreWriteValueKind valueKind;
+            private readonly ValueStoreNumericOperation numericOperation;
             private readonly ValueKeyReference key;
             private readonly ReactiveBool boolValue;
             private readonly ReactiveInt intValue;
@@ -87,6 +92,7 @@ namespace BC.ActionSystem
                 ValueStoreWriteStoreScope storeScope,
                 EntityTargetReference target,
                 ValueStoreWriteValueKind valueKind,
+                ValueStoreNumericOperation numericOperation,
                 ValueKeyReference key,
                 ReactiveBool boolValue,
                 ReactiveInt intValue,
@@ -100,6 +106,7 @@ namespace BC.ActionSystem
                 this.storeScope = storeScope;
                 this.target = target;
                 this.valueKind = valueKind;
+                this.numericOperation = numericOperation;
                 this.key = key;
                 this.boolValue = boolValue;
                 this.intValue = intValue;
@@ -172,14 +179,206 @@ namespace BC.ActionSystem
             {
                 using ReactiveIntBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), intValue);
                 ReactiveResult<int> result = binding.Read();
-                return result.Success ? ApplyValue(context, descriptor.GetKey<int>(), result.Value) : ActionNodeStatus.Failed;
+                return result.Success ? ApplyIntValue(context, descriptor.GetKey<int>(), result.Value) : ActionNodeStatus.Failed;
             }
 
             private ActionNodeStatus WriteFloat(in ActionExecutionContext context, ValueKeyDescriptor descriptor)
             {
                 using ReactiveFloatBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), floatValue);
                 ReactiveResult<float> result = binding.Read();
-                return result.Success ? ApplyValue(context, descriptor.GetKey<float>(), result.Value) : ActionNodeStatus.Failed;
+                return result.Success ? ApplyFloatValue(context, descriptor.GetKey<float>(), result.Value) : ActionNodeStatus.Failed;
+            }
+
+            private ActionNodeStatus ApplyIntValue(in ActionExecutionContext context, ValueKey<int> resolvedKey, int operand)
+            {
+                try
+                {
+                    if (storeScope == ValueStoreWriteStoreScope.Local)
+                    {
+                        if (context.LocalValueStore == null)
+                            return ActionNodeStatus.Failed;
+
+                        int current = context.LocalValueStore.Get(resolvedKey);
+                        if (!TryApplyNumericInt(current, operand, out int next))
+                            return ActionNodeStatus.Failed;
+
+                        context.LocalValueStore.Set(resolvedKey, next);
+                        return ActionNodeStatus.Continue;
+                    }
+
+                    if (storeScope == ValueStoreWriteStoreScope.Kernel)
+                    {
+                        if (context.KernelValueStore == null)
+                            return ActionNodeStatus.Failed;
+
+                        int current = context.KernelValueStore.Get(resolvedKey);
+                        if (!TryApplyNumericInt(current, operand, out int next))
+                            return ActionNodeStatus.Failed;
+
+                        context.KernelValueStore.Set(resolvedKey, next);
+                        return ActionNodeStatus.Continue;
+                    }
+
+                    if (context.EntityValueStore == null)
+                        return ActionNodeStatus.Failed;
+
+                    resolvedTargets ??= new List<EntityRef>(4);
+                    int count = ActionTargetResolver.Resolve(context, target, resolvedTargets);
+
+                    if (count == 0)
+                        return ActionNodeStatus.Failed;
+
+                    for (int index = 0; index < count; index++)
+                    {
+                        EntityRef targetEntity = resolvedTargets[index];
+                        int current = context.EntityValueStore.Get(targetEntity, resolvedKey);
+
+                        if (!TryApplyNumericInt(current, operand, out int next))
+                            return ActionNodeStatus.Failed;
+
+                        context.EntityValueStore.Set(targetEntity, resolvedKey, next);
+                    }
+
+                    return ActionNodeStatus.Continue;
+                }
+                catch (InvalidOperationException exception)
+                {
+                    Debug.LogWarning($"{nameof(SetValueStoreValueStepRuntime)} failed to write '{resolvedKey.Path}'. {exception.Message}");
+                    return ActionNodeStatus.Failed;
+                }
+            }
+
+            private ActionNodeStatus ApplyFloatValue(in ActionExecutionContext context, ValueKey<float> resolvedKey, float operand)
+            {
+                try
+                {
+                    if (storeScope == ValueStoreWriteStoreScope.Local)
+                    {
+                        if (context.LocalValueStore == null)
+                            return ActionNodeStatus.Failed;
+
+                        float current = context.LocalValueStore.Get(resolvedKey);
+                        if (!TryApplyNumericFloat(current, operand, out float next))
+                            return ActionNodeStatus.Failed;
+
+                        context.LocalValueStore.Set(resolvedKey, next);
+                        return ActionNodeStatus.Continue;
+                    }
+
+                    if (storeScope == ValueStoreWriteStoreScope.Kernel)
+                    {
+                        if (context.KernelValueStore == null)
+                            return ActionNodeStatus.Failed;
+
+                        float current = context.KernelValueStore.Get(resolvedKey);
+                        if (!TryApplyNumericFloat(current, operand, out float next))
+                            return ActionNodeStatus.Failed;
+
+                        context.KernelValueStore.Set(resolvedKey, next);
+                        return ActionNodeStatus.Continue;
+                    }
+
+                    if (context.EntityValueStore == null)
+                        return ActionNodeStatus.Failed;
+
+                    resolvedTargets ??= new List<EntityRef>(4);
+                    int count = ActionTargetResolver.Resolve(context, target, resolvedTargets);
+
+                    if (count == 0)
+                        return ActionNodeStatus.Failed;
+
+                    for (int index = 0; index < count; index++)
+                    {
+                        EntityRef targetEntity = resolvedTargets[index];
+                        float current = context.EntityValueStore.Get(targetEntity, resolvedKey);
+
+                        if (!TryApplyNumericFloat(current, operand, out float next))
+                            return ActionNodeStatus.Failed;
+
+                        context.EntityValueStore.Set(targetEntity, resolvedKey, next);
+                    }
+
+                    return ActionNodeStatus.Continue;
+                }
+                catch (InvalidOperationException exception)
+                {
+                    Debug.LogWarning($"{nameof(SetValueStoreValueStepRuntime)} failed to write '{resolvedKey.Path}'. {exception.Message}");
+                    return ActionNodeStatus.Failed;
+                }
+            }
+
+            private bool TryApplyNumericInt(int current, int operand, out int result)
+            {
+                switch (numericOperation)
+                {
+                    case ValueStoreNumericOperation.Set:
+                        result = operand;
+                        return true;
+
+                    case ValueStoreNumericOperation.Add:
+                        result = current + operand;
+                        return true;
+
+                    case ValueStoreNumericOperation.Subtract:
+                        result = current - operand;
+                        return true;
+
+                    case ValueStoreNumericOperation.Multiply:
+                        result = current * operand;
+                        return true;
+
+                    case ValueStoreNumericOperation.Divide:
+                        if (operand == 0)
+                        {
+                            Debug.LogWarning($"{nameof(SetValueStoreValueStepRuntime)}: divide by zero is not allowed for int key '{key.Path}'.");
+                            result = current;
+                            return false;
+                        }
+
+                        result = current / operand;
+                        return true;
+
+                    default:
+                        result = operand;
+                        return true;
+                }
+            }
+
+            private bool TryApplyNumericFloat(float current, float operand, out float result)
+            {
+                switch (numericOperation)
+                {
+                    case ValueStoreNumericOperation.Set:
+                        result = operand;
+                        return true;
+
+                    case ValueStoreNumericOperation.Add:
+                        result = current + operand;
+                        return true;
+
+                    case ValueStoreNumericOperation.Subtract:
+                        result = current - operand;
+                        return true;
+
+                    case ValueStoreNumericOperation.Multiply:
+                        result = current * operand;
+                        return true;
+
+                    case ValueStoreNumericOperation.Divide:
+                        if (Mathf.Approximately(operand, 0f))
+                        {
+                            Debug.LogWarning($"{nameof(SetValueStoreValueStepRuntime)}: divide by zero is not allowed for float key '{key.Path}'.");
+                            result = current;
+                            return false;
+                        }
+
+                        result = current / operand;
+                        return true;
+
+                    default:
+                        result = operand;
+                        return true;
+                }
             }
 
             private ActionNodeStatus WriteString(in ActionExecutionContext context, ValueKeyDescriptor descriptor)

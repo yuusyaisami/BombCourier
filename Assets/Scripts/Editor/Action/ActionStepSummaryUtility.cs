@@ -235,9 +235,39 @@ namespace BC.Editor.ActionSystem
             if (scopeProperty != null && (ValueStoreWriteStoreScope)scopeProperty.enumValueIndex == ValueStoreWriteStoreScope.Entity)
             {
                 string targetSummary = BuildEntityTargetSummary(writeProperty.FindPropertyRelative("target"));
+                string assignment = BuildValueStoreAssignment(writeProperty, effectiveKind, keySummary, valueSummary);
 
                 if (!IsDefaultSelfTarget(targetSummary))
-                    return $"{targetSummary}: {keySummary} = {valueSummary}";
+                    return $"{targetSummary}: {assignment}";
+            }
+
+            return BuildValueStoreAssignment(writeProperty, effectiveKind, keySummary, valueSummary);
+        }
+
+        private static string BuildValueStoreAssignment(
+            SerializedProperty writeProperty,
+            ValueStoreWriteValueKind effectiveKind,
+            string keySummary,
+            string valueSummary)
+        {
+            SerializedProperty operationProperty = writeProperty.FindPropertyRelative("numericOperation");
+            ValueStoreNumericOperation operation = operationProperty != null
+                ? (ValueStoreNumericOperation)operationProperty.enumValueIndex
+                : ValueStoreNumericOperation.Set;
+
+            if (effectiveKind == ValueStoreWriteValueKind.Int || effectiveKind == ValueStoreWriteValueKind.Float)
+            {
+                string expression = operation switch
+                {
+                    ValueStoreNumericOperation.Set => $"{keySummary} = {valueSummary}",
+                    ValueStoreNumericOperation.Add => $"{keySummary} += {valueSummary}",
+                    ValueStoreNumericOperation.Subtract => $"{keySummary} -= {valueSummary}",
+                    ValueStoreNumericOperation.Multiply => $"{keySummary} *= {valueSummary}",
+                    ValueStoreNumericOperation.Divide => $"{keySummary} /= {valueSummary}",
+                    _ => $"{keySummary} = {valueSummary}",
+                };
+
+                return expression;
             }
 
             return $"{keySummary} = {valueSummary}";

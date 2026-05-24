@@ -79,6 +79,11 @@ namespace BC.Editor.ActionSystem
             ActionStepClipboard.Copy(stepProperty);
         }
 
+        internal static void CopySteps(IReadOnlyList<SerializedProperty> stepProperties)
+        {
+            ActionStepClipboard.Copy(stepProperties);
+        }
+
         internal static bool CanPasteStep()
         {
             return ActionStepClipboard.HasStep;
@@ -97,14 +102,19 @@ namespace BC.Editor.ActionSystem
             ApplyListMutation(targets, listPropertyPath, "Paste Action Step", listProperty =>
             {
                 // Paste always materializes a fresh clone so the clipboard payload stays immutable across edits.
-                object clone = ActionStepClipboard.CloneStep();
+                List<object> clones = ActionStepClipboard.CloneSteps();
 
-                if (clone == null)
+                if (clones.Count <= 0)
                     return;
 
                 int targetIndex = ResolveInsertIndex(listProperty, insertIndex);
-                listProperty.InsertArrayElementAtIndex(targetIndex);
-                listProperty.GetArrayElementAtIndex(targetIndex).managedReferenceValue = clone;
+
+                for (int index = 0; index < clones.Count; index++)
+                {
+                    int currentInsertIndex = Math.Min(targetIndex + index, listProperty.arraySize);
+                    listProperty.InsertArrayElementAtIndex(currentInsertIndex);
+                    listProperty.GetArrayElementAtIndex(currentInsertIndex).managedReferenceValue = clones[index];
+                }
             });
         }
 

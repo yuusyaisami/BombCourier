@@ -17,6 +17,7 @@ namespace BC.Editor
             SerializedProperty scopeProperty = property.FindPropertyRelative("storeScope");
             SerializedProperty targetProperty = property.FindPropertyRelative("target");
             SerializedProperty kindProperty = property.FindPropertyRelative("valueKind");
+            SerializedProperty numericOperationProperty = property.FindPropertyRelative("numericOperation");
             SerializedProperty keyProperty = property.FindPropertyRelative("key");
 
             float height = GetControlDelta(LineHeight);
@@ -26,6 +27,10 @@ namespace BC.Editor
 
             height += GetControlDelta(LineHeight);
             height += GetControlDelta(GetKeyFieldHeight());
+
+            if (ShouldDrawNumericOperation(kindProperty, keyProperty) && numericOperationProperty != null)
+                height += GetControlDelta(LineHeight);
+
             height += GetControlDelta(GetValueFieldHeight(property, kindProperty, keyProperty));
 
             return Mathf.Max(LineHeight, height - Spacing);
@@ -36,6 +41,7 @@ namespace BC.Editor
             SerializedProperty scopeProperty = property.FindPropertyRelative("storeScope");
             SerializedProperty targetProperty = property.FindPropertyRelative("target");
             SerializedProperty kindProperty = property.FindPropertyRelative("valueKind");
+            SerializedProperty numericOperationProperty = property.FindPropertyRelative("numericOperation");
             SerializedProperty keyProperty = property.FindPropertyRelative("key");
 
             if (scopeProperty == null || targetProperty == null || kindProperty == null || keyProperty == null)
@@ -64,7 +70,21 @@ namespace BC.Editor
             DrawKeyDropdown(new Rect(contentRect.x, rowRect.y, contentRect.width, GetKeyFieldHeight()), keyProperty, scopeProperty, kindProperty);
             rowRect.y += GetKeyFieldHeight() + Spacing;
 
+            if (ShouldDrawNumericOperation(kindProperty, keyProperty) && numericOperationProperty != null)
+            {
+                EditorGUI.PropertyField(new Rect(contentRect.x, rowRect.y, contentRect.width, LineHeight), numericOperationProperty, new GUIContent("Operation"));
+                rowRect.y += LineHeight + Spacing;
+            }
+
             DrawValueField(new Rect(contentRect.x, rowRect.y, contentRect.width, GetValueFieldHeight(property, kindProperty, keyProperty)), property, kindProperty, keyProperty);
+        }
+
+        private static bool ShouldDrawNumericOperation(SerializedProperty kindProperty, SerializedProperty keyProperty)
+        {
+            if (!TryResolveEffectiveKind(kindProperty, keyProperty, out ValueStoreWriteValueKind effectiveKind))
+                return false;
+
+            return effectiveKind == ValueStoreWriteValueKind.Int || effectiveKind == ValueStoreWriteValueKind.Float;
         }
 
         private static float GetControlDelta(float controlHeight)
