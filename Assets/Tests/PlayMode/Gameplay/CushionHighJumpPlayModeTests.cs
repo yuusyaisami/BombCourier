@@ -12,9 +12,8 @@ namespace BC.Gameplay.PlayModeTests
     {
         private const string CushionSurfaceTypeName = "BC.Gimmick.Cushion.CushionSurfaceMB";
         private const string CushionImpactDataTypeName = "BC.Gimmick.Cushion.CushionImpactData";
+        private const string CushionImpactHandlerTypeName = "BC.Base.CushionImpactHandler";
         private const string EntityTagIdTypeName = "BC.Base.EntityTagId";
-        private const string EntityMoveMotorTypeName = "BC.Base.EntityMoveMotorMB";
-        private const string EntityMoveStateTypeName = "BC.Base.EntityMoveState";
         private const string ToastSystemManagerTypeName = "BC.Managers.ToastSystemManagerMB";
         private const string ToastRequestDataTypeName = "BC.Managers.ToastRequestData";
         private const string UIToastItemTypeName = "BC.UI.UIToastItemMB";
@@ -125,22 +124,11 @@ namespace BC.Gameplay.PlayModeTests
         }
 
         [Test]
-        public void EntityMoveMotor_HighJumpBuilder_UsesHeldJumpAndCapsSpeed()
+        public void CushionImpactHandler_HighJumpBuilder_UsesBufferedInputAndCapsSpeed()
         {
-            DestroyToastManagerInstance();
-
-            GameObject motorObject = new GameObject("PlayerMotor");
-            createdObjects.Add(motorObject);
-
-            motorObject.AddComponent<Rigidbody>();
-            motorObject.AddComponent<CapsuleCollider>();
-            Component moveMotor = motorObject.AddComponent(FindRuntimeType(EntityMoveMotorTypeName));
-
-            SetPrivateField(moveMotor, "jumpHeld", true);
-
-            MethodInfo method = moveMotor.GetType().GetMethod(
+            MethodInfo method = FindRuntimeType(CushionImpactHandlerTypeName).GetMethod(
                 "TryBuildHighJumpBounceVelocity",
-                BindingFlags.Instance | BindingFlags.NonPublic);
+                BindingFlags.Static | BindingFlags.Public);
 
             Assert.IsNotNull(method);
 
@@ -149,15 +137,19 @@ namespace BC.Gameplay.PlayModeTests
                 Vector3.up * 10f,
                 9f,
                 2f,
-                null,
+                true,
+                Vector3.zero,
             };
 
-            bool handled = (bool)method.Invoke(moveMotor, args);
-            Vector3 resolvedVelocity = (Vector3)args[3];
+            bool handled = (bool)method.Invoke(null, args);
+            Vector3 resolvedVelocity = (Vector3)args[4];
 
             Assert.IsTrue(handled);
             Assert.That(resolvedVelocity.magnitude, Is.EqualTo(18f).Within(0.001f));
-            Assert.AreEqual("Jumping", GetPropertyValue<object>(moveMotor, "MoveState").ToString());
+            Vector3 normalized = resolvedVelocity.normalized;
+            Assert.That(normalized.x, Is.EqualTo(0.0f).Within(0.0001f));
+            Assert.That(normalized.y, Is.EqualTo(1.0f).Within(0.0001f));
+            Assert.That(normalized.z, Is.EqualTo(0.0f).Within(0.0001f));
         }
 
         [UnityTest]

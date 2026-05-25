@@ -26,6 +26,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
+  - _RECEIVEDECAL_ON
   - _SIMPLEBOOSTEMISSIONENABLED_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -166,6 +167,7 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
+    - _ReceiveDecal: 1
     - _ReceiveShadows: 1
     - _ShadowColorBlend: 0.6
     - _ShadowInfluence: 1
@@ -210,7 +212,7 @@ Material:
     - _AmbientBottomColor: {r: 0.21999997, g: 0.19999996, b: 0.17999998, a: 1}
     - _AmbientSideColor: {r: 0.33999997, g: 0.37999994, b: 0.45999992, a: 1}
     - _AmbientTopColor: {r: 0.5, g: 0.56999993, b: 0.7, a: 1}
-    - _BaseColor: {r: 1, g: 0.9430227, b: 0.48113197, a: 1}
+    - _BaseColor: {r: 0.48235297, g: 1, b: 0.96351475, a: 1}
     - _BounceColor: {r: 0.92, g: 0.78, b: 0.62, a: 1}
     - _BounceDirection: {r: 0, g: 1, b: 0, a: 0}
     - _CavityColor: {r: 0.68, g: 0.73, b: 0.82, a: 1}
@@ -225,7 +227,7 @@ Material:
     - _LightColor: {r: 1, g: 0.96, b: 0.9, a: 1}
     - _MidColor: {r: 0.8399999, g: 0.88, b: 0.93, a: 1}
     - _ShadowColor: {r: 0.56, g: 0.63, b: 0.78999996, a: 1}
-    - _SimpleBoostEmissionColor: {r: 1, g: 0.87136734, b: 0.19461787, a: 1}
+    - _SimpleBoostEmissionColor: {r: 0.19607842, g: 1, b: 0.89708406, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
     - _WorldYGradientBottomColor: {r: 1, g: 1, b: 1, a: 1}

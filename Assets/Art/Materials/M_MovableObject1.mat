@@ -93,7 +93,7 @@ Material:
     - _AdditionalLightIntensity: 0.6
     - _AdditionalLightMode: 2
     - _AdditionalLightShadowInfluence: 0.773
-    - _AlbedoNoiseStrength: 0.162
+    - _AlbedoNoiseStrength: 0.168
     - _AlphaClip: 0
     - _AlphaToMask: 0
     - _AmbientStrength: 0.285
@@ -145,7 +145,7 @@ Material:
     - _NoiseDistanceFadeEnd: 32
     - _NoiseDistanceFadeStart: 12
     - _NoiseSpace: 0
-    - _NormalScale: 0.275
+    - _NormalScale: 0.193
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
@@ -153,7 +153,7 @@ Material:
     - _ReceiveShadows: 1
     - _ShadowColorBlend: 0.6
     - _ShadowInfluence: 1
-    - _ShadowSoftFill: 0.2
+    - _ShadowSoftFill: 0.168
     - _SimpleBoostEmissionEnabled: 0
     - _SimpleBoostEmissionIntensity: 3.73
     - _SimpleBoostFresnelInvert: 0

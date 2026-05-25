@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using BC.Gimmick.Cushion;
 using Cysharp.Threading.Tasks;
@@ -29,6 +30,8 @@ namespace BC.Base
         [SerializeField] private Rigidbody bodyRigidbody;
         [Tooltip("地面判定とカプセル形状の基準にする CapsuleCollider です。")]
         [SerializeField] private CapsuleCollider bodyCollider;
+        [Tooltip("任意の足元補助コライダーです。設定する場合は trigger を必須にします。")]
+        [SerializeField] private Collider footCollider;
 
         [Header("Speed")]
         [Tooltip("移動速度のデフォルト値。ValueStore に値が無いときの fallback です。")]
@@ -82,6 +85,18 @@ namespace BC.Base
         [Tooltip("段差補助を始める最小水平速度です。")]
         [SerializeField, Min(0.01f)] private float minStepAssistSpeed = 0.1f;
 
+        [Header("Ground Snap")]
+        [Tooltip("地面吸着の設定です。")]
+        [SerializeField] private GroundSnapSettings groundSnapSettings = new GroundSnapSettings();
+
+        [Header("M3 Step Assist")]
+        [Tooltip("段差補助ソルバの設定です。")]
+        [SerializeField] private StepAssistSettings stepAssistSettings = new StepAssistSettings();
+
+        [Header("Support Inertia")]
+        [Tooltip("移動足場の慣性・launch 設定です。")]
+        [SerializeField] private SupportInertiaSettings supportInertiaSettings = new SupportInertiaSettings();
+
         [Header("Moving Platform")]
         [Tooltip("移動足場の速度をジャンプ後に継承するかを指定します。")]
         [SerializeField] private bool inheritMovingPlatformVelocityOnJump = true;
@@ -114,6 +129,10 @@ namespace BC.Base
         [Tooltip("この速度未満では押し返しを行いません。")]
         [SerializeField, Min(0.0f)] private float minContactPushSpeed = 0.1f;
 
+        [Header("M4 Contact Classification")]
+        [Tooltip("頭上接触を ceiling と判定する高さ帯です。")]
+        [SerializeField, Min(0.0f)] private float contactCeilingBand = 0.08f;
+
         [Header("Runtime Debug")]
         [Tooltip("現在の Move.CanMoveByInput をデバッグ表示する値です。")]
         [SerializeField] private bool currentCanMoveByInput;
@@ -121,74 +140,45 @@ namespace BC.Base
         [SerializeField] private bool currentCanMoveBySystem;
 
         private const int MaxGroundHits = 8;
-        private const int MaxStepOverlapHits = 8;
-        private const float StepAssistSurfaceSkin = 0.02f;
-        private const float StepAssistWallMaxUpDot = 0.25f;
-        private const float StepAssistMinApproachDot = 0.2f;
         private const float AutoMoveStopSpeedSqr = 0.01f;
 
         private readonly RaycastHit[] groundHits = new RaycastHit[MaxGroundHits];
-        private readonly Collider[] stepOverlapHits = new Collider[MaxStepOverlapHits];
+        private readonly Collider[] stepOverlapHits = new Collider[8];
+        private readonly MoveContactBuffer moveContactBuffer = new MoveContactBuffer();
+        private readonly HashSet<Collider> contactPushProcessedColliders = new HashSet<Collider>();
+        private readonly HashSet<Collider> cushionProcessedColliders = new HashSet<Collider>();
+        private readonly EntityMoveRuntimeState runtimeState = new EntityMoveRuntimeState();
+        private readonly SupportMotionTracker supportMotionTracker = new SupportMotionTracker();
+        private readonly CushionHighJumpBuffer cushionHighJumpBuffer = new CushionHighJumpBuffer();
+        private EntityMoveIntent currentIntent = new EntityMoveIntent();
+        private readonly AutoMoveState autoMoveState = new AutoMoveState();
+        private readonly AutoMoveDriver autoMoveDriver = new AutoMoveDriver();
 
         private EntityMB entityMB;
-        private CharacterController legacyCharacterController;
         private PhysicsMaterial lowFrictionContactMaterial;
-
-        private Vector3 planarVelocity;
-        private float verticalVelocity;
-        private Vector3 externalVelocity;
-        private Vector3 inheritedPlatformVelocity;
-
-        private Vector3 moveDirection;
-        private bool sprintHeld;
-        private bool jumpHeld;
-        private float jumpBufferCounter;
-        private float lastGroundedTime = -999.0f;
+        private string lastColliderPolicyErrorMessage;
 
         private GroundInfo ground;
-        private Transform currentPlatform;
-        private Vector3 lastPlatformPosition;
-        private Quaternion lastPlatformRotation;
-        private bool hasPlatformPose;
-        private Vector3 platformDelta;
-        private Vector3 platformVelocity;
-        private Transform supportSampleSource;
-        private Vector3 supportSampleLocalPoint;
-        private bool hasSupportSamplePoint;
         private bool suppressPlatformVelocityInjectionThisTick;
-        private bool wasGroundedLastMotorTick;
 
-        private bool motionLocked;
         private Vector3 preservedVelocityWhenLocked;
         private float nextCushionImpactTime;
-        private float pendingCushionHighJumpExpireTime = -999.0f;
-        private Vector3 pendingCushionBounceDirection;
-        private float pendingCushionBounceSpeed;
-        private float pendingCushionBounceSpeedLimit;
-        private float pendingCushionHighJumpMultiplier = 1.0f;
-        private bool isDead;
         private ValueModifierTagId? activeDeadMoveLockTag;
 
-        private CancellationTokenSource activeAutoMoveCancellationTokenSource;
-        private Vector3 autoMoveTargetPosition;
-        private float autoMoveArrivalDistanceSqr;
-        private bool autoMoveActive;
-        private bool autoMoveReachedTarget;
-
-        public Vector3 PlanarVelocity => planarVelocity;
-        public float VerticalVelocity => verticalVelocity;
-        public Vector3 ExternalVelocity => externalVelocity;
+        public Vector3 PlanarVelocity => GetVelocityChannels().InputPlanar;
+        public float VerticalVelocity => GetVelocityChannels().Vertical;
+        public Vector3 ExternalVelocity => GetVelocityChannels().External;
         /// <summary>接地している足場の移動速度を返します。</summary>
-        public Vector3 PlatformVelocity => platformVelocity;
+        public Vector3 PlatformVelocity => GetVelocityChannels().SupportCarry;
 
         /// <summary>このモーターが最終的に身体へ与えている速度を返します。</summary>
-        public Vector3 CurrentVelocity => GetBodyVelocity() + platformVelocity;
+        public Vector3 CurrentVelocity => VelocityComposer.ComposeFinalVelocity(GetVelocityChannels());
         public bool CanMoveByInput => currentCanMoveByInput;
         public bool CanMoveBySystem => currentCanMoveBySystem;
         public bool CanProcessMoveInput => CanReceiveMoveInput() && CanApplySystemMovement();
-        public bool IsAutoMoveActive => autoMoveActive;
+        public bool IsAutoMoveActive => autoMoveState.IsActive;
         public bool IsGrounded => ground.IsValid;
-        public bool IsDead => isDead;
+        public bool IsDead => runtimeState.IsDead;
         public event Action<CushionHighJumpEventData> CushionHighJumped;
         public Vector3 GroundNormal => ground.IsValid ? ground.Normal : Vector3.up;
         public Vector3 GroundPoint => ground.IsValid ? ground.Point : transform.position;
@@ -198,7 +188,7 @@ namespace BC.Base
         public EntityTagId CushionImpactTag => ResolveCushionImpactTag();
 
         public bool IsSprinting =>
-            sprintHeld &&
+            currentIntent.SprintHeld &&
             MoveState == EntityMoveState.Moving &&
             CurrentPlanarSpeed > 0.15f;
 
@@ -206,13 +196,11 @@ namespace BC.Base
         {
             get
             {
-                Vector3 velocity = planarVelocity;
-                velocity.y = 0.0f;
-                return velocity;
+                return VelocityComposer.ControlledPlanarVelocity(GetVelocityChannels());
             }
         }
 
-        public float CurrentPlanarSpeed => ControlledPlanarVelocity.magnitude;
+        public float CurrentPlanarSpeed => VelocityComposer.CurrentPlanarSpeed(GetVelocityChannels());
 
         public float NormalizedPlanarSpeed
         {
@@ -228,7 +216,13 @@ namespace BC.Base
         // 依存コンポーネントの存在を保証する。
         private void Awake()
         {
+            SyncM3SettingsFromLegacyStepFields();
             EnsureMovementBody();
+        }
+
+        private void OnValidate()
+        {
+            SyncM3SettingsFromLegacyStepFields();
         }
 
         protected override void Start()
@@ -258,6 +252,7 @@ namespace BC.Base
         {
             CancelAutoMove();
             ClearMoveIntent();
+            moveContactBuffer.ClearForNextPhysicsTick();
         }
 
         // 毎物理 tick の中心処理。ここで入力、接地、足場、速度をまとめて更新する。
@@ -280,7 +275,7 @@ namespace BC.Base
                 return;
             }
 
-            if (motionLocked)
+            if (runtimeState.MotionLocked)
             {
                 TickLockedMotion(dt);
                 PublishRuntimeValues();
@@ -294,94 +289,133 @@ namespace BC.Base
         // 外部入力から移動意図を受け取り、ジャンプバッファもここで保持する。
         public void SetMoveIntent(Vector3 worldMoveDirection, bool wantsSprint, bool jumpPressedThisFrame, bool jumpHeldInput, float deltaTime)
         {
-            if (autoMoveActive)
+            if (autoMoveState.IsActive)
             {
                 ClearMoveIntent();
                 return;
             }
 
             bool canReceiveInput = CanProcessMoveInput;
+            currentIntent.JumpPressed = jumpPressedThisFrame;
 
             if (canReceiveInput)
             {
                 worldMoveDirection.y = 0.0f;
-                moveDirection = Vector3.ClampMagnitude(worldMoveDirection, 1.0f);
-                sprintHeld = wantsSprint;
-                jumpHeld = jumpHeldInput;
+                currentIntent.WorldMoveDirection = Vector3.ClampMagnitude(worldMoveDirection, 1.0f);
+                currentIntent.HasMoveInput = currentIntent.WorldMoveDirection.sqrMagnitude > 0.0001f;
+                currentIntent.SprintHeld = wantsSprint;
+                currentIntent.JumpHeld = jumpHeldInput;
+                currentIntent.IsAutoMove = false;
 
                 if (jumpPressedThisFrame)
                 {
-                    jumpBufferCounter = jumpBufferTime;
+                    runtimeState.JumpBufferCounter = jumpBufferTime;
                     return;
                 }
             }
             else
             {
-                moveDirection = Vector3.zero;
-                sprintHeld = false;
-                jumpHeld = false;
+                currentIntent.Clear();
             }
 
-            jumpBufferCounter -= deltaTime;
+            runtimeState.JumpBufferCounter -= deltaTime;
         }
 
         // 入力の残りを消して、次の tick に影響しないようにする。
         public void ClearMoveIntent()
         {
-            moveDirection = Vector3.zero;
-            sprintHeld = false;
-            jumpHeld = false;
-            jumpBufferCounter = 0.0f;
-            ClearPendingCushionHighJump();
+            currentIntent.Clear();
+            runtimeState.JumpBufferCounter = 0.0f;
+            cushionHighJumpBuffer.Clear();
         }
 
         // 通常時の移動更新。接地、足場、水平移動、垂直移動を順に処理する。
         private void TickMotor(float dt)
         {
             suppressPlatformVelocityInjectionThisTick = false;
+            SyncLegacyVelocityFieldsFromChannels();
             ProbeGround();
+            SyncRuntimeGroundState();
 
             bool isGrounded = ground.IsValid;
 
-            if (!isGrounded && wasGroundedLastMotorTick)
+            if (!isGrounded && runtimeState.WasGrounded)
                 CapturePlatformInertiaOnLeaveGround();
 
             if (isGrounded)
-                lastGroundedTime = Time.time;
+                runtimeState.LastGroundedTime = Time.time;
 
             UpdatePlatformMotion(dt, isGrounded);
+            SyncVelocityChannelsFromLegacyFields();
 
-            if (isGrounded && !wasGroundedLastMotorTick)
+            // Support launch must be resolved before GroundSnap so launch tick can suppress snap.
+            ResolveSupportInertiaLaunch();
+
+            if (isGrounded && !runtimeState.WasGrounded)
                 RebaseInheritedPlatformMomentumOnLanding();
 
             UpdatePlanarVelocity(dt, isGrounded);
             UpdateVerticalVelocity(dt, isGrounded);
             UpdateExternalVelocity(dt);
 
+            ProcessBufferedContacts();
+            SyncVelocityChannelsFromLegacyFields();
+
             Vector3 bodyVelocity = GetBodyVelocity();
-            bool steppedUp = TryStepUp(dt, bodyVelocity, isGrounded);
+            PositionCorrection totalCorrection = PositionCorrection.None;
+            bool steppedUp = TryStepUp(dt, bodyVelocity, isGrounded, out PositionCorrection stepCorrection);
+
+            if (stepCorrection.HasCorrection)
+                totalCorrection = totalCorrection.Combine(stepCorrection);
 
             if (steppedUp && !isGrounded)
                 RebaseInheritedPlatformMomentumOnLanding();
 
+            // Step直後に同tickで下方向snapを重ねると過補正しやすいため、上方向step成立時はsnapを1tick抑止する。
+            bool allowGroundSnap = !stepCorrection.HasCorrection || stepCorrection.Delta.y <= 0.0001f;
+            PositionCorrection snapCorrection = allowGroundSnap
+                ? GroundSnapSolver.Resolve(
+                    groundSnapSettings,
+                    runtimeState,
+                    runtimeState.Ground,
+                    ground.IsValid,
+                    VerticalVelocity,
+                    Time.time,
+                    dt)
+                : PositionCorrection.None;
+
+            if (snapCorrection.HasCorrection)
+                totalCorrection = totalCorrection.Combine(snapCorrection);
+
+            ApplyPositionCorrection(totalCorrection);
+
+            if (totalCorrection.HasCorrection)
+            {
+                ProbeGround();
+                SyncRuntimeGroundState();
+            }
+
+            SyncRuntimeGroundState();
             bodyVelocity = GetBodyVelocity();
 
             ApplyCurrentVelocityToBody(bodyVelocity, isGrounded);
 
             StorePlatformPose();
             UpdateMoveState();
-            wasGroundedLastMotorTick = ground.IsValid;
+            runtimeState.WasGrounded = ground.IsValid;
+            moveContactBuffer.ClearForNextPhysicsTick();
         }
 
         // 水平方向の速度を、入力と接地状態に応じて滑らかに更新する。
         private void UpdatePlanarVelocity(float dt, bool isGrounded)
         {
+            VelocityChannels channels = runtimeState.Velocity;
             Vector3 desiredDirection = GetDesiredMoveDirection();
-            bool hasMoveInput = desiredDirection.sqrMagnitude > 0.0001f;
+            bool hasMoveInput = currentIntent.HasMoveInput && desiredDirection.sqrMagnitude > 0.0001f;
 
             float moveSpeed = GetMoveBaseSpeed(fallbackMoveSpeed);
 
-            if (sprintHeld)
+            if (currentIntent.SprintHeld)
                 moveSpeed *= GetSprintMultiplier(fallbackSprintMultiplier);
 
             Vector3 desiredVelocity = hasMoveInput
@@ -398,8 +432,8 @@ namespace BC.Base
                 }
                 else
                 {
-                    float dot = planarVelocity.sqrMagnitude > 0.001f
-                        ? Vector3.Dot(planarVelocity.normalized, desiredDirection)
+                    float dot = channels.InputPlanar.sqrMagnitude > 0.001f
+                        ? Vector3.Dot(channels.InputPlanar.normalized, desiredDirection)
                         : 1.0f;
 
                     acceleration = dot < 0.0f
@@ -412,263 +446,161 @@ namespace BC.Base
                 acceleration = hasMoveInput ? airAcceleration : airDeceleration;
             }
 
-            planarVelocity = Vector3.MoveTowards(planarVelocity, desiredVelocity, acceleration * dt);
+            channels.InputPlanar = Vector3.MoveTowards(channels.InputPlanar, desiredVelocity, acceleration * dt);
 
-            if (autoMoveActive && autoMoveReachedTarget && planarVelocity.sqrMagnitude <= AutoMoveStopSpeedSqr)
+            if (autoMoveState.IsActive && autoMoveState.ReachedTarget && channels.InputPlanar.sqrMagnitude <= AutoMoveStopSpeedSqr)
                 CompleteAutoMoveTarget();
 
             if (!isGrounded)
             {
-                Vector3 horizontal = new Vector3(planarVelocity.x, 0.0f, planarVelocity.z);
+                Vector3 horizontal = new Vector3(channels.InputPlanar.x, 0.0f, channels.InputPlanar.z);
 
                 if (horizontal.magnitude > maxAirHorizontalSpeed)
                 {
                     horizontal = horizontal.normalized * maxAirHorizontalSpeed;
-                    planarVelocity = new Vector3(horizontal.x, planarVelocity.y, horizontal.z);
+                    channels.InputPlanar = new Vector3(horizontal.x, channels.InputPlanar.y, horizontal.z);
                 }
             }
+
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         // ジャンプ、重力、接地時の貼り付き速度を更新する。
         private void UpdateVerticalVelocity(float dt, bool isGrounded)
         {
-            if (TryConsumePendingCushionHighJump())
+            VelocityChannels channels = runtimeState.Velocity;
+            CushionApplyResult pendingHighJumpResult = CushionImpactHandler.TryConsumeBufferedHighJump(
+                runtimeState,
+                cushionHighJumpBuffer,
+                HasBufferedHighJumpInput(),
+                groundedStickVelocity,
+                Time.time);
+
+            if (CommitCushionApplyResult(pendingHighJumpResult))
                 return;
 
-            bool canUseCoyote = Time.time - lastGroundedTime <= coyoteTime;
-            bool wantsJump = jumpBufferCounter > 0.0f;
+            bool canUseCoyote = Time.time - runtimeState.LastGroundedTime <= coyoteTime;
+            bool wantsJump = currentIntent.JumpPressed || runtimeState.JumpBufferCounter > 0.0f;
 
             if (wantsJump && canUseCoyote)
             {
                 float jumpHeightMultiplier = Mathf.Max(0.0f, GetJumpHeightMultiplier(1.0f));
                 float effectiveJumpHeight = Mathf.Max(0.0f, jumpHeight * jumpHeightMultiplier);
                 float jumpSpeed = Mathf.Sqrt(effectiveJumpHeight * -2.0f * gravity);
-                verticalVelocity = jumpSpeed;
+                channels.Vertical = jumpSpeed;
+                runtimeState.Velocity = channels;
+                SyncLegacyVelocityFieldsFromChannels();
+                runtimeState.LastJumpTime = Time.time;
 
                 InheritCurrentPlatformVelocity();
 
-                jumpBufferCounter = 0.0f;
-                lastGroundedTime = -999.0f;
+                currentIntent.JumpPressed = false;
+                runtimeState.JumpBufferCounter = 0.0f;
+                runtimeState.LastGroundedTime = -999.0f;
                 StateMachine.ChangeState(EntityMoveState.Jumping);
                 return;
             }
 
-            if (isGrounded && verticalVelocity < 0.0f)
+            currentIntent.JumpPressed = false;
+
+            if (isGrounded && channels.Vertical < 0.0f)
             {
-                verticalVelocity = groundedStickVelocity;
+                channels.Vertical = groundedStickVelocity;
+                runtimeState.Velocity = channels;
+                SyncLegacyVelocityFieldsFromChannels();
                 return;
             }
 
-            verticalVelocity += gravity * dt;
+            channels.Vertical += gravity * dt;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         // 受けた外力を徐々に減衰させる。
         private void UpdateExternalVelocity(float dt)
         {
-            if (externalVelocity.sqrMagnitude <= minExternalVelocity * minExternalVelocity)
+            VelocityChannels channels = runtimeState.Velocity;
+
+            if (channels.External.sqrMagnitude <= minExternalVelocity * minExternalVelocity)
             {
-                externalVelocity = Vector3.zero;
+                channels.External = Vector3.zero;
+                runtimeState.Velocity = channels;
+                SyncLegacyVelocityFieldsFromChannels();
                 return;
             }
 
-            externalVelocity = Vector3.Lerp(
-                externalVelocity,
+            channels.External = Vector3.Lerp(
+                channels.External,
                 Vector3.zero,
                 1.0f - Mathf.Exp(-externalVelocityDamping * dt));
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         // キャラクター下方へ SphereCast を飛ばして接地候補を探す。
         private void ProbeGround()
         {
-            ground = default;
-
-            if (bodyCollider == null)
-                return;
-
-            GetGroundProbeParameters(out Vector3 center, out float radius, out float distance);
-
-            int hitCount = Physics.SphereCastNonAlloc(
-                center,
-                radius,
-                Vector3.down,
-                groundHits,
-                distance,
+            GroundHitInfo hit = GroundProbeSolver.Probe(
+                transform,
+                bodyCollider,
                 groundMask,
-                QueryTriggerInteraction.Ignore);
+                groundProbeExtraDistance,
+                groundProbeRadiusShrink,
+                maxGroundAngle,
+                groundHits);
 
-            float bestDistance = float.MaxValue;
-
-            for (int i = 0; i < hitCount; i++)
-            {
-                RaycastHit hit = groundHits[i];
-
-                if (hit.collider == null || hit.collider.transform.IsChildOf(transform))
-                    continue;
-
-                float angle = Vector3.Angle(hit.normal, Vector3.up);
-
-                if (angle > maxGroundAngle || hit.distance >= bestDistance)
-                    continue;
-
-                bestDistance = hit.distance;
-                ground = new GroundInfo(true, hit.normal, hit.point, hit.collider.transform, hit.collider);
-            }
-        }
-
-        // カプセル Collider を地面判定用の検索形状へ変換する。
-        private void GetGroundProbeParameters(out Vector3 center, out float radius, out float distance)
-        {
-            Vector3 lossyScale = transform.lossyScale;
-            float scaleX = Mathf.Abs(lossyScale.x);
-            float scaleY = Mathf.Abs(lossyScale.y);
-            float scaleZ = Mathf.Abs(lossyScale.z);
-
-            float colliderRadius = bodyCollider.radius * Mathf.Max(scaleX, scaleZ);
-            float colliderHalfHeight = bodyCollider.height * 0.5f * scaleY;
-
-            center = transform.TransformPoint(bodyCollider.center);
-            radius = Mathf.Max(0.01f, colliderRadius - groundProbeRadiusShrink);
-            distance = Mathf.Max(0.01f, colliderHalfHeight - colliderRadius + groundProbeExtraDistance);
+            ground = hit.IsValid
+                ? new GroundInfo(true, hit.Normal, hit.Point, hit.Transform, hit.Collider, hit.Distance, hit.Angle, hit.SurfaceKind)
+                : default;
         }
 
         // 足場の移動量を算出し、キャラへ渡すべきプラットフォーム速度を更新する。
         private void UpdatePlatformMotion(float dt, bool isGrounded)
         {
-            platformDelta = Vector3.zero;
-            platformVelocity = Vector3.zero;
+            supportMotionTracker.Update(
+                transform,
+                bodyRigidbody,
+                runtimeState.Ground,
+                isGrounded,
+                runtimeState,
+                dt,
+                Time.time,
+                runtimeState.SupportReattachDisabledUntilTime,
+                platformSupportSampleSmoothing,
+                platformCarryRotationDeadZoneDegrees);
 
-            if (!isGrounded || !ground.IsValid || ground.Transform == null)
-            {
-                currentPlatform = null;
-                hasPlatformPose = false;
-                supportSampleSource = null;
-                hasSupportSamplePoint = false;
-                return;
-            }
-
-            Transform platform = ground.Transform;
-            Vector3 supportSamplePoint = ResolveSupportSamplePoint(platform, dt);
-
-            if (SupportMotionUtility.TryGetSupportMotion(
-                    ground.Collider,
-                    supportSamplePoint,
-                    dt,
-                    transform,
-                    out SupportMotionSnapshot supportMotion))
-            {
-                Transform supportSource = supportMotion.SourceTransform != null ? supportMotion.SourceTransform : platform;
-                UpdateSupportSamplePoint(supportSource, supportSamplePoint, dt);
-
-                Vector3 stabilizedPoint = hasSupportSamplePoint && supportSource != null
-                    ? supportSource.TransformPoint(supportSampleLocalPoint)
-                    : supportSamplePoint;
-
-                Vector3 sourceOffset = stabilizedPoint - supportMotion.SourceOrigin;
-                Vector3 stabilizedDelta = supportMotion.SourcePositionDelta +
-                                         supportMotion.SourceRotationDelta * sourceOffset -
-                                         sourceOffset;
-
-                if (Quaternion.Angle(supportMotion.SourceRotationDelta, Quaternion.identity) <= platformCarryRotationDeadZoneDegrees)
-                    stabilizedDelta = supportMotion.SourcePositionDelta;
-
-                platformDelta = stabilizedDelta;
-                if (dt > 0.0f)
-                    platformVelocity = stabilizedDelta / dt;
-
-                currentPlatform = supportSource;
-                return;
-            }
-
-            if (currentPlatform == platform && hasPlatformPose)
-            {
-                Vector3 positionDelta = platform.position - lastPlatformPosition;
-                Quaternion rotationDelta = platform.rotation * Quaternion.Inverse(lastPlatformRotation);
-
-                Vector3 playerOffsetFromPlatform = transform.position - platform.position;
-                Vector3 rotatedOffset = rotationDelta * playerOffsetFromPlatform;
-                Vector3 rotationMovementDelta = rotatedOffset - playerOffsetFromPlatform;
-
-                platformDelta = positionDelta + rotationMovementDelta;
-
-                if (dt > 0.0f)
-                    platformVelocity = platformDelta / dt;
-            }
-
-            currentPlatform = platform;
-        }
-
-        // 足場のどの位置を追従基準として使うかを決める。
-        private Vector3 ResolveSupportSamplePoint(Transform platform, float dt)
-        {
-            Vector3 desiredWorldPoint = bodyRigidbody != null
-                ? bodyRigidbody.worldCenterOfMass
-                : transform.position;
-
-            if (!float.IsFinite(desiredWorldPoint.x) ||
-                !float.IsFinite(desiredWorldPoint.y) ||
-                !float.IsFinite(desiredWorldPoint.z))
-            {
-                desiredWorldPoint = transform.position;
-            }
-
-            if (platform == null)
-                return desiredWorldPoint;
-
-            UpdateSupportSamplePoint(platform, desiredWorldPoint, dt);
-            return platform.TransformPoint(supportSampleLocalPoint);
-        }
-
-        // 足場ローカル座標で追従点を保存し、必要なら平滑化する。
-        private void UpdateSupportSamplePoint(Transform sourceTransform, Vector3 desiredWorldPoint, float dt)
-        {
-            if (sourceTransform == null)
-            {
-                supportSampleSource = null;
-                hasSupportSamplePoint = false;
-                return;
-            }
-
-            Vector3 desiredLocalPoint = sourceTransform.InverseTransformPoint(desiredWorldPoint);
-
-            if (!hasSupportSamplePoint || supportSampleSource != sourceTransform)
-            {
-                supportSampleSource = sourceTransform;
-                supportSampleLocalPoint = desiredLocalPoint;
-                hasSupportSamplePoint = true;
-                return;
-            }
-
-            float smoothing = Mathf.Max(0.0f, platformSupportSampleSmoothing);
-            if (smoothing <= 0.0f)
-            {
-                supportSampleLocalPoint = desiredLocalPoint;
-                return;
-            }
-
-            float blend = 1.0f - Mathf.Exp(-smoothing * Mathf.Max(0.0001f, dt));
-            supportSampleLocalPoint = Vector3.Lerp(supportSampleLocalPoint, desiredLocalPoint, Mathf.Clamp01(blend));
+            SyncVelocityChannelsFromLegacyFields();
         }
 
         // 足場から離れた瞬間の運動量を、ジャンプ用の継承速度として保存する。
         private void CapturePlatformInertiaOnLeaveGround()
         {
+            VelocityChannels channels = runtimeState.Velocity;
             if (!inheritMovingPlatformVelocityOnJump ||
-                inheritedPlatformVelocity.sqrMagnitude > 0.0001f ||
-                platformVelocity.sqrMagnitude <= 0.0001f)
+                channels.InheritedSupport.sqrMagnitude > 0.0001f ||
+                channels.SupportCarry.sqrMagnitude <= 0.0001f)
             {
                 return;
             }
 
-            inheritedPlatformVelocity = platformVelocity * platformJumpVelocityInheritance;
+            channels.InheritedSupport = channels.SupportCarry * platformJumpVelocityInheritance;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
+            runtimeState.LastSupportLaunchTime = Time.time;
         }
 
         // ジャンプ開始時に、その場の足場速度をキャラ速度へ足し込む。
         private void InheritCurrentPlatformVelocity()
         {
-            if (!inheritMovingPlatformVelocityOnJump || inheritedPlatformVelocity.sqrMagnitude > 0.0001f)
+            VelocityChannels channels = runtimeState.Velocity;
+            if (!inheritMovingPlatformVelocityOnJump || channels.InheritedSupport.sqrMagnitude > 0.0001f)
                 return;
 
-            inheritedPlatformVelocity = platformVelocity * platformJumpVelocityInheritance;
+            channels.InheritedSupport = channels.SupportCarry * platformJumpVelocityInheritance;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
+            runtimeState.LastSupportLaunchTime = Time.time;
 
             // このtickは継承済みなので、追加の足場速度注入を抑止して二重加算を防ぐ。
             suppressPlatformVelocityInjectionThisTick = true;
@@ -677,33 +609,28 @@ namespace BC.Base
         // 着地時に、継承済みの足場速度を現在の足場速度へ合わせ直す。
         private void RebaseInheritedPlatformMomentumOnLanding()
         {
-            if (inheritedPlatformVelocity.sqrMagnitude <= 0.0001f)
+            VelocityChannels channels = runtimeState.Velocity;
+            if (channels.InheritedSupport.sqrMagnitude <= 0.0001f)
                 return;
 
-            Vector3 inheritedPlanarVelocity = Vector3.ProjectOnPlane(inheritedPlatformVelocity, Vector3.up);
-            Vector3 landingSupportVelocity = Vector3.ProjectOnPlane(platformVelocity, Vector3.up);
-            planarVelocity += inheritedPlanarVelocity - landingSupportVelocity;
-            inheritedPlatformVelocity = Vector3.zero;
+            Vector3 inheritedPlanarVelocity = Vector3.ProjectOnPlane(channels.InheritedSupport, Vector3.up);
+            Vector3 landingSupportVelocity = Vector3.ProjectOnPlane(channels.SupportCarry, Vector3.up);
+            channels.InputPlanar += inheritedPlanarVelocity - landingSupportVelocity;
+            channels.InheritedSupport = Vector3.zero;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         // 次回 tick の差分計算に使うため、足場の現在姿勢を保存する。
         private void StorePlatformPose()
         {
-            if (currentPlatform == null)
-            {
-                hasPlatformPose = false;
-                return;
-            }
-
-            lastPlatformPosition = currentPlatform.position;
-            lastPlatformRotation = currentPlatform.rotation;
-            hasPlatformPose = true;
+            supportMotionTracker.StorePlatformPose();
         }
 
         // 現在速度と接地状態から、見た目上の移動状態を更新する。
         private void UpdateMoveState()
         {
-            if (motionLocked)
+            if (runtimeState.MotionLocked)
             {
                 if (MoveState != EntityMoveState.Disabled && MoveState != EntityMoveState.Dead)
                     StateMachine.ChangeState(EntityMoveState.Disabled);
@@ -712,7 +639,7 @@ namespace BC.Base
 
             if (ground.IsValid)
             {
-                Vector3 horizontal = new Vector3(planarVelocity.x, 0.0f, planarVelocity.z);
+                Vector3 horizontal = ControlledPlanarVelocity;
 
                 if (horizontal.magnitude > 0.1f)
                     StateMachine.ChangeState(EntityMoveState.Moving);
@@ -722,7 +649,7 @@ namespace BC.Base
                 return;
             }
 
-            if (verticalVelocity > 0.0f)
+            if (VerticalVelocity > 0.0f)
                 StateMachine.ChangeState(EntityMoveState.Jumping);
             else
                 StateMachine.ChangeState(EntityMoveState.Falling);
@@ -732,22 +659,28 @@ namespace BC.Base
         private void TickLockedMotion(float dt)
         {
             suppressPlatformVelocityInjectionThisTick = false;
+            SyncLegacyVelocityFieldsFromChannels();
             ProbeGround();
+            SyncRuntimeGroundState();
             bool isGrounded = ground.IsValid;
 
-            if (!isGrounded && wasGroundedLastMotorTick)
+            if (!isGrounded && runtimeState.WasGrounded)
                 CapturePlatformInertiaOnLeaveGround();
 
             UpdatePlatformMotion(dt, isGrounded);
+            ResolveSupportInertiaLaunch();
 
-            if (isGrounded && !wasGroundedLastMotorTick)
+            if (isGrounded && !runtimeState.WasGrounded)
                 RebaseInheritedPlatformMomentumOnLanding();
 
             UpdateExternalVelocity(dt);
 
-            ApplyCurrentVelocityToBody(externalVelocity + inheritedPlatformVelocity, isGrounded);
+            VelocityChannels channels = runtimeState.Velocity;
+            ApplyCurrentVelocityToBody(channels.External + channels.InheritedSupport, isGrounded);
             StorePlatformPose();
-            wasGroundedLastMotorTick = ground.IsValid;
+            runtimeState.WasGrounded = ground.IsValid;
+            runtimeState.IsGrounded = ground.IsValid;
+            moveContactBuffer.ClearForNextPhysicsTick();
         }
 
         // system movement lock 中は入力と通常移動を止め、状態だけ整える。
@@ -757,12 +690,16 @@ namespace BC.Base
             CancelAutoMove();
             ClearMoveIntent();
 
-            planarVelocity = Vector3.zero;
-            verticalVelocity = 0.0f;
-            externalVelocity = Vector3.zero;
-            inheritedPlatformVelocity = Vector3.zero;
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.InputPlanar = Vector3.zero;
+            channels.Vertical = 0.0f;
+            channels.External = Vector3.zero;
+            channels.InheritedSupport = Vector3.zero;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
 
             ProbeGround();
+            SyncRuntimeGroundState();
             bool isGrounded = ground.IsValid;
 
             UpdatePlatformMotion(dt, isGrounded);
@@ -772,7 +709,9 @@ namespace BC.Base
             if (MoveState != EntityMoveState.Disabled && MoveState != EntityMoveState.Dead)
                 StateMachine.ChangeState(EntityMoveState.Disabled);
 
-            wasGroundedLastMotorTick = ground.IsValid;
+            runtimeState.WasGrounded = ground.IsValid;
+            runtimeState.IsGrounded = ground.IsValid;
+            moveContactBuffer.ClearForNextPhysicsTick();
         }
 
         // 計算済みの速度を Rigidbody に反映する。必要なら足場速度を重ねる。
@@ -783,14 +722,48 @@ namespace BC.Base
 
             Vector3 appliedVelocity = velocity;
             if (injectPlatformVelocity && !suppressPlatformVelocityInjectionThisTick)
-                appliedVelocity += platformVelocity;
+                appliedVelocity += runtimeState.Velocity.SupportCarry;
 
             bodyRigidbody.linearVelocity = appliedVelocity;
         }
 
+        private void ApplyPositionCorrection(in PositionCorrection correction)
+        {
+            if (!correction.HasCorrection || bodyRigidbody == null)
+                return;
+
+            bodyRigidbody.position += correction.Delta;
+        }
+
         private Vector3 GetBodyVelocity()
         {
-            return planarVelocity + Vector3.up * verticalVelocity + externalVelocity + inheritedPlatformVelocity;
+            return VelocityComposer.ComposeBodyVelocity(runtimeState.Velocity);
+        }
+
+        private VelocityChannels GetVelocityChannels()
+        {
+            return runtimeState.Velocity;
+        }
+
+        private void SyncVelocityChannelsFromLegacyFields()
+        {
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.InputPlanar = runtimeState.PlanarVelocity;
+            channels.Vertical = runtimeState.VerticalVelocity;
+            channels.External = runtimeState.ExternalVelocity;
+            channels.SupportCarry = runtimeState.PlatformVelocity;
+            channels.InheritedSupport = runtimeState.InheritedSupportVelocity;
+            runtimeState.Velocity = channels;
+        }
+
+        private void SyncLegacyVelocityFieldsFromChannels()
+        {
+            VelocityChannels channels = runtimeState.Velocity;
+            runtimeState.PlanarVelocity = channels.InputPlanar;
+            runtimeState.VerticalVelocity = channels.Vertical;
+            runtimeState.ExternalVelocity = channels.External;
+            runtimeState.PlatformVelocity = channels.SupportCarry;
+            runtimeState.InheritedSupportVelocity = channels.InheritedSupport;
         }
 
         public void AddImpulse(Vector3 impulseVelocity)
@@ -798,7 +771,10 @@ namespace BC.Base
             if (!CanApplySystemMovement())
                 return;
 
-            externalVelocity += impulseVelocity;
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.External += impulseVelocity;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         public void SetExternalVelocity(Vector3 velocity)
@@ -806,47 +782,47 @@ namespace BC.Base
             if (!CanApplySystemMovement())
                 return;
 
-            externalVelocity = velocity;
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.External = velocity;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         public void ClearExternalVelocity()
         {
-            externalVelocity = Vector3.zero;
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.External = Vector3.zero;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         public bool HandleCushionImpact(CushionImpactData impactData, CushionImpactResult impactResult)
         {
-            if (!impactResult.IsHandled || isDead || !CanApplySystemMovement())
-                return false;
+            CushionApplyResult applyResult = CushionImpactHandler.ApplyImpact(
+                runtimeState,
+                impactResult,
+                CanApplySystemMovement(),
+                HasBufferedHighJumpInput(),
+                cushionHighJumpBuffer,
+                groundedStickVelocity,
+                Time.time,
+                coyoteTime);
 
-            switch (impactResult.ResponseKind)
-            {
-                case CushionResponseKind.Bounce:
-                    ApplyCushionBounce(impactResult);
-                    return true;
-
-                case CushionResponseKind.Stop:
-                case CushionResponseKind.StopAndAttach:
-                case CushionResponseKind.Dampen:
-                    ApplyCushionStop();
-                    return true;
-
-                default:
-                    return false;
-            }
+            return CommitCushionApplyResult(applyResult);
         }
 
         private void OnCollisionEnter(Collision collision)
         {
-            ProcessCollision(collision);
+            BufferCollision(collision);
         }
 
         private void OnCollisionStay(Collision collision)
         {
-            ProcessCollision(collision);
+            BufferCollision(collision);
         }
 
-        private void ProcessCollision(Collision collision)
+        // Callbackでは処理せず、接触情報だけを蓄積して FixedUpdate 側で順序処理する。
+        private void BufferCollision(Collision collision)
         {
             if (collision == null || collision.collider == null)
                 return;
@@ -854,69 +830,81 @@ namespace BC.Base
             if (!CanApplySystemMovement())
                 return;
 
-            ResolveCollisionVelocityConstraints(collision);
-            TryApplyContactPush(collision);
-
-            if (Time.time < nextCushionImpactTime)
-                return;
-
-            CushionSurfaceMB surface = collision.collider.GetComponentInParent<CushionSurfaceMB>();
-
-            if (surface == null)
-                return;
-
-            ContactPoint contact = collision.contactCount > 0 ? collision.GetContact(0) : default;
-
-            Vector3 incomingVelocity = bodyRigidbody != null
-                ? bodyRigidbody.linearVelocity
-                : CurrentVelocity;
-
-            CushionImpactData impactData = new CushionImpactData(
-                gameObject,
-                transform,
-                entityMB,
-                CushionImpactTag,
-                bodyRigidbody,
-                bodyCollider,
-                collision.contactCount > 0 ? contact.point : transform.position,
-                collision.contactCount > 0 ? contact.normal : Vector3.up,
-                incomingVelocity,
-                collision.relativeVelocity.magnitude);
-
-            if (!surface.TryEvaluate(impactData, out CushionImpactResult result))
-                return;
-
-            if (HandleCushionImpact(impactData, result))
-                nextCushionImpactTime = Time.time + cushionImpactCooldown;
+            moveContactBuffer.Add(collision, BuildCurrentBodyGeometry());
         }
 
-        // 衝突面から、壁滑り・接地貼り付き・天井頭打ちを処理する。
-        private void ResolveCollisionVelocityConstraints(Collision collision)
+        // M4: buffered contacts を分類し、制約・押し返し・クッション反応を固定順で適用する。
+        private void ProcessBufferedContacts()
         {
-            if (collision == null)
+            if (moveContactBuffer.Count <= 0)
                 return;
 
-            float minGroundDot = Mathf.Cos(maxGroundAngle * Mathf.Deg2Rad);
+            MovementBodyGeometry bodyGeometry = BuildCurrentBodyGeometry();
+            ContactClassifier.Classify(moveContactBuffer, in bodyGeometry, in runtimeState.Ground, maxGroundAngle, contactCeilingBand);
 
-            for (int i = 0; i < collision.contactCount; i++)
+            CollisionConstraintSolver.Resolve(
+                moveContactBuffer,
+                runtimeState,
+                groundedStickVelocity,
+                Time.time,
+                RemoveIntoWallVelocity);
+
+            contactPushProcessedColliders.Clear();
+            cushionProcessedColliders.Clear();
+
+            for (int i = 0; i < moveContactBuffer.Count; i++)
             {
-                ContactPoint contact = collision.GetContact(i);
-                float upDot = Vector3.Dot(contact.normal, Vector3.up);
-                float downDot = Vector3.Dot(contact.normal, Vector3.down);
+                MoveContactInfo contact = moveContactBuffer.Get(i);
 
-                if (upDot >= minGroundDot)
+                if (contact.Collider == null)
+                    continue;
+
+                if (contactPushProcessedColliders.Add(contact.Collider))
                 {
-                    lastGroundedTime = Time.time;
-
-                    if (verticalVelocity < groundedStickVelocity)
-                        verticalVelocity = groundedStickVelocity;
+                    ContactPushEmitter.TryApply(
+                        contact,
+                        transform,
+                        CurrentVelocity,
+                        pushRigidbodiesOnContact,
+                        runtimeState.IsDead,
+                        runtimeState.MotionLocked,
+                        minContactPushSpeed,
+                        contactPushImpulse,
+                        contactPushSpeedMultiplier,
+                        maxContactPushImpulse);
                 }
 
-                if (Mathf.Abs(upDot) < minGroundDot)
-                    RemoveIntoWallVelocity(contact.normal);
+                if (cushionProcessedColliders.Add(contact.Collider))
+                {
+                    Vector3 incomingVelocity = bodyRigidbody != null
+                        ? bodyRigidbody.linearVelocity
+                        : CurrentVelocity;
 
-                if (downDot > 0.35f && verticalVelocity > 0.0f)
-                    verticalVelocity = 0.0f;
+                    if (!CushionImpactHandler.TryProcessContact(
+                            contact,
+                            Time.time,
+                            cushionImpactCooldown,
+                            ref nextCushionImpactTime,
+                            gameObject,
+                            transform,
+                            entityMB,
+                            CushionImpactTag,
+                            bodyRigidbody,
+                            bodyCollider,
+                            incomingVelocity,
+                            runtimeState,
+                            CanApplySystemMovement(),
+                            HasBufferedHighJumpInput(),
+                            cushionHighJumpBuffer,
+                            groundedStickVelocity,
+                            coyoteTime,
+                            out CushionApplyResult applyResult))
+                    {
+                        continue;
+                    }
+
+                    CommitCushionApplyResult(applyResult);
+                }
             }
         }
 
@@ -929,9 +917,12 @@ namespace BC.Base
                 return;
 
             wallNormal.Normalize();
-            planarVelocity = RemoveIntoSurfaceComponent(planarVelocity, wallNormal);
-            externalVelocity = RemoveIntoSurfaceComponent(externalVelocity, wallNormal);
-            inheritedPlatformVelocity = RemoveIntoSurfaceComponent(inheritedPlatformVelocity, wallNormal);
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.InputPlanar = RemoveIntoSurfaceComponent(channels.InputPlanar, wallNormal);
+            channels.External = RemoveIntoSurfaceComponent(channels.External, wallNormal);
+            channels.InheritedSupport = RemoveIntoSurfaceComponent(channels.InheritedSupport, wallNormal);
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         private static Vector3 RemoveIntoSurfaceComponent(Vector3 velocity, Vector3 surfaceNormal)
@@ -945,115 +936,53 @@ namespace BC.Base
         }
 
         // 小さな段差を越えられるか試す。地形の引っかかりを減らすための補助処理。
-        private bool TryStepUp(float dt, Vector3 bodyVelocity, bool isGrounded)
+        private bool TryStepUp(float dt, Vector3 bodyVelocity, bool isGrounded, out PositionCorrection correction)
         {
-            if (!enableStepAssist ||
-                bodyRigidbody == null ||
-                bodyCollider == null ||
-                motionLocked ||
-                isDead ||
-                verticalVelocity > 0.1f)
+            correction = PositionCorrection.None;
+            SyncLegacyVelocityFieldsFromChannels();
+
+            bool stepped = StepAssistSolver.TryResolve(
+                stepAssistSettings,
+                transform,
+                bodyRigidbody,
+                bodyCollider,
+                groundMask,
+                maxGroundAngle,
+                groundProbeExtraDistance,
+                isGrounded,
+                runtimeState.LastGroundedTime,
+                coyoteTime,
+                VerticalVelocity,
+                runtimeState.MotionLocked,
+                runtimeState.IsDead,
+                GetDesiredMoveDirection(),
+                bodyVelocity,
+                dt,
+                stepOverlapHits,
+                out correction,
+                out GroundHitInfo stepGround);
+
+            if (!stepped)
+                return false;
+
+            ground = new GroundInfo(
+                stepGround.IsValid,
+                stepGround.Normal,
+                stepGround.Point,
+                stepGround.Transform,
+                stepGround.Collider,
+                stepGround.Distance,
+                stepGround.Angle,
+                stepGround.SurfaceKind);
+            runtimeState.LastGroundedTime = Time.time;
+
+            if (VerticalVelocity < groundedStickVelocity)
             {
-                return false;
+                VelocityChannels channels = runtimeState.Velocity;
+                channels.Vertical = groundedStickVelocity;
+                runtimeState.Velocity = channels;
+                SyncLegacyVelocityFieldsFromChannels();
             }
-
-            bool canStep = isGrounded || Time.time - lastGroundedTime <= coyoteTime;
-
-            if (!canStep)
-                return false;
-
-            Vector3 desiredDirection = GetDesiredMoveDirection();
-            Vector3 horizontalVelocity = bodyVelocity;
-            horizontalVelocity.y = 0.0f;
-
-            if (desiredDirection.sqrMagnitude <= 0.0001f)
-            {
-                if (horizontalVelocity.sqrMagnitude <= minStepAssistSpeed * minStepAssistSpeed)
-                    return false;
-
-                desiredDirection = horizontalVelocity.normalized;
-            }
-
-            float horizontalSpeed = horizontalVelocity.magnitude;
-            float forwardDistance = Mathf.Clamp(horizontalSpeed * Time.fixedDeltaTime + StepAssistSurfaceSkin, StepAssistSurfaceSkin, stepAssistForwardDistance);
-
-            if (forwardDistance <= 0.0f)
-                return false;
-
-            GetCapsuleGeometry(bodyRigidbody.position, out Vector3 capsuleBottom, out _, out float capsuleRadius);
-            Vector3 capsuleCenter = bodyRigidbody.position + transform.rotation * bodyCollider.center;
-            float castRadius = Mathf.Max(0.01f, capsuleRadius - StepAssistSurfaceSkin);
-            float feetY = capsuleBottom.y - capsuleRadius;
-            Vector3 lowerOrigin = new Vector3(capsuleCenter.x, feetY + castRadius + 0.05f, capsuleCenter.z);
-            Vector3 upperOrigin = lowerOrigin + Vector3.up * maxStepHeight;
-
-            if (!Physics.SphereCast(
-                    lowerOrigin,
-                    castRadius,
-                    desiredDirection,
-                    out RaycastHit lowerHit,
-                    forwardDistance,
-                    ~0,
-                    QueryTriggerInteraction.Ignore))
-            {
-                return false;
-            }
-
-            if (lowerHit.collider == null || lowerHit.transform.IsChildOf(transform))
-                return false;
-
-            float hitUpDot = Mathf.Abs(Vector3.Dot(lowerHit.normal, Vector3.up));
-
-            if (hitUpDot > StepAssistWallMaxUpDot)
-                return false;
-
-            Vector3 wallNormal = Vector3.ProjectOnPlane(lowerHit.normal, Vector3.up);
-
-            if (wallNormal.sqrMagnitude <= 0.0001f)
-                return false;
-
-            wallNormal.Normalize();
-
-            if (Vector3.Dot(desiredDirection, -wallNormal) < StepAssistMinApproachDot)
-                return false;
-
-            if (Physics.SphereCast(
-                    upperOrigin,
-                    castRadius,
-                    desiredDirection,
-                    out RaycastHit upperHit,
-                    forwardDistance,
-                    ~0,
-                    QueryTriggerInteraction.Ignore) &&
-                upperHit.collider != null &&
-                !upperHit.transform.IsChildOf(transform))
-            {
-                return false;
-            }
-
-            Vector3 candidatePosition = bodyRigidbody.position + Vector3.up * (maxStepHeight + StepAssistSurfaceSkin) + desiredDirection * Mathf.Max(lowerHit.distance + StepAssistSurfaceSkin, forwardDistance * 0.5f);
-
-            if (!TryFindStepGround(candidatePosition, out Vector3 snappedPosition, out GroundInfo stepGround))
-                return false;
-
-            GetCapsuleGeometry(snappedPosition, out Vector3 candidateCapsuleBottom, out _, out float candidateCapsuleRadius);
-            float candidateFeetY = candidateCapsuleBottom.y - candidateCapsuleRadius;
-
-            if (!CanOccupyCapsule(snappedPosition, candidateFeetY))
-                return false;
-
-            if (snappedPosition.y <= bodyRigidbody.position.y + 0.0001f)
-                return false;
-
-            if (snappedPosition.y - bodyRigidbody.position.y > maxStepHeight + StepAssistSurfaceSkin)
-                return false;
-
-            bodyRigidbody.position = snappedPosition;
-            ground = stepGround;
-            lastGroundedTime = Time.time;
-
-            if (verticalVelocity < groundedStickVelocity)
-                verticalVelocity = groundedStickVelocity;
 
             return true;
         }
@@ -1075,13 +1004,10 @@ namespace BC.Base
 
             try
             {
-                autoMoveTargetPosition = targetPosition;
-                autoMoveArrivalDistanceSqr = Mathf.Max(0.0001f, arriveDistance * arriveDistance);
-                autoMoveReachedTarget = false;
-                autoMoveActive = true;
+                autoMoveDriver.BeginMove(autoMoveState, targetPosition, arriveDistance);
 
-                await UniTask.WaitUntil(() => !autoMoveActive, PlayerLoopTiming.Update, linkedCancellationTokenSource.Token);
-                reachedTarget = autoMoveReachedTarget;
+                await UniTask.WaitUntil(() => !autoMoveState.IsActive, PlayerLoopTiming.Update, linkedCancellationTokenSource.Token);
+                reachedTarget = autoMoveState.ReachedTarget;
             }
             catch (OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested)
             {
@@ -1089,14 +1015,10 @@ namespace BC.Base
             }
             finally
             {
-                if (ReferenceEquals(activeAutoMoveCancellationTokenSource, autoMoveCancellationTokenSource))
-                {
-                    activeAutoMoveCancellationTokenSource = null;
-                    autoMoveActive = false;
-                    autoMoveReachedTarget = false;
-                }
+                if (ReferenceEquals(autoMoveState.ActiveCancellationTokenSource, autoMoveCancellationTokenSource))
+                    autoMoveDriver.Cancel(autoMoveState);
 
-                CompleteAutoMove(autoMoveCancellationTokenSource);
+                autoMoveDriver.CompleteAndDispose(autoMoveState, autoMoveCancellationTokenSource);
                 linkedCancellationTokenSource.Dispose();
             }
 
@@ -1106,366 +1028,95 @@ namespace BC.Base
         // 外部から開始された自動移動を中断する。
         public void CancelAutoMove()
         {
-            if (activeAutoMoveCancellationTokenSource != null)
-                activeAutoMoveCancellationTokenSource.Cancel();
-
-            autoMoveActive = false;
-            autoMoveReachedTarget = false;
+            autoMoveDriver.Cancel(autoMoveState);
         }
 
         // 自動移動を始めても安全かを確認する。
         private bool CanStartAutoMove()
         {
-            return IsRuntimeReady &&
-                   bodyRigidbody != null &&
-                   bodyCollider != null &&
-                   !motionLocked &&
-                   !isDead &&
-                   CanApplySystemMovement();
+            return autoMoveDriver.CanStart(
+                IsRuntimeReady,
+                bodyRigidbody,
+                bodyCollider,
+                runtimeState.MotionLocked,
+                runtimeState.IsDead,
+                CanApplySystemMovement());
         }
 
         // すでに目標地点へ十分近いなら、移動処理を始めない。
         private bool IsAlreadyAtAutoMoveTarget(Vector3 targetPosition, float arriveDistance)
         {
-            if (bodyRigidbody == null)
-                return false;
-
-            Vector3 toTarget = targetPosition - bodyRigidbody.position;
-            toTarget.y = 0.0f;
-
-            return toTarget.sqrMagnitude <= Mathf.Max(0.0001f, arriveDistance * arriveDistance);
+            return autoMoveDriver.IsAlreadyAtTarget(bodyRigidbody, targetPosition, arriveDistance);
         }
 
         // 通常入力と自動移動のどちらを使うかをまとめて返す。
         private Vector3 GetDesiredMoveDirection()
         {
-            if (autoMoveActive)
+            if (autoMoveState.IsActive)
                 return BuildAutoMoveDirection();
 
-            return moveDirection;
+            currentIntent.IsAutoMove = false;
+            return currentIntent.HasMoveInput ? currentIntent.WorldMoveDirection : Vector3.zero;
         }
 
         // 自動移動先へ向かう正規化済みベクトルを作る。
         private Vector3 BuildAutoMoveDirection()
         {
-            if (bodyRigidbody == null)
-                return Vector3.zero;
-
-            Vector3 toTarget = autoMoveTargetPosition - bodyRigidbody.position;
-            toTarget.y = 0.0f;
-
-            autoMoveReachedTarget = toTarget.sqrMagnitude <= autoMoveArrivalDistanceSqr;
-
-            if (autoMoveReachedTarget)
-                return Vector3.zero;
-
-            return toTarget.normalized;
+            currentIntent.IsAutoMove = true;
+            Vector3 direction = autoMoveDriver.BuildDirection(autoMoveState, bodyRigidbody);
+            currentIntent.WorldMoveDirection = direction;
+            currentIntent.HasMoveInput = direction.sqrMagnitude > 0.0001f;
+            return direction;
         }
 
         // 既存の自動移動を止めて、新しいキャンセル元を作る。
         private CancellationTokenSource BeginNewAutoMove()
         {
-            if (activeAutoMoveCancellationTokenSource != null)
-                activeAutoMoveCancellationTokenSource.Cancel();
-
-            activeAutoMoveCancellationTokenSource = new CancellationTokenSource();
-            return activeAutoMoveCancellationTokenSource;
-        }
-
-        // 自動移動用のキャンセルソースを安全に破棄する。
-        private void CompleteAutoMove(CancellationTokenSource autoMoveCancellationTokenSource)
-        {
-            if (ReferenceEquals(activeAutoMoveCancellationTokenSource, autoMoveCancellationTokenSource))
-                activeAutoMoveCancellationTokenSource = null;
-
-            autoMoveCancellationTokenSource.Dispose();
+            return autoMoveDriver.BeginNew(autoMoveState);
         }
 
         // 目標到達時に自動移動を終了する。
         private void CompleteAutoMoveTarget()
         {
-            autoMoveActive = false;
+            autoMoveDriver.CompleteTarget(autoMoveState);
         }
 
-        // 移動先に他のコライダーが重ならないかを確認する。
-        private bool CanOccupyCapsule(Vector3 bodyPosition, float candidateFeetY)
+        private MovementBodyGeometry BuildCurrentBodyGeometry()
         {
-            GetCapsuleGeometry(bodyPosition, out Vector3 capsuleBottom, out Vector3 capsuleTop, out float capsuleRadius);
-            Vector3 capsuleCenter = bodyPosition + transform.rotation * bodyCollider.center;
-            int hitCount = Physics.OverlapCapsuleNonAlloc(
-                capsuleBottom,
-                capsuleTop,
-                Mathf.Max(0.01f, capsuleRadius - StepAssistSurfaceSkin),
-                stepOverlapHits,
-                ~0,
-                QueryTriggerInteraction.Ignore);
-
-            for (int i = 0; i < hitCount; i++)
-            {
-                Collider hit = stepOverlapHits[i];
-
-                if (hit == null || hit.transform.IsChildOf(transform))
-                    continue;
-
-                Vector3 closestPoint = hit.ClosestPoint(capsuleCenter);
-
-                if (closestPoint.y <= candidateFeetY + StepAssistSurfaceSkin)
-                    continue;
-
-                return false;
-            }
-
-            return true;
+            Vector3 bodyPosition = bodyRigidbody != null ? bodyRigidbody.position : transform.position;
+            return MovementBodyGeometryUtility.Build(transform, bodyCollider, bodyPosition);
         }
 
-        // 段差を登った後に着地できる地面を再探索する。
-        private bool TryFindStepGround(Vector3 candidatePosition, out Vector3 snappedPosition, out GroundInfo stepGround)
+        private bool CommitCushionApplyResult(in CushionApplyResult applyResult)
         {
-            snappedPosition = default;
-            stepGround = default;
-
-            GetCapsuleGeometry(candidatePosition, out Vector3 capsuleBottom, out _, out float capsuleRadius);
-
-            float probeStartOffset = maxStepHeight + groundProbeExtraDistance + StepAssistSurfaceSkin;
-            Vector3 probeOrigin = capsuleBottom + Vector3.up * probeStartOffset;
-            float probeDistance = probeStartOffset + maxStepHeight + groundProbeExtraDistance;
-
-            if (!Physics.SphereCast(
-                    probeOrigin,
-                    Mathf.Max(0.01f, capsuleRadius - StepAssistSurfaceSkin),
-                    Vector3.down,
-                    out RaycastHit hit,
-                    probeDistance,
-                    groundMask,
-                    QueryTriggerInteraction.Ignore))
-            {
-                return false;
-            }
-
-            if (hit.collider == null || hit.collider.transform.IsChildOf(transform))
+            if (!applyResult.Handled)
                 return false;
 
-            float angle = Vector3.Angle(hit.normal, Vector3.up);
+            if (applyResult.ShouldConsumeHighJumpInput)
+                ConsumeHighJumpInput();
 
-            if (angle > maxGroundAngle)
-                return false;
-
-            Vector3 targetCapsuleBottom = probeOrigin + Vector3.down * hit.distance;
-            Vector3 bodyOffset = candidatePosition - capsuleBottom;
-            snappedPosition = targetCapsuleBottom + bodyOffset;
-
-            if (snappedPosition.y - bodyRigidbody.position.y > maxStepHeight + StepAssistSurfaceSkin)
-                return false;
-
-            stepGround = new GroundInfo(true, hit.normal, hit.point, hit.collider.transform, hit.collider);
-            return true;
-        }
-
-        // Body の位置から、各種カプセル判定に使う幾何形状を作る。
-        private void GetCapsuleGeometry(Vector3 bodyPosition, out Vector3 capsuleBottom, out Vector3 capsuleTop, out float capsuleRadius)
-        {
-            Vector3 lossyScale = transform.lossyScale;
-            float scaleX = Mathf.Abs(lossyScale.x);
-            float scaleY = Mathf.Abs(lossyScale.y);
-            float scaleZ = Mathf.Abs(lossyScale.z);
-
-            capsuleRadius = bodyCollider.radius * Mathf.Max(scaleX, scaleZ);
-            float capsuleHalfHeight = Mathf.Max(capsuleRadius, bodyCollider.height * 0.5f * scaleY);
-            Vector3 capsuleCenter = bodyPosition + transform.rotation * bodyCollider.center;
-            float cylinderHalfHeight = Mathf.Max(0.0f, capsuleHalfHeight - capsuleRadius);
-
-            capsuleBottom = capsuleCenter + Vector3.down * cylinderHalfHeight;
-            capsuleTop = capsuleCenter + Vector3.up * cylinderHalfHeight;
-        }
-
-        // 接触した相手へ、進行方向ベースの押し返しを与える。
-        private void TryApplyContactPush(Collision collision)
-        {
-            if (!pushRigidbodiesOnContact || isDead || motionLocked)
-                return;
-
-            if (collision == null || collision.collider == null || collision.collider.transform.IsChildOf(transform))
-                return;
-
-            ContactPoint contact = collision.contactCount > 0 ? collision.GetContact(0) : default;
-            Vector3 pushDirection = ResolveContactPushDirection(collision, contact.normal);
-
-            if (pushDirection.sqrMagnitude <= 0.0001f)
-                return;
-
-            float pushSpeed = new Vector3(CurrentVelocity.x, 0.0f, CurrentVelocity.z).magnitude;
-
-            if (pushSpeed < minContactPushSpeed)
-                return;
-
-            float pushImpulse = Mathf.Min(
-                maxContactPushImpulse,
-                contactPushImpulse + pushSpeed * contactPushSpeedMultiplier);
-
-            if (pushImpulse <= 0.0f)
-                return;
-
-            EntityImpactData impactData = new EntityImpactData(
-                EntityImpactKind.Contact,
-                gameObject,
-                transform,
-                collision.collider,
-                collision.contactCount > 0 ? contact.point : transform.position,
-                pushDirection,
-                pushImpulse);
-
-            EntityImpactResponseMB impactResponse = collision.collider.GetComponentInParent<EntityImpactResponseMB>();
-
-            if (impactResponse != null)
-                impactResponse.TryApplyImpact(impactData);
-        }
-
-        // 押し返しに使う方向を、現在速度や接触法線から決める。
-        private Vector3 ResolveContactPushDirection(Collision collision, Vector3 contactNormal)
-        {
-            Vector3 direction = CurrentVelocity;
-            direction.y = 0.0f;
-
-            if (direction.sqrMagnitude <= 0.0001f)
-                direction = -Vector3.ProjectOnPlane(contactNormal, Vector3.up);
-
-            if (direction.sqrMagnitude <= 0.0001f)
-            {
-                direction = collision.collider.transform.position - transform.position;
-                direction.y = 0.0f;
-            }
-
-            return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
-        }
-
-        // クッションで完全停止するときの速度リセットを行う。
-        private void ApplyCushionStop()
-        {
-            ClearPendingCushionHighJump();
-            planarVelocity = Vector3.zero;
-            externalVelocity = Vector3.zero;
-            inheritedPlatformVelocity = Vector3.zero;
-            verticalVelocity = groundedStickVelocity;
+            SyncLegacyVelocityFieldsFromChannels();
             ApplyCurrentVelocityToBody(GetBodyVelocity());
-        }
 
-        // クッションで跳ねるときの反応を適用する。
-        private void ApplyCushionBounce(CushionImpactResult impactResult)
-        {
-            ClearPendingCushionHighJump();
+            if (applyResult.ShouldRaiseHighJumpEvent)
+                CushionHighJumped?.Invoke(new CushionHighJumpEventData(applyResult.HighJumpEventVelocity));
 
-            Vector3 bounceVelocity = impactResult.BounceVelocity;
-            if (TryBuildHighJumpBounceVelocity(impactResult.BounceVelocity, impactResult.BounceSpeedLimit, impactResult.HighJumpSpeedMultiplier, out Vector3 highJumpBounceVelocity))
-            {
-                bounceVelocity = highJumpBounceVelocity;
-                CushionHighJumped?.Invoke(new CushionHighJumpEventData(bounceVelocity));
-            }
-            else
-            {
-                ArmPendingCushionHighJump(impactResult);
-            }
-
-            planarVelocity = Vector3.zero;
-            verticalVelocity = groundedStickVelocity;
-            externalVelocity = bounceVelocity;
-            inheritedPlatformVelocity = Vector3.zero;
-            ApplyCurrentVelocityToBody(GetBodyVelocity());
-        }
-
-        // バッファされた高跳び入力があれば、着地反応を強化して消費する。
-        private bool TryConsumePendingCushionHighJump()
-        {
-            if (Time.time > pendingCushionHighJumpExpireTime)
-            {
-                ClearPendingCushionHighJump();
-                return false;
-            }
-
-            if (!HasBufferedHighJumpInput())
-                return false;
-
-            Vector3 normalBounceVelocity = pendingCushionBounceDirection * pendingCushionBounceSpeed;
-            if (!TryBuildHighJumpBounceVelocity(normalBounceVelocity, pendingCushionBounceSpeedLimit, pendingCushionHighJumpMultiplier, out Vector3 highJumpBounceVelocity))
-                return false;
-
-            planarVelocity = Vector3.zero;
-            verticalVelocity = groundedStickVelocity;
-            externalVelocity = highJumpBounceVelocity;
-            inheritedPlatformVelocity = Vector3.zero;
-            ApplyCurrentVelocityToBody(GetBodyVelocity());
-            CushionHighJumped?.Invoke(new CushionHighJumpEventData(highJumpBounceVelocity));
             return true;
-        }
-
-        // 通常のバウンス速度を、高跳び入力に応じて増幅できるか判定する。
-        private bool TryBuildHighJumpBounceVelocity(
-            Vector3 normalBounceVelocity,
-            float bounceSpeedLimit,
-            float highJumpSpeedMultiplier,
-            out Vector3 highJumpBounceVelocity)
-        {
-            highJumpBounceVelocity = normalBounceVelocity;
-
-            if (highJumpSpeedMultiplier <= 1.0001f || !HasBufferedHighJumpInput())
-                return false;
-
-            float normalBounceSpeed = normalBounceVelocity.magnitude;
-            if (normalBounceSpeed <= 0.0001f)
-                return false;
-
-            Vector3 bounceDirection = normalBounceVelocity / normalBounceSpeed;
-            float cappedBoostedSpeed = normalBounceSpeed * highJumpSpeedMultiplier;
-            if (bounceSpeedLimit > 0f)
-                cappedBoostedSpeed = Mathf.Min(cappedBoostedSpeed, bounceSpeedLimit * highJumpSpeedMultiplier);
-
-            if (cappedBoostedSpeed <= normalBounceSpeed + 0.0001f)
-                return false;
-
-            ConsumeHighJumpInput();
-            highJumpBounceVelocity = bounceDirection * cappedBoostedSpeed;
-            return true;
-        }
-
-        // 高跳び入力の猶予時間を設定し、次の入力を待てるようにする。
-        private void ArmPendingCushionHighJump(CushionImpactResult impactResult)
-        {
-            if (impactResult.ResponseKind != CushionResponseKind.Bounce ||
-                impactResult.HighJumpSpeedMultiplier <= 1.0001f ||
-                impactResult.BounceVelocity.sqrMagnitude <= 0.0001f)
-            {
-                return;
-            }
-
-            float bounceSpeed = impactResult.BounceVelocity.magnitude;
-            pendingCushionHighJumpExpireTime = Time.time + coyoteTime;
-            pendingCushionBounceDirection = impactResult.BounceVelocity / bounceSpeed;
-            pendingCushionBounceSpeed = bounceSpeed;
-            pendingCushionBounceSpeedLimit = impactResult.BounceSpeedLimit;
-            pendingCushionHighJumpMultiplier = impactResult.HighJumpSpeedMultiplier;
-        }
-
-        // 高跳び待機状態を初期化する。
-        private void ClearPendingCushionHighJump()
-        {
-            pendingCushionHighJumpExpireTime = -999.0f;
-            pendingCushionBounceDirection = Vector3.zero;
-            pendingCushionBounceSpeed = 0f;
-            pendingCushionBounceSpeedLimit = 0f;
-            pendingCushionHighJumpMultiplier = 1.0f;
         }
 
         // 高跳びに使えるジャンプ入力が残っているか確認する。
         private bool HasBufferedHighJumpInput()
         {
-            return jumpHeld || jumpBufferCounter > 0.0f;
+            return currentIntent.JumpHeld || runtimeState.JumpBufferCounter > 0.0f;
         }
 
         // 高跳び用の入力を消費し、ジャンプ遷移へ進める。
         private void ConsumeHighJumpInput()
         {
-            jumpBufferCounter = 0.0f;
-            lastGroundedTime = -999.0f;
-            ClearPendingCushionHighJump();
+            currentIntent.JumpPressed = false;
+            runtimeState.JumpBufferCounter = 0.0f;
+            runtimeState.LastGroundedTime = -999.0f;
+            cushionHighJumpBuffer.Clear();
             StateMachine.ChangeState(EntityMoveState.Jumping);
         }
 
@@ -1482,36 +1133,45 @@ namespace BC.Base
         public void SetPlanarVelocity(Vector3 velocity)
         {
             velocity.y = 0.0f;
-            planarVelocity = velocity;
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.InputPlanar = velocity;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         // 垂直速度だけを直接設定する。
         public void SetVerticalVelocity(float velocity)
         {
-            verticalVelocity = velocity;
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.Vertical = velocity;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
         }
 
         // 移動の主処理を止めて、演出や拘束状態へ切り替える。
         public void EnterMotionLock(EntityMoveState lockedState)
         {
-            if (motionLocked)
+            if (runtimeState.MotionLocked)
                 return;
 
             preservedVelocityWhenLocked = CurrentVelocity;
-            motionLocked = true;
+            runtimeState.MotionLocked = true;
             StateMachine.ChangeState(lockedState);
         }
 
         // motion lock を解除し、保持していた速度を一部戻す。
         public void ExitMotionLock(Vector3 releaseImpulse, float preservedVelocityRate = 0.35f)
         {
-            if (!motionLocked)
+            if (!runtimeState.MotionLocked)
                 return;
 
-            motionLocked = false;
+            runtimeState.MotionLocked = false;
 
-            externalVelocity += preservedVelocityWhenLocked * preservedVelocityRate;
-            externalVelocity += releaseImpulse;
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.External += preservedVelocityWhenLocked * preservedVelocityRate;
+            channels.External += releaseImpulse;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
 
             preservedVelocityWhenLocked = Vector3.zero;
         }
@@ -1519,7 +1179,7 @@ namespace BC.Base
         // 死亡状態へ入り、入力とシステム移動の両方を止める。
         public void EnterDeadState(ValueModifierTagId moveLockTag)
         {
-            isDead = true;
+            runtimeState.IsDead = true;
             activeDeadMoveLockTag = moveLockTag;
             StateMachine.ChangeState(EntityMoveState.Dead);
 
@@ -1533,16 +1193,19 @@ namespace BC.Base
         // リトライ後に死亡状態や拘束を解除して復帰する。
         public void ReviveFromCheckpoint()
         {
-            isDead = false;
-            motionLocked = false;
+            runtimeState.IsDead = false;
+            runtimeState.MotionLocked = false;
             preservedVelocityWhenLocked = Vector3.zero;
 
-            planarVelocity = Vector3.zero;
-            verticalVelocity = groundedStickVelocity;
-            externalVelocity = Vector3.zero;
-            inheritedPlatformVelocity = Vector3.zero;
+            VelocityChannels channels = runtimeState.Velocity;
+            channels.InputPlanar = Vector3.zero;
+            channels.Vertical = groundedStickVelocity;
+            channels.External = Vector3.zero;
+            channels.InheritedSupport = Vector3.zero;
+            runtimeState.Velocity = channels;
+            SyncLegacyVelocityFieldsFromChannels();
 
-            ApplyCurrentVelocityToBody(Vector3.up * verticalVelocity);
+            ApplyCurrentVelocityToBody(Vector3.up * VerticalVelocity);
             StateMachine.ChangeState(EntityMoveState.Idle);
 
             if (activeDeadMoveLockTag.HasValue)
@@ -1575,18 +1238,72 @@ namespace BC.Base
         private void PublishRuntimeValues()
         {
             RefreshMoveGateDebugValues();
+            runtimeState.MoveState = MoveState;
 
             if (!IsRuntimeReady || SceneKernel.ValueStore == null)
                 return;
 
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.MoveState, MoveState);
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.CurrentPlanarSpeed, CurrentPlanarSpeed);
-            SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.VerticalVelocity, verticalVelocity);
+            SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.VerticalVelocity, runtimeState.VerticalVelocity);
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsGrounded, IsGrounded);
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsSprinting, IsSprinting);
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.IsDead, IsDead);
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.CanMoveByInput, currentCanMoveByInput);
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.CanMoveBySystem, currentCanMoveBySystem);
+        }
+
+        private void SyncRuntimeGroundState()
+        {
+            runtimeState.IsGrounded = ground.IsValid;
+            runtimeState.Ground = ground.IsValid
+                ? new GroundHitInfo(
+                    true,
+                    ground.Collider,
+                    ground.Transform,
+                    ground.Point,
+                    ground.Normal,
+                    ground.Distance,
+                    ground.Angle,
+                    ground.SurfaceKind,
+                    ground.SurfaceKind == GroundSurfaceKind.Walkable)
+                : default;
+        }
+
+        private void ResolveSupportInertiaLaunch()
+        {
+            SyncLegacyVelocityFieldsFromChannels();
+            if (!SupportInertiaSolver.TryResolveLaunch(
+                    supportInertiaSettings,
+                    runtimeState,
+                    HasBufferedHighJumpInput(),
+                    Time.time,
+                    out float _))
+            {
+                return;
+            }
+
+            SyncVelocityChannelsFromLegacyFields();
+
+            StateMachine.ChangeState(EntityMoveState.Jumping);
+        }
+
+        private void SyncM3SettingsFromLegacyStepFields()
+        {
+            if (stepAssistSettings == null)
+                stepAssistSettings = new StepAssistSettings();
+
+            if (groundSnapSettings == null)
+                groundSnapSettings = new GroundSnapSettings();
+
+            if (supportInertiaSettings == null)
+                supportInertiaSettings = new SupportInertiaSettings();
+
+            stepAssistSettings.Enabled = enableStepAssist;
+            stepAssistSettings.MaxStepHeight = maxStepHeight;
+            stepAssistSettings.ForwardProbeDistance = stepAssistForwardDistance;
+            stepAssistSettings.MinIntentMagnitude = minStepAssistSpeed;
+            stepAssistSettings.StepDownProbeDistance = Mathf.Max(stepAssistSettings.StepDownProbeDistance, maxStepHeight + groundProbeExtraDistance);
         }
 
         // ValueStore のゲート状態をデバッグ表示へ反映する。
@@ -1598,74 +1315,38 @@ namespace BC.Base
 
         private void OnDestroy()
         {
-            if (lowFrictionContactMaterial == null)
-                return;
-
-            if (Application.isPlaying)
-                Destroy(lowFrictionContactMaterial);
-            else
-                DestroyImmediate(lowFrictionContactMaterial);
-
-            lowFrictionContactMaterial = null;
+            MovementPhysicsMaterialFactory.Release(ref lowFrictionContactMaterial);
         }
 
         // Rigidbody / Collider / 古い CharacterController を一度だけ解決する。
         private void EnsureMovementBody()
         {
-            if (bodyRigidbody == null)
-                bodyRigidbody = GetComponent<Rigidbody>();
+            MovementBodyResolver.ResolveAndConfigure(
+                gameObject,
+                ref bodyRigidbody,
+                ref bodyCollider,
+                out _);
 
-            if (bodyCollider == null)
-                bodyCollider = GetComponent<CapsuleCollider>();
-
-            legacyCharacterController = GetComponent<CharacterController>();
-
-            if (bodyCollider == null)
-            {
-                bodyCollider = gameObject.AddComponent<CapsuleCollider>();
-
-                if (legacyCharacterController != null)
-                {
-                    bodyCollider.center = legacyCharacterController.center;
-                    bodyCollider.radius = legacyCharacterController.radius;
-                    bodyCollider.height = legacyCharacterController.height;
-                }
-            }
-
-            if (bodyRigidbody == null)
-                bodyRigidbody = gameObject.AddComponent<Rigidbody>();
-
-            bodyRigidbody.useGravity = false;
-            bodyRigidbody.isKinematic = false;
-            bodyRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
-            bodyRigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            bodyRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
-            EnsureLowFrictionColliderMaterial();
-
-            if (legacyCharacterController != null)
-                legacyCharacterController.enabled = false;
+            MovementPhysicsMaterialFactory.EnsureLowFrictionMaterial(bodyCollider, ref lowFrictionContactMaterial);
+            ValidateMovementColliderPolicy();
         }
 
-        private void EnsureLowFrictionColliderMaterial()
+        private void ValidateMovementColliderPolicy()
         {
             if (bodyCollider == null)
                 return;
 
-            if (lowFrictionContactMaterial == null)
+            if (MovementColliderPolicyValidator.TryValidate(transform, bodyCollider, footCollider, out string errorMessage))
             {
-                lowFrictionContactMaterial = new PhysicsMaterial($"{nameof(EntityMoveMotorMB)}_LowFriction")
-                {
-                    dynamicFriction = 0.0f,
-                    staticFriction = 0.0f,
-                    bounciness = 0.0f,
-                    frictionCombine = PhysicsMaterialCombine.Minimum,
-                    bounceCombine = PhysicsMaterialCombine.Minimum,
-                };
-                lowFrictionContactMaterial.hideFlags = HideFlags.HideAndDontSave;
+                lastColliderPolicyErrorMessage = null;
+                return;
             }
 
-            if (bodyCollider.sharedMaterial != lowFrictionContactMaterial)
-                bodyCollider.sharedMaterial = lowFrictionContactMaterial;
+            if (string.Equals(lastColliderPolicyErrorMessage, errorMessage, StringComparison.Ordinal))
+                return;
+
+            lastColliderPolicyErrorMessage = errorMessage;
+            Debug.LogError($"{nameof(EntityMoveMotorMB)} collider policy violation:\n{errorMessage}", this);
         }
 
         private readonly struct GroundInfo
@@ -1675,14 +1356,20 @@ namespace BC.Base
             public readonly Vector3 Point;
             public readonly Transform Transform;
             public readonly Collider Collider;
+            public readonly float Distance;
+            public readonly float Angle;
+            public readonly GroundSurfaceKind SurfaceKind;
 
-            public GroundInfo(bool isValid, Vector3 normal, Vector3 point, Transform transform, Collider collider)
+            public GroundInfo(bool isValid, Vector3 normal, Vector3 point, Transform transform, Collider collider, float distance, float angle, GroundSurfaceKind surfaceKind)
             {
                 IsValid = isValid;
                 Normal = normal;
                 Point = point;
                 Transform = transform;
                 Collider = collider;
+                Distance = distance;
+                Angle = angle;
+                SurfaceKind = surfaceKind;
             }
         }
     }

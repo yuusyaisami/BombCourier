@@ -71,7 +71,7 @@ namespace BC.Utility
         [Tooltip("無効状態で乗算するアルファです。")]
         [SerializeField, Range(0.0f, 1.0f)] private float inactiveAlphaMultiplier = 0.35f;
 
-        private readonly MaterialPropertyBlock propertyBlock = new();
+        private MaterialPropertyBlock propertyBlock;
 
         private Material runtimeMaterial;
         private Material ownedFallbackMaterial;
@@ -304,10 +304,11 @@ namespace BC.Utility
             if (targetRenderer == null)
                 return;
 
-            targetRenderer.GetPropertyBlock(propertyBlock);
+            MaterialPropertyBlock resolvedPropertyBlock = EnsurePropertyBlock();
+            targetRenderer.GetPropertyBlock(resolvedPropertyBlock);
 
-            propertyBlock.SetColor(BaseColorId, baseColor);
-            propertyBlock.SetColor(ColorId, baseColor);
+            resolvedPropertyBlock.SetColor(BaseColorId, baseColor);
+            resolvedPropertyBlock.SetColor(ColorId, baseColor);
 
             float emissionStrength = enableEmission
                 ? (isActive ? activeEmissionStrength : inactiveEmissionStrength)
@@ -316,8 +317,8 @@ namespace BC.Utility
             if (runtimeMaterial != null)
                 emissionStrength = ClampEmissionStrength(shaderFamily, emissionStrength);
 
-            propertyBlock.SetColor(EmissionColorId, emissionColor);
-            propertyBlock.SetFloat(EmissionStrengthId, emissionStrength);
+            resolvedPropertyBlock.SetColor(EmissionColorId, emissionColor);
+            resolvedPropertyBlock.SetFloat(EmissionStrengthId, emissionStrength);
 
             if (shaderFamily == ShaderFamily.EnvironmentStylizedLit && syncEnvironmentSimpleBoost)
             {
@@ -326,12 +327,18 @@ namespace BC.Utility
                     : 0.0f;
 
                 simpleBoostIntensity = Mathf.Clamp(simpleBoostIntensity, 0.0f, SimpleBoostEmissionStrengthMax);
-                propertyBlock.SetFloat(SimpleBoostEnabledId, simpleBoostIntensity > 0.0001f ? 1.0f : 0.0f);
-                propertyBlock.SetColor(SimpleBoostColorId, emissionColor);
-                propertyBlock.SetFloat(SimpleBoostIntensityId, simpleBoostIntensity);
+                resolvedPropertyBlock.SetFloat(SimpleBoostEnabledId, simpleBoostIntensity > 0.0001f ? 1.0f : 0.0f);
+                resolvedPropertyBlock.SetColor(SimpleBoostColorId, emissionColor);
+                resolvedPropertyBlock.SetFloat(SimpleBoostIntensityId, simpleBoostIntensity);
             }
 
-            targetRenderer.SetPropertyBlock(propertyBlock);
+            targetRenderer.SetPropertyBlock(resolvedPropertyBlock);
+        }
+
+        private MaterialPropertyBlock EnsurePropertyBlock()
+        {
+            propertyBlock ??= new MaterialPropertyBlock();
+            return propertyBlock;
         }
 
         private static float ClampEmissionStrength(ShaderFamily family, float value)
