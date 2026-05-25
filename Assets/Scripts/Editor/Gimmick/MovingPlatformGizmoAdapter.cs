@@ -6,9 +6,11 @@ namespace BC.Editor.Gimmick
 {
     internal sealed class MovingPlatformGizmoAdapter : GizmoAdapterBase<MovingPlatformMB>
     {
+        private readonly MovingPlatformTools.MovingPlatformGizmoPresenter presenter = new();
+
         protected override void DrawGizmos(MovingPlatformMB target, bool selected)
         {
-            target.DrawEditorPathGizmos();
+            presenter.Draw(target);
         }
     }
 

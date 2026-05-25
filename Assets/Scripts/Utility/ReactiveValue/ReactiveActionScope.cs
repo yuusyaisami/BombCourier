@@ -35,6 +35,28 @@ namespace BC.Base
         public ReactiveFloatBinding Bind(in ReactiveFloat value)
             => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
 
+        public ReactiveSnapshotFloatBinding Bind(in ReactiveSnapshotFloat value)
+        {
+            ThrowIfDisposed();
+            ReactiveSnapshotFloatBinding binding = new ReactiveSnapshotFloatBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
+
+        public ReactiveWatchedFloatBinding Bind(in ReactiveWatchedFloat value)
+        {
+            ThrowIfDisposed();
+            ReactiveWatchedFloatBinding binding = new ReactiveWatchedFloatBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
+
         public ReactiveFloatBinding Bind(in ReactiveFloat value, ReactiveEvaluationMode evaluationMode)
         {
             ThrowIfDisposed();
@@ -51,6 +73,28 @@ namespace BC.Base
         public ReactiveIntBinding Bind(in ReactiveInt value)
             => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
 
+        public ReactiveSnapshotIntBinding Bind(in ReactiveSnapshotInt value)
+        {
+            ThrowIfDisposed();
+            ReactiveSnapshotIntBinding binding = new ReactiveSnapshotIntBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
+
+        public ReactiveWatchedIntBinding Bind(in ReactiveWatchedInt value)
+        {
+            ThrowIfDisposed();
+            ReactiveWatchedIntBinding binding = new ReactiveWatchedIntBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
+
         public ReactiveIntBinding Bind(in ReactiveInt value, ReactiveEvaluationMode evaluationMode)
         {
             ThrowIfDisposed();
@@ -66,6 +110,28 @@ namespace BC.Base
 
         public ReactiveBoolBinding Bind(in ReactiveBool value)
             => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveSnapshotBoolBinding Bind(in ReactiveSnapshotBool value)
+        {
+            ThrowIfDisposed();
+            ReactiveSnapshotBoolBinding binding = new ReactiveSnapshotBoolBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
+
+        public ReactiveWatchedBoolBinding Bind(in ReactiveWatchedBool value)
+        {
+            ThrowIfDisposed();
+            ReactiveWatchedBoolBinding binding = new ReactiveWatchedBoolBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
 
         public ReactiveBoolBinding Bind(in ReactiveBool value, ReactiveEvaluationMode evaluationMode)
         {
@@ -99,6 +165,28 @@ namespace BC.Base
         public ReactiveEntityRefBinding Bind(in ReactiveEntityRef value)
             => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
 
+        public ReactiveSnapshotEntityRefBinding Bind(in ReactiveSnapshotEntityRef value)
+        {
+            ThrowIfDisposed();
+            ReactiveSnapshotEntityRefBinding binding = new ReactiveSnapshotEntityRefBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
+
+        public ReactiveWatchedEntityRefBinding Bind(in ReactiveWatchedEntityRef value)
+        {
+            ThrowIfDisposed();
+            ReactiveWatchedEntityRefBinding binding = new ReactiveWatchedEntityRefBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
+
         public ReactiveEntityRefBinding Bind(in ReactiveEntityRef value, ReactiveEvaluationMode evaluationMode)
         {
             ThrowIfDisposed();
@@ -114,6 +202,28 @@ namespace BC.Base
 
         public ReactiveStringBinding Bind(in ReactiveString value)
             => Bind(value, ReactiveBindingPolicy.GetDefaultBindingMode(value.SourceKind));
+
+        public ReactiveSnapshotStringBinding Bind(in ReactiveSnapshotString value)
+        {
+            ThrowIfDisposed();
+            ReactiveSnapshotStringBinding binding = new ReactiveSnapshotStringBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
+
+        public ReactiveWatchedStringBinding Bind(in ReactiveWatchedString value)
+        {
+            ThrowIfDisposed();
+            ReactiveWatchedStringBinding binding = new ReactiveWatchedStringBinding(
+                resolver,
+                CreateContext(),
+                value);
+            bindings.Add(binding);
+            return binding;
+        }
 
         public ReactiveStringBinding Bind(in ReactiveString value, ReactiveEvaluationMode evaluationMode)
         {

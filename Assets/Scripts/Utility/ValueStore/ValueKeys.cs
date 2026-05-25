@@ -516,6 +516,37 @@ namespace BC.Base
                         ValueCompositionMode.Raw
                     );
             }
+            public static class Interaction
+            {
+                public static readonly ValueKey<bool> IsStateRed =
+                    new ValueKey<bool>(
+                        new ValueKeyId(90002),
+                        "GameLogic.IsStateRed",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+                public static readonly ValueKey<bool> IsStateBlue =
+                    new ValueKey<bool>(
+                        new ValueKeyId(90003),
+                        "GameLogic.IsStateBlue",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+                public static readonly ValueKey<bool> IsStateGreen =
+                    new ValueKey<bool>(
+                        new ValueKeyId(90004),
+                        "GameLogic.IsStateGreen",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+                public static readonly ValueKey<bool> IsStateYellow =
+                    new ValueKey<bool>(
+                        new ValueKeyId(90005),
+                        "GameLogic.IsStateYellow",
+                        false,
+                        ValueCompositionMode.BoolOr
+                    );
+            }
         }
     }
 }

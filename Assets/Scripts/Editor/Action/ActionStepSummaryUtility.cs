@@ -232,7 +232,7 @@ namespace BC.Editor.ActionSystem
 
             SerializedProperty scopeProperty = writeProperty.FindPropertyRelative("storeScope");
 
-            if (scopeProperty != null && (ValueStoreWriteStoreScope)scopeProperty.enumValueIndex == ValueStoreWriteStoreScope.Entity)
+            if (scopeProperty != null && ValueStoreWriteScopeUtility.UsesEntityTarget((ValueStoreWriteStoreScope)scopeProperty.enumValueIndex))
             {
                 string targetSummary = BuildEntityTargetSummary(writeProperty.FindPropertyRelative("target"));
                 string assignment = BuildValueStoreAssignment(writeProperty, effectiveKind, keySummary, valueSummary);

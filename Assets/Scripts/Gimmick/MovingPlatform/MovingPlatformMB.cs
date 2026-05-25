@@ -77,7 +77,7 @@ namespace BC.Gimmick.MovingPlatform
         [Tooltip("runtime path line の発光制御を有効にします。")]
         [SerializeField] private bool enableRuntimePathEmission = true;
         [ShowIf(nameof(showPathInGame))]
-        [Tooltip("発光色です。")]
+        [Tooltip("レイヤー表示色が使えない場合に使う発光色フォールバックです。通常は Layer の VisualizationColor が発光色として使われます。")]
         [SerializeField] private Color runtimePathEmissionColor = Color.white;
         [ShowIf(nameof(showPathInGame))]
         [Tooltip("有効状態の発光強度です。")]
@@ -278,6 +278,16 @@ namespace BC.Gimmick.MovingPlatform
                         this);
                 }
             }
+
+            if (layers == null)
+                return;
+
+            for (int i = 0; i < layers.Length; i++)
+            {
+                MovingPlatformLayer layer = layers[i];
+                if (layer == null || !layer.UseReactiveCondition)
+                    continue;
+            }
         }
 
         private static bool HasChildComponentExcludingRoot<T>(Transform root) where T : Component
@@ -302,6 +312,7 @@ namespace BC.Gimmick.MovingPlatform
         {
             signalSubscription?.Dispose();
             signalSubscription = null;
+            DisposeLayerRuntimes();
             DisposeRuntimePathVisualization();
         }
 
@@ -323,27 +334,75 @@ namespace BC.Gimmick.MovingPlatform
             SyncRuntimePathVisualization();
         }
 
-        public void DrawEditorPathGizmos()
+        public bool TryCollectEditorGizmoData(
+            List<MovingPlatformEditorLayerPathData> layerPaths,
+            List<MovingPlatformEditorRailConnectionData> railConnectionsData,
+            List<MovingPlatformEditorRailNodeData> railNodesData)
         {
+            layerPaths?.Clear();
+            railConnectionsData?.Clear();
+            railNodesData?.Clear();
+
             if (!showPathInEditor || layers == null || layers.Length == 0)
-                return;
+                return false;
 
             MovingPlatformBasePose visualizationBasePose = GetVisualizationBasePose();
             MovingPlatformRailGraph visualizationRailGraph = GetVisualizationRailGraph();
             if (visualizationRailGraph == null)
-                return;
+                return false;
 
-            DrawSharedRailGraphGizmos(visualizationBasePose, visualizationRailGraph);
+            CollectSharedRailGraphGizmoData(visualizationBasePose, visualizationRailGraph, railConnectionsData, railNodesData);
 
             for (int i = 0; i < layers.Length; i++)
             {
                 if (!TryBuildLayerPreviewPoints(i, visualizationRailGraph, visualizationBasePose, pathVisualizationPoints))
                     continue;
 
-                DrawLayerPathGizmos(
-                    pathVisualizationPoints,
-                    ResolveLayerVisualizationColor(layers[i], i));
+                layerPaths?.Add(new MovingPlatformEditorLayerPathData(
+                    ResolveLayerVisualizationColor(layers[i], i),
+                    CopyPoints(pathVisualizationPoints),
+                    Mathf.Max(0.01f, pathVisualizationPointRadius)));
             }
+
+            return (layerPaths != null && layerPaths.Count > 0) ||
+                   (railConnectionsData != null && railConnectionsData.Count > 0) ||
+                   (railNodesData != null && railNodesData.Count > 0);
+        }
+
+        public bool TryCollectEditorRailNodeHandleData(List<MovingPlatformEditorRailNodeHandleData> handleNodes)
+        {
+            if (handleNodes == null)
+                return false;
+
+            handleNodes.Clear();
+            if (railNodes == null || railNodes.Length == 0)
+                return false;
+
+            MovingPlatformBasePose visualizationBasePose = GetVisualizationBasePose();
+            MovingPlatformRailGraph visualizationRailGraph = GetVisualizationRailGraph();
+            if (visualizationRailGraph == null)
+                return false;
+
+            for (int i = 0; i < railNodes.Length; i++)
+            {
+                MovingPlatformRailNode railNode = railNodes[i];
+                if (railNode == null)
+                    continue;
+
+                if (!visualizationRailGraph.TryGetNodeIndex(railNode.NodePath, out int nodeIndex))
+                    continue;
+
+                bool isLiteralPosition = TryResolveLiteralLocalPosition(railNode, out Vector3 localPosition);
+                Vector3 worldPosition = visualizationRailGraph.GetWorldPosition(visualizationBasePose, nodeIndex);
+                handleNodes.Add(new MovingPlatformEditorRailNodeHandleData(
+                    i,
+                    railNode.NodePath,
+                    localPosition,
+                    worldPosition,
+                    isLiteralPosition));
+            }
+
+            return handleNodes.Count > 0;
         }
 
         public bool TryGetPassengerMotion(Vector3 passengerWorldPosition, float deltaTime, out MovingPlatformPassengerMotion motion)
@@ -356,6 +415,12 @@ namespace BC.Gimmick.MovingPlatform
 
             motion = new MovingPlatformPassengerMotion(supportMotion.PassengerDelta, supportMotion.PassengerVelocity);
             return true;
+        }
+
+        public bool TryGetPrimaryMotionTransform(out Transform motionTransform)
+        {
+            motionTransform = MotionTransform;
+            return motionTransform != null;
         }
 
         public bool TryGetSupportMotion(Vector3 passengerWorldPosition, float deltaTime, out SupportMotionSnapshot motion)
@@ -385,12 +450,22 @@ namespace BC.Gimmick.MovingPlatform
                 return;
             }
 
+            EntityRef actorEntity = ResolveSelfEntity();
             runtimes = new MovingPlatformLayerRuntime[layers.Length];
             for (int i = 0; i < layers.Length; i++)
             {
                 runtimes[i] = new MovingPlatformLayerRuntime(layers[i]);
-                runtimes[i].Initialize(sceneKernel);
+                runtimes[i].Initialize(sceneKernel, actorEntity);
             }
+        }
+
+        private void DisposeLayerRuntimes()
+        {
+            if (runtimes == null)
+                return;
+
+            for (int i = 0; i < runtimes.Length; i++)
+                runtimes[i]?.Dispose();
         }
 
         private void BuildRailRouting()
@@ -430,11 +505,14 @@ namespace BC.Gimmick.MovingPlatform
 
         private ReactiveEvalContext BuildReactiveEvalContext()
         {
-            EntityRef selfEntity = default;
-            if (selfEntityMB != null && selfEntityMB.HasEntity)
-                selfEntity = selfEntityMB.Entity;
+            return new ReactiveEvalContext(sceneKernel, ResolveSelfEntity(), default);
+        }
 
-            return new ReactiveEvalContext(sceneKernel, selfEntity, default);
+        private EntityRef ResolveSelfEntity()
+        {
+            return selfEntityMB != null && selfEntityMB.HasEntity
+                ? selfEntityMB.Entity
+                : default;
         }
 
         private void NormalizeRailNodeAuthoring()
@@ -538,36 +616,30 @@ namespace BC.Gimmick.MovingPlatform
             return points.Count > 1;
         }
 
-        private void DrawLayerPathGizmos(
-            List<Vector3> points,
-            Color color)
+        private static Vector3[] CopyPoints(List<Vector3> points)
         {
-            if (points.Count <= 0)
-                return;
+            if (points == null || points.Count == 0)
+                return Array.Empty<Vector3>();
 
-            Gizmos.color = color;
-            for (int i = 0; i < points.Count - 1; i++)
-                Gizmos.DrawLine(points[i], points[i + 1]);
+            Vector3[] copied = new Vector3[points.Count];
+            for (int i = 0; i < points.Count; i++)
+                copied[i] = points[i];
 
-            float pointRadius = Mathf.Max(0.01f, pathVisualizationPointRadius);
-            Gizmos.DrawSphere(points[0], pointRadius);
-            DrawLayerAnchorGizmos(points, pointRadius, color);
-            Gizmos.DrawSphere(points[points.Count - 1], pointRadius * 0.75f);
+            return copied;
         }
 
-        private void DrawLayerAnchorGizmos(
-            List<Vector3> points,
-            float pointRadius,
-            Color color)
+        private static bool TryResolveLiteralLocalPosition(MovingPlatformRailNode railNode, out Vector3 localPosition)
         {
-            if (points == null || points.Count <= 0)
-                return;
+            localPosition = default;
+            if (railNode == null)
+                return false;
 
-            Gizmos.color = Color.Lerp(color, Color.white, 0.35f);
-            for (int i = 0; i < points.Count; i++)
-            {
-                Gizmos.DrawWireSphere(points[i], pointRadius * 0.55f);
-            }
+            ReactiveVector3 reactiveLocalPosition = railNode.LocalPosition;
+            if (reactiveLocalPosition.SourceKind != ReactiveVector3SourceKind.Literal)
+                return false;
+
+            localPosition = reactiveLocalPosition.Literal;
+            return true;
         }
 
         private static Color GetAutoLayerColor(int layerIndex)
@@ -649,17 +721,6 @@ namespace BC.Gimmick.MovingPlatform
             return ComposeLayerColors(contributionCount, accumulatedColor, new Color(0.75f, 0.82f, 0.92f, 0.75f));
         }
 
-        private static void DrawCompositeRailNodeGizmo(Vector3 worldPosition, float pointRadius, Color color)
-        {
-            Gizmos.color = color;
-            Gizmos.DrawSphere(worldPosition, pointRadius);
-
-            Color wireColor = Color.Lerp(color, Color.white, 0.55f);
-            wireColor.a = 1.0f;
-            Gizmos.color = wireColor;
-            Gizmos.DrawWireSphere(worldPosition, pointRadius * 1.15f);
-        }
-
         private bool LayerUsesRailConnection(
             int layerIndex,
             MovingPlatformRailGraph visualizationRailGraph,
@@ -725,12 +786,15 @@ namespace BC.Gimmick.MovingPlatform
             return route.IsValid;
         }
 
-        private void DrawSharedRailGraphGizmos(in MovingPlatformBasePose visualizationBasePose, MovingPlatformRailGraph visualizationRailGraph)
+        private void CollectSharedRailGraphGizmoData(
+            in MovingPlatformBasePose visualizationBasePose,
+            MovingPlatformRailGraph visualizationRailGraph,
+            List<MovingPlatformEditorRailConnectionData> railConnectionsData,
+            List<MovingPlatformEditorRailNodeData> railNodesData)
         {
             if (visualizationRailGraph == null)
                 return;
 
-            Color previousColor = Gizmos.color;
             float pointRadius = Mathf.Max(0.01f, pathVisualizationPointRadius) * 0.65f;
 
             if (railConnections != null)
@@ -748,11 +812,10 @@ namespace BC.Gimmick.MovingPlatform
                     Vector3 fromWorld = visualizationRailGraph.GetWorldPosition(visualizationBasePose, fromNodeIndex);
                     Vector3 toWorld = visualizationRailGraph.GetWorldPosition(visualizationBasePose, toNodeIndex);
 
-                    Gizmos.color = new Color(0.16f, 0.19f, 0.24f, 0.55f);
-                    Gizmos.DrawLine(fromWorld, toWorld);
-
-                    Gizmos.color = GetRailConnectionVisualizationColor(visualizationRailGraph, fromNodeIndex, toNodeIndex);
-                    Gizmos.DrawLine(fromWorld, toWorld);
+                    railConnectionsData?.Add(new MovingPlatformEditorRailConnectionData(
+                        fromWorld,
+                        toWorld,
+                        GetRailConnectionVisualizationColor(visualizationRailGraph, fromNodeIndex, toNodeIndex)));
                 }
             }
 
@@ -764,14 +827,17 @@ namespace BC.Gimmick.MovingPlatform
                     if (railNode == null || !visualizationRailGraph.TryGetNodeIndex(railNode.NodePath, out int nodeIndex))
                         continue;
 
-                    DrawCompositeRailNodeGizmo(
+                    Color fillColor = GetRailNodeVisualizationColor(visualizationRailGraph, nodeIndex);
+                    Color wireColor = Color.Lerp(fillColor, Color.white, 0.55f);
+                    wireColor.a = 1.0f;
+
+                    railNodesData?.Add(new MovingPlatformEditorRailNodeData(
                         visualizationRailGraph.GetWorldPosition(visualizationBasePose, nodeIndex),
-                        pointRadius,
-                        GetRailNodeVisualizationColor(visualizationRailGraph, nodeIndex));
+                        fillColor,
+                        wireColor,
+                        pointRadius));
                 }
             }
-
-            Gizmos.color = previousColor;
         }
 
         private void SyncRuntimePathVisualization()
@@ -795,7 +861,10 @@ namespace BC.Gimmick.MovingPlatform
             runtimePathVisualizerRegistry.EnsureLayerCount(layers.Length);
             for (int layerIndex = 0; layerIndex < layers.Length; layerIndex++)
             {
-                RuntimePathEmissionSettings emissionSettings = ResolveRuntimePathEmissionSettings(layers[layerIndex]);
+                Color lineColor = ResolveLayerVisualizationColor(layers[layerIndex], layerIndex);
+                lineColor.a = Mathf.Clamp01(runtimePathColor.a);
+
+                RuntimePathEmissionSettings emissionSettings = ResolveRuntimePathEmissionSettings(layers[layerIndex], lineColor);
                 if (!TryBuildLayerPathPoints(layerIndex, railGraph, basePose, pathVisualizationPoints))
                 {
                     runtimePathVisualizerRegistry.ApplyLayer(
@@ -805,8 +874,6 @@ namespace BC.Gimmick.MovingPlatform
                     continue;
                 }
 
-                Color lineColor = ResolveLayerVisualizationColor(layers[layerIndex], layerIndex);
-                lineColor.a = Mathf.Clamp01(runtimePathColor.a);
                 RuntimePathVisualizationData data = new(
                     isVisible: true,
                     isActiveLayer: layerIndex == selectedLayerIndex,
@@ -824,11 +891,13 @@ namespace BC.Gimmick.MovingPlatform
             runtimePathVisualizerRegistry ??= new MovingPlatformRuntimePathVisualizerRegistry(transform);
         }
 
-        private RuntimePathEmissionSettings ResolveRuntimePathEmissionSettings(MovingPlatformLayer layer)
+        private RuntimePathEmissionSettings ResolveRuntimePathEmissionSettings(MovingPlatformLayer layer, Color lineColor)
         {
+            Color visualizationEmissionColor = ResolveVisualizationEmissionColor(lineColor);
+
             RuntimePathEmissionSettings defaultSettings = new(
                 enableRuntimePathEmission,
-                runtimePathEmissionColor,
+                visualizationEmissionColor,
                 runtimePathActiveEmissionStrength,
                 runtimePathInactiveEmissionStrength,
                 runtimePathSyncSimpleBoost,
@@ -840,9 +909,13 @@ namespace BC.Gimmick.MovingPlatform
             if (layer == null || !layer.OverrideRuntimePathEmission)
                 return defaultSettings;
 
+            Color overrideEmissionColor = layer.UseVisualizationColorForRuntimePathEmission
+                ? visualizationEmissionColor
+                : ResolveExplicitEmissionColor(layer.RuntimePathEmissionColor, visualizationEmissionColor);
+
             return new RuntimePathEmissionSettings(
                 enableEmission: true,
-                emissionColor: layer.RuntimePathEmissionColor,
+                emissionColor: overrideEmissionColor,
                 activeEmissionStrength: layer.RuntimePathActiveEmissionStrength,
                 inactiveEmissionStrength: layer.RuntimePathInactiveEmissionStrength,
                 syncSimpleBoost: layer.SyncRuntimePathSimpleBoost,
@@ -850,6 +923,22 @@ namespace BC.Gimmick.MovingPlatform
                 inactiveSimpleBoostIntensity: layer.RuntimePathInactiveSimpleBoostIntensity,
                 dimInactive: layer.DimRuntimePathWhenInactive,
                 inactiveAlphaMultiplier: layer.RuntimePathInactiveAlphaMultiplier);
+        }
+
+        private Color ResolveVisualizationEmissionColor(Color lineColor)
+        {
+            Color emissionColor = new(lineColor.r, lineColor.g, lineColor.b, 1.0f);
+            if (emissionColor.maxColorComponent > 0.0001f)
+                return emissionColor;
+
+            return ResolveExplicitEmissionColor(runtimePathEmissionColor, Color.white);
+        }
+
+        private static Color ResolveExplicitEmissionColor(Color configuredColor, Color fallbackColor)
+        {
+            Color emissionColor = configuredColor.a > 0.001f ? configuredColor : fallbackColor;
+            emissionColor.a = 1.0f;
+            return emissionColor;
         }
 
         private void HideRuntimePathVisualization()
@@ -954,6 +1043,9 @@ namespace BC.Gimmick.MovingPlatform
                 ? layers[nextSelectedLayerIndex].LayerName
                 : "None";
 
+            Debug.Log(
+                $"{nameof(MovingPlatformMB)}[{name}] LayerDiagnostics: selected={nextSelectedLayerIndex}({selectedLayerName})",
+                this);
 
 
             for (int i = 0; i < runtimes.Length; i++)
@@ -967,14 +1059,17 @@ namespace BC.Gimmick.MovingPlatform
                 bool routeValid = railRoutes != null && i < railRoutes.Length && railRoutes[i] != null && railRoutes[i].IsValid;
                 string routeIssue = ResolveLayerRouteIssue(i);
                 float routeDistance = ResolveLayerApproxRouteDistance(i);
-                string kernelCurrentValueText = runtime.TryGetKernelCurrentValue(out bool kernelCurrentValue)
-                    ? kernelCurrentValue.ToString()
+                string conditionCurrentValueText = runtime.TryGetConditionCurrentValue(out bool conditionCurrentValue)
+                    ? conditionCurrentValue.ToString()
                     : "n/a";
 
                 string reason = active && playable
                     ? "selected-candidate"
                     : BuildInactiveReason(runtime, playable, routeValid);
 
+                Debug.Log(
+                    $"{nameof(MovingPlatformMB)}[{name}] Layer[{i}] '{runtime.LayerName}': active={active}, playable={playable}, reason={reason}, routeValid={routeValid}, routeIssue={routeIssue}, routeDistance={routeDistance:0.###}, conditionValue={conditionCurrentValueText}, signalGate={(runtime.UseSignalGate ? runtime.SignalGateActive : true)}",
+                    this);
             }
         }
 
@@ -1059,11 +1154,14 @@ namespace BC.Gimmick.MovingPlatform
             if (runtime.UseSignalGate && !runtime.SignalGateActive)
                 return "inactive(signal-gate-off)";
 
-            if (runtime.UseKernelBoolCondition && !runtime.KernelHandleReady)
-                return "inactive(kernel-key-unresolved)";
+            if (runtime.UseReactiveCondition && !runtime.ConditionBindingReady)
+                return "inactive(condition-binding-missing)";
 
-            if (runtime.UseKernelBoolCondition && runtime.KernelHandleReady && !runtime.IsKernelConditionSatisfied)
-                return "inactive(kernel-condition-mismatch)";
+            if (runtime.UseReactiveCondition && runtime.ConditionBindingReady && !runtime.ConditionReadSucceeded)
+                return "inactive(condition-read-failed)";
+
+            if (runtime.UseReactiveCondition && runtime.ConditionReadSucceeded && !runtime.IsConditionSatisfied)
+                return "inactive(condition-false)";
 
             return "inactive(priority-lost)";
         }
@@ -1291,37 +1389,42 @@ namespace BC.Gimmick.MovingPlatform
                 default);
         }
 
-        private sealed class MovingPlatformLayerRuntime
+        private sealed class MovingPlatformLayerRuntime : IDisposable
         {
             private readonly MovingPlatformLayer layer;
-            private ValueWatchHandle<bool> activeValueHandle;
+            private ReactiveWatchedBoolBinding activeConditionBinding;
             private bool signalGateActive;
+            private bool conditionReadSucceeded;
+            private bool isConditionSatisfied = true;
 
             public int Priority => layer != null ? layer.Priority : int.MinValue;
             public string LayerName => layer != null ? layer.LayerName : "Layer";
             public bool ActiveOnStart => layer != null && layer.ActiveOnStart;
             public bool UseSignalGate => layer != null && layer.UseSignalGate;
             public bool SignalGateActive => signalGateActive;
-            public bool UseKernelBoolCondition => layer != null && layer.UseKernelBoolCondition;
-            public bool KernelHandleReady => activeValueHandle != null;
-            public bool ActiveWhenValue => layer != null && layer.ActiveWhenValue;
-            public bool IsKernelConditionSatisfied =>
-                !UseKernelBoolCondition ||
-                (activeValueHandle != null && activeValueHandle.CurrentValue == layer.ActiveWhenValue);
+            public bool UseReactiveCondition => layer != null && layer.UseReactiveCondition;
+            public bool ConditionBindingReady => activeConditionBinding != null;
+            public bool ConditionReadSucceeded => conditionReadSucceeded;
+            public bool IsConditionSatisfied => !UseReactiveCondition || isConditionSatisfied;
 
             public MovingPlatformLayerRuntime(MovingPlatformLayer layer)
             {
                 this.layer = layer;
             }
 
-            public void Initialize(SceneKernel sceneKernel)
+            public void Initialize(SceneKernel sceneKernel, EntityRef actorEntity)
             {
                 signalGateActive = layer != null && layer.ActiveOnStart;
-                if (layer == null || !layer.UseKernelBoolCondition || sceneKernel?.KernelValueStore == null)
+                conditionReadSucceeded = !UseReactiveCondition;
+                isConditionSatisfied = true;
+
+                if (layer == null || !layer.UseReactiveCondition || sceneKernel?.ReactiveValues == null)
                     return;
 
-                if (layer.KernelActiveKey.TryResolve(out ValueKey<bool> key))
-                    activeValueHandle = sceneKernel.KernelValueStore.GetHandle(key);
+                activeConditionBinding = new ReactiveWatchedBoolBinding(
+                    sceneKernel.ReactiveValues,
+                    new ReactiveEvalContext(sceneKernel, actorEntity, default),
+                    layer.ActiveCondition);
             }
 
             public bool RefreshActive()
@@ -1332,28 +1435,58 @@ namespace BC.Gimmick.MovingPlatform
                 if (layer.UseSignalGate && !signalGateActive)
                     return false;
 
-                if (layer.UseKernelBoolCondition)
+                if (layer.UseReactiveCondition)
                 {
-                    if (activeValueHandle == null)
+                    if (activeConditionBinding == null)
+                    {
+                        conditionReadSucceeded = false;
+                        isConditionSatisfied = false;
                         return false;
+                    }
 
-                    if (activeValueHandle.CurrentValue != layer.ActiveWhenValue)
+                    ReactiveResult<bool> result = activeConditionBinding.Read();
+                    conditionReadSucceeded = result.Success;
+                    if (!result.Success)
+                    {
+                        isConditionSatisfied = false;
                         return false;
+                    }
+
+                    isConditionSatisfied = result.Value;
+                    if (!isConditionSatisfied)
+                        return false;
+                }
+                else
+                {
+                    conditionReadSucceeded = true;
+                    isConditionSatisfied = true;
                 }
 
                 return true;
             }
 
-            public bool TryGetKernelCurrentValue(out bool value)
+            public bool TryGetConditionCurrentValue(out bool value)
             {
-                if (activeValueHandle == null)
+                if (!UseReactiveCondition)
+                {
+                    value = true;
+                    return true;
+                }
+
+                if (!conditionReadSucceeded)
                 {
                     value = default;
                     return false;
                 }
 
-                value = activeValueHandle.CurrentValue;
+                value = isConditionSatisfied;
                 return true;
+            }
+
+            public void Dispose()
+            {
+                activeConditionBinding?.Dispose();
+                activeConditionBinding = null;
             }
 
             public void HandleSignal(SignalId signalId)

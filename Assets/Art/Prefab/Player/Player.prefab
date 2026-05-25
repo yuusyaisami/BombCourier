@@ -409,6 +409,7 @@ GameObject:
   - component: {fileID: 1469540994083200100}
   - component: {fileID: 9190420324000731801}
   - component: {fileID: -1993309423423878992}
+  - component: {fileID: 7141352524246368049}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -906,7 +907,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fccd8195db1499247b59d788972164d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Managers.TalkAdapterMB
-  entityMB: {fileID: 0}
+  entityMB: {fileID: 6039525701949762869}
   entityAnimation: {fileID: 8616279206525780107}
   sceneKernelMB: {fileID: 0}
   characterId:
@@ -921,6 +922,27 @@ MonoBehaviour:
     applyNonTalkingShapeExpression: 0
     nonTalkingShapeExpressionId: 0
     restoreStateShapeExpressionOnStop: 0
+--- !u!65 &7141352524246368049
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982850033400161385}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.75, y: 0.75, z: 1}
+  m_Center: {x: 0, y: -0.625, z: 0}
 --- !u!1 &8098859386636133588
 GameObject:
   m_ObjectHideFlags: 0

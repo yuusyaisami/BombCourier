@@ -13,11 +13,11 @@ namespace BC.ActionSystem
         private readonly ValueStoreWriteValueKind valueKind;
         private readonly ValueStoreNumericOperation numericOperation;
         private readonly ValueKeyReference key;
-        private readonly ReactiveBool boolValue;
-        private readonly ReactiveInt intValue;
-        private readonly ReactiveFloat floatValue;
-        private readonly ReactiveString stringValue;
-        private readonly ReactiveEntityRef entityValue;
+        private readonly ReactiveSnapshotBool boolValue;
+        private readonly ReactiveSnapshotInt intValue;
+        private readonly ReactiveSnapshotFloat floatValue;
+        private readonly ReactiveSnapshotString stringValue;
+        private readonly ReactiveSnapshotEntityRef entityValue;
         private readonly ReactiveFaceExpressionId faceExpressionValue;
         private readonly ReactiveEntityMoveState entityMoveStateValue;
         private readonly ReactiveShapeExpressionId shapeExpressionValue;
@@ -28,11 +28,11 @@ namespace BC.ActionSystem
             ValueStoreWriteValueKind valueKind,
             ValueStoreNumericOperation numericOperation,
             ValueKeyReference key,
-            ReactiveBool boolValue,
-            ReactiveInt intValue,
-            ReactiveFloat floatValue,
-            ReactiveString stringValue,
-            ReactiveEntityRef entityValue,
+            ReactiveSnapshotBool boolValue,
+            ReactiveSnapshotInt intValue,
+            ReactiveSnapshotFloat floatValue,
+            ReactiveSnapshotString stringValue,
+            ReactiveSnapshotEntityRef entityValue,
             ReactiveFaceExpressionId faceExpressionValue,
             ReactiveEntityMoveState entityMoveStateValue,
             ReactiveShapeExpressionId shapeExpressionValue)
@@ -77,11 +77,11 @@ namespace BC.ActionSystem
             private readonly ValueStoreWriteValueKind valueKind;
             private readonly ValueStoreNumericOperation numericOperation;
             private readonly ValueKeyReference key;
-            private readonly ReactiveBool boolValue;
-            private readonly ReactiveInt intValue;
-            private readonly ReactiveFloat floatValue;
-            private readonly ReactiveString stringValue;
-            private readonly ReactiveEntityRef entityValue;
+            private readonly ReactiveSnapshotBool boolValue;
+            private readonly ReactiveSnapshotInt intValue;
+            private readonly ReactiveSnapshotFloat floatValue;
+            private readonly ReactiveSnapshotString stringValue;
+            private readonly ReactiveSnapshotEntityRef entityValue;
             private readonly ReactiveFaceExpressionId faceExpressionValue;
             private readonly ReactiveEntityMoveState entityMoveStateValue;
             private readonly ReactiveShapeExpressionId shapeExpressionValue;
@@ -94,11 +94,11 @@ namespace BC.ActionSystem
                 ValueStoreWriteValueKind valueKind,
                 ValueStoreNumericOperation numericOperation,
                 ValueKeyReference key,
-                ReactiveBool boolValue,
-                ReactiveInt intValue,
-                ReactiveFloat floatValue,
-                ReactiveString stringValue,
-                ReactiveEntityRef entityValue,
+                ReactiveSnapshotBool boolValue,
+                ReactiveSnapshotInt intValue,
+                ReactiveSnapshotFloat floatValue,
+                ReactiveSnapshotString stringValue,
+                ReactiveSnapshotEntityRef entityValue,
                 ReactiveFaceExpressionId faceExpressionValue,
                 ReactiveEntityMoveState entityMoveStateValue,
                 ReactiveShapeExpressionId shapeExpressionValue)
@@ -154,12 +154,7 @@ namespace BC.ActionSystem
                     return false;
                 }
 
-                bool isKernelKey = ValueStoreWriteValueTypeUtility.IsKernelDescriptor(descriptor);
-                bool isLocalKey = ValueStoreWriteValueTypeUtility.IsLocalDescriptor(descriptor);
-
-                if ((storeScope == ValueStoreWriteStoreScope.Kernel && (!isKernelKey || isLocalKey)) ||
-                    (storeScope == ValueStoreWriteStoreScope.Local && !isLocalKey) ||
-                    (storeScope == ValueStoreWriteStoreScope.Entity && (isKernelKey || isLocalKey)))
+                if (!ValueStoreWriteScopeUtility.IsKeyCompatible(storeScope, descriptor))
                 {
                     return false;
                 }
@@ -170,21 +165,21 @@ namespace BC.ActionSystem
 
             private ActionNodeStatus WriteBool(in ActionExecutionContext context, ValueKeyDescriptor descriptor)
             {
-                using ReactiveBoolBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), boolValue);
+                using ReactiveSnapshotBoolBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), boolValue);
                 ReactiveResult<bool> result = binding.Read();
                 return result.Success ? ApplyValue(context, descriptor.GetKey<bool>(), result.Value) : ActionNodeStatus.Failed;
             }
 
             private ActionNodeStatus WriteInt(in ActionExecutionContext context, ValueKeyDescriptor descriptor)
             {
-                using ReactiveIntBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), intValue);
+                using ReactiveSnapshotIntBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), intValue);
                 ReactiveResult<int> result = binding.Read();
                 return result.Success ? ApplyIntValue(context, descriptor.GetKey<int>(), result.Value) : ActionNodeStatus.Failed;
             }
 
             private ActionNodeStatus WriteFloat(in ActionExecutionContext context, ValueKeyDescriptor descriptor)
             {
-                using ReactiveFloatBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), floatValue);
+                using ReactiveSnapshotFloatBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), floatValue);
                 ReactiveResult<float> result = binding.Read();
                 return result.Success ? ApplyFloatValue(context, descriptor.GetKey<float>(), result.Value) : ActionNodeStatus.Failed;
             }
@@ -206,24 +201,11 @@ namespace BC.ActionSystem
                         return ActionNodeStatus.Continue;
                     }
 
-                    if (storeScope == ValueStoreWriteStoreScope.Kernel)
-                    {
-                        if (context.KernelValueStore == null)
-                            return ActionNodeStatus.Failed;
-
-                        int current = context.KernelValueStore.Get(resolvedKey);
-                        if (!TryApplyNumericInt(current, operand, out int next))
-                            return ActionNodeStatus.Failed;
-
-                        context.KernelValueStore.Set(resolvedKey, next);
-                        return ActionNodeStatus.Continue;
-                    }
-
                     if (context.EntityValueStore == null)
                         return ActionNodeStatus.Failed;
 
                     resolvedTargets ??= new List<EntityRef>(4);
-                    int count = ActionTargetResolver.Resolve(context, target, resolvedTargets);
+                    int count = ValueStoreWriteScopeUtility.ResolveTargets(context, storeScope, target, resolvedTargets);
 
                     if (count == 0)
                         return ActionNodeStatus.Failed;
@@ -265,24 +247,11 @@ namespace BC.ActionSystem
                         return ActionNodeStatus.Continue;
                     }
 
-                    if (storeScope == ValueStoreWriteStoreScope.Kernel)
-                    {
-                        if (context.KernelValueStore == null)
-                            return ActionNodeStatus.Failed;
-
-                        float current = context.KernelValueStore.Get(resolvedKey);
-                        if (!TryApplyNumericFloat(current, operand, out float next))
-                            return ActionNodeStatus.Failed;
-
-                        context.KernelValueStore.Set(resolvedKey, next);
-                        return ActionNodeStatus.Continue;
-                    }
-
                     if (context.EntityValueStore == null)
                         return ActionNodeStatus.Failed;
 
                     resolvedTargets ??= new List<EntityRef>(4);
-                    int count = ActionTargetResolver.Resolve(context, target, resolvedTargets);
+                    int count = ValueStoreWriteScopeUtility.ResolveTargets(context, storeScope, target, resolvedTargets);
 
                     if (count == 0)
                         return ActionNodeStatus.Failed;
@@ -383,14 +352,14 @@ namespace BC.ActionSystem
 
             private ActionNodeStatus WriteString(in ActionExecutionContext context, ValueKeyDescriptor descriptor)
             {
-                using ReactiveStringBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), stringValue);
+                using ReactiveSnapshotStringBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), stringValue);
                 ReactiveResult<string> result = binding.Read();
                 return result.Success ? ApplyValue(context, descriptor.GetKey<string>(), result.Value) : ActionNodeStatus.Failed;
             }
 
             private ActionNodeStatus WriteEntityRef(in ActionExecutionContext context, ValueKeyDescriptor descriptor)
             {
-                using ReactiveEntityRefBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), entityValue);
+                using ReactiveSnapshotEntityRefBinding binding = new(context.SceneKernel.ReactiveValues, new ReactiveEvalContext(context), entityValue);
                 ReactiveResult<EntityRef> result = binding.Read();
                 return result.Success ? ApplyValue(context, descriptor.GetKey<EntityRef>(), result.Value) : ActionNodeStatus.Failed;
             }
@@ -429,20 +398,11 @@ namespace BC.ActionSystem
                         return ActionNodeStatus.Continue;
                     }
 
-                    if (storeScope == ValueStoreWriteStoreScope.Kernel)
-                    {
-                        if (context.KernelValueStore == null)
-                            return ActionNodeStatus.Failed;
-
-                        context.KernelValueStore.Set(resolvedKey, value);
-                        return ActionNodeStatus.Continue;
-                    }
-
                     if (context.EntityValueStore == null)
                         return ActionNodeStatus.Failed;
 
                     resolvedTargets ??= new List<EntityRef>(4);
-                    int count = ActionTargetResolver.Resolve(context, target, resolvedTargets);
+                    int count = ValueStoreWriteScopeUtility.ResolveTargets(context, storeScope, target, resolvedTargets);
 
                     if (count == 0)
                         return ActionNodeStatus.Failed;

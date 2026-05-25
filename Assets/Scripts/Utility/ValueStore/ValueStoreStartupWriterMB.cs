@@ -159,11 +159,7 @@ namespace BC.Base
                 return false;
             }
 
-            bool isKernelKey = ValueStoreWriteValueTypeUtility.IsKernelDescriptor(descriptor);
-            bool isLocalKey = ValueStoreWriteValueTypeUtility.IsLocalDescriptor(descriptor);
-
-            if ((write.StoreScope == ValueStoreWriteStoreScope.Kernel && (!isKernelKey || isLocalKey)) ||
-                (write.StoreScope == ValueStoreWriteStoreScope.Entity && (isKernelKey || isLocalKey)))
+            if (!ValueStoreWriteScopeUtility.IsKeyCompatible(write.StoreScope, descriptor))
             {
                 Debug.LogWarning(
                     $"{nameof(ValueStoreStartupWriterMB)}: Store scope '{write.StoreScope}' does not match key '{descriptor.Path}'.",
@@ -189,7 +185,7 @@ namespace BC.Base
             ValueStoreWriteAuthoring write,
             ValueKeyDescriptor descriptor)
         {
-            using ReactiveBoolBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.BoolValue);
+            using ReactiveSnapshotBoolBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.BoolValue);
             ReactiveResult<bool> result = binding.Read();
             return result.Success && ApplyValue(in context, write, descriptor.GetKey<bool>(), result.Value);
         }
@@ -200,7 +196,7 @@ namespace BC.Base
             ValueStoreWriteAuthoring write,
             ValueKeyDescriptor descriptor)
         {
-            using ReactiveIntBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.IntValue);
+            using ReactiveSnapshotIntBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.IntValue);
             ReactiveResult<int> result = binding.Read();
             return result.Success && ApplyValue(in context, write, descriptor.GetKey<int>(), result.Value);
         }
@@ -211,7 +207,7 @@ namespace BC.Base
             ValueStoreWriteAuthoring write,
             ValueKeyDescriptor descriptor)
         {
-            using ReactiveFloatBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.FloatValue);
+            using ReactiveSnapshotFloatBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.FloatValue);
             ReactiveResult<float> result = binding.Read();
             return result.Success && ApplyValue(in context, write, descriptor.GetKey<float>(), result.Value);
         }
@@ -222,7 +218,7 @@ namespace BC.Base
             ValueStoreWriteAuthoring write,
             ValueKeyDescriptor descriptor)
         {
-            using ReactiveStringBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.StringValue);
+            using ReactiveSnapshotStringBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.StringValue);
             ReactiveResult<string> result = binding.Read();
             return result.Success && ApplyValue(in context, write, descriptor.GetKey<string>(), result.Value);
         }
@@ -233,7 +229,7 @@ namespace BC.Base
             ValueStoreWriteAuthoring write,
             ValueKeyDescriptor descriptor)
         {
-            using ReactiveEntityRefBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.EntityValue);
+            using ReactiveSnapshotEntityRefBinding binding = new(context.SceneKernel.ReactiveValues, evalContext, write.EntityValue);
             ReactiveResult<EntityRef> result = binding.Read();
             return result.Success && ApplyValue(in context, write, descriptor.GetKey<EntityRef>(), result.Value);
         }
@@ -279,11 +275,10 @@ namespace BC.Base
         {
             try
             {
-                if (write.StoreScope == ValueStoreWriteStoreScope.Kernel)
-                    return context.SceneKernel.KernelValueStore.Set(key, value);
+                if (context.SceneKernel?.EntityValueStore == null)
+                    return false;
 
-                resolvedTargets.Clear();
-                int count = EntityTargetResolver.Resolve(context, write.Target, resolvedTargets);
+                int count = ValueStoreWriteScopeUtility.ResolveTargets(context, write.StoreScope, write.Target, resolvedTargets);
 
                 if (count == 0)
                 {

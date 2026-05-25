@@ -827,6 +827,7 @@ namespace BC.Base
 
                 case CushionResponseKind.Stop:
                 case CushionResponseKind.StopAndAttach:
+                case CushionResponseKind.Dampen:
                     ApplyCushionStop();
                     return true;
 

@@ -513,6 +513,12 @@ namespace BC.Bomb
                 return true;
             }
 
+            if (appliedResult.ResponseKind == CushionResponseKind.Dampen)
+            {
+                CushionRigidbodyImpactApplier.ApplyDampen(transform, rb, appliedResult.RetainedLinearVelocityRate);
+                return true;
+            }
+
             return CushionRigidbodyImpactApplier.Apply(transform, rb, appliedResult);
         }
 

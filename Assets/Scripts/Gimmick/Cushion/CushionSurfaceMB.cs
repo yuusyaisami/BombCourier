@@ -1,8 +1,29 @@
+using System;
 using BC.Base;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace BC.Gimmick.Cushion
 {
+    [Serializable]
+    public struct CushionStopDampenRule
+    {
+        [Tooltip("この減速率を適用する対象タグです。")]
+        [SerializeField, EntityTagDropdown]
+        private EntityTagReference tag;
+
+        [Tooltip("衝突後に残す線形速度の割合です。0 で完全停止、1 で無変化です。")]
+        [SerializeField, Range(0.0f, 1.0f)]
+        private float retainedVelocityRate;
+
+        public bool Matches(EntityTagId sourceTag)
+        {
+            return tag.Matches(sourceTag);
+        }
+
+        public float RetainedVelocityRate => Mathf.Clamp01(retainedVelocityRate);
+    }
+
     [DisallowMultipleComponent]
     public sealed class CushionSurfaceMB : MonoBehaviour
     {
@@ -33,6 +54,12 @@ namespace BC.Gimmick.Cushion
         [SerializeField] private Vector3 customLocalDirection = Vector3.up;
         [Tooltip("停止時に対象をこのクッションへ貼り付けるかを指定します。爆弾は有効でも貼り付けず吸収します。")]
         [SerializeField] private bool attachWhenStopped;
+        [ShowIf(nameof(ShowStopDampenSettings))]
+        [Tooltip("タグ個別設定に一致しない時に使う、衝突後に残す線形速度の割合です。0 で完全停止、1 で無変化です。")]
+        [SerializeField, Range(0.0f, 1.0f)] private float defaultRetainedVelocityRate;
+        [ShowIf(nameof(ShowStopDampenSettings))]
+        [Tooltip("タグごとに停止時の減速率を上書きします。")]
+        [SerializeField] private CushionStopDampenRule[] stopDampenRules = Array.Empty<CushionStopDampenRule>();
         [Tooltip("停止時の貼り付け先に使う Transform です。未指定ならこのオブジェクト自身を使います。")]
         [SerializeField] private Transform attachPoint;
 
@@ -87,11 +114,8 @@ namespace BC.Gimmick.Cushion
 
         private CushionImpactResult BuildStopResult(CushionImpactData impactData)
         {
-            if (impactData.SourceTag.Equals(EntityTags.Item.Bomb.Id))
-                return CushionImpactResult.Stop();
-
-            if (!attachWhenStopped)
-                return CushionImpactResult.Stop();
+            if (!attachWhenStopped || impactData.SourceTag.Equals(EntityTags.Item.Bomb.Id))
+                return CushionImpactResult.Dampen(ResolveRetainedVelocityRate(impactData.SourceTag));
 
             Transform parent = attachPoint != null ? attachPoint : transform;
             bool useAttachPose = attachPoint != null;
@@ -143,6 +167,22 @@ namespace BC.Gimmick.Cushion
         private bool MatchesTargetTag(EntityTagId sourceTag)
         {
             return MatchesTag(sourceTag, acceptAnyTag, targetTags);
+        }
+
+        private bool ShowStopDampenSettings => !attachWhenStopped;
+
+        private float ResolveRetainedVelocityRate(EntityTagId sourceTag)
+        {
+            if (stopDampenRules != null)
+            {
+                for (int i = 0; i < stopDampenRules.Length; i++)
+                {
+                    if (stopDampenRules[i].Matches(sourceTag))
+                        return stopDampenRules[i].RetainedVelocityRate;
+                }
+            }
+
+            return Mathf.Clamp01(defaultRetainedVelocityRate);
         }
 
         private static bool MatchesTag(EntityTagId sourceTag, bool acceptAny, EntityTagReference[] tags)

@@ -39,6 +39,7 @@ namespace BC.Base
         private ValueKeyReference entityValueKey;
 
         [ShowIf(nameof(UsesEntityTarget))]
+        [LabelText("$EntityTargetLabel")]
         [SerializeField]
         private EntityTargetReference entityTarget = EntityTargetReference.Trigger();
 
@@ -84,6 +85,7 @@ namespace BC.Base
         private bool ShowsIntValue => IsSetIntAction;
         private bool ShowsFloatValue => IsSetFloatAction || IsNumericModifierAction;
         private bool ShowsStringValue => IsSetStringAction;
+        private string EntityTargetLabel => $"EntityTarget [{entityTarget.ToSummaryString()}]";
 
         private bool IsKernelStoreAction =>
             kind == WiringActionKind.KernelStoreSet ||

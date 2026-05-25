@@ -54,6 +54,22 @@ namespace BC.Base
                 selection = EntityTargetSelection.First,
             };
         }
+
+        public string ToSummaryString()
+        {
+            return mode switch
+            {
+                EntityTargetResolveMode.Self => "Self",
+                EntityTargetResolveMode.TriggerEntity => "TriggerEntity",
+                EntityTargetResolveMode.TagSearch => $"TagSearch:{tag} ({selection})",
+                _ => mode.ToString(),
+            };
+        }
+
+        public override string ToString()
+        {
+            return ToSummaryString();
+        }
     }
 
     public static class EntityTargetResolver
@@ -63,83 +79,7 @@ namespace BC.Base
             EntityTargetReference target,
             List<EntityRef> results)
         {
-            if (results == null)
-                throw new ArgumentNullException(nameof(results));
-
-            results.Clear();
-
-            switch (target.Mode)
-            {
-                case EntityTargetResolveMode.Self:
-                    AddIfValid(context.SelfEntity, target.Selection, results);
-                    break;
-
-                case EntityTargetResolveMode.TriggerEntity:
-                    AddIfValid(context.TriggerEntity, target.Selection, results);
-                    break;
-
-                case EntityTargetResolveMode.TagSearch:
-                    ResolveByTag(context.SceneKernel, target.Tag.Id, target.Selection, results);
-                    break;
-            }
-
-            return results.Count;
-        }
-
-        private static bool AddIfValid(EntityRef entity, EntityTargetSelection selection, List<EntityRef> results)
-        {
-            if (!entity.IsValid)
-                return false;
-
-            results.Add(entity);
-            return selection == EntityTargetSelection.First;
-        }
-
-        private static void ResolveByTag(
-            SceneKernel sceneKernel,
-            EntityTagId tag,
-            EntityTargetSelection selection,
-            List<EntityRef> results)
-        {
-            if (!tag.IsValid)
-                return;
-
-            if (sceneKernel?.EntitiesRegistry != null &&
-                AddFromRegistry(sceneKernel.EntitiesRegistry, tag, selection, results))
-            {
-                return;
-            }
-
-            ApplicationKernel applicationKernel = ApplicationKernelMB.Instance != null
-                ? ApplicationKernelMB.Instance.Kernel
-                : null;
-
-            if (applicationKernel?.ApplicationEntityRegistry != null)
-                AddFromRegistry(applicationKernel.ApplicationEntityRegistry, tag, selection, results);
-        }
-
-        private static bool AddFromRegistry(
-            ScopedEntityRegistry registry,
-            EntityTagId tag,
-            EntityTargetSelection selection,
-            List<EntityRef> results)
-        {
-            IReadOnlyList<EntityRef> entities = registry.GetEntitiesByTag(tag);
-
-            for (int i = 0; i < entities.Count; i++)
-            {
-                EntityRef entity = entities[i];
-
-                if (!entity.IsValid)
-                    continue;
-
-                results.Add(entity);
-
-                if (selection == EntityTargetSelection.First)
-                    return true;
-            }
-
-            return false;
+            return ScopedEntityResolveUtility.ResolveTargets(context, EntityResolveScope.Entity, target, results);
         }
     }
 }

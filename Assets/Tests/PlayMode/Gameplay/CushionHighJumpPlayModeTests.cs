@@ -83,6 +83,48 @@ namespace BC.Gameplay.PlayModeTests
         }
 
         [Test]
+        public void CushionSurface_StopWithoutAttach_ReturnsDampenWithConfiguredRetainedVelocityRate()
+        {
+            DestroyToastManagerInstance();
+
+            GameObject surfaceObject = new GameObject("CushionSurface");
+            createdObjects.Add(surfaceObject);
+
+            Component surface = surfaceObject.AddComponent(FindRuntimeType(CushionSurfaceTypeName));
+            SetPrivateField(surface, "acceptAnyTag", true);
+            SetPrivateField(surface, "bounceRate", 0.0f);
+            SetPrivateField(surface, "attachWhenStopped", false);
+            SetPrivateField(surface, "defaultRetainedVelocityRate", 0.0f);
+
+            GameObject sourceObject = new GameObject("Source");
+            createdObjects.Add(sourceObject);
+
+            object impactData = Activator.CreateInstance(
+                FindRuntimeType(CushionImpactDataTypeName),
+                sourceObject,
+                sourceObject.transform,
+                null,
+                Activator.CreateInstance(FindRuntimeType(EntityTagIdTypeName)),
+                null,
+                null,
+                Vector3.zero,
+                Vector3.up,
+                Vector3.down * 10f,
+                10f);
+
+            MethodInfo tryEvaluateMethod = surface.GetType().GetMethod("TryEvaluate", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(tryEvaluateMethod);
+
+            object[] args = { impactData, null };
+            bool handled = (bool)tryEvaluateMethod.Invoke(surface, args);
+            object result = args[1];
+
+            Assert.IsTrue(handled);
+            Assert.AreEqual("Dampen", GetPropertyValue<object>(result, "ResponseKind").ToString());
+            Assert.That(Convert.ToSingle(GetPropertyValue<object>(result, "RetainedLinearVelocityRate")), Is.EqualTo(0.0f).Within(0.001f));
+        }
+
+        [Test]
         public void EntityMoveMotor_HighJumpBuilder_UsesHeldJumpAndCapsSpeed()
         {
             DestroyToastManagerInstance();

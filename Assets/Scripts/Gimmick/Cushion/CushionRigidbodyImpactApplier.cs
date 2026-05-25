@@ -23,6 +23,10 @@ namespace BC.Gimmick.Cushion
                     ApplyStop(rb);
                     return true;
 
+                case CushionResponseKind.Dampen:
+                    ApplyDampen(targetTransform, rb, impactResult.RetainedLinearVelocityRate);
+                    return true;
+
                 default:
                     return false;
             }
@@ -59,6 +63,16 @@ namespace BC.Gimmick.Cushion
             rb.useGravity = true;
             rb.angularVelocity = Vector3.zero;
             rb.linearVelocity = bounceVelocity;
+        }
+
+        public static void ApplyDampen(Transform targetTransform, Rigidbody rb, float retainedLinearVelocityRate)
+        {
+            targetTransform.SetParent(null, true);
+            rb.isKinematic = false;
+            rb.detectCollisions = true;
+            rb.useGravity = true;
+            rb.linearVelocity *= Mathf.Clamp01(retainedLinearVelocityRate);
+            rb.angularVelocity = Vector3.zero;
         }
     }
 }

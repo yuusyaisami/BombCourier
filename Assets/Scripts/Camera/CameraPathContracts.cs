@@ -145,6 +145,13 @@ namespace BC.Camera
             return true;
         }
 
+        public CameraPathPointDefinition WithLiteralPosition(Vector3 literalPosition)
+        {
+            CameraPathPointDefinition copy = this;
+            copy.position = ReactiveVector3.LiteralValue(literalPosition, position.EvaluationMode);
+            return copy;
+        }
+
         public bool TryResolve(
             in ReactiveEvalContext context,
             ReactiveValueResolverService resolver,

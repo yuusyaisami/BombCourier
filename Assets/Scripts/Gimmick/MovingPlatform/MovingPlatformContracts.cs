@@ -97,6 +97,73 @@ namespace BC.Gimmick.MovingPlatform
         }
     }
 
+    public readonly struct MovingPlatformEditorLayerPathData
+    {
+        public readonly Color Color;
+        public readonly Vector3[] Points;
+        public readonly float PointRadius;
+
+        public MovingPlatformEditorLayerPathData(Color color, Vector3[] points, float pointRadius)
+        {
+            Color = color;
+            Points = points ?? Array.Empty<Vector3>();
+            PointRadius = Mathf.Max(0.001f, pointRadius);
+        }
+    }
+
+    public readonly struct MovingPlatformEditorRailConnectionData
+    {
+        public readonly Vector3 From;
+        public readonly Vector3 To;
+        public readonly Color Color;
+
+        public MovingPlatformEditorRailConnectionData(Vector3 from, Vector3 to, Color color)
+        {
+            From = from;
+            To = to;
+            Color = color;
+        }
+    }
+
+    public readonly struct MovingPlatformEditorRailNodeData
+    {
+        public readonly Vector3 Position;
+        public readonly Color FillColor;
+        public readonly Color WireColor;
+        public readonly float Radius;
+
+        public MovingPlatformEditorRailNodeData(Vector3 position, Color fillColor, Color wireColor, float radius)
+        {
+            Position = position;
+            FillColor = fillColor;
+            WireColor = wireColor;
+            Radius = Mathf.Max(0.001f, radius);
+        }
+    }
+
+    public readonly struct MovingPlatformEditorRailNodeHandleData
+    {
+        public readonly int RailNodeIndex;
+        public readonly string NodePath;
+        public readonly Vector3 LocalPosition;
+        public readonly Vector3 WorldPosition;
+        public readonly bool IsLiteralPosition;
+
+        public MovingPlatformEditorRailNodeHandleData(
+            int railNodeIndex,
+            string nodePath,
+            Vector3 localPosition,
+            Vector3 worldPosition,
+            bool isLiteralPosition)
+        {
+            RailNodeIndex = railNodeIndex;
+            NodePath = string.IsNullOrWhiteSpace(nodePath) ? string.Empty : nodePath.Trim();
+            LocalPosition = localPosition;
+            WorldPosition = worldPosition;
+            IsLiteralPosition = isLiteralPosition;
+        }
+    }
+
     public readonly struct MovingPlatformBasePose
     {
         public readonly Vector3 Position;

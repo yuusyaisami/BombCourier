@@ -22,7 +22,7 @@ namespace BC.Editor
 
             float height = GetControlDelta(LineHeight);
 
-            if (scopeProperty != null && (ValueStoreWriteStoreScope)scopeProperty.enumValueIndex == ValueStoreWriteStoreScope.Entity)
+            if (scopeProperty != null && ValueStoreWriteScopeUtility.UsesEntityTarget((ValueStoreWriteStoreScope)scopeProperty.enumValueIndex))
                 height += GetControlDelta(EditorGUI.GetPropertyHeight(targetProperty, true));
 
             height += GetControlDelta(LineHeight);
@@ -56,7 +56,7 @@ namespace BC.Editor
             EditorGUI.PropertyField(rowRect, scopeProperty, new GUIContent(label.text));
             rowRect.y += LineHeight + Spacing;
 
-            if ((ValueStoreWriteStoreScope)scopeProperty.enumValueIndex == ValueStoreWriteStoreScope.Entity)
+            if (ValueStoreWriteScopeUtility.UsesEntityTarget((ValueStoreWriteStoreScope)scopeProperty.enumValueIndex))
             {
                 float targetHeight = EditorGUI.GetPropertyHeight(targetProperty, true);
                 Rect targetRect = new(contentRect.x, rowRect.y, contentRect.width, targetHeight);
@@ -199,16 +199,7 @@ namespace BC.Editor
                 if (!ValueStoreWriteValueTypeUtility.IsSupportedDescriptor(descriptor))
                     continue;
 
-                bool isKernel = ValueStoreWriteValueTypeUtility.IsKernelDescriptor(descriptor);
-                bool isLocal = ValueStoreWriteValueTypeUtility.IsLocalDescriptor(descriptor);
-
-                if (scope == ValueStoreWriteStoreScope.Kernel && (!isKernel || isLocal))
-                    continue;
-
-                if (scope == ValueStoreWriteStoreScope.Local && !isLocal)
-                    continue;
-
-                if (scope == ValueStoreWriteStoreScope.Entity && (isKernel || isLocal))
+                if (!ValueStoreWriteScopeUtility.IsKeyCompatible(scope, descriptor))
                     continue;
 
                 if (filterType != null && descriptor.ValueType != filterType)

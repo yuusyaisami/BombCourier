@@ -35,6 +35,28 @@ namespace BC.Base
             };
         }
 
+        public ReactiveResult<float> ResolveSnapshotFloat(in ReactiveEvalContext context, in ReactiveSnapshotFloat value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveSnapshotFloatSourceKind.Literal => ReactiveResult<float>.Ok(value.Literal),
+                ReactiveSnapshotFloatSourceKind.EntityValueStore => ResolveEntityStoreValue<float>(context, value.EntityValue),
+                ReactiveSnapshotFloatSourceKind.LocalValueStore => ResolveLocalStoreValue<float>(context, value.LocalValue),
+                ReactiveSnapshotFloatSourceKind.Distance => ResolveDistance(context, value.DistanceSource),
+                _ => FailUnsupportedSource<float>(nameof(ReactiveSnapshotFloat), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<float> ResolveWatchedFloat(in ReactiveEvalContext context, in ReactiveWatchedFloat value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedFloatSourceKind.EntityValueStore => ResolveEntityStoreValue<float>(context, value.EntityValue),
+                ReactiveWatchedFloatSourceKind.LocalValueStore => ResolveLocalStoreValue<float>(context, value.LocalValue),
+                _ => FailUnsupportedSource<float>(nameof(ReactiveWatchedFloat), value.SourceKind.ToString(), context),
+            };
+        }
+
         public ReactiveResult<int> ResolveInt(in ReactiveEvalContext context, in ReactiveInt value)
         {
             return value.SourceKind switch
@@ -43,6 +65,27 @@ namespace BC.Base
                 ReactiveIntSourceKind.EntityValueStore => ResolveEntityStoreValue<int>(context, value.EntityValue),
                 ReactiveIntSourceKind.LocalValueStore => ResolveLocalStoreValue<int>(context, value.LocalValue),
                 _ => FailUnsupportedSource<int>(nameof(ReactiveInt), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<int> ResolveSnapshotInt(in ReactiveEvalContext context, in ReactiveSnapshotInt value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveSnapshotIntSourceKind.Literal => ReactiveResult<int>.Ok(value.Literal),
+                ReactiveSnapshotIntSourceKind.EntityValueStore => ResolveEntityStoreValue<int>(context, value.EntityValue),
+                ReactiveSnapshotIntSourceKind.LocalValueStore => ResolveLocalStoreValue<int>(context, value.LocalValue),
+                _ => FailUnsupportedSource<int>(nameof(ReactiveSnapshotInt), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<int> ResolveWatchedInt(in ReactiveEvalContext context, in ReactiveWatchedInt value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedIntSourceKind.EntityValueStore => ResolveEntityStoreValue<int>(context, value.EntityValue),
+                ReactiveWatchedIntSourceKind.LocalValueStore => ResolveLocalStoreValue<int>(context, value.LocalValue),
+                _ => FailUnsupportedSource<int>(nameof(ReactiveWatchedInt), value.SourceKind.ToString(), context),
             };
         }
 
@@ -56,6 +99,29 @@ namespace BC.Base
                 ReactiveBoolSourceKind.EntityAlive => ResolveEntityAlive(context, value.EntityAliveSource),
                 ReactiveBoolSourceKind.CompareFloat => ResolveCompareFloat(context, value.CompareFloatSource),
                 _ => FailUnsupportedSource<bool>(nameof(ReactiveBool), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<bool> ResolveSnapshotBool(in ReactiveEvalContext context, in ReactiveSnapshotBool value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveSnapshotBoolSourceKind.Literal => ReactiveResult<bool>.Ok(value.Literal),
+                ReactiveSnapshotBoolSourceKind.EntityValueStore => ResolveEntityStoreValue<bool>(context, value.EntityValue),
+                ReactiveSnapshotBoolSourceKind.LocalValueStore => ResolveLocalStoreValue<bool>(context, value.LocalValue),
+                ReactiveSnapshotBoolSourceKind.EntityAlive => ResolveEntityAlive(context, value.EntityAliveSource),
+                ReactiveSnapshotBoolSourceKind.CompareFloat => ResolveCompareFloat(context, value.CompareFloatSource),
+                _ => FailUnsupportedSource<bool>(nameof(ReactiveSnapshotBool), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<bool> ResolveWatchedBool(in ReactiveEvalContext context, in ReactiveWatchedBool value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedBoolSourceKind.EntityValueStore => ResolveEntityStoreValue<bool>(context, value.EntityValue),
+                ReactiveWatchedBoolSourceKind.LocalValueStore => ResolveLocalStoreValue<bool>(context, value.LocalValue),
+                _ => FailUnsupportedSource<bool>(nameof(ReactiveWatchedBool), value.SourceKind.ToString(), context),
             };
         }
 
@@ -101,6 +167,44 @@ namespace BC.Base
             }
         }
 
+        public ReactiveResult<EntityRef> ResolveSnapshotEntityRef(in ReactiveEvalContext context, in ReactiveSnapshotEntityRef value)
+        {
+            switch (value.SourceKind)
+            {
+                case ReactiveSnapshotEntityRefSourceKind.Self:
+                    return context.ActorEntity.IsValid
+                        ? ReactiveResult<EntityRef>.Ok(context.ActorEntity)
+                        : ReactiveErrorUtility.Fail<EntityRef>(ReactiveErrorCode.InvalidEntity, "Self entity is invalid.", context);
+
+                case ReactiveSnapshotEntityRefSourceKind.TriggerEntity:
+                    return context.TriggerEntity.IsValid
+                        ? ReactiveResult<EntityRef>.Ok(context.TriggerEntity)
+                        : ReactiveErrorUtility.Fail<EntityRef>(ReactiveErrorCode.TargetNotFound, "Trigger entity is not available.", context);
+
+                case ReactiveSnapshotEntityRefSourceKind.EntityValueStore:
+                    return ResolveEntityStoreValue<EntityRef>(context, value.EntityValue);
+
+                case ReactiveSnapshotEntityRefSourceKind.LocalValueStore:
+                    return ResolveLocalStoreValue<EntityRef>(context, value.LocalValue);
+
+                case ReactiveSnapshotEntityRefSourceKind.TargetReference:
+                    return ResolveTargetReferenceSingle(context, value.TargetReferenceValue);
+
+                default:
+                    return FailUnsupportedSource<EntityRef>(nameof(ReactiveSnapshotEntityRef), value.SourceKind.ToString(), context);
+            }
+        }
+
+        public ReactiveResult<EntityRef> ResolveWatchedEntityRef(in ReactiveEvalContext context, in ReactiveWatchedEntityRef value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedEntityRefSourceKind.EntityValueStore => ResolveEntityStoreValue<EntityRef>(context, value.EntityValue),
+                ReactiveWatchedEntityRefSourceKind.LocalValueStore => ResolveLocalStoreValue<EntityRef>(context, value.LocalValue),
+                _ => FailUnsupportedSource<EntityRef>(nameof(ReactiveWatchedEntityRef), value.SourceKind.ToString(), context),
+            };
+        }
+
         public ReactiveResult<string> ResolveString(in ReactiveEvalContext context, in ReactiveString value)
         {
             return value.SourceKind switch
@@ -109,6 +213,27 @@ namespace BC.Base
                 ReactiveStringSourceKind.EntityValueStore => ResolveEntityStoreValue<string>(context, value.EntityValue),
                 ReactiveStringSourceKind.LocalValueStore => ResolveLocalStoreValue<string>(context, value.LocalValue),
                 _ => FailUnsupportedSource<string>(nameof(ReactiveString), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<string> ResolveSnapshotString(in ReactiveEvalContext context, in ReactiveSnapshotString value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveSnapshotStringSourceKind.Literal => ReactiveResult<string>.Ok(value.Literal),
+                ReactiveSnapshotStringSourceKind.EntityValueStore => ResolveEntityStoreValue<string>(context, value.EntityValue),
+                ReactiveSnapshotStringSourceKind.LocalValueStore => ResolveLocalStoreValue<string>(context, value.LocalValue),
+                _ => FailUnsupportedSource<string>(nameof(ReactiveSnapshotString), value.SourceKind.ToString(), context),
+            };
+        }
+
+        public ReactiveResult<string> ResolveWatchedString(in ReactiveEvalContext context, in ReactiveWatchedString value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedStringSourceKind.EntityValueStore => ResolveEntityStoreValue<string>(context, value.EntityValue),
+                ReactiveWatchedStringSourceKind.LocalValueStore => ResolveLocalStoreValue<string>(context, value.LocalValue),
+                _ => FailUnsupportedSource<string>(nameof(ReactiveWatchedString), value.SourceKind.ToString(), context),
             };
         }
 
@@ -155,6 +280,16 @@ namespace BC.Base
             };
         }
 
+        internal ReactiveResult<ValueWatchHandle<float>> ResolveWatchedFloatHandle(in ReactiveEvalContext context, in ReactiveWatchedFloat value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedFloatSourceKind.EntityValueStore => ResolveEntityStoreHandle<float>(context, value.EntityValue),
+                ReactiveWatchedFloatSourceKind.LocalValueStore => ResolveLocalStoreHandle<float>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<float>>(nameof(ReactiveWatchedFloat), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
         internal ReactiveResult<ValueWatchHandle<int>> ResolveIntWatch(in ReactiveEvalContext context, in ReactiveInt value)
         {
             return value.SourceKind switch
@@ -162,6 +297,16 @@ namespace BC.Base
                 ReactiveIntSourceKind.EntityValueStore => ResolveEntityStoreHandle<int>(context, value.EntityValue),
                 ReactiveIntSourceKind.LocalValueStore => ResolveLocalStoreHandle<int>(context, value.LocalValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<int>>(nameof(ReactiveInt), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
+        internal ReactiveResult<ValueWatchHandle<int>> ResolveWatchedIntHandle(in ReactiveEvalContext context, in ReactiveWatchedInt value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedIntSourceKind.EntityValueStore => ResolveEntityStoreHandle<int>(context, value.EntityValue),
+                ReactiveWatchedIntSourceKind.LocalValueStore => ResolveLocalStoreHandle<int>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<int>>(nameof(ReactiveWatchedInt), ReactiveEvaluationMode.Watched, context),
             };
         }
 
@@ -175,6 +320,16 @@ namespace BC.Base
             };
         }
 
+        internal ReactiveResult<ValueWatchHandle<bool>> ResolveWatchedBoolHandle(in ReactiveEvalContext context, in ReactiveWatchedBool value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedBoolSourceKind.EntityValueStore => ResolveEntityStoreHandle<bool>(context, value.EntityValue),
+                ReactiveWatchedBoolSourceKind.LocalValueStore => ResolveLocalStoreHandle<bool>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<bool>>(nameof(ReactiveWatchedBool), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
         internal ReactiveResult<ValueWatchHandle<EntityRef>> ResolveEntityWatch(in ReactiveEvalContext context, in ReactiveEntityRef value)
         {
             return value.SourceKind switch
@@ -185,6 +340,16 @@ namespace BC.Base
             };
         }
 
+        internal ReactiveResult<ValueWatchHandle<EntityRef>> ResolveWatchedEntityRefHandle(in ReactiveEvalContext context, in ReactiveWatchedEntityRef value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedEntityRefSourceKind.EntityValueStore => ResolveEntityStoreHandle<EntityRef>(context, value.EntityValue),
+                ReactiveWatchedEntityRefSourceKind.LocalValueStore => ResolveLocalStoreHandle<EntityRef>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<EntityRef>>(nameof(ReactiveWatchedEntityRef), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
         internal ReactiveResult<ValueWatchHandle<string>> ResolveStringWatch(in ReactiveEvalContext context, in ReactiveString value)
         {
             return value.SourceKind switch
@@ -192,6 +357,16 @@ namespace BC.Base
                 ReactiveStringSourceKind.EntityValueStore => ResolveEntityStoreHandle<string>(context, value.EntityValue),
                 ReactiveStringSourceKind.LocalValueStore => ResolveLocalStoreHandle<string>(context, value.LocalValue),
                 _ => FailUnsupportedEvaluationMode<ValueWatchHandle<string>>(nameof(ReactiveString), ReactiveEvaluationMode.Watched, context),
+            };
+        }
+
+        internal ReactiveResult<ValueWatchHandle<string>> ResolveWatchedStringHandle(in ReactiveEvalContext context, in ReactiveWatchedString value)
+        {
+            return value.SourceKind switch
+            {
+                ReactiveWatchedStringSourceKind.EntityValueStore => ResolveEntityStoreHandle<string>(context, value.EntityValue),
+                ReactiveWatchedStringSourceKind.LocalValueStore => ResolveLocalStoreHandle<string>(context, value.LocalValue),
+                _ => FailUnsupportedEvaluationMode<ValueWatchHandle<string>>(nameof(ReactiveWatchedString), ReactiveEvaluationMode.Watched, context),
             };
         }
 
@@ -590,14 +765,9 @@ namespace BC.Base
             if (!TryResolveSceneKernel(context, out SceneKernel resolvedSceneKernel, out ReactiveError kernelError))
                 return ReactiveResult<EntityRef>.Fail(kernelError);
 
-            ActionExecutionContext actionContext = new(
-                resolvedSceneKernel,
-                resolvedSceneKernel.Actions,
-                context.ActorEntity,
-                context.TriggerEntity);
-
-            List<EntityRef> results = new(2);
-            int count = ActionTargetResolver.Resolve(actionContext, target, results);
+            EntityResolveContext resolveContext = new(resolvedSceneKernel, context.ActorEntity, context.TriggerEntity);
+            var results = new List<EntityRef>(2);
+            int count = ScopedEntityResolveUtility.ResolveTargets(resolveContext, EntityResolveScope.Entity, target, results);
 
             if (count == 0)
             {
@@ -616,15 +786,7 @@ namespace BC.Base
                 return ReactiveErrorUtility.Fail<EntityRef>(errorCode, message, context);
             }
 
-            if (target.Selection == EntityTargetSelection.All)
-            {
-                return ReactiveErrorUtility.Fail<EntityRef>(
-                    ReactiveErrorCode.MultipleTargetsNotAllowed,
-                    "ReactiveEntityRef TargetReference requires a single target selection.",
-                    context);
-            }
-
-            if (target.Mode == EntityTargetResolveMode.TagSearch && CountTagTargets(resolvedSceneKernel, target.Tag.Id, 2) > 1)
+            if (count > 1 || target.Selection == EntityTargetSelection.All)
             {
                 return ReactiveErrorUtility.Fail<EntityRef>(
                     ReactiveErrorCode.MultipleTargetsNotAllowed,
@@ -633,52 +795,6 @@ namespace BC.Base
             }
 
             return ReactiveResult<EntityRef>.Ok(results[0]);
-        }
-
-        private static int CountTagTargets(
-            SceneKernel sceneKernel,
-            EntityTagId tag,
-            int maxCount)
-        {
-            if (!tag.IsValid)
-                return 0;
-
-            int count = 0;
-
-            if (sceneKernel?.EntitiesRegistry != null)
-                count += CountTargetsInRegistry(sceneKernel.EntitiesRegistry, tag, maxCount - count);
-
-            if (count >= maxCount)
-                return count;
-
-            ApplicationKernel applicationKernel = ApplicationKernelMB.Instance != null
-                ? ApplicationKernelMB.Instance.Kernel
-                : null;
-
-            if (applicationKernel?.ApplicationEntityRegistry != null)
-                count += CountTargetsInRegistry(applicationKernel.ApplicationEntityRegistry, tag, maxCount - count);
-
-            return count;
-        }
-
-        private static int CountTargetsInRegistry(
-            ScopedEntityRegistry registry,
-            EntityTagId tag,
-            int remainingBudget)
-        {
-            if (registry == null || remainingBudget <= 0)
-                return 0;
-
-            int count = 0;
-            IReadOnlyList<EntityRef> entities = registry.GetEntitiesByTag(tag);
-
-            for (int index = 0; index < entities.Count && count < remainingBudget; index++)
-            {
-                if (entities[index].IsValid)
-                    count++;
-            }
-
-            return count;
         }
 
         private ReactiveResult<Vector3> ResolveEntityPosition(

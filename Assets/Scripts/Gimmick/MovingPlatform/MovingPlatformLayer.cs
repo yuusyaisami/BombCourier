@@ -187,7 +187,11 @@ namespace BC.Gimmick.MovingPlatform
         [SerializeField] private bool overrideRuntimePathEmission;
 
         [ShowIf(nameof(overrideRuntimePathEmission))]
-        [Tooltip("有効状態の発光色です。")]
+        [Tooltip("VisualizationColor をそのまま発光色に使うかを指定します。通常はこちらを有効にします。")]
+        [SerializeField] private bool useVisualizationColorForRuntimePathEmission = true;
+
+        [ShowIf(nameof(ShowRuntimePathEmissionColorField))]
+        [Tooltip("有効状態の発光色です。useVisualizationColorForRuntimePathEmission が無効な時だけ使われます。")]
         [SerializeField] private Color runtimePathEmissionColor = Color.white;
 
         [ShowIf(nameof(overrideRuntimePathEmission))]
@@ -219,18 +223,12 @@ namespace BC.Gimmick.MovingPlatform
         [SerializeField, Range(0.0f, 1.0f)] private float runtimePathInactiveAlphaMultiplier = 0.35f;
 
         [Header("Condition")]
-        [Tooltip("Kernel の Bool 値でこのレイヤーの有効/無効を制御するかを指定します。")]
-        [SerializeField] private bool useKernelBoolCondition;
+        [Tooltip("ReactiveWatchedBool 条件でこのレイヤーの有効/無効を制御するかを指定します。")]
+        [SerializeField] private bool useReactiveCondition;
 
-        [ShowIf(nameof(useKernelBoolCondition))]
-        [Tooltip("有効判定に使う Kernel 側の Bool ValueKey です。")]
-        [SerializeField, ValueKeyDropdown(typeof(bool), "Kernel")]
-        private ValueKeyReference kernelActiveKey;
-
-        [ShowIf(nameof(useKernelBoolCondition))]
-        [Tooltip("ValueKey の値がこの値と一致した時にレイヤーを有効にします。")]
-        [SerializeField]
-        private bool activeWhenValue = true;
+        [ShowIf(nameof(useReactiveCondition))]
+        [Tooltip("レイヤー有効判定に使う ReactiveWatchedBool です。true で有効になります。")]
+        [SerializeField] private ReactiveWatchedBool activeCondition = default;
 
         [Header("Signals")]
         [Tooltip("Signal の受信でこのレイヤーの有効状態を切り替えるかを指定します。")]
@@ -278,6 +276,7 @@ namespace BC.Gimmick.MovingPlatform
         public bool ResetWhenSelected => resetWhenSelected;
         public Color VisualizationColor => visualizationColor;
         public bool OverrideRuntimePathEmission => overrideRuntimePathEmission;
+        public bool UseVisualizationColorForRuntimePathEmission => useVisualizationColorForRuntimePathEmission;
         public Color RuntimePathEmissionColor => runtimePathEmissionColor;
         public float RuntimePathActiveEmissionStrength => Mathf.Max(0.0f, runtimePathActiveEmissionStrength);
         public float RuntimePathInactiveEmissionStrength => Mathf.Max(0.0f, runtimePathInactiveEmissionStrength);
@@ -286,10 +285,9 @@ namespace BC.Gimmick.MovingPlatform
         public float RuntimePathInactiveSimpleBoostIntensity => Mathf.Max(0.0f, runtimePathInactiveSimpleBoostIntensity);
         public bool DimRuntimePathWhenInactive => dimRuntimePathWhenInactive;
         public float RuntimePathInactiveAlphaMultiplier => Mathf.Clamp01(runtimePathInactiveAlphaMultiplier);
-        public bool UseKernelBoolCondition => useKernelBoolCondition;
+        public bool UseReactiveCondition => useReactiveCondition;
         public bool UseSignalGate => useSignalGate;
-        public ValueKeyReference KernelActiveKey => kernelActiveKey;
-        public bool ActiveWhenValue => activeWhenValue;
+        public ReactiveWatchedBool ActiveCondition => activeCondition;
         public MovingPlatformPlaybackMode PlaybackMode => playbackMode;
         public MovingPlatformTimingControl DefaultTimingControl => defaultTimingControl;
         public float DefaultDuration => Mathf.Max(0.01f, defaultDuration);
@@ -373,6 +371,11 @@ namespace BC.Gimmick.MovingPlatform
         private bool ShowDefaultSpeedField()
         {
             return defaultTimingControl == MovingPlatformTimingControl.Speed;
+        }
+
+        private bool ShowRuntimePathEmissionColorField()
+        {
+            return overrideRuntimePathEmission && !useVisualizationColorForRuntimePathEmission;
         }
     }
 }

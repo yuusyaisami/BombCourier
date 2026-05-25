@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using BC.Base;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace BC.ActionSystem
@@ -7,8 +9,9 @@ namespace BC.ActionSystem
     public enum ValueStoreWriteStoreScope
     {
         Entity = 0,
-        Kernel = 1,
+        SceneKernel = 1,
         Local = 2,
+        ApplicationKernel = 3,
     }
 
     public enum ValueStoreWriteValueKind
@@ -37,32 +40,108 @@ namespace BC.ActionSystem
     public sealed class ValueStoreWriteAuthoring
     {
         [SerializeField] private ValueStoreWriteStoreScope storeScope;
+        [ShowIf(nameof(UsesEntityTarget))]
+        [LabelText("$TargetLabel")]
         [SerializeField] private EntityTargetReference target = EntityTargetReference.Self();
         [SerializeField] private ValueStoreWriteValueKind valueKind;
         [SerializeField] private ValueStoreNumericOperation numericOperation;
         [SerializeField] private ValueKeyReference key;
-        [SerializeField] private ReactiveBool boolValue = ReactiveBool.LiteralValue(false);
-        [SerializeField] private ReactiveInt intValue = ReactiveInt.LiteralValue(0);
-        [SerializeField] private ReactiveFloat floatValue = ReactiveFloat.LiteralValue(0f);
-        [SerializeField] private ReactiveString stringValue = ReactiveString.LiteralValue(string.Empty);
-        [SerializeField] private ReactiveEntityRef entityValue = ReactiveEntityRef.Self();
+        [SerializeField] private ReactiveSnapshotBool boolValue = ReactiveSnapshotBool.LiteralValue(false);
+        [SerializeField] private ReactiveSnapshotInt intValue = ReactiveSnapshotInt.LiteralValue(0);
+        [SerializeField] private ReactiveSnapshotFloat floatValue = ReactiveSnapshotFloat.LiteralValue(0f);
+        [SerializeField] private ReactiveSnapshotString stringValue = ReactiveSnapshotString.LiteralValue(string.Empty);
+        [SerializeField] private ReactiveSnapshotEntityRef entityValue = ReactiveSnapshotEntityRef.Self();
         [SerializeField] private ReactiveFaceExpressionId faceExpressionValue = ReactiveFaceExpressionId.LiteralValue(FaceExpressionId.Neutral);
         [SerializeField] private ReactiveEntityMoveState entityMoveStateValue = ReactiveEntityMoveState.LiteralValue(EntityMoveState.Idle);
         [SerializeField] private ReactiveShapeExpressionId shapeExpressionValue = ReactiveShapeExpressionId.LiteralValue(ShapeExpressionId.Neutral);
+
+        private bool UsesEntityTarget => ValueStoreWriteScopeUtility.UsesEntityTarget(storeScope);
+        private string TargetLabel => $"EntityTarget [{target.ToSummaryString()}]";
 
         public ValueStoreWriteStoreScope StoreScope => storeScope;
         public EntityTargetReference Target => target;
         public ValueStoreWriteValueKind ValueKind => valueKind;
         public ValueStoreNumericOperation NumericOperation => numericOperation;
         public ValueKeyReference Key => key;
-        public ReactiveBool BoolValue => boolValue;
-        public ReactiveInt IntValue => intValue;
-        public ReactiveFloat FloatValue => floatValue;
-        public ReactiveString StringValue => stringValue;
-        public ReactiveEntityRef EntityValue => entityValue;
+        public ReactiveSnapshotBool BoolValue => boolValue;
+        public ReactiveSnapshotInt IntValue => intValue;
+        public ReactiveSnapshotFloat FloatValue => floatValue;
+        public ReactiveSnapshotString StringValue => stringValue;
+        public ReactiveSnapshotEntityRef EntityValue => entityValue;
         public ReactiveFaceExpressionId FaceExpressionValue => faceExpressionValue;
         public ReactiveEntityMoveState EntityMoveStateValue => entityMoveStateValue;
         public ReactiveShapeExpressionId ShapeExpressionValue => shapeExpressionValue;
+    }
+
+    public static class ValueStoreWriteScopeUtility
+    {
+        public static bool UsesEntityTarget(ValueStoreWriteStoreScope scope)
+        {
+            return scope == ValueStoreWriteStoreScope.Entity;
+        }
+
+        public static bool IsKernelEntityScope(ValueStoreWriteStoreScope scope)
+        {
+            return scope == ValueStoreWriteStoreScope.SceneKernel ||
+                   scope == ValueStoreWriteStoreScope.ApplicationKernel;
+        }
+
+        public static bool IsKeyCompatible(ValueStoreWriteStoreScope scope, ValueKeyDescriptor descriptor)
+        {
+            bool isKernel = ValueStoreWriteValueTypeUtility.IsKernelDescriptor(descriptor);
+            bool isLocal = ValueStoreWriteValueTypeUtility.IsLocalDescriptor(descriptor);
+
+            if (scope == ValueStoreWriteStoreScope.Local)
+                return isLocal;
+
+            if (IsKernelEntityScope(scope))
+                return isKernel && !isLocal;
+
+            return !isKernel && !isLocal;
+        }
+
+        public static int ResolveTargets(
+            in WiringActionContext context,
+            ValueStoreWriteStoreScope scope,
+            EntityTargetReference target,
+            List<EntityRef> results)
+        {
+            if (results == null)
+                throw new ArgumentNullException(nameof(results));
+
+            EntityResolveScope resolveScope = scope switch
+            {
+                ValueStoreWriteStoreScope.Entity => EntityResolveScope.Entity,
+                ValueStoreWriteStoreScope.SceneKernel => EntityResolveScope.SceneKernel,
+                ValueStoreWriteStoreScope.ApplicationKernel => EntityResolveScope.ApplicationKernel,
+                _ => EntityResolveScope.Entity,
+            };
+
+            return scope == ValueStoreWriteStoreScope.Local
+                ? 0
+                : ScopedEntityResolveUtility.ResolveTargets(context, resolveScope, target, results);
+        }
+
+        public static int ResolveTargets(
+            in ActionExecutionContext context,
+            ValueStoreWriteStoreScope scope,
+            EntityTargetReference target,
+            List<EntityRef> results)
+        {
+            WiringActionContext wiringContext = new(
+                context.SceneKernel,
+                null,
+                null,
+                context.SelfEntity,
+                default,
+                null,
+                null,
+                context.TriggerEntity,
+                default);
+
+            return ResolveTargets(wiringContext, scope, target, results);
+        }
+
     }
 
     public static class ValueStoreWriteValueTypeUtility
@@ -204,7 +283,7 @@ namespace BC.ActionSystem
                 return;
             }
 
-            if (write.StoreScope == ValueStoreWriteStoreScope.Entity)
+            if (ValueStoreWriteScopeUtility.UsesEntityTarget(write.StoreScope))
                 context.ValidateEntityTarget(write.Target);
 
             if (!write.Key.IsAssigned)
@@ -225,30 +304,9 @@ namespace BC.ActionSystem
                 return;
             }
 
-            bool isKernelKey = ValueStoreWriteValueTypeUtility.IsKernelDescriptor(descriptor);
-            bool isLocalKey = ValueStoreWriteValueTypeUtility.IsLocalDescriptor(descriptor);
-
-            if (write.StoreScope == ValueStoreWriteStoreScope.Kernel && !isKernelKey)
+            if (!ValueStoreWriteScopeUtility.IsKeyCompatible(write.StoreScope, descriptor))
             {
-                context.AddError("Kernel scope requires a Kernel.* ValueKey.");
-                return;
-            }
-
-            if (write.StoreScope == ValueStoreWriteStoreScope.Local && !isLocalKey)
-            {
-                context.AddError("Local scope requires a Local.* ValueKey.");
-                return;
-            }
-
-            if (write.StoreScope == ValueStoreWriteStoreScope.Entity && (isKernelKey || isLocalKey))
-            {
-                context.AddError("Entity scope cannot write to a Kernel.* or Local.* ValueKey.");
-                return;
-            }
-
-            if (write.StoreScope == ValueStoreWriteStoreScope.Kernel && isLocalKey)
-            {
-                context.AddError("Kernel scope cannot write to a Local.* ValueKey.");
+                context.AddError($"Store scope '{write.StoreScope}' does not match key '{descriptor.Path}'.");
                 return;
             }
 

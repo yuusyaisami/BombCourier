@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
+  - _RECEIVEDECAL_ON
   - _VERTEXCOLORENABLED_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -148,6 +149,7 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
+    - _ReceiveDecal: 1
     - _ReceiveShadows: 1
     - _ShadowColorBlend: 0.6
     - _ShadowInfluence: 1
@@ -174,7 +176,7 @@ Material:
     - _TriplanarNormalMapEnabled: 0
     - _TriplanarScale: 1.09
     - _VertexColorBandOffsetStrength: 1
-    - _VertexColorCavityStrength: 0
+    - _VertexColorCavityStrength: 0.203
     - _VertexColorColorVariationStrength: 1
     - _VertexColorEnabled: 1
     - _WorkflowMode: 1
@@ -192,7 +194,7 @@ Material:
     - _AmbientBottomColor: {r: 0.22, g: 0.2, b: 0.18, a: 1}
     - _AmbientSideColor: {r: 0.34, g: 0.38, b: 0.46, a: 1}
     - _AmbientTopColor: {r: 0.5, g: 0.57, b: 0.7, a: 1}
-    - _BaseColor: {r: 0.94, g: 0.95, b: 0.93, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BounceColor: {r: 0.86, g: 0.82, b: 0.74, a: 1}
     - _BounceDirection: {r: 0, g: 1, b: 0, a: 0}
     - _CavityColor: {r: 0.68, g: 0.73, b: 0.82, a: 1}

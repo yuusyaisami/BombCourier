@@ -52,7 +52,7 @@ namespace BC.Editor.Camera
             EnsureSelectionInRange();
 
             EditorGUILayout.LabelField("Camera Path", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("Position と Euler Angles は ReactiveVector3 です。Literal な要素だけ Scene View で編集します。Position が Literal なら移動、Euler Angles が Literal なら回転を扱えます。", MessageType.Info);
+            EditorGUILayout.HelpBox("Position と Euler Angles は ReactiveVector3 です。Position の Literal は local 座標で保存し、再生時に world 座標へ変換します。Literal な要素だけ Scene View で編集します。", MessageType.Info);
             DrawPreviewControls();
 
             int removeIndex = -1;
@@ -336,7 +336,7 @@ namespace BC.Editor.Camera
                 Vector3 movedPosition = Handles.PositionHandle(position, hasLiteralRotation ? rotation : Quaternion.identity);
                 if (moveScope.TryRecordChanges())
                 {
-                    positionProperty.vector3Value = movedPosition;
+                    positionProperty.vector3Value = sequence.transform.InverseTransformPoint(movedPosition);
                     position = movedPosition;
                     RepaintSceneView();
                 }
@@ -372,7 +372,7 @@ namespace BC.Editor.Camera
                 pointsProperty.InsertArrayElementAtIndex(newIndex);
             }
 
-            WriteDefaultPoint(pointsProperty.GetArrayElementAtIndex(newIndex), newIndex, position, rotation);
+            WriteDefaultPoint(TypedTarget, pointsProperty.GetArrayElementAtIndex(newIndex), newIndex, position, rotation);
             selectedPointIndexProperty.intValue = newIndex;
             RepaintSceneView();
         }
@@ -410,10 +410,10 @@ namespace BC.Editor.Camera
                 position += rotation * Vector3.forward * 2.0f;
         }
 
-        private static void WriteDefaultPoint(SerializedProperty pointProperty, int index, Vector3 position, Quaternion rotation)
+        private static void WriteDefaultPoint(CameraPathSequenceAuthoringMB sequence, SerializedProperty pointProperty, int index, Vector3 position, Quaternion rotation)
         {
             pointProperty.FindPropertyRelative(LabelFieldName).stringValue = $"Point {index + 1}";
-            WriteLiteralReactiveVector3(pointProperty.FindPropertyRelative(PositionFieldName), position);
+            WriteLiteralReactiveVector3(pointProperty.FindPropertyRelative(PositionFieldName), sequence.transform.InverseTransformPoint(position));
             WriteLiteralReactiveVector3(pointProperty.FindPropertyRelative(EulerAnglesFieldName), rotation.eulerAngles);
             pointProperty.FindPropertyRelative(HoldSecondsFieldName).floatValue = 0.0f;
 
@@ -457,7 +457,7 @@ namespace BC.Editor.Camera
             return IsLiteralReactiveVector3(pointProperty.FindPropertyRelative(EulerAnglesFieldName));
         }
 
-        private static bool TryGetLiteralPosition(
+        private bool TryGetLiteralPosition(
             SerializedProperty pointProperty,
             out SerializedProperty positionLiteralProperty,
             out Vector3 position)
@@ -471,7 +471,7 @@ namespace BC.Editor.Camera
                 return false;
 
             positionLiteralProperty = positionProperty.FindPropertyRelative(ReactiveLiteralFieldName);
-            position = positionLiteralProperty.vector3Value;
+            position = TypedTarget.transform.TransformPoint(positionLiteralProperty.vector3Value);
             return true;
         }
 
