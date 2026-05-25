@@ -182,6 +182,42 @@ namespace BC.Gimmick.MovingPlatform
         [Tooltip("Editor と runtime の path preview で使う表示色です。alpha が 0 の時は自動色にフォールバックします。")]
         [SerializeField] private Color visualizationColor = Color.clear;
 
+        [Header("Runtime Path Emission")]
+        [Tooltip("runtime path line の発光設定を Layer 単位で上書きします。")]
+        [SerializeField] private bool overrideRuntimePathEmission;
+
+        [ShowIf(nameof(overrideRuntimePathEmission))]
+        [Tooltip("有効状態の発光色です。")]
+        [SerializeField] private Color runtimePathEmissionColor = Color.white;
+
+        [ShowIf(nameof(overrideRuntimePathEmission))]
+        [Tooltip("有効状態の発光強度です。")]
+        [SerializeField, Min(0.0f)] private float runtimePathActiveEmissionStrength = 2.0f;
+
+        [ShowIf(nameof(overrideRuntimePathEmission))]
+        [Tooltip("無効状態の発光強度です。")]
+        [SerializeField, Min(0.0f)] private float runtimePathInactiveEmissionStrength;
+
+        [ShowIf(nameof(overrideRuntimePathEmission))]
+        [Tooltip("EnvironmentStylizedLit の SimpleBoost 発光を同期するかを指定します。")]
+        [SerializeField] private bool syncRuntimePathSimpleBoost = true;
+
+        [ShowIf(nameof(overrideRuntimePathEmission))]
+        [Tooltip("有効状態の SimpleBoost 発光強度です。")]
+        [SerializeField, Min(0.0f)] private float runtimePathActiveSimpleBoostIntensity = 4.0f;
+
+        [ShowIf(nameof(overrideRuntimePathEmission))]
+        [Tooltip("無効状態の SimpleBoost 発光強度です。")]
+        [SerializeField, Min(0.0f)] private float runtimePathInactiveSimpleBoostIntensity;
+
+        [ShowIf(nameof(overrideRuntimePathEmission))]
+        [Tooltip("無効状態のラインを薄く表示するかを指定します。")]
+        [SerializeField] private bool dimRuntimePathWhenInactive = true;
+
+        [ShowIf(nameof(overrideRuntimePathEmission))]
+        [Tooltip("無効状態で乗算するラインのアルファ値です。")]
+        [SerializeField, Range(0.0f, 1.0f)] private float runtimePathInactiveAlphaMultiplier = 0.35f;
+
         [Header("Condition")]
         [Tooltip("Kernel の Bool 値でこのレイヤーの有効/無効を制御するかを指定します。")]
         [SerializeField] private bool useKernelBoolCondition;
@@ -241,6 +277,15 @@ namespace BC.Gimmick.MovingPlatform
         public bool ActiveOnStart => activeOnStart;
         public bool ResetWhenSelected => resetWhenSelected;
         public Color VisualizationColor => visualizationColor;
+        public bool OverrideRuntimePathEmission => overrideRuntimePathEmission;
+        public Color RuntimePathEmissionColor => runtimePathEmissionColor;
+        public float RuntimePathActiveEmissionStrength => Mathf.Max(0.0f, runtimePathActiveEmissionStrength);
+        public float RuntimePathInactiveEmissionStrength => Mathf.Max(0.0f, runtimePathInactiveEmissionStrength);
+        public bool SyncRuntimePathSimpleBoost => syncRuntimePathSimpleBoost;
+        public float RuntimePathActiveSimpleBoostIntensity => Mathf.Max(0.0f, runtimePathActiveSimpleBoostIntensity);
+        public float RuntimePathInactiveSimpleBoostIntensity => Mathf.Max(0.0f, runtimePathInactiveSimpleBoostIntensity);
+        public bool DimRuntimePathWhenInactive => dimRuntimePathWhenInactive;
+        public float RuntimePathInactiveAlphaMultiplier => Mathf.Clamp01(runtimePathInactiveAlphaMultiplier);
         public bool UseKernelBoolCondition => useKernelBoolCondition;
         public bool UseSignalGate => useSignalGate;
         public ValueKeyReference KernelActiveKey => kernelActiveKey;

@@ -73,6 +73,33 @@ namespace BC.Gimmick.MovingPlatform
         [ShowIf(nameof(showPathInGame))]
         [Tooltip("LineのMaterial")]
         [SerializeField] private Material runtimePathMaterial;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("runtime path line の発光制御を有効にします。")]
+        [SerializeField] private bool enableRuntimePathEmission = true;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("発光色です。")]
+        [SerializeField] private Color runtimePathEmissionColor = Color.white;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("有効状態の発光強度です。")]
+        [SerializeField, Min(0.0f)] private float runtimePathActiveEmissionStrength = 2.0f;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("無効状態の発光強度です。")]
+        [SerializeField, Min(0.0f)] private float runtimePathInactiveEmissionStrength;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("EnvironmentStylizedLit の SimpleBoost 発光も同期します。")]
+        [SerializeField] private bool runtimePathSyncSimpleBoost = true;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("有効状態の SimpleBoost 発光強度です。")]
+        [SerializeField, Min(0.0f)] private float runtimePathActiveSimpleBoostIntensity = 4.0f;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("無効状態の SimpleBoost 発光強度です。")]
+        [SerializeField, Min(0.0f)] private float runtimePathInactiveSimpleBoostIntensity;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("無効状態のラインを薄く表示します。")]
+        [SerializeField] private bool dimInactiveRuntimePath = true;
+        [ShowIf(nameof(showPathInGame))]
+        [Tooltip("無効状態で乗算するラインのアルファ値です。")]
+        [SerializeField, Range(0.0f, 1.0f)] private float runtimePathInactiveAlphaMultiplier = 0.35f;
         [Header("Debug")]
         [Tooltip("Layer 選択と有効判定の診断ログを出力します。停止原因の切り分け用です。")]
         [SerializeField] private bool enableLayerDebugLog;
@@ -97,12 +124,7 @@ namespace BC.Gimmick.MovingPlatform
         private bool hasAccumulatedMotion;
         private readonly List<Vector3> pathVisualizationPoints = new();
         private readonly List<MovingPlatformRailTransitionEvent> railTransitionEvents = new();
-        private LineRenderer runtimePathRenderer;
-        private Material ownedRuntimePathMaterial;
-        private int visualizedRuntimeLayerIndex = -2;
-        private int visualizedRuntimePointCount = -1;
-        private float visualizedRuntimeLineWidth = -1.0f;
-        private Color visualizedRuntimeColor = default;
+        private MovingPlatformRuntimePathVisualizerRegistry runtimePathVisualizerRegistry;
         private float nextLayerDebugLogTime;
         private int lastLoggedLayerSelection = int.MinValue;
 
@@ -760,113 +782,85 @@ namespace BC.Gimmick.MovingPlatform
                 return;
             }
 
-            if (selectedLayerIndex < 0 || selectedLayerIndex >= layers.Length || railGraph == null)
+            if (layers == null || layers.Length == 0 || railGraph == null)
             {
                 HideRuntimePathVisualization();
                 return;
             }
 
-            int runtimeLayerIndex = selectedLayerIndex;
-            if (!TryBuildLayerPathPoints(runtimeLayerIndex, railGraph, basePose, pathVisualizationPoints))
-            {
-                HideRuntimePathVisualization();
-                return;
-            }
-
-            EnsureRuntimePathRenderer();
-            if (runtimePathRenderer == null)
+            EnsureRuntimePathRegistry();
+            if (runtimePathVisualizerRegistry == null)
                 return;
 
-            runtimePathRenderer.enabled = true;
-            Color lineColor = ResolveLayerVisualizationColor(layers[runtimeLayerIndex], runtimeLayerIndex);
-            lineColor.a = Mathf.Clamp01(runtimePathColor.a);
-
-            bool needsRefresh = visualizedRuntimeLayerIndex != runtimeLayerIndex ||
-                                visualizedRuntimePointCount != pathVisualizationPoints.Count ||
-                                !Mathf.Approximately(visualizedRuntimeLineWidth, runtimePathLineWidth) ||
-                                visualizedRuntimeColor != lineColor ||
-                                runtimePathRenderer.positionCount != pathVisualizationPoints.Count;
-
-            runtimePathRenderer.material = runtimePathMaterial;
-
-            runtimePathRenderer.startWidth = runtimePathLineWidth;
-            runtimePathRenderer.endWidth = runtimePathLineWidth;
-            runtimePathRenderer.startColor = lineColor;
-            runtimePathRenderer.endColor = lineColor;
-
-            if (needsRefresh)
+            runtimePathVisualizerRegistry.EnsureLayerCount(layers.Length);
+            for (int layerIndex = 0; layerIndex < layers.Length; layerIndex++)
             {
-                runtimePathRenderer.positionCount = pathVisualizationPoints.Count;
-                for (int i = 0; i < pathVisualizationPoints.Count; i++)
-                    runtimePathRenderer.SetPosition(i, pathVisualizationPoints[i]);
+                RuntimePathEmissionSettings emissionSettings = ResolveRuntimePathEmissionSettings(layers[layerIndex]);
+                if (!TryBuildLayerPathPoints(layerIndex, railGraph, basePose, pathVisualizationPoints))
+                {
+                    runtimePathVisualizerRegistry.ApplyLayer(
+                        layerIndex,
+                        runtimePathMaterial,
+                        RuntimePathVisualizationData.Hidden(emissionSettings));
+                    continue;
+                }
 
-                visualizedRuntimeLayerIndex = runtimeLayerIndex;
-                visualizedRuntimePointCount = pathVisualizationPoints.Count;
-                visualizedRuntimeLineWidth = runtimePathLineWidth;
-                visualizedRuntimeColor = lineColor;
+                Color lineColor = ResolveLayerVisualizationColor(layers[layerIndex], layerIndex);
+                lineColor.a = Mathf.Clamp01(runtimePathColor.a);
+                RuntimePathVisualizationData data = new(
+                    isVisible: true,
+                    isActiveLayer: layerIndex == selectedLayerIndex,
+                    lineWidth: runtimePathLineWidth,
+                    lineColor: lineColor,
+                    points: pathVisualizationPoints,
+                    emissionSettings: emissionSettings);
+
+                runtimePathVisualizerRegistry.ApplyLayer(layerIndex, runtimePathMaterial, data);
             }
         }
 
-        private void EnsureRuntimePathRenderer()
+        private void EnsureRuntimePathRegistry()
         {
-            if (runtimePathRenderer == null)
-            {
-                GameObject rendererObject = new GameObject("MovingPlatform Path Preview");
-                rendererObject.transform.SetParent(transform, false);
-                runtimePathRenderer = rendererObject.AddComponent<LineRenderer>();
-                runtimePathRenderer.useWorldSpace = true;
-                runtimePathRenderer.numCapVertices = 4;
-                runtimePathRenderer.numCornerVertices = 4;
-                runtimePathRenderer.loop = false;
-            }
+            runtimePathVisualizerRegistry ??= new MovingPlatformRuntimePathVisualizerRegistry(transform);
+        }
 
-            if (runtimePathRenderer.sharedMaterial == null)
-            {
-                Shader shader = Shader.Find("Sprites/Default");
-                if (shader == null)
-                    shader = Shader.Find("Universal Render Pipeline/Unlit");
+        private RuntimePathEmissionSettings ResolveRuntimePathEmissionSettings(MovingPlatformLayer layer)
+        {
+            RuntimePathEmissionSettings defaultSettings = new(
+                enableRuntimePathEmission,
+                runtimePathEmissionColor,
+                runtimePathActiveEmissionStrength,
+                runtimePathInactiveEmissionStrength,
+                runtimePathSyncSimpleBoost,
+                runtimePathActiveSimpleBoostIntensity,
+                runtimePathInactiveSimpleBoostIntensity,
+                dimInactiveRuntimePath,
+                runtimePathInactiveAlphaMultiplier);
 
-                if (shader != null)
-                {
-                    ownedRuntimePathMaterial = new Material(shader);
-                    runtimePathRenderer.sharedMaterial = ownedRuntimePathMaterial;
-                }
-            }
+            if (layer == null || !layer.OverrideRuntimePathEmission)
+                return defaultSettings;
+
+            return new RuntimePathEmissionSettings(
+                enableEmission: true,
+                emissionColor: layer.RuntimePathEmissionColor,
+                activeEmissionStrength: layer.RuntimePathActiveEmissionStrength,
+                inactiveEmissionStrength: layer.RuntimePathInactiveEmissionStrength,
+                syncSimpleBoost: layer.SyncRuntimePathSimpleBoost,
+                activeSimpleBoostIntensity: layer.RuntimePathActiveSimpleBoostIntensity,
+                inactiveSimpleBoostIntensity: layer.RuntimePathInactiveSimpleBoostIntensity,
+                dimInactive: layer.DimRuntimePathWhenInactive,
+                inactiveAlphaMultiplier: layer.RuntimePathInactiveAlphaMultiplier);
         }
 
         private void HideRuntimePathVisualization()
         {
-            if (runtimePathRenderer == null)
-                return;
-
-            runtimePathRenderer.enabled = false;
-            runtimePathRenderer.positionCount = 0;
-            visualizedRuntimeLayerIndex = -2;
-            visualizedRuntimePointCount = -1;
+            runtimePathVisualizerRegistry?.HideAll();
         }
 
         private void DisposeRuntimePathVisualization()
         {
-            if (runtimePathRenderer != null)
-            {
-                GameObject rendererObject = runtimePathRenderer.gameObject;
-                if (Application.isPlaying)
-                    Destroy(rendererObject);
-                else
-                    DestroyImmediate(rendererObject);
-
-                runtimePathRenderer = null;
-            }
-
-            if (ownedRuntimePathMaterial != null)
-            {
-                if (Application.isPlaying)
-                    Destroy(ownedRuntimePathMaterial);
-                else
-                    DestroyImmediate(ownedRuntimePathMaterial);
-
-                ownedRuntimePathMaterial = null;
-            }
+            runtimePathVisualizerRegistry?.DisposeAll();
+            runtimePathVisualizerRegistry = null;
         }
 
         private void TickLayers(float deltaTime)

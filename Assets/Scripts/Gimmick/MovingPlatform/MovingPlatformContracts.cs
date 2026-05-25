@@ -25,6 +25,78 @@ namespace BC.Gimmick.MovingPlatform
         Speed = 1,
     }
 
+    internal readonly struct RuntimePathEmissionSettings
+    {
+        public readonly bool EnableEmission;
+        public readonly Color EmissionColor;
+        public readonly float ActiveEmissionStrength;
+        public readonly float InactiveEmissionStrength;
+        public readonly bool SyncSimpleBoost;
+        public readonly float ActiveSimpleBoostIntensity;
+        public readonly float InactiveSimpleBoostIntensity;
+        public readonly bool DimInactive;
+        public readonly float InactiveAlphaMultiplier;
+
+        public RuntimePathEmissionSettings(
+            bool enableEmission,
+            Color emissionColor,
+            float activeEmissionStrength,
+            float inactiveEmissionStrength,
+            bool syncSimpleBoost,
+            float activeSimpleBoostIntensity,
+            float inactiveSimpleBoostIntensity,
+            bool dimInactive,
+            float inactiveAlphaMultiplier)
+        {
+            EnableEmission = enableEmission;
+            EmissionColor = emissionColor;
+            ActiveEmissionStrength = Mathf.Max(0.0f, activeEmissionStrength);
+            InactiveEmissionStrength = Mathf.Max(0.0f, inactiveEmissionStrength);
+            SyncSimpleBoost = syncSimpleBoost;
+            ActiveSimpleBoostIntensity = Mathf.Max(0.0f, activeSimpleBoostIntensity);
+            InactiveSimpleBoostIntensity = Mathf.Max(0.0f, inactiveSimpleBoostIntensity);
+            DimInactive = dimInactive;
+            InactiveAlphaMultiplier = Mathf.Clamp01(inactiveAlphaMultiplier);
+        }
+    }
+
+    internal readonly struct RuntimePathVisualizationData
+    {
+        public readonly bool IsVisible;
+        public readonly bool IsActiveLayer;
+        public readonly float LineWidth;
+        public readonly Color LineColor;
+        public readonly IReadOnlyList<Vector3> Points;
+        public readonly RuntimePathEmissionSettings EmissionSettings;
+
+        public RuntimePathVisualizationData(
+            bool isVisible,
+            bool isActiveLayer,
+            float lineWidth,
+            Color lineColor,
+            IReadOnlyList<Vector3> points,
+            RuntimePathEmissionSettings emissionSettings)
+        {
+            IsVisible = isVisible;
+            IsActiveLayer = isActiveLayer;
+            LineWidth = Mathf.Max(0.0001f, lineWidth);
+            LineColor = lineColor;
+            Points = points;
+            EmissionSettings = emissionSettings;
+        }
+
+        public static RuntimePathVisualizationData Hidden(RuntimePathEmissionSettings emissionSettings)
+        {
+            return new RuntimePathVisualizationData(
+                isVisible: false,
+                isActiveLayer: false,
+                lineWidth: 0.0001f,
+                lineColor: Color.clear,
+                points: Array.Empty<Vector3>(),
+                emissionSettings: emissionSettings);
+        }
+    }
+
     public readonly struct MovingPlatformBasePose
     {
         public readonly Vector3 Position;
