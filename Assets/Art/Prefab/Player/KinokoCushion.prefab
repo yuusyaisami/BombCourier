@@ -264,13 +264,16 @@ MonoBehaviour:
   - id: 1001
     path: Actor.Player
   bounceRate: 1
-  bounceSpeed: 8
-  minBounceSpeed: 0
-  maxBounceSpeed: 12
+  minBounceSpeed: 12
+  maxBounceSpeed: 30
+  convergenceBounceSpeed: 8
+  minBounceOutputSpeedToApply: 0.1
   highJumpSpeedMultiplier: 1.5
-  bounceDirectionMode: 0
+  bounceDirectionMode: 4
   customLocalDirection: {x: 0, y: 1, z: 0}
   attachWhenStopped: 0
+  defaultRetainedVelocityRate: 0
+  stopDampenRules: []
   attachPoint: {fileID: 0}
   suppressHardLanding: 1
   acceptAnyHardLandingTag: 1

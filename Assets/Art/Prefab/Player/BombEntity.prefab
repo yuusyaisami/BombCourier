@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 6078748995431570559}
   - component: {fileID: 7921931051376064983}
   - component: {fileID: 1747025793875596247}
+  - component: {fileID: 7995193149672251422}
+  - component: {fileID: 6849147538467431017}
   m_Layer: 6
   m_Name: BombEntity
   m_TagString: Untagged
@@ -177,6 +179,107 @@ MonoBehaviour:
   probeRadius: 0.2
   probeDistance: 2
   probeTriggerInteraction: 1
+--- !u!136 &7995193149672251422
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6316178306840961590}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6849147538467431017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6316178306840961590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e287c4c0335c4f5798f28f0cb81c0f07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.EntityMoveMotorMB
+  bodyRigidbody: {fileID: 0}
+  bodyCollider: {fileID: 0}
+  footCollider: {fileID: 0}
+  fallbackMoveSpeed: 5
+  fallbackSprintMultiplier: 1.5
+  groundAcceleration: 35
+  groundDeceleration: 45
+  groundTurnAcceleration: 55
+  airAcceleration: 12
+  airDeceleration: 4
+  maxAirHorizontalSpeed: 8
+  jumpHeight: 1.4
+  gravity: -28
+  groundedStickVelocity: -3
+  coyoteTime: 0.12
+  jumpBufferTime: 0.12
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 119
+  groundProbeExtraDistance: 0.18
+  groundProbeRadiusShrink: 0.03
+  maxGroundAngle: 55
+  enableStepAssist: 1
+  maxStepHeight: 0.3
+  stepAssistForwardDistance: 0.16
+  minStepAssistSpeed: 0.1
+  groundSnapSettings:
+    Enabled: 1
+    MaxSnapDistance: 0.12
+    SnapSpeed: 8
+    MaxSnapDistancePerTick: 0.12
+    DisableAfterJumpTime: 0.12
+    DisableAfterSupportLaunchTime: 0.16
+  stepAssistSettings:
+    Enabled: 1
+    MaxStepHeight: 0.3
+    ForwardProbeDistance: 0.16
+    LowerProbeHeight: 0.08
+    UpperClearanceSkin: 0.03
+    StepDownProbeDistance: 0.48000002
+    MinIntentMagnitude: 0.1
+    SnapSpeed: 12
+  supportInertiaSettings:
+    Enabled: 1
+    UpwardLaunchMinPreviousVelocity: 4
+    UpwardLaunchMinLostVelocity: 3.5
+    UpwardLaunchRetainRate: 0.85
+    HorizontalRetainRate: 0.35
+    MaxLaunchVelocity: 22
+    DisableGroundSnapTime: 0.16
+    DisableSupportReattachTime: 0.08
+  inheritMovingPlatformVelocityOnJump: 1
+  platformJumpVelocityInheritance: 1
+  platformSupportSampleSmoothing: 0
+  platformCarryRotationDeadZoneDegrees: 0.05
+  externalVelocityDamping: 6
+  minExternalVelocity: 0.03
+  cushionImpactCooldown: 0.12
+  pushRigidbodiesOnContact: 1
+  contactPushImpulse: 0.35
+  contactPushSpeedMultiplier: 0.2
+  maxContactPushImpulse: 2
+  minContactPushSpeed: 0.1
+  contactCeilingBand: 0.08
+  currentCanMoveByInput: 0
+  currentCanMoveBySystem: 0
 --- !u!1 &8696174177099486170
 GameObject:
   m_ObjectHideFlags: 0

@@ -113,8 +113,10 @@ namespace BC.Gameplay.PlayModeTests
 
             Assert.IsTrue(handled);
             object channels = GetFieldValue<object>(runtimeState, "Velocity");
+            float vertical = GetFieldValue<float>(channels, "Vertical");
             Vector3 external = GetFieldValue<Vector3>(channels, "External");
-            Assert.Greater(external.y, 7.5f);
+            Assert.Greater(vertical, 7.5f);
+            Assert.AreEqual(0.0f, external.y, 0.0001f);
         }
 
         [Test]

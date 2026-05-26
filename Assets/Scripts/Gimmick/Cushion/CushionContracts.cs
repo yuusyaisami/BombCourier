@@ -9,6 +9,7 @@ namespace BC.Gimmick.Cushion
         LocalForward = 1,
         CollisionNormal = 2,
         CustomLocalDirection = 3,
+        WorldUp = 4,
     }
 
     public enum CushionResponseKind

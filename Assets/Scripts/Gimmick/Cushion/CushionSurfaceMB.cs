@@ -2,6 +2,7 @@ using System;
 using BC.Base;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BC.Gimmick.Cushion
 {
@@ -39,17 +40,26 @@ namespace BC.Gimmick.Cushion
 
         [Header("Response")]
         [Tooltip("跳ね返し強度の割合です。0 の場合は跳ね返さず受け止めます。")]
-        [SerializeField, Range(0.0f, 1.0f)] private float bounceRate;
-        [Tooltip("跳ね返す時の基準速度です。入力速度が小さい時はこの値を下限として使います。")]
-        [SerializeField, Min(0.0f)] private float bounceSpeed = 8.0f;
+        [SerializeField, Min(0.0f)] private float bounceRate = 1.0f;
+        [ShowIf(nameof(ShowBounceSettings))]
         [Tooltip("通常 bounce の最低速度です。0 なら下限を設けません。")]
         [SerializeField, Min(0.0f)] private float minBounceSpeed;
+        [ShowIf(nameof(ShowBounceSettings))]
         [Tooltip("通常 bounce の最高速度です。0 なら上限を設けません。")]
         [SerializeField, Min(0.0f)] private float maxBounceSpeed = 12.0f;
+        [ShowIf(nameof(ShowBounceSettings))]
+        [Tooltip("min/max への収束速度です。大きいほど 1 回あたりの変化が大きくなります。")]
+        [SerializeField, Min(0.001f), FormerlySerializedAs("bounceSpeed")] private float convergenceBounceSpeed = 4.0f;
+        [ShowIf(nameof(ShowBounceSettings))]
+        [Tooltip("計算後の bounce 出力がこの値未満なら反発せず停止系応答へ切り替えます。")]
+        [SerializeField, Min(0.0f)] private float minBounceOutputSpeedToApply = 0.1f;
+        [ShowIf(nameof(ShowBounceSettings))]
         [Tooltip("Player が high jump を成立させた時に許可する追加倍率です。")]
         [SerializeField, Min(1.0f)] private float highJumpSpeedMultiplier = 1.5f;
+        [ShowIf(nameof(ShowBounceSettings))]
         [Tooltip("跳ね返す方向の決め方です。")]
         [SerializeField] private CushionBounceDirectionMode bounceDirectionMode = CushionBounceDirectionMode.LocalUp;
+        [ShowIf(nameof(ShowCustomBounceDirection))]
         [Tooltip("BounceDirectionMode が CustomLocalDirection の時に使うローカル方向です。")]
         [SerializeField] private Vector3 customLocalDirection = Vector3.up;
         [Tooltip("停止時に対象をこのクッションへ貼り付けるかを指定します。爆弾は有効でも貼り付けず吸収します。")]
@@ -94,6 +104,13 @@ namespace BC.Gimmick.Cushion
 
             Vector3 direction = ResolveBounceDirection(impactData);
             float bounceVelocityMagnitude = ResolveBounceSpeed(impactData, direction);
+
+            if (bounceVelocityMagnitude < Mathf.Max(0.0f, minBounceOutputSpeedToApply))
+            {
+                result = BuildStopResult(impactData);
+                return true;
+            }
+
             result = CushionImpactResult.Bounce(
                 direction * bounceVelocityMagnitude,
                 ResolveBounceSpeedLimit(bounceVelocityMagnitude),
@@ -129,6 +146,7 @@ namespace BC.Gimmick.Cushion
         {
             Vector3 direction = bounceDirectionMode switch
             {
+                CushionBounceDirectionMode.WorldUp => Vector3.up,
                 CushionBounceDirectionMode.LocalForward => transform.forward,
                 CushionBounceDirectionMode.CollisionNormal => impactData.Normal,
                 CushionBounceDirectionMode.CustomLocalDirection => transform.TransformDirection(customLocalDirection),
@@ -145,21 +163,51 @@ namespace BC.Gimmick.Cushion
         {
             // 入力速度のうち、bounce 方向へ向かっていた成分を優先して拾う。
             float directionalIncomingSpeed = Mathf.Max(0f, Vector3.Dot(-impactData.IncomingVelocity, bounceDirection));
-            float rawBounceSpeed = Mathf.Max(bounceSpeed, directionalIncomingSpeed) * bounceRate;
 
-            if (minBounceSpeed > 0f)
-                rawBounceSpeed = Mathf.Max(minBounceSpeed, rawBounceSpeed);
+            float resolvedMinSpeed;
+            float resolvedMaxSpeed;
+            bool hasMinSpeed;
+            bool hasMaxSpeed;
+            ResolveBounceBounds(out resolvedMinSpeed, out resolvedMaxSpeed, out hasMinSpeed, out hasMaxSpeed);
 
-            if (maxBounceSpeed > 0f)
-                rawBounceSpeed = Mathf.Min(Mathf.Max(minBounceSpeed, maxBounceSpeed), rawBounceSpeed);
+            float scaledSpeed = directionalIncomingSpeed * Mathf.Max(0.0f, bounceRate);
+            if (bounceRate < 0.9999f)
+            {
+                if (hasMaxSpeed)
+                    scaledSpeed = Mathf.Min(scaledSpeed, resolvedMaxSpeed);
 
-            return Mathf.Max(0f, rawBounceSpeed);
+                return Mathf.Max(0.0f, scaledSpeed);
+            }
+
+            float convergedSpeed = scaledSpeed;
+            float convergenceStep = Mathf.Max(0.001f, convergenceBounceSpeed);
+
+            if (hasMaxSpeed && convergedSpeed > resolvedMaxSpeed)
+                convergedSpeed = Mathf.MoveTowards(convergedSpeed, resolvedMaxSpeed, convergenceStep);
+
+            if (hasMinSpeed && convergedSpeed < resolvedMinSpeed)
+                convergedSpeed = Mathf.MoveTowards(convergedSpeed, resolvedMinSpeed, convergenceStep);
+
+            return Mathf.Max(0f, convergedSpeed);
+        }
+
+        private void ResolveBounceBounds(out float resolvedMinSpeed, out float resolvedMaxSpeed, out bool hasMinSpeed, out bool hasMaxSpeed)
+        {
+            resolvedMinSpeed = Mathf.Max(0.0f, minBounceSpeed);
+            resolvedMaxSpeed = Mathf.Max(0.0f, maxBounceSpeed);
+            hasMinSpeed = resolvedMinSpeed > 0.0f;
+            hasMaxSpeed = resolvedMaxSpeed > 0.0f;
+
+            if (hasMinSpeed && hasMaxSpeed && resolvedMaxSpeed < resolvedMinSpeed)
+                resolvedMaxSpeed = resolvedMinSpeed;
         }
 
         private float ResolveBounceSpeedLimit(float resolvedBounceSpeed)
         {
-            if (maxBounceSpeed > 0f)
-                return Mathf.Max(minBounceSpeed, maxBounceSpeed);
+            ResolveBounceBounds(out _, out float resolvedMaxSpeed, out _, out bool hasMaxSpeed);
+
+            if (hasMaxSpeed)
+                return resolvedMaxSpeed;
 
             return Mathf.Max(0f, resolvedBounceSpeed);
         }
@@ -168,6 +216,9 @@ namespace BC.Gimmick.Cushion
         {
             return MatchesTag(sourceTag, acceptAnyTag, targetTags);
         }
+
+        private bool ShowBounceSettings => bounceRate > 0.0001f;
+        private bool ShowCustomBounceDirection => ShowBounceSettings && bounceDirectionMode == CushionBounceDirectionMode.CustomLocalDirection;
 
         private bool ShowStopDampenSettings => !attachWhenStopped;
 

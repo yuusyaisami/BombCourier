@@ -1,5 +1,7 @@
 using BC.Managers;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 
 namespace BC.UI
@@ -24,12 +26,25 @@ namespace BC.UI
         private ContentSizeFitter contentSizeFitter;
         private bool runtimeDefaultsApplied;
         private UIToastItemMB runtimeToastItemTemplate;
+        private readonly List<UIToastItemMB> activeItems = new();
+        private readonly List<UIToastItemMB> pooledItems = new();
+        private IObjectPool<UIToastItemMB> toastItemPool;
 
         private RectTransform StackRoot => stackRoot != null ? stackRoot : transform as RectTransform;
 
         private void Awake()
         {
             EnsureStructure();
+        }
+
+        private void OnDestroy()
+        {
+            DestroyAllItemsImmediate(activeItems);
+            DestroyAllItemsImmediate(pooledItems);
+            activeItems.Clear();
+            pooledItems.Clear();
+            toastItemPool?.Clear();
+            toastItemPool = null;
         }
 
         private void OnValidate()
@@ -57,7 +72,7 @@ namespace BC.UI
 
             EnsureStructure();
 
-            UIToastItemMB item = CreateToastItemInstance();
+            UIToastItemMB item = AcquireToastItem();
             if (item == null)
                 return;
 
@@ -127,7 +142,25 @@ namespace BC.UI
             StackRoot.sizeDelta = new Vector2(runtimeWidth, 0f);
         }
 
-        private UIToastItemMB CreateToastItemInstance()
+        private UIToastItemMB AcquireToastItem()
+        {
+            EnsurePool();
+            UIToastItemMB item = toastItemPool?.Get();
+            if (item != null)
+                activeItems.Add(item);
+
+            return item;
+        }
+
+        private void EnsurePool()
+        {
+            if (toastItemPool != null)
+                return;
+
+            toastItemPool = new ObjectPool<UIToastItemMB>(CreatePooledItem, OnGetFromPool, OnReleaseToPool, OnDestroyPooledItem, false, 0, 32);
+        }
+
+        private UIToastItemMB CreatePooledItem()
         {
             UIToastItemMB itemTemplate = EnsureToastItemTemplate();
             if (itemTemplate == null)
@@ -135,8 +168,48 @@ namespace BC.UI
 
             UIToastItemMB itemInstance = Instantiate(itemTemplate, StackRoot, false);
             itemInstance.gameObject.name = "ToastItem";
-            itemInstance.gameObject.SetActive(true);
+            itemInstance.BindPool(toastItemPool);
+            itemInstance.gameObject.SetActive(false);
             return itemInstance;
+        }
+
+        private void OnGetFromPool(UIToastItemMB item)
+        {
+            if (item == null)
+                return;
+
+            pooledItems.Remove(item);
+            item.transform.SetParent(StackRoot, false);
+            item.gameObject.SetActive(true);
+            item.ResetForReuse();
+        }
+
+        private void OnReleaseToPool(UIToastItemMB item)
+        {
+            if (item == null)
+                return;
+
+            activeItems.Remove(item);
+            if (!pooledItems.Contains(item))
+                pooledItems.Add(item);
+
+            item.ResetForReuse();
+            item.gameObject.SetActive(false);
+        }
+
+        private void OnDestroyPooledItem(UIToastItemMB item)
+        {
+            if (item != null)
+                Destroy(item.gameObject);
+        }
+
+        private static void DestroyAllItemsImmediate(List<UIToastItemMB> items)
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i] != null)
+                    Destroy(items[i].gameObject);
+            }
         }
 
         private UIToastItemMB EnsureToastItemTemplate()

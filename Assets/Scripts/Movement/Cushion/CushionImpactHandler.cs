@@ -139,8 +139,8 @@ namespace BC.Base
 
             VelocityChannels channels = runtimeState.Velocity;
             channels.InputPlanar = Vector3.zero;
-            channels.Vertical = groundedStickVelocity;
-            channels.External = highJumpBounceVelocity;
+            channels.Vertical = highJumpBounceVelocity.y;
+            channels.External = new Vector3(highJumpBounceVelocity.x, 0.0f, highJumpBounceVelocity.z);
             channels.InheritedSupport = Vector3.zero;
             runtimeState.Velocity = channels;
 
@@ -208,8 +208,8 @@ namespace BC.Base
 
             VelocityChannels channels = runtimeState.Velocity;
             channels.InputPlanar = Vector3.zero;
-            channels.Vertical = groundedStickVelocity;
-            channels.External = bounceVelocity;
+            channels.Vertical = bounceVelocity.y;
+            channels.External = new Vector3(bounceVelocity.x, 0.0f, bounceVelocity.z);
             channels.InheritedSupport = Vector3.zero;
             runtimeState.Velocity = channels;
 

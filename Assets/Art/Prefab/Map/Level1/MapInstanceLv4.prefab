@@ -5155,7 +5155,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 15494
+  m_VersionIndex: 15497
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -5456,7 +5456,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 27364
+  m_VersionIndex: 27367
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -5790,7 +5790,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 32224
+  m_VersionIndex: 32227
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -6136,7 +6136,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 34894
+  m_VersionIndex: 34897
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -6494,7 +6494,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 20807
+  m_VersionIndex: 20810
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -6793,7 +6793,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 14734
+  m_VersionIndex: 14737
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -7498,7 +7498,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 14448
+  m_VersionIndex: 14451
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -7864,7 +7864,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 27364
+  m_VersionIndex: 27367
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -8165,7 +8165,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 34864
+  m_VersionIndex: 34867
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -8301,7 +8301,7 @@ Transform:
   m_GameObject: {fileID: 3695479556191971208}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.75, y: 0, z: -7.5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8428,7 +8428,7 @@ MonoBehaviour:
       sourceKind: 0
       evaluationMode: 0
       failurePolicy: 0
-      literal: {x: -0, y: 165.00002, z: 0}
+      literal: {x: 15.000002, y: 165.00002, z: -0.00000022097285}
       transformValue:
         sourceKind: 0
         entity:
@@ -9266,7 +9266,8 @@ MonoBehaviour:
       fieldOfView: 80.9
     onArriveAction:
       _steps: []
-  selectedPointIndex: 3
+  positionsStoredAsLocal: 1
+  selectedPointIndex: 0
   references:
     version: 2
     RefIds: []
@@ -14780,7 +14781,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 14458
+  m_VersionIndex: 14461
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -15081,7 +15082,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 23434
+  m_VersionIndex: 23437
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -20218,7 +20219,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 32224
+  m_VersionIndex: 32227
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -20519,7 +20520,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 15494
+  m_VersionIndex: 15497
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -20820,7 +20821,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 24754
+  m_VersionIndex: 24757
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -21346,7 +21347,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 17104
+  m_VersionIndex: 17107
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -21499,11 +21500,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 388730674400263013, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 3170
+      value: 3173
       objectReference: {fileID: 0}
     - target: {fileID: 578319154490737052, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 1860
+      value: 1863
       objectReference: {fileID: 0}
     - target: {fileID: 999091186335644372, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_Name
@@ -21511,31 +21512,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1175264136378435282, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 2140
+      value: 2143
       objectReference: {fileID: 0}
     - target: {fileID: 1279752474381585943, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 4980
+      value: 4983
       objectReference: {fileID: 0}
     - target: {fileID: 2068457411074999512, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 3170
+      value: 3173
       objectReference: {fileID: 0}
     - target: {fileID: 3636703031280374870, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 2830
+      value: 2833
       objectReference: {fileID: 0}
     - target: {fileID: 3735180153807700217, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 1820
+      value: 1823
       objectReference: {fileID: 0}
     - target: {fileID: 4331680816888207361, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 1760
+      value: 1763
       objectReference: {fileID: 0}
     - target: {fileID: 4854589187989419135, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 7006
+      value: 7009
       objectReference: {fileID: 0}
     - target: {fileID: 7847952390249075909, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -21579,19 +21580,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7869518853249424197, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 5710
+      value: 5713
       objectReference: {fileID: 0}
     - target: {fileID: 8181717190857543351, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 4980
+      value: 4983
       objectReference: {fileID: 0}
     - target: {fileID: 8255964285882654760, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 3170
+      value: 3173
       objectReference: {fileID: 0}
     - target: {fileID: 9123955105235036631, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_VersionIndex
-      value: 2870
+      value: 2873
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -21950,15 +21951,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.75
+      value: 7.25
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.5
+      value: -2.5
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1
+      value: -6
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalRotation.w

@@ -8,6 +8,7 @@ using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick;
 using BC.Item;
+using BC.Managers;
 using BC.Player;
 using BC.Stage;
 using BC.UI;
@@ -44,9 +45,7 @@ namespace BC.Manager
             currentGameStage = debugStageIndex;
         }
         [Header("References")]
-        [SerializeField] private UIFadeEffectMB uiFadeEffectMB; // 画面フェードを担当する UI 側の制御。
-        [SerializeField] private UIGameSceneManagerMB uiGameSceneManagerMB; // ゲーム中 UI 全体の表示/非表示を担う。
-        [SerializeField] private UIIntroPathSkipMB introPathSkipUI; // Intro path 演出のステージ名/スキップ UI。
+        [SerializeField] private UIManagerMB uiManager; // UI参照集約サービス。
         [SerializeField] private EntityMB playerPrefab; // スポーン用プレイヤー prefab。
         [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用に直接参照する stage instance。
         [Header("Debug")][SerializeField] private int debugStageIndex; // デバッグ用に直接指定する stage index。
@@ -78,6 +77,9 @@ namespace BC.Manager
         private readonly Stack<RetryCheckpointSnapshot> retryCheckpointStack = new();
         private bool hasStartedAnyBombFuseThisStage;
         private bool resetArmed;
+        private bool hasLoggedMissingUIManager;
+        private bool hasLoggedMissingFadeUI;
+        private bool hasLoggedMissingGameSceneUI;
 
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
@@ -311,6 +313,8 @@ namespace BC.Manager
 
         private void Start()
         {
+            ResolveUIManager();
+
             // scene kernel を起点に、ゲーム進行と state machine の接続を作る。
             sceneKernel = transform.GetComponentInChildren<SceneKernelMB>().Kernel;
             GameStateManagerMB stateManager = GameStateManagerMB.Instance;
@@ -330,6 +334,63 @@ namespace BC.Manager
             {
                 OnStageChanged(GameState.Starting);
             }
+        }
+
+        private UIManagerMB ResolveUIManager()
+        {
+            uiManager ??= UIManagerMB.Instance;
+            if (uiManager == null)
+                uiManager = FindAnyObjectByType<UIManagerMB>(FindObjectsInactive.Include);
+
+            if (uiManager == null && !hasLoggedMissingUIManager)
+            {
+                hasLoggedMissingUIManager = true;
+                Debug.LogWarning($"{nameof(GameLogicManagerMB)}: {nameof(UIManagerMB)} is not found in scene.", this);
+            }
+
+            return uiManager;
+        }
+
+        private UIFadeEffectMB ResolveFadeEffectUI()
+        {
+            UIFadeEffectMB fadeUI = ResolveUIManager() != null ? uiManager.FadeEffect : null;
+            if (fadeUI == null && !hasLoggedMissingFadeUI)
+            {
+                hasLoggedMissingFadeUI = true;
+                Debug.LogWarning($"{nameof(GameLogicManagerMB)}: {nameof(UIFadeEffectMB)} is not available via {nameof(UIManagerMB)}.", this);
+            }
+
+            return fadeUI;
+        }
+
+        private UIGameSceneManagerMB ResolveGameSceneUI()
+        {
+            UIGameSceneManagerMB gameSceneUI = ResolveUIManager() != null ? uiManager.GameSceneManager : null;
+            if (gameSceneUI == null && !hasLoggedMissingGameSceneUI)
+            {
+                hasLoggedMissingGameSceneUI = true;
+                Debug.LogWarning($"{nameof(GameLogicManagerMB)}: {nameof(UIGameSceneManagerMB)} is not available via {nameof(UIManagerMB)}.", this);
+            }
+
+            return gameSceneUI;
+        }
+
+        private static async UniTask StartFadeAsyncSafe(UIFadeEffectMB fadeUI, FadeType fadeType, float amount, float duration)
+        {
+            if (fadeUI == null)
+                return;
+
+            await fadeUI.StartFadeAsync(fadeType, amount, duration);
+        }
+
+        private void SetGameScenePanelsVisible(bool visible, float duration = 0.5f)
+        {
+            UIGameSceneManagerMB gameSceneUI = ResolveGameSceneUI();
+            if (gameSceneUI == null)
+                return;
+
+            gameSceneUI.ShowTopPanel(visible, duration);
+            gameSceneUI.ShowBottomPanel(visible, duration);
         }
 
         private void OnDestroy()
@@ -442,8 +503,7 @@ namespace BC.Manager
             sceneKernel.Cameras?.ShowPresentationCamera(currentGoalData.GoalCamera, playerRef);
 
             // UIを非表示にする
-            uiGameSceneManagerMB.ShowTopPanel(false); // ゲームシーンのUIを非表示にする
-            uiGameSceneManagerMB.ShowBottomPanel(false); // ゲームシーンのUIを非表示にする
+            SetGameScenePanelsVisible(false); // ゲームシーンのUIを非表示にする
 
             // Playerを止める
             await moveController.MoveToAsync(currentGoalData.Target, 0.1f);
@@ -471,7 +531,7 @@ namespace BC.Manager
             await LookAtAsync(currentGoalData.GoalCamera.transform, playerInstance.transform.position);
             await UniTask.Delay(700);
             await currentGodHand.MoveToAsync(currentGodHand.OriginalPosition, 1.7f); // GodHandを移動させる
-            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードアウトさせる
+            await StartFadeAsyncSafe(ResolveFadeEffectUI(), FadeType.TopBottom, 1f, 0.5f); // フェードアウトさせる
             // 次のステージに進むための処理
             await LoadStageAsync(currentGameStage + 1);
         }
@@ -527,9 +587,8 @@ namespace BC.Manager
             // さきにカメラの位置を初期化しておく。これがないと、カメラパスの開始地点がプレイヤーの位置に引っ張られてしまう。
             CameraManager.Instance.SetPathCameraPosition(currentCameraPath, playerRef);
             await UniTask.Delay(200);
-            uiGameSceneManagerMB.ShowTopPanel(false, 0f); // ゲームシーンのUIを表示する
-            uiGameSceneManagerMB.ShowBottomPanel(false, 0f); // ゲームシーンのUIを表示する
-            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
+            SetGameScenePanelsVisible(false, 0f); // ゲームシーンのUIを表示する
+            await StartFadeAsyncSafe(ResolveFadeEffectUI(), FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
 
             bool introCompletedActionInvoked = false;
             async UniTask InvokeIntroCompletedActionAsync()
@@ -538,7 +597,7 @@ namespace BC.Manager
                     return;
 
                 introCompletedActionInvoked = true;
-                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードインさせる
+                await StartFadeAsyncSafe(ResolveFadeEffectUI(), FadeType.TopBottom, 1f, 0.5f); // フェードインさせる
             }
 
             UniTask introPathTask = CameraManager.Instance.PlayPathAsync(currentCameraPath, playerRef, async () =>
@@ -549,13 +608,14 @@ namespace BC.Manager
             CancellationTokenSource skipWaitCts = null;
             UniTask introSkipTask = UniTask.Never(CancellationToken.None);
 
-            if (introPathSkipUI != null)
+            UIIntroPathSkipMB introSkipUI = ResolveUIManager() != null ? uiManager.IntroPathSkipUI : null;
+            if (introSkipUI != null)
             {
-                introPathSkipUI.SetStageName(currentStageName);
-                introPathSkipUI.SetStageIndex(currentGameStage + 1);
-                introPathSkipUI.Show();
+                introSkipUI.SetStageName(currentStageName);
+                introSkipUI.SetStageIndex(currentGameStage + 1);
+                introSkipUI.Show();
                 skipWaitCts = new CancellationTokenSource();
-                introSkipTask = introPathSkipUI.WaitForSkipHoldAsync(skipWaitCts.Token);
+                introSkipTask = introSkipUI.WaitForSkipHoldAsync(skipWaitCts.Token);
             }
 
             int completedIndex = await UniTask.WhenAny(introPathTask, introSkipTask);
@@ -575,8 +635,8 @@ namespace BC.Manager
                 skipWaitCts.Dispose();
             }
 
-            if (introPathSkipUI != null)
-                await introPathSkipUI.HideAsync();
+            if (introSkipUI != null)
+                await introSkipUI.HideAsync();
 
             // Intro path 再生が終わったら、SetupPlaying まで待たずに presentation を解除する。
             // これで Player Spawn 演出中は TPS カメラが有効になる。
@@ -593,15 +653,14 @@ namespace BC.Manager
             AlignThirdPersonYawToCurrentCamera(resolvedPlayer);
             // 少し待つ
             await UniTask.Delay(800);
-            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0f, 0.5f); // フェードインさせる
+            await StartFadeAsyncSafe(ResolveFadeEffectUI(), FadeType.TopBottom, 0f, 0.5f); // フェードインさせる
 
             await UniTask.Delay(200);
             await resolvedPlayer.ShowPlayerAsync(true); // プレイヤーを表示する
             RegisterThirdPersonTargetForHandoff(resolvedPlayer, useCameraTarget: true);
 
 
-            uiGameSceneManagerMB.ShowTopPanel(true); // ゲームシーンのUIを表示する
-            uiGameSceneManagerMB.ShowBottomPanel(true); // ゲームシーンのUIを表示する
+            SetGameScenePanelsVisible(true); // ゲームシーンのUIを表示する
             GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
 
         }
@@ -628,10 +687,10 @@ namespace BC.Manager
             itemHandleState?.RestoreRetryCheckpointState();
 
 
-            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードインさせる
+            await StartFadeAsyncSafe(ResolveFadeEffectUI(), FadeType.TopBottom, 1f, 0.5f); // フェードインさせる
             StageManagerMB.Instance.ReloadStage(retryCheckpoint.StageCheckpoint);
             RestoreRetryBombSnapshots(retryCheckpoint.BombSnapshots);
-            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0f, 0.5f); // フェードインさせる
+            await StartFadeAsyncSafe(ResolveFadeEffectUI(), FadeType.TopBottom, 0f, 0.5f); // フェードインさせる
 
             if (resolvedPlayer != null)
             {
@@ -963,8 +1022,7 @@ namespace BC.Manager
             RegisterThirdPersonTargetForHandoff(resolvedPlayer, useCameraTarget: false);
             await resolvedPlayer.ShowPlayerAsync(false);
             RegisterThirdPersonTargetForHandoff(resolvedPlayer, useCameraTarget: true);
-            uiGameSceneManagerMB.ShowTopPanel(true);
-            uiGameSceneManagerMB.ShowBottomPanel(true);
+            SetGameScenePanelsVisible(true);
             GameStateManagerMB.Instance.ChangeState(GameState.SetupPlaying);
         }
 

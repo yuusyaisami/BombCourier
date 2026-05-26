@@ -16,6 +16,7 @@ namespace BC.Gameplay.PlayModeTests
         private const string EntityTagIdTypeName = "BC.Base.EntityTagId";
         private const string ToastSystemManagerTypeName = "BC.Managers.ToastSystemManagerMB";
         private const string ToastRequestDataTypeName = "BC.Managers.ToastRequestData";
+        private const string UIToastStackTypeName = "BC.UI.UIToastStackMB";
         private const string UIToastItemTypeName = "BC.UI.UIToastItemMB";
 
         private readonly List<UnityEngine.Object> createdObjects = new();
@@ -36,7 +37,7 @@ namespace BC.Gameplay.PlayModeTests
         }
 
         [Test]
-        public void CushionSurface_ClampsBounceSpeedAndPreservesHighJumpMultiplier()
+        public void CushionSurface_ConvergesTowardMaxSpeedAndPreservesHighJumpMultiplier()
         {
             DestroyToastManagerInstance();
 
@@ -46,9 +47,9 @@ namespace BC.Gameplay.PlayModeTests
             Component surface = surfaceObject.AddComponent(FindRuntimeType(CushionSurfaceTypeName));
             SetPrivateField(surface, "acceptAnyTag", true);
             SetPrivateField(surface, "bounceRate", 1.0f);
-            SetPrivateField(surface, "bounceSpeed", 8.0f);
             SetPrivateField(surface, "minBounceSpeed", 4.0f);
             SetPrivateField(surface, "maxBounceSpeed", 10.0f);
+            SetPrivateField(surface, "convergenceBounceSpeed", 4.0f);
             SetPrivateField(surface, "highJumpSpeedMultiplier", 1.6f);
 
             GameObject sourceObject = new GameObject("Source");
@@ -76,9 +77,190 @@ namespace BC.Gameplay.PlayModeTests
 
             Assert.IsTrue(handled);
             Assert.AreEqual("Bounce", GetPropertyValue<object>(result, "ResponseKind").ToString());
-            Assert.That(((Vector3)GetPropertyValue<object>(result, "BounceVelocity")).magnitude, Is.EqualTo(10.0f).Within(0.001f));
+            Assert.That(((Vector3)GetPropertyValue<object>(result, "BounceVelocity")).magnitude, Is.EqualTo(20.0f).Within(0.001f));
             Assert.That(Convert.ToSingle(GetPropertyValue<object>(result, "BounceSpeedLimit")), Is.EqualTo(10.0f).Within(0.001f));
             Assert.That(Convert.ToSingle(GetPropertyValue<object>(result, "HighJumpSpeedMultiplier")), Is.EqualTo(1.6f).Within(0.001f));
+        }
+
+        [Test]
+        public void CushionSurface_ConvergesTowardMinSpeedWithoutInstantClamp()
+        {
+            DestroyToastManagerInstance();
+
+            GameObject surfaceObject = new GameObject("CushionSurface");
+            createdObjects.Add(surfaceObject);
+
+            Component surface = surfaceObject.AddComponent(FindRuntimeType(CushionSurfaceTypeName));
+            SetPrivateField(surface, "acceptAnyTag", true);
+            SetPrivateField(surface, "bounceRate", 1.0f);
+            SetPrivateField(surface, "minBounceSpeed", 3.0f);
+            SetPrivateField(surface, "maxBounceSpeed", 0.0f);
+            SetPrivateField(surface, "convergenceBounceSpeed", 1.0f);
+
+            GameObject sourceObject = new GameObject("Source");
+            createdObjects.Add(sourceObject);
+
+            object impactData = Activator.CreateInstance(
+                FindRuntimeType(CushionImpactDataTypeName),
+                sourceObject,
+                sourceObject.transform,
+                null,
+                Activator.CreateInstance(FindRuntimeType(EntityTagIdTypeName)),
+                null,
+                null,
+                Vector3.zero,
+                Vector3.up,
+                Vector3.zero,
+                0f);
+
+            MethodInfo tryEvaluateMethod = surface.GetType().GetMethod("TryEvaluate", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(tryEvaluateMethod);
+
+            object[] args = { impactData, null };
+            bool handled = (bool)tryEvaluateMethod.Invoke(surface, args);
+            object result = args[1];
+
+            Assert.IsTrue(handled);
+            Assert.AreEqual("Bounce", GetPropertyValue<object>(result, "ResponseKind").ToString());
+            Assert.That(((Vector3)GetPropertyValue<object>(result, "BounceVelocity")).magnitude, Is.EqualTo(1.0f).Within(0.001f));
+        }
+
+        [Test]
+        public void CushionSurface_BounceRateGreaterThanOne_StillConvergesTowardMax()
+        {
+            DestroyToastManagerInstance();
+
+            GameObject surfaceObject = new GameObject("CushionSurface");
+            createdObjects.Add(surfaceObject);
+
+            Component surface = surfaceObject.AddComponent(FindRuntimeType(CushionSurfaceTypeName));
+            SetPrivateField(surface, "acceptAnyTag", true);
+            SetPrivateField(surface, "bounceRate", 1.2f);
+            SetPrivateField(surface, "minBounceSpeed", 0.0f);
+            SetPrivateField(surface, "maxBounceSpeed", 8.0f);
+            SetPrivateField(surface, "convergenceBounceSpeed", 4.0f);
+
+            GameObject sourceObject = new GameObject("Source");
+            createdObjects.Add(sourceObject);
+
+            object impactData = Activator.CreateInstance(
+                FindRuntimeType(CushionImpactDataTypeName),
+                sourceObject,
+                sourceObject.transform,
+                null,
+                Activator.CreateInstance(FindRuntimeType(EntityTagIdTypeName)),
+                null,
+                null,
+                Vector3.zero,
+                Vector3.up,
+                Vector3.down * 20f,
+                20f);
+
+            MethodInfo tryEvaluateMethod = surface.GetType().GetMethod("TryEvaluate", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(tryEvaluateMethod);
+
+            object[] args = { impactData, null };
+            bool handled = (bool)tryEvaluateMethod.Invoke(surface, args);
+            object result = args[1];
+
+            Assert.IsTrue(handled);
+            Assert.AreEqual("Bounce", GetPropertyValue<object>(result, "ResponseKind").ToString());
+            Assert.That(((Vector3)GetPropertyValue<object>(result, "BounceVelocity")).magnitude, Is.EqualTo(20.0f).Within(0.001f));
+            Assert.That(Convert.ToSingle(GetPropertyValue<object>(result, "BounceSpeedLimit")), Is.EqualTo(8.0f).Within(0.001f));
+        }
+
+        [Test]
+        public void CushionSurface_LowOutputSpeed_FallsBackToDampen()
+        {
+            DestroyToastManagerInstance();
+
+            GameObject surfaceObject = new GameObject("CushionSurface");
+            createdObjects.Add(surfaceObject);
+
+            Component surface = surfaceObject.AddComponent(FindRuntimeType(CushionSurfaceTypeName));
+            SetPrivateField(surface, "acceptAnyTag", true);
+            SetPrivateField(surface, "bounceRate", 1.0f);
+            SetPrivateField(surface, "minBounceSpeed", 0.0f);
+            SetPrivateField(surface, "maxBounceSpeed", 0.0f);
+            SetPrivateField(surface, "minBounceOutputSpeedToApply", 0.2f);
+            SetPrivateField(surface, "defaultRetainedVelocityRate", 0.0f);
+
+            GameObject sourceObject = new GameObject("Source");
+            createdObjects.Add(sourceObject);
+
+            object impactData = Activator.CreateInstance(
+                FindRuntimeType(CushionImpactDataTypeName),
+                sourceObject,
+                sourceObject.transform,
+                null,
+                Activator.CreateInstance(FindRuntimeType(EntityTagIdTypeName)),
+                null,
+                null,
+                Vector3.zero,
+                Vector3.up,
+                Vector3.down * 0.05f,
+                0.05f);
+
+            MethodInfo tryEvaluateMethod = surface.GetType().GetMethod("TryEvaluate", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(tryEvaluateMethod);
+
+            object[] args = { impactData, null };
+            bool handled = (bool)tryEvaluateMethod.Invoke(surface, args);
+            object result = args[1];
+
+            Assert.IsTrue(handled);
+            Assert.AreEqual("Dampen", GetPropertyValue<object>(result, "ResponseKind").ToString());
+        }
+
+        [Test]
+        public void CushionSurface_WorldUpDirection_UsesGlobalUpInsteadOfLocalUp()
+        {
+            DestroyToastManagerInstance();
+
+            GameObject surfaceObject = new GameObject("CushionSurface");
+            createdObjects.Add(surfaceObject);
+            surfaceObject.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+
+            Component surface = surfaceObject.AddComponent(FindRuntimeType(CushionSurfaceTypeName));
+            SetPrivateField(surface, "acceptAnyTag", true);
+            SetPrivateField(surface, "bounceRate", 1.0f);
+            SetPrivateField(surface, "minBounceSpeed", 3.0f);
+            SetPrivateField(surface, "maxBounceSpeed", 0.0f);
+            SetPrivateField(surface, "convergenceBounceSpeed", 3.0f);
+
+            Type directionModeType = FindRuntimeType("BC.Gimmick.Cushion.CushionBounceDirectionMode");
+            object worldUpMode = Enum.Parse(directionModeType, "WorldUp");
+            SetPrivateField(surface, "bounceDirectionMode", worldUpMode);
+
+            GameObject sourceObject = new GameObject("Source");
+            createdObjects.Add(sourceObject);
+
+            object impactData = Activator.CreateInstance(
+                FindRuntimeType(CushionImpactDataTypeName),
+                sourceObject,
+                sourceObject.transform,
+                null,
+                Activator.CreateInstance(FindRuntimeType(EntityTagIdTypeName)),
+                null,
+                null,
+                Vector3.zero,
+                Vector3.right,
+                Vector3.zero,
+                0f);
+
+            MethodInfo tryEvaluateMethod = surface.GetType().GetMethod("TryEvaluate", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(tryEvaluateMethod);
+
+            object[] args = { impactData, null };
+            bool handled = (bool)tryEvaluateMethod.Invoke(surface, args);
+            object result = args[1];
+            Vector3 bounceVelocity = (Vector3)GetPropertyValue<object>(result, "BounceVelocity");
+
+            Assert.IsTrue(handled);
+            Assert.AreEqual("Bounce", GetPropertyValue<object>(result, "ResponseKind").ToString());
+            Assert.That(bounceVelocity.normalized.x, Is.EqualTo(0.0f).Within(0.0001f));
+            Assert.That(bounceVelocity.normalized.y, Is.EqualTo(1.0f).Within(0.0001f));
+            Assert.That(bounceVelocity.normalized.z, Is.EqualTo(0.0f).Within(0.0001f));
         }
 
         [Test]
@@ -160,6 +342,13 @@ namespace BC.Gameplay.PlayModeTests
             GameObject managerObject = new GameObject("ToastManager");
             createdObjects.Add(managerObject);
 
+            GameObject stackObject = new GameObject("ToastStack", typeof(RectTransform));
+            stackObject.transform.SetParent(managerObject.transform, false);
+            Component stack = stackObject.AddComponent(FindRuntimeType(UIToastStackTypeName));
+            MethodInfo configureRuntimeDefaultsMethod = stack.GetType().GetMethod("ConfigureRuntimeDefaults", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(configureRuntimeDefaultsMethod);
+            configureRuntimeDefaultsMethod.Invoke(stack, null);
+
             Component manager = managerObject.AddComponent(FindRuntimeType(ToastSystemManagerTypeName));
             yield return null;
 
@@ -177,13 +366,28 @@ namespace BC.Gameplay.PlayModeTests
 
             yield return null;
 
-            Component[] activeItems = manager.gameObject.GetComponentsInChildren(FindRuntimeType(UIToastItemTypeName), true);
-            Assert.AreEqual(2, activeItems.Length);
+            Component[] toastItems = manager.gameObject.GetComponentsInChildren(FindRuntimeType(UIToastItemTypeName), true);
+            int activeItemCount = CountActiveComponents(toastItems);
+            Assert.AreEqual(2, activeItemCount);
 
             yield return new WaitForSeconds(0.08f);
 
-            activeItems = manager.gameObject.GetComponentsInChildren(FindRuntimeType(UIToastItemTypeName), true);
-            Assert.AreEqual(0, activeItems.Length);
+            toastItems = manager.gameObject.GetComponentsInChildren(FindRuntimeType(UIToastItemTypeName), true);
+            activeItemCount = CountActiveComponents(toastItems);
+            Assert.AreEqual(0, activeItemCount);
+            Assert.GreaterOrEqual(toastItems.Length, 2);
+        }
+
+        private static int CountActiveComponents(Component[] components)
+        {
+            int count = 0;
+            for (int i = 0; i < components.Length; i++)
+            {
+                if (components[i] != null && components[i].gameObject.activeSelf)
+                    count++;
+            }
+
+            return count;
         }
 
         private static void DestroyToastManagerInstance()

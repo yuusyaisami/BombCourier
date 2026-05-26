@@ -5,6 +5,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Pool;
 
 namespace BC.UI
 {
@@ -19,6 +20,9 @@ namespace BC.UI
         [SerializeField] private TextMeshProUGUI messageText;
 
         private const float DefaultIconSize = 28f;
+
+        private Tween activeTween;
+        private IObjectPool<UIToastItemMB> ownerPool;
 
         private void Awake()
         {
@@ -43,6 +47,22 @@ namespace BC.UI
             EnsureRuntimeTemplateStructure();
             ResolveReferences();
             ApplyStaticPresentation();
+            ResetVisualState();
+        }
+
+        public void BindPool(IObjectPool<UIToastItemMB> pool)
+        {
+            ownerPool = pool;
+        }
+
+        public void ResetForReuse()
+        {
+            activeTween?.Kill();
+            activeTween = null;
+
+            ResolveReferences();
+            ApplyStaticPresentation();
+            ResetVisualState();
         }
 
         public async UniTaskVoid Show(ToastRequestData request)
@@ -50,6 +70,7 @@ namespace BC.UI
             try
             {
                 ToastRequestData sanitizedRequest = request.Sanitize();
+                ResetForReuse();
                 ResolveReferences();
                 ApplyStaticPresentation();
                 ApplyRequest(sanitizedRequest);
@@ -65,7 +86,7 @@ namespace BC.UI
             finally
             {
                 if (this != null)
-                    Destroy(gameObject);
+                    ownerPool?.Release(this);
             }
         }
 
@@ -78,7 +99,11 @@ namespace BC.UI
             canvasGroup.alpha = 0f;
 
             if (fadeInDuration > 0f)
-                await canvasGroup.DOFade(1f, fadeInDuration).SetEase(Ease.OutSine).AsyncWaitForCompletion();
+            {
+                activeTween = canvasGroup.DOFade(1f, fadeInDuration).SetEase(Ease.OutSine);
+                await activeTween.AsyncWaitForCompletion();
+                activeTween = null;
+            }
             else
                 canvasGroup.alpha = 1f;
 
@@ -86,9 +111,19 @@ namespace BC.UI
                 await UniTask.Delay(TimeSpan.FromSeconds(visibleDuration), DelayType.DeltaTime, PlayerLoopTiming.Update, destroyCancellationToken);
 
             if (fadeOutDuration > 0f)
-                await canvasGroup.DOFade(0f, fadeOutDuration).SetEase(Ease.InSine).AsyncWaitForCompletion();
+            {
+                activeTween = canvasGroup.DOFade(0f, fadeOutDuration).SetEase(Ease.InSine);
+                await activeTween.AsyncWaitForCompletion();
+                activeTween = null;
+            }
             else
                 canvasGroup.alpha = 0f;
+        }
+
+        private void OnDisable()
+        {
+            activeTween?.Kill();
+            activeTween = null;
         }
 
         private void ApplyRequest(ToastRequestData request)
@@ -239,6 +274,29 @@ namespace BC.UI
             messageText.overflowMode = TextOverflowModes.Ellipsis;
             messageText.color = Color.white;
             messageText.alignment = TextAlignmentOptions.MidlineLeft;
+        }
+
+        private void ResetVisualState()
+        {
+            if (canvasGroup != null)
+                canvasGroup.alpha = 0f;
+
+            if (iconImage != null)
+            {
+                iconImage.sprite = null;
+                iconImage.enabled = false;
+            }
+
+            if (iconLayoutElement != null)
+            {
+                iconLayoutElement.minWidth = 0f;
+                iconLayoutElement.preferredWidth = 0f;
+                iconLayoutElement.minHeight = 0f;
+                iconLayoutElement.preferredHeight = 0f;
+            }
+
+            if (messageText != null)
+                messageText.text = string.Empty;
         }
     }
 }

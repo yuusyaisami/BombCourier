@@ -3,7 +3,6 @@ using BC.Base;
 using BC.Manager;
 using BC.UI;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BC.Managers
 {
@@ -37,6 +36,7 @@ namespace BC.Managers
         public static ToastSystemManagerMB Instance { get; private set; }
 
         [Header("References")]
+        [SerializeField] private UIManagerMB uiManager;
         [SerializeField] private UIToastStackMB toastStackUI;
 
         [Header("High Jump Toast")]
@@ -51,16 +51,7 @@ namespace BC.Managers
 
         private GameLogicManagerMB gameLogicManager;
         private EntityMoveMotorMB playerMoveMotor;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void BootstrapRuntimeInstance()
-        {
-            if (Instance != null || FindAnyObjectByType<ToastSystemManagerMB>() != null)
-                return;
-
-            GameObject managerObject = new GameObject(nameof(ToastSystemManagerMB));
-            managerObject.AddComponent<ToastSystemManagerMB>();
-        }
+        private bool hasLoggedMissingToastStack;
 
         private void Awake()
         {
@@ -174,26 +165,22 @@ namespace BC.Managers
             if (toastStackUI != null)
                 return;
 
-            toastStackUI = GetComponentInChildren<UIToastStackMB>(true);
+            uiManager ??= UIManagerMB.Instance;
+            if (uiManager == null)
+                uiManager = FindAnyObjectByType<UIManagerMB>(FindObjectsInactive.Include);
+
+            if (uiManager != null)
+                toastStackUI = uiManager.ToastStackUI;
+
+            toastStackUI ??= GetComponentInChildren<UIToastStackMB>(true);
             if (toastStackUI != null)
                 return;
 
-            GameObject canvasObject = new GameObject("ToastCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvasObject.transform.SetParent(transform, false);
-
-            Canvas canvas = canvasObject.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 60;
-
-            CanvasScaler canvasScaler = canvasObject.GetComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(1920f, 1080f);
-            canvasScaler.matchWidthOrHeight = 1.0f;
-
-            GameObject stackObject = new GameObject("ToastStack", typeof(RectTransform), typeof(UIToastStackMB));
-            stackObject.transform.SetParent(canvasObject.transform, false);
-            toastStackUI = stackObject.GetComponent<UIToastStackMB>();
-            toastStackUI.ConfigureRuntimeDefaults();
+            if (!hasLoggedMissingToastStack)
+            {
+                hasLoggedMissingToastStack = true;
+                Debug.LogWarning($"{nameof(ToastSystemManagerMB)}: {nameof(UIToastStackMB)} was not found in scene/UIManager. Toast表示は無効です。", this);
+            }
         }
     }
 }
