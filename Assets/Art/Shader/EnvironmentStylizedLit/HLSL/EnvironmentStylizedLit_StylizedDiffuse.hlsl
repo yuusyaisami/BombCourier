@@ -59,9 +59,13 @@ ESL_StylizedDiffuseData ESL_EvaluateStylizedDiffuse(ESL_InputData inputData, ESL
 		mainLight.shadowAttenuation,
 		diffuseData.shadowAttenuation);
 	diffuseData.mainLightAttenuation = ESL_EvaluateMainLightBandAttenuation(mainLight.distanceAttenuation);
+	float3 mainLightTint = ESL_EvaluateStylizedLightTint(mainLight.color, _MainLightColorInfluence);
+	ESL_MainLightData stylizedMainLight = mainLight;
+	stylizedMainLight.color = mainLightTint;
+	stylizedMainLight.distanceAttenuation = diffuseData.mainLightAttenuation;
 	ESL_IndirectLightingData indirectLightingData = ESL_EvaluateIndirectLighting(inputData, surfaceData, diffuseData.shadowAttenuation, diffuseData.ndotl);
 	ESL_AdditionalLightingData additionalLightingData = ESL_EvaluateAdditionalLighting(inputData, diffuseData.shadowAttenuation, diffuseData.ndotl);
-	ESL_SpecularData specularData = ESL_EvaluateSpecularLighting(inputData, mainLight, diffuseData.shadowAttenuation, diffuseData.mainLightAttenuation);
+	ESL_SpecularData specularData = ESL_EvaluateSpecularLighting(inputData, stylizedMainLight, diffuseData.shadowAttenuation, diffuseData.mainLightAttenuation);
 	diffuseData.ambientColor = indirectLightingData.ambientColor;
 	diffuseData.bounceColor = indirectLightingData.bounceColor;
 	diffuseData.bakedGIColor = indirectLightingData.bakedGIColor;
@@ -75,7 +79,7 @@ ESL_StylizedDiffuseData ESL_EvaluateStylizedDiffuse(ESL_InputData inputData, ESL
 	// ライト帯発光の評価。主光/追加光の合算強度を帯域判定に使います。
 	diffuseData.combinedLightIntensity = ESL_EvaluateCombinedLightIntensity(
 		diffuseData.steppedLight,
-		mainLight,
+		stylizedMainLight,
 		diffuseData.shadowAttenuation,
 		additionalLightingData.combinedColor);
 	diffuseData.lightBandRangeMask = ESL_EvaluateLightBandRangeMask(diffuseData.combinedLightIntensity);
@@ -111,7 +115,7 @@ ESL_StylizedDiffuseData ESL_EvaluateStylizedDiffuse(ESL_InputData inputData, ESL
 	}
 
 	diffuseData.emissionAddColor = diffuseData.lightBandEmissionColor + diffuseData.simpleBoostEmissionColor;
-	diffuseData.finalColor = surfaceData.albedo * diffuseData.shadowedBandColor * mainLight.color * diffuseData.mainLightAttenuation
+	diffuseData.finalColor = surfaceData.albedo * diffuseData.shadowedBandColor * mainLightTint * diffuseData.mainLightAttenuation
 		+ diffuseData.indirectColor
 		+ diffuseData.additionalLightColor
 		+ specularData.combinedSpecular;

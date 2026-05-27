@@ -43,6 +43,8 @@ Shader "BC/EnvironmentStylizedLit"
         _WrapLighting ("Wrap Lighting", Range(0, 1)) = 0.15
         _BandContrast ("Band Contrast", Range(0.25, 2)) = 1
         _BandOffset ("Band Offset", Range(-1, 1)) = 0
+        _MainLightColorInfluence ("Main Light Color Influence", Range(0, 1)) = 0.2
+        _MainLightIntensityResponse ("Main Light Intensity Response", Range(0.25, 8)) = 1
 
         _DeepShadowColor ("Deep Shadow Color", Color) = (0.34, 0.40, 0.56, 1)
         _ShadowColor ("Shadow Color", Color) = (0.56, 0.63, 0.79, 1)
@@ -73,6 +75,11 @@ Shader "BC/EnvironmentStylizedLit"
         _AdditionalLightIntensity ("Additional Light Intensity", Range(0, 1)) = 0.5
         _AdditionalLightShadowInfluence ("Additional Light Shadow Influence", Range(0, 1)) = 0.65
         _AdditionalLightColorInfluence ("Additional Light Color Influence", Range(0, 1)) = 0.75
+        _AdditionalLightAttenuationPower ("Additional Light Attenuation Power", Range(0.25, 8)) = 1.8
+        _AdditionalLightAttenuationStepCount ("Additional Light Attenuation Step Count", Range(1, 5)) = 3
+        _AdditionalLightAttenuationSmoothness ("Additional Light Attenuation Smoothness", Range(0, 0.5)) = 0.08
+        _AdditionalLightPaletteBlend ("Additional Light Palette Blend", Range(0, 1)) = 0.65
+        _AdditionalFillMaxMask ("Additional Fill Max Mask", Range(0, 1)) = 0.45
         [Toggle] _ReceiveDecal ("Receive Decal (Opaque Only)", Float) = 1
 
         [Toggle] _LightBandEmissionEnabled ("Light Band Emission", Float) = 0

@@ -53,6 +53,8 @@ namespace BC.Rendering
             changed |= ClampFloat(material, "_WrapLighting", 0f, 1f, applyChanges);
             changed |= ClampFloat(material, "_BandContrast", 0.25f, 2f, applyChanges);
             changed |= ClampFloat(material, "_BandOffset", -1f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_MainLightColorInfluence", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_MainLightIntensityResponse", 0.25f, 8f, applyChanges);
 
             changed |= ClampFloat(material, "_ShadowInfluence", 0f, 1f, applyChanges);
             changed |= ClampFloat(material, "_ShadowSoftFill", 0f, 1f, applyChanges);
@@ -69,6 +71,11 @@ namespace BC.Rendering
             changed |= ClampFloat(material, "_AdditionalLightIntensity", 0f, 1f, applyChanges);
             changed |= ClampFloat(material, "_AdditionalLightShadowInfluence", 0f, 1f, applyChanges);
             changed |= ClampFloat(material, "_AdditionalLightColorInfluence", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_AdditionalLightAttenuationPower", 0.25f, 8f, applyChanges);
+            changed |= ClampFloat(material, "_AdditionalLightAttenuationStepCount", 1f, 5f, applyChanges, true);
+            changed |= ClampFloat(material, "_AdditionalLightAttenuationSmoothness", 0f, 0.5f, applyChanges);
+            changed |= ClampFloat(material, "_AdditionalLightPaletteBlend", 0f, 1f, applyChanges);
+            changed |= ClampFloat(material, "_AdditionalFillMaxMask", 0f, 1f, applyChanges);
             changed |= ClampFloat(material, "_ReceiveDecal", 0f, 1f, applyChanges, true);
 
             changed |= ClampFloat(material, "_LightBandEmissionEnabled", 0f, 1f, applyChanges, true);

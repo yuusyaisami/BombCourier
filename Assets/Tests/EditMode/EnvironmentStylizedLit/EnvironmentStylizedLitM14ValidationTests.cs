@@ -153,6 +153,11 @@ namespace BC.Rendering.Tests
             StringAssert.Contains("M14 Production Validation / Authoring Guide is implemented", readme);
 
             StringAssert.Contains("_LightStepCount", propertyReference);
+            StringAssert.Contains("_MainLightColorInfluence", propertyReference);
+            StringAssert.Contains("_MainLightIntensityResponse", propertyReference);
+            StringAssert.Contains("_AdditionalLightAttenuationPower", propertyReference);
+            StringAssert.Contains("_AdditionalLightPaletteBlend", propertyReference);
+            StringAssert.Contains("_AdditionalFillMaxMask", propertyReference);
             StringAssert.Contains("_TriplanarBaseMapEnabled", propertyReference);
             StringAssert.Contains("_DebugView", propertyReference);
             StringAssert.Contains("Recommended", propertyReference);

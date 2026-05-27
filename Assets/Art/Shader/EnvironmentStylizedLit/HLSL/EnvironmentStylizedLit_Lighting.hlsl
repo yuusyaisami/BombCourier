@@ -41,8 +41,11 @@ struct ESL_AdditionalLightingData
 
 float ESL_ApplyBandContrastAndOffset(float value);
 float ESL_ApplyBandContrastAndOffset(float value, float bandOffset);
+float ESL_EvaluateLightIntensityResponse(float attenuation, float response);
+float3 ESL_EvaluateStylizedLightTint(float3 lightColor, float colorInfluence);
 float ESL_EvaluateLightBandAttenuation(float distanceAttenuation);
 float ESL_EvaluateMainLightBandAttenuation(float distanceAttenuation);
+float ESL_RemapAdditionalLightAttenuation(float attenuation);
 
 int ESL_GetAdditionalLightMode()
 {
@@ -65,6 +68,20 @@ float3 ESL_EvaluateAdditionalLightColor(float3 lightColor)
 float ESL_EvaluateAdditionalLightLuminance(float3 lightColor)
 {
 	return dot(max(lightColor, 0.0), float3(0.2126, 0.7152, 0.0722));
+}
+
+float ESL_EvaluateLightIntensityResponse(float attenuation, float response)
+{
+	float clampedResponse = max(response, 1e-3);
+	float clampedAttenuation = saturate(attenuation);
+	return saturate(1.0 - exp2(-clampedAttenuation * clampedResponse));
+}
+
+float3 ESL_EvaluateStylizedLightTint(float3 lightColor, float colorInfluence)
+{
+	float luminance = max(ESL_EvaluateAdditionalLightLuminance(lightColor), 1e-4);
+	float3 normalizedHue = lightColor / luminance;
+	return luminance * lerp(1.0.xxx, normalizedHue, saturate(colorInfluence));
 }
 
 // 主光+追加光の合算強度を、発光判定に使う0..1へ正規化します。
@@ -112,7 +129,8 @@ float ESL_EvaluateAdditionalFillMask(float mainShadowAttenuation, float mainNdot
 	// 主光の影/未照射を優先して埋めるため、どちらか大きい方を採用します。
 	float shadowMask = 1.0 - saturate(mainShadowAttenuation);
 	float unlitMask = 1.0 - saturate(mainNdotL);
-	return saturate(max(shadowMask, unlitMask));
+	float fillMask = saturate(max(shadowMask, unlitMask));
+	return fillMask * saturate(_AdditionalFillMaxMask);
 }
 
 float ESL_EvaluateAdditionalDominanceMask(float mainShadowAttenuation, float mainNdotL)
@@ -186,7 +204,9 @@ ESL_AdditionalLightingData ESL_EvaluateAdditionalLighting(ESL_InputData inputDat
 	}
 
 	float3 vertexLightColor = ESL_EvaluateAdditionalLightColor(vertexLighting);
-	float3 vertexContribution = vertexLightColor * saturate(_AdditionalLightIntensity);
+	float3 paletteVertexLight = _LightColor.rgb * vertexLightLuminance;
+	float3 stylizedVertexLight = lerp(vertexLightColor, paletteVertexLight, saturate(_AdditionalLightPaletteBlend));
+	float3 vertexContribution = stylizedVertexLight * saturate(_AdditionalLightIntensity);
 	float dominanceMask = ESL_EvaluateAdditionalDominanceMask(mainShadowAttenuation, mainNdotL);
 
 	if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_FILL_ONLY)
@@ -246,10 +266,13 @@ ESL_AdditionalLightingData ESL_EvaluateAdditionalLighting(ESL_InputData inputDat
 		}
 
 		float shadowAttenuation = ESL_EvaluateAdditionalLightShadowAttenuation(additionalLight.shadowAttenuation);
-		float bandedDistanceAttenuation = ESL_EvaluateLightBandAttenuation(additionalLight.distanceAttenuation);
+		float bandedDistanceAttenuation = ESL_RemapAdditionalLightAttenuation(additionalLight.distanceAttenuation);
 		float3 lightColor = ESL_EvaluateAdditionalLightColor(additionalLight.color * inputData.directAmbientOcclusion);
+		float lightLuminance = ESL_EvaluateAdditionalLightLuminance(lightColor);
+		float3 paletteLightColor = _LightColor.rgb * lightLuminance;
+		float3 stylizedLightColor = lerp(lightColor, paletteLightColor, saturate(_AdditionalLightPaletteBlend));
 		float dominanceMask = additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_FILL_ONLY ? 1.0 : ESL_EvaluateAdditionalDominanceMask(mainShadowAttenuation, mainNdotL);
-		float3 contribution = lightColor
+		float3 contribution = stylizedLightColor
 			* bandedDistanceAttenuation
 			* shadowAttenuation
 			* modeTerm
@@ -384,20 +407,32 @@ float ESL_ApplyBandContrastAndOffset(float value)
 	return saturate(contrastedValue);
 }
 
-// 光の距離減衰を段階化します。spot / point の内側勾配を止めつつ、最下段が完全な0にならないようにします。
-float ESL_EvaluateLightBandAttenuation(float distanceAttenuation)
+// 主光の距離減衰を段階化します。応答を先にかけてから段階化し、弱すぎる遠景だけを少し残します。
+float ESL_EvaluateMainLightBandAttenuation(float distanceAttenuation)
 {
+	float responseAttenuation = ESL_EvaluateLightIntensityResponse(distanceAttenuation, _MainLightIntensityResponse);
 	float steppedAttenuation = ESL_ComputeSteppedLight(
-		ESL_ApplyBandContrastAndOffset(distanceAttenuation),
+		ESL_ApplyBandContrastAndOffset(responseAttenuation),
 		max(_LightStepCount, 1.0),
 		saturate(_LightStepSmoothness));
-	return max(0.25, steppedAttenuation);
+	return max(0.08, steppedAttenuation);
 }
 
 // 既存の主光向け呼び出しを保持します。
-float ESL_EvaluateMainLightBandAttenuation(float distanceAttenuation)
+float ESL_EvaluateLightBandAttenuation(float distanceAttenuation)
 {
-	return ESL_EvaluateLightBandAttenuation(distanceAttenuation);
+	return ESL_EvaluateMainLightBandAttenuation(distanceAttenuation);
+}
+
+// 追加光の距離減衰は、主光とは別の強さ圧縮を使います。
+float ESL_RemapAdditionalLightAttenuation(float attenuation)
+{
+	float poweredAttenuation = pow(saturate(attenuation), max(_AdditionalLightAttenuationPower, 1e-3));
+	float steppedAttenuation = ESL_ComputeSteppedLight(
+		poweredAttenuation,
+		max(_AdditionalLightAttenuationStepCount, 1.0),
+		saturate(_AdditionalLightAttenuationSmoothness));
+	return max(0.05, steppedAttenuation);
 }
 
 // ローカルオフセット版（頂点カラー等の局所制御用）。

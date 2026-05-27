@@ -9,7 +9,7 @@ Use the M14 validation scenes before changing shared preset baselines or broad p
 | Shadows read as crushed black | Shadow Soft Fill too low, ambient too weak, or shadow palette too cold | Review the indoor room anchors, then raise Shadow Soft Fill or Ambient Strength before repainting every band color. |
 | Broad walls look dirty | Band noise or cavity is too strong, often combined with SSAO | Lower LightBandNoiseStrength or CavityStrength first. Re-check with SSAO toggled off. |
 | Material looks flat after bake | Indirect stylize and cavity are too weak, or the preset family is wrong | Compare the lightmapped and dynamic column anchors before raising specular. |
-| Point lights overpower the main look | Additional Light Intensity or mode is too aggressive | Move back toward FillOnly and reduce intensity until the main light bands remain readable. |
+| Point lights overpower the main look | Additional Light Intensity, Palette Blend, or Fill Max Mask is too aggressive | Move back toward FillOnly, reduce intensity, and lower Additional Light Palette Blend / Additional Fill Max Mask until the main light bands remain readable. |
 | Spot light highlights look harsh | Specular mode or smoothness is too strong for the chosen preset | Compare CeramicToy and MatteToyPlastic on the lighting-lab strip before retuning manually. |
 | Triplanar fixes seams but the material becomes expensive or mushy | Too many triplanar channels are enabled together | Keep only the needed triplanar channels and re-check the rough-UV and ProBuilder anchors. |
 | World gradient looks painted on | Min/Max range does not match world scale | Re-anchor gradient Min/Max to scene height instead of object scale. |
