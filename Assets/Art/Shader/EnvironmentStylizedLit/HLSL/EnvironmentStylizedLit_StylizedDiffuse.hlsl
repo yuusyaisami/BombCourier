@@ -15,6 +15,7 @@ struct ESL_StylizedDiffuseData
 	float3 bandColor;
 	float shadowAttenuation;
 	float3 shadowedBandColor;
+	float mainLightAttenuation;
 	float3 ambientColor;
 	float3 bounceColor;
 	float3 bakedGIColor;
@@ -57,9 +58,10 @@ ESL_StylizedDiffuseData ESL_EvaluateStylizedDiffuse(ESL_InputData inputData, ESL
 		diffuseData.bandColor,
 		mainLight.shadowAttenuation,
 		diffuseData.shadowAttenuation);
+	diffuseData.mainLightAttenuation = ESL_EvaluateMainLightBandAttenuation(mainLight.distanceAttenuation);
 	ESL_IndirectLightingData indirectLightingData = ESL_EvaluateIndirectLighting(inputData, surfaceData, diffuseData.shadowAttenuation, diffuseData.ndotl);
 	ESL_AdditionalLightingData additionalLightingData = ESL_EvaluateAdditionalLighting(inputData, diffuseData.shadowAttenuation, diffuseData.ndotl);
-	ESL_SpecularData specularData = ESL_EvaluateSpecularLighting(inputData, mainLight, diffuseData.shadowAttenuation);
+	ESL_SpecularData specularData = ESL_EvaluateSpecularLighting(inputData, mainLight, diffuseData.shadowAttenuation, diffuseData.mainLightAttenuation);
 	diffuseData.ambientColor = indirectLightingData.ambientColor;
 	diffuseData.bounceColor = indirectLightingData.bounceColor;
 	diffuseData.bakedGIColor = indirectLightingData.bakedGIColor;
@@ -109,7 +111,7 @@ ESL_StylizedDiffuseData ESL_EvaluateStylizedDiffuse(ESL_InputData inputData, ESL
 	}
 
 	diffuseData.emissionAddColor = diffuseData.lightBandEmissionColor + diffuseData.simpleBoostEmissionColor;
-	diffuseData.finalColor = surfaceData.albedo * diffuseData.shadowedBandColor * mainLight.color * mainLight.distanceAttenuation
+	diffuseData.finalColor = surfaceData.albedo * diffuseData.shadowedBandColor * mainLight.color * diffuseData.mainLightAttenuation
 		+ diffuseData.indirectColor
 		+ diffuseData.additionalLightColor
 		+ specularData.combinedSpecular;

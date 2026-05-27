@@ -101,7 +101,7 @@ ESL_SpecularData ESL_EvaluateSpecularData(
 	ESL_InputData inputData,
 	float3 lightDirectionWS,
 	float3 lightColor,
-	float distanceAttenuation,
+	float lightAttenuation,
 	float shadowAttenuation)
 {
 	float3 normalizedNormalWS = ESL_SafeNormalize(inputData.normalWS, float3(0.0, 1.0, 0.0));
@@ -115,11 +115,11 @@ ESL_SpecularData ESL_EvaluateSpecularData(
 	specularData.specularTerm = ESL_EvaluateSpecularTerm(specularData.ndoth, _Smoothness)
 		* saturate(_SpecularStrength)
 		* lightFacing
-		* distanceAttenuation
+		* lightAttenuation
 		* shadowAttenuation;
 	specularData.specularColor = _SpecularColor.rgb * lightColor * specularData.specularTerm;
 	specularData.edgeSheenTerm = ESL_EvaluateEdgeSheenTerm(normalizedNormalWS, normalizedViewDirectionWS, lightDirectionWS, shadowAttenuation)
-		* distanceAttenuation;
+		* lightAttenuation;
 	specularData.edgeSheenColor = _EdgeSheenColor.rgb * lightColor * specularData.edgeSheenTerm;
 	specularData.combinedSpecular = specularData.specularColor + specularData.edgeSheenColor;
 	return specularData;

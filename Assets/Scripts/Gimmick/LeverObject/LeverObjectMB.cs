@@ -5,6 +5,7 @@ using BC.ActionSystem;
 using BC.Base;
 using BC.Player;
 using BC.Rendering;
+using BC.Utility;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -73,6 +74,16 @@ namespace BC.Gimmick.LeverObject
         public bool EmitWhenSelected => emitWhenSelected;
         public float EmissionStrength => Mathf.Max(0f, emissionStrength);
         public float SimpleBoostIntensity => Mathf.Max(0f, simpleBoostIntensity);
+
+        public RendererVisualState GetRendererVisualState(bool isSelected)
+        {
+            return new RendererVisualState(
+                GetBaseColor(isSelected),
+                isSelected && emitWhenSelected,
+                color,
+                emissionStrength,
+                simpleBoostIntensity);
+        }
 
         public Color GetBaseColor(bool isSelected)
         {
@@ -143,14 +154,6 @@ namespace BC.Gimmick.LeverObject
     [DisallowMultipleComponent]
     public sealed class LeverObjectMB : MonoBehaviour, IInteractionTarget, IInteractionPromptProvider, IInteractionPromptDetailTextProvider
     {
-        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
-        private static readonly int ColorId = Shader.PropertyToID("_Color");
-        private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
-        private static readonly int EmissionStrengthId = Shader.PropertyToID("_EmissionStrength");
-        private static readonly int SimpleBoostEnabledId = Shader.PropertyToID("_SimpleBoostEmissionEnabled");
-        private static readonly int SimpleBoostColorId = Shader.PropertyToID("_SimpleBoostEmissionColor");
-        private static readonly int SimpleBoostIntensityId = Shader.PropertyToID("_SimpleBoostEmissionIntensity");
-
         [Header("Interaction")]
         [Tooltip("インタラクト位置に使うワールド Transform です。未指定時は自身の Transform を使います。")]
         [SerializeField] private Transform interactionTransform;
@@ -465,59 +468,26 @@ namespace BC.Gimmick.LeverObject
 
             ApplyRendererVisual(
                 leftNavigationMesh,
-                left.GetBaseColor(isLeftActive),
-                isLeftActive && left.EmitWhenSelected,
-                left.OnColor,
-                left.EmissionStrength,
-                left.SimpleBoostIntensity);
+                left.GetRendererVisualState(isLeftActive));
 
             ApplyRendererVisual(
                 rightNavigationMesh,
-                right.GetBaseColor(isRightActive),
-                isRightActive && right.EmitWhenSelected,
-                right.OnColor,
-                right.EmissionStrength,
-                right.SimpleBoostIntensity);
+                right.GetRendererVisualState(isRightActive));
 
             ApplyRendererVisual(
                 handleMesh,
-                activeVisual.GetBaseColor(true),
-                activeVisual.EmitWhenSelected,
-                activeVisual.OnColor,
-                activeVisual.EmissionStrength,
-                activeVisual.SimpleBoostIntensity);
+                activeVisual.GetRendererVisualState(true));
         }
 
         private void ApplyRendererVisual(
             Renderer targetRenderer,
-            Color baseColor,
-            bool emissionEnabled,
-            Color emissionColor,
-            float emissionStrength,
-            float simpleBoostIntensity)
+            in RendererVisualState visualState)
         {
             if (targetRenderer == null)
                 return;
 
             EnsurePropertyBlock();
-
-            targetRenderer.GetPropertyBlock(propertyBlock);
-            propertyBlock.SetColor(BaseColorId, baseColor);
-            propertyBlock.SetColor(ColorId, baseColor);
-
-            float resolvedEmissionStrength = emissionEnabled ? Mathf.Max(0f, emissionStrength) : 0f;
-            propertyBlock.SetColor(EmissionColorId, emissionColor);
-            propertyBlock.SetFloat(EmissionStrengthId, resolvedEmissionStrength);
-
-            if (syncEnvironmentSimpleBoost)
-            {
-                float boost = emissionEnabled ? Mathf.Max(0f, simpleBoostIntensity) : 0f;
-                propertyBlock.SetFloat(SimpleBoostEnabledId, boost > 0.0001f ? 1f : 0f);
-                propertyBlock.SetColor(SimpleBoostColorId, emissionColor);
-                propertyBlock.SetFloat(SimpleBoostIntensityId, boost);
-            }
-
-            targetRenderer.SetPropertyBlock(propertyBlock);
+            RendererVisualStateUtility.Apply(targetRenderer, visualState, syncEnvironmentSimpleBoost, propertyBlock);
         }
 
         private void EnsurePropertyBlock()

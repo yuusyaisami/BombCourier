@@ -41,6 +41,8 @@ struct ESL_AdditionalLightingData
 
 float ESL_ApplyBandContrastAndOffset(float value);
 float ESL_ApplyBandContrastAndOffset(float value, float bandOffset);
+float ESL_EvaluateLightBandAttenuation(float distanceAttenuation);
+float ESL_EvaluateMainLightBandAttenuation(float distanceAttenuation);
 
 int ESL_GetAdditionalLightMode()
 {
@@ -244,10 +246,11 @@ ESL_AdditionalLightingData ESL_EvaluateAdditionalLighting(ESL_InputData inputDat
 		}
 
 		float shadowAttenuation = ESL_EvaluateAdditionalLightShadowAttenuation(additionalLight.shadowAttenuation);
+		float bandedDistanceAttenuation = ESL_EvaluateLightBandAttenuation(additionalLight.distanceAttenuation);
 		float3 lightColor = ESL_EvaluateAdditionalLightColor(additionalLight.color * inputData.directAmbientOcclusion);
 		float dominanceMask = additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_FILL_ONLY ? 1.0 : ESL_EvaluateAdditionalDominanceMask(mainShadowAttenuation, mainNdotL);
 		float3 contribution = lightColor
-			* additionalLight.distanceAttenuation
+			* bandedDistanceAttenuation
 			* shadowAttenuation
 			* modeTerm
 			* dominanceMask
@@ -364,13 +367,13 @@ ESL_IndirectLightingData ESL_EvaluateIndirectLighting(ESL_InputData inputData, E
 }
 
 // 主光由来のスペキュラ評価を委譲します。
-ESL_SpecularData ESL_EvaluateSpecularLighting(ESL_InputData inputData, ESL_MainLightData mainLightData, float shadowAttenuation)
+ESL_SpecularData ESL_EvaluateSpecularLighting(ESL_InputData inputData, ESL_MainLightData mainLightData, float shadowAttenuation, float lightAttenuation)
 {
 	return ESL_EvaluateSpecularData(
 		inputData,
 		mainLightData.directionWS,
 		mainLightData.color,
-		mainLightData.distanceAttenuation,
+		lightAttenuation,
 		shadowAttenuation);
 }
 
@@ -381,6 +384,22 @@ float ESL_ApplyBandContrastAndOffset(float value)
 	return saturate(contrastedValue);
 }
 
+// 光の距離減衰を段階化します。spot / point の内側勾配を止めつつ、最下段が完全な0にならないようにします。
+float ESL_EvaluateLightBandAttenuation(float distanceAttenuation)
+{
+	float steppedAttenuation = ESL_ComputeSteppedLight(
+		ESL_ApplyBandContrastAndOffset(distanceAttenuation),
+		max(_LightStepCount, 1.0),
+		saturate(_LightStepSmoothness));
+	return max(0.25, steppedAttenuation);
+}
+
+// 既存の主光向け呼び出しを保持します。
+float ESL_EvaluateMainLightBandAttenuation(float distanceAttenuation)
+{
+	return ESL_EvaluateLightBandAttenuation(distanceAttenuation);
+}
+
 // ローカルオフセット版（頂点カラー等の局所制御用）。
 float ESL_ApplyBandContrastAndOffset(float value, float bandOffset)
 {
@@ -388,27 +407,33 @@ float ESL_ApplyBandContrastAndOffset(float value, float bandOffset)
 	return saturate(contrastedValue);
 }
 
-// 段階値から5色グラデーション（DeepShadow〜Highlight）を評価します。
+// 段階値から5色の固定バンド色を評価します。帯域内では補間せず、段差だけを見せます。
 float3 ESL_EvaluateBandColor(float steppedLight)
 {
 	float clampedLight = saturate(steppedLight);
+	float bandIndex = floor(clampedLight * 4.0 + 0.5);
 
-	if (clampedLight <= 0.25)
+	if (bandIndex <= 0.0)
 	{
-		return lerp(_DeepShadowColor.rgb, _ShadowColor.rgb, smoothstep(0.0, 0.25, clampedLight));
+		return _DeepShadowColor.rgb;
 	}
 
-	if (clampedLight <= 0.5)
+	if (bandIndex <= 1.0)
 	{
-		return lerp(_ShadowColor.rgb, _MidColor.rgb, smoothstep(0.25, 0.5, clampedLight));
+		return _ShadowColor.rgb;
 	}
 
-	if (clampedLight <= 0.75)
+	if (bandIndex <= 2.0)
 	{
-		return lerp(_MidColor.rgb, _LightColor.rgb, smoothstep(0.5, 0.75, clampedLight));
+		return _MidColor.rgb;
 	}
 
-	return lerp(_LightColor.rgb, _HighlightColor.rgb, smoothstep(0.75, 1.0, clampedLight));
+	if (bandIndex <= 3.0)
+	{
+		return _LightColor.rgb;
+	}
+
+	return _HighlightColor.rgb;
 }
 
 #endif
