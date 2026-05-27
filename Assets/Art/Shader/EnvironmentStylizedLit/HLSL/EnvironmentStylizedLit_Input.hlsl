@@ -40,8 +40,6 @@ CBUFFER_START(UnityPerMaterial)
     float _WrapLighting;
     float _BandContrast;
     float _BandOffset;
-    float _MainLightColorInfluence;
-    float _MainLightIntensityResponse;
 
     float4 _DeepShadowColor;
     float4 _ShadowColor;
@@ -72,12 +70,6 @@ CBUFFER_START(UnityPerMaterial)
     float _AdditionalLightIntensity;
     float _AdditionalLightShadowInfluence;
     float _AdditionalLightColorInfluence;
-    float _AdditionalLightAttenuationPower;
-    float _AdditionalLightAttenuationStepCount;
-    float _AdditionalLightAttenuationSmoothness;
-    float _AdditionalLightPaletteBlend;
-    float _AdditionalFillMaxMask;
-    float _ReceiveDecal;
 
     float _LightBandEmissionEnabled;
     float4 _LightBandEmissionColor;

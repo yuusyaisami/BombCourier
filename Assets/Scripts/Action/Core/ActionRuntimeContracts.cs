@@ -636,7 +636,7 @@ namespace BC.ActionSystem
         {
             ActionExecutionHandle handle = new(nextExecutionId++, actor);
             ActionLocalValueStoreService localValueStore = new();
-            ReactiveActionScope reactiveScope = sceneKernel.ReactiveValues?.CreateActionScope(handle, actor, triggerEntity, localValueStore);
+            ReactiveActionScope reactiveScope = sceneKernel.ReactiveValues?.CreateActionScope(handle, actor, triggerEntity);
             ActionExecutionContext context = new(sceneKernel, this, handle, triggerEntity, localValueStore, reactiveScope);
 
             try

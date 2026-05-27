@@ -7,7 +7,7 @@ namespace BC.Base
     {
         Literal = 0,
         EntityValueStore = 1,
-        LocalValueStore = 2,
+        KernelValueStore = 2,
         Distance = 3,
     }
 
@@ -15,14 +15,14 @@ namespace BC.Base
     {
         Literal = 0,
         EntityValueStore = 1,
-        LocalValueStore = 2,
+        KernelValueStore = 2,
     }
 
     public enum ReactiveBoolSourceKind
     {
         Literal = 0,
         EntityValueStore = 1,
-        LocalValueStore = 2,
+        KernelValueStore = 2,
         EntityAlive = 3,
         CompareFloat = 4,
     }
@@ -42,7 +42,7 @@ namespace BC.Base
         Self = 0,
         TriggerEntity = 1,
         EntityValueStore = 2,
-        LocalValueStore = 3,
+        KernelValueStore = 3,
         TargetReference = 4,
     }
 
@@ -50,41 +50,56 @@ namespace BC.Base
     {
         Literal = 0,
         EntityValueStore = 1,
-        LocalValueStore = 2,
+        KernelValueStore = 2,
     }
 
     public enum ReactiveFaceExpressionIdSourceKind
     {
         Literal = 0,
         EntityValueStore = 1,
-        LocalValueStore = 2,
+        KernelValueStore = 2,
     }
 
     public enum ReactiveShapeExpressionIdSourceKind
     {
         Literal = 0,
         EntityValueStore = 1,
-        LocalValueStore = 2,
+        KernelValueStore = 2,
     }
 
     public enum ReactiveEntityMoveStateSourceKind
     {
         Literal = 0,
         EntityValueStore = 1,
-        LocalValueStore = 2,
+        KernelValueStore = 2,
     }
 
     [Serializable]
-    public struct ReactiveLocalValueSource
+    public enum ReactiveKernelValueStoreScope
     {
+        SceneKernel = 0,
+        ApplicationKernel = 1,
+    }
+
+    [Serializable]
+    public struct ReactiveKernelValueSource
+    {
+        [SerializeField] private ReactiveKernelValueStoreScope storeScope;
         [SerializeField] private ValueKeyReference key;
 
+        public ReactiveKernelValueStoreScope StoreScope => storeScope;
         public ValueKeyReference Key => key;
 
-        public static ReactiveLocalValueSource Create(ValueKeyReference key)
+        public static ReactiveKernelValueSource Create(ValueKeyReference key)
         {
-            return new ReactiveLocalValueSource
+            return Create(ReactiveKernelValueStoreScope.SceneKernel, key);
+        }
+
+        public static ReactiveKernelValueSource Create(ReactiveKernelValueStoreScope storeScope, ValueKeyReference key)
+        {
+            return new ReactiveKernelValueSource
             {
+                storeScope = storeScope,
                 key = key,
             };
         }
@@ -286,7 +301,7 @@ namespace BC.Base
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private float literal;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private ReactiveFloatDistanceSource distance;
         [SerializeField] private float fallbackValue;
 
@@ -295,7 +310,7 @@ namespace BC.Base
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public float Literal => literal;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public ReactiveFloatDistanceSource DistanceSource => distance;
         public float FallbackValue => fallbackValue;
 
@@ -325,16 +340,16 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveFloat LocalValueStore(
+        public static ReactiveFloat KernelValueStore(
             ValueKeyReference key,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
         {
             return new ReactiveFloat
             {
-                sourceKind = ReactiveFloatSourceKind.LocalValueStore,
+                sourceKind = ReactiveFloatSourceKind.KernelValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
             };
         }
 
@@ -361,7 +376,7 @@ namespace BC.Base
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private int literal;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private int fallbackValue;
 
         public ReactiveIntSourceKind SourceKind => sourceKind;
@@ -369,7 +384,7 @@ namespace BC.Base
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public int Literal => literal;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public int FallbackValue => fallbackValue;
 
         public static ReactiveInt LiteralValue(int value, ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
@@ -398,16 +413,16 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveInt LocalValueStore(
+        public static ReactiveInt KernelValueStore(
             ValueKeyReference key,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
         {
             return new ReactiveInt
             {
-                sourceKind = ReactiveIntSourceKind.LocalValueStore,
+                sourceKind = ReactiveIntSourceKind.KernelValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
             };
         }
 
@@ -421,7 +436,7 @@ namespace BC.Base
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private bool literal;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private ReactiveBoolEntityAliveSource entityAlive;
         [SerializeField] private ReactiveFloatCompareSource compareFloat;
         [SerializeField] private bool fallbackValue;
@@ -431,7 +446,7 @@ namespace BC.Base
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public bool Literal => literal;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public ReactiveBoolEntityAliveSource EntityAliveSource => entityAlive;
         public ReactiveFloatCompareSource CompareFloatSource => compareFloat;
         public bool FallbackValue => fallbackValue;
@@ -462,16 +477,16 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveBool LocalValueStore(
+        public static ReactiveBool KernelValueStore(
             ValueKeyReference key,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
         {
             return new ReactiveBool
             {
-                sourceKind = ReactiveBoolSourceKind.LocalValueStore,
+                sourceKind = ReactiveBoolSourceKind.KernelValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
             };
         }
 
@@ -614,7 +629,7 @@ namespace BC.Base
         [SerializeField] private ReactiveEvaluationMode evaluationMode;
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private EntityTargetReference targetReference;
         [SerializeField] private ReactiveEntityFallbackKind fallbackKind;
 
@@ -622,7 +637,7 @@ namespace BC.Base
         public ReactiveEvaluationMode EvaluationMode => evaluationMode;
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public EntityTargetReference TargetReferenceValue => targetReference;
         public ReactiveEntityFallbackKind FallbackKind => fallbackKind;
 
@@ -663,16 +678,16 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveEntityRef LocalValueStore(
+        public static ReactiveEntityRef KernelValueStore(
             ValueKeyReference key,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
         {
             return new ReactiveEntityRef
             {
-                sourceKind = ReactiveEntitySourceKind.LocalValueStore,
+                sourceKind = ReactiveEntitySourceKind.KernelValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
                 fallbackKind = ReactiveEntityFallbackKind.None,
             };
         }
@@ -700,7 +715,7 @@ namespace BC.Base
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private string literal;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private string fallbackValue;
 
         public ReactiveStringSourceKind SourceKind => sourceKind;
@@ -708,7 +723,7 @@ namespace BC.Base
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public string Literal => literal;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public string FallbackValue => fallbackValue;
 
         public static ReactiveString LiteralValue(string value, ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
@@ -737,16 +752,16 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveString LocalValueStore(
+        public static ReactiveString KernelValueStore(
             ValueKeyReference key,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
         {
             return new ReactiveString
             {
-                sourceKind = ReactiveStringSourceKind.LocalValueStore,
+                sourceKind = ReactiveStringSourceKind.KernelValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
             };
         }
     }
@@ -759,7 +774,7 @@ namespace BC.Base
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private FaceExpressionId literal;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private FaceExpressionId fallbackValue;
 
         public ReactiveFaceExpressionIdSourceKind SourceKind => sourceKind;
@@ -767,7 +782,7 @@ namespace BC.Base
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public FaceExpressionId Literal => literal;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public FaceExpressionId FallbackValue => fallbackValue;
 
         public static ReactiveFaceExpressionId LiteralValue(FaceExpressionId value, ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
@@ -796,16 +811,16 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveFaceExpressionId LocalValueStore(
+        public static ReactiveFaceExpressionId KernelValueStore(
             ValueKeyReference key,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
         {
             return new ReactiveFaceExpressionId
             {
-                sourceKind = ReactiveFaceExpressionIdSourceKind.LocalValueStore,
+                sourceKind = ReactiveFaceExpressionIdSourceKind.KernelValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
             };
         }
     }
@@ -818,7 +833,7 @@ namespace BC.Base
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private ShapeExpressionId literal;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private ShapeExpressionId fallbackValue;
 
         public ReactiveShapeExpressionIdSourceKind SourceKind => sourceKind;
@@ -826,7 +841,7 @@ namespace BC.Base
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public ShapeExpressionId Literal => literal;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public ShapeExpressionId FallbackValue => fallbackValue;
 
         public static ReactiveShapeExpressionId LiteralValue(ShapeExpressionId value, ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
@@ -855,16 +870,16 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveShapeExpressionId LocalValueStore(
+        public static ReactiveShapeExpressionId KernelValueStore(
             ValueKeyReference key,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
         {
             return new ReactiveShapeExpressionId
             {
-                sourceKind = ReactiveShapeExpressionIdSourceKind.LocalValueStore,
+                sourceKind = ReactiveShapeExpressionIdSourceKind.KernelValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
             };
         }
     }
@@ -877,7 +892,7 @@ namespace BC.Base
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private EntityMoveState literal;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private EntityMoveState fallbackValue;
 
         public ReactiveEntityMoveStateSourceKind SourceKind => sourceKind;
@@ -885,7 +900,7 @@ namespace BC.Base
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public EntityMoveState Literal => literal;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public EntityMoveState FallbackValue => fallbackValue;
 
         public static ReactiveEntityMoveState LiteralValue(EntityMoveState value, ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
@@ -914,16 +929,16 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveEntityMoveState LocalValueStore(
+        public static ReactiveEntityMoveState KernelValueStore(
             ValueKeyReference key,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Watched)
         {
             return new ReactiveEntityMoveState
             {
-                sourceKind = ReactiveEntityMoveStateSourceKind.LocalValueStore,
+                sourceKind = ReactiveEntityMoveStateSourceKind.KernelValueStore,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
             };
         }
     }

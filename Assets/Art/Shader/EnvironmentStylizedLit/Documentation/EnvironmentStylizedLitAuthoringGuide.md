@@ -82,8 +82,7 @@ Regenerate checked-in validation assets with the explicit bootstrapper when anch
 - Keep directional-only readability acceptable before enabling local lights.
 - Point lights should fill or accent, not replace the main stylized band structure.
 - Spot lights are best used to validate highlight response and edge readability on specific props or walls.
-- Keep Main Light Color Influence low; raise Main Light Intensity Response only enough to tighten bright cores.
-- If point and spot lights both make the material noisy, reduce Additional Light Intensity, lower Additional Light Palette Blend or Additional Fill Max Mask, or switch the mode back to FillOnly.
+- If point and spot lights both make the material noisy, reduce Additional Light Intensity or switch the mode back to FillOnly.
 
 ## Triplanar Guidance
 

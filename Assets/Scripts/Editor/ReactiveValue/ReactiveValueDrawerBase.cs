@@ -141,14 +141,15 @@ namespace BC.Editor
             DrawFilteredValueKey(ref position, property.FindPropertyRelative("key"), "Key", valueType);
         }
 
-        protected static float GetReactiveLocalValueSourceHeight()
+        protected static float GetReactiveKernelValueSourceHeight()
         {
-            return GetControlDelta(GetValueKeyHeight());
+            return GetControlDelta(LineHeight) + GetControlDelta(GetValueKeyHeight());
         }
 
-        protected static void DrawReactiveLocalValueSource(ref Rect position, SerializedProperty property, Type valueType)
+        protected static void DrawReactiveKernelValueSource(ref Rect position, SerializedProperty property, Type valueType)
         {
-            DrawFilteredValueKey(ref position, property.FindPropertyRelative("key"), "Key", valueType, "Local");
+            DrawPropertyField(ref position, property.FindPropertyRelative("storeScope"), "Store");
+            DrawFilteredValueKey(ref position, property.FindPropertyRelative("key"), "Key", valueType);
         }
 
         protected static float GetEntityTargetReferenceHeight(SerializedProperty property)

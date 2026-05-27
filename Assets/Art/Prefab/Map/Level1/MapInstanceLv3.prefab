@@ -9575,6 +9575,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9600,6 +9601,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9624,6 +9626,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9646,6 +9649,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9676,6 +9680,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9701,6 +9706,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9725,6 +9731,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9747,6 +9754,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9811,6 +9819,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9836,6 +9845,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9860,6 +9870,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9882,6 +9893,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9912,6 +9924,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9937,6 +9950,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9961,6 +9975,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9983,6 +9998,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10047,6 +10063,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10072,6 +10089,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10096,6 +10114,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10118,6 +10137,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10148,6 +10168,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10173,6 +10194,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10197,6 +10219,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10219,6 +10242,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10283,6 +10307,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10308,6 +10333,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10332,6 +10358,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10354,6 +10381,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10384,6 +10412,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10409,6 +10438,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10433,6 +10463,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10455,6 +10486,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10519,6 +10551,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10544,6 +10577,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10568,6 +10602,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10590,6 +10625,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10620,6 +10656,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10645,6 +10682,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10669,6 +10707,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10691,6 +10730,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -17447,6 +17487,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -17472,6 +17513,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -17496,6 +17538,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -17518,6 +17561,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -17549,6 +17593,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -17574,6 +17619,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -17598,6 +17644,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -17620,6 +17667,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -17660,6 +17708,7 @@ MonoBehaviour:
           path: 
           valueTypeName: 
       localValue:
+        storeScope: 0
         key:
           id: 0
           path: 
@@ -17711,7 +17760,7 @@ MonoBehaviour:
   runtimePathInactiveSimpleBoostIntensity: 0
   dimInactiveRuntimePath: 1
   runtimePathInactiveAlphaMultiplier: 0.35
-  enableLayerDebugLog: 1
+  enableLayerDebugLog: 0
   layerDebugLogInterval: 1
   references:
     version: 2

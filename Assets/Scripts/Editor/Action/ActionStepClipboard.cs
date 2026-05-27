@@ -1,3 +1,4 @@
+using System;
 using BC.ActionSystem;
 using BC.Editor.Foundation.IMGUI;
 using UnityEditor;
@@ -17,11 +18,16 @@ namespace BC.Editor.ActionSystem
             copiedSteps.Clear();
 
             if (stepProperty?.managedReferenceValue is not ActionStepAuthoring step)
+            {
+                EditorGUIUtility.systemCopyBuffer = string.Empty;
                 return;
+            }
 
             // Keep the clipboard decoupled from the live SerializedProperty instance.
             if (ManagedReferenceListController.CloneManagedReference(step) is ActionStepAuthoring clone)
                 copiedSteps.Add(clone);
+
+            EditorGUIUtility.systemCopyBuffer = ActionStepSummaryUtility.GetClipboardText(stepProperty);
         }
 
         internal static void Copy(IReadOnlyList<SerializedProperty> stepProperties)
@@ -29,7 +35,12 @@ namespace BC.Editor.ActionSystem
             copiedSteps.Clear();
 
             if (stepProperties == null || stepProperties.Count <= 0)
+            {
+                EditorGUIUtility.systemCopyBuffer = string.Empty;
                 return;
+            }
+
+            List<string> clipboardLines = new(stepProperties.Count);
 
             for (int i = 0; i < stepProperties.Count; i++)
             {
@@ -40,7 +51,16 @@ namespace BC.Editor.ActionSystem
 
                 if (ManagedReferenceListController.CloneManagedReference(step) is ActionStepAuthoring clone)
                     copiedSteps.Add(clone);
+
+                string clipboardText = ActionStepSummaryUtility.GetClipboardText(stepProperty);
+
+                if (!string.IsNullOrWhiteSpace(clipboardText))
+                    clipboardLines.Add(clipboardText);
             }
+
+            EditorGUIUtility.systemCopyBuffer = clipboardLines.Count > 0
+                ? string.Join(Environment.NewLine, clipboardLines)
+                : string.Empty;
         }
 
         internal static object CloneStep()

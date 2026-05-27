@@ -490,6 +490,9 @@ namespace BC.Manager
             if (IsDestroyedOrShuttingDown())
                 return;
 
+            // マップのロジック状態をリセットする
+
+
             // 次のステージに進むための処理
             await LoadStageAsync(currentGameStage + 1);
 
@@ -881,6 +884,9 @@ namespace BC.Manager
             currentClearTimeThreshold = result.ClearTimeThreshold;
             ResetRetryActionContext();
 
+            // マップリセット
+            ResetSceneKernelValueStore();
+
             if (currentGoalData == null) Debug.LogError("GameLogicManagerMB: GoalData is not resolved from the stage runtime.", this);
             if (currentCameraPath == null) Debug.LogError("GameLogicManagerMB: Camera path is not resolved from the stage runtime.", this);
 
@@ -1043,6 +1049,17 @@ namespace BC.Manager
             }
 
             return result;
+        }
+
+        private void ResetSceneKernelValueStore()
+        {
+            if (sceneKernel == null)
+                return;
+
+            sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateBlue, EntityMoveMotorMB.GameLogicTag, false);
+            sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateRed, EntityMoveMotorMB.GameLogicTag, false);
+            sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateGreen, EntityMoveMotorMB.GameLogicTag, false);
+            sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateYellow, EntityMoveMotorMB.GameLogicTag, false);
         }
 
 

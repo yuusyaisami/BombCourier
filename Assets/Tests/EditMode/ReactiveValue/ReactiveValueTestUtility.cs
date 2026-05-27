@@ -81,6 +81,13 @@ namespace BC.Base.Tests
             return property.GetValue(instance);
         }
 
+        public static void SetPropertyValue(object instance, string propertyName, object value)
+        {
+            PropertyInfo property = instance.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(property, $"Expected property: {propertyName}");
+            property.SetValue(instance, value);
+        }
+
         public static object GetStaticFieldValue(string fullTypeName, string fieldName)
         {
             Type type = GetTypeByFullName(fullTypeName);

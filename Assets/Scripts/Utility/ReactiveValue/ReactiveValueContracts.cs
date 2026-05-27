@@ -38,29 +38,60 @@ namespace BC.Base
     public readonly struct ReactiveEvalContext
     {
         public readonly SceneKernel SceneKernel;
+        public readonly ApplicationKernel ApplicationKernel;
         public readonly EntityRef ActorEntity;
         public readonly EntityRef TriggerEntity;
-        public readonly ILocalValueStoreService LocalValueStore;
+        public readonly IKernelValueStoreService KernelValueStore;
+        public readonly IKernelValueStoreService ApplicationKernelValueStore;
 
         public ReactiveEvalContext(SceneKernel sceneKernel, EntityRef actorEntity, EntityRef triggerEntity)
-            : this(sceneKernel, actorEntity, triggerEntity, null)
+            : this(sceneKernel, actorEntity, triggerEntity, null, ApplicationKernelMB.Instance?.Kernel, ApplicationKernelMB.Instance?.Kernel?.KernelValueStore)
         {
         }
 
-        public ReactiveEvalContext(SceneKernel sceneKernel, EntityRef actorEntity, EntityRef triggerEntity, ILocalValueStoreService localValueStore)
+        public ReactiveEvalContext(SceneKernel sceneKernel, EntityRef actorEntity, EntityRef triggerEntity, IKernelValueStoreService kernelValueStore)
+            : this(sceneKernel, actorEntity, triggerEntity, kernelValueStore, ApplicationKernelMB.Instance?.Kernel, ApplicationKernelMB.Instance?.Kernel?.KernelValueStore)
+        {
+        }
+
+        private ReactiveEvalContext(
+            SceneKernel sceneKernel,
+            EntityRef actorEntity,
+            EntityRef triggerEntity,
+            IKernelValueStoreService kernelValueStore,
+            ApplicationKernel applicationKernel,
+            IKernelValueStoreService applicationKernelValueStore)
         {
             SceneKernel = sceneKernel;
+            ApplicationKernel = applicationKernel;
             ActorEntity = actorEntity;
             TriggerEntity = triggerEntity;
-            LocalValueStore = localValueStore;
+            KernelValueStore = kernelValueStore;
+            ApplicationKernelValueStore = applicationKernelValueStore;
         }
 
         public ReactiveEvalContext(in ActionExecutionContext actionContext)
-            : this(actionContext.SceneKernel, actionContext.ActorEntity, actionContext.TriggerEntity, actionContext.LocalValueStore)
+            : this(
+                actionContext.SceneKernel,
+                actionContext.ActorEntity,
+                actionContext.TriggerEntity,
+                actionContext.SceneKernel?.KernelValueStore,
+                ApplicationKernelMB.Instance?.Kernel,
+                ApplicationKernelMB.Instance?.Kernel?.KernelValueStore)
         {
         }
 
         public EntityRef SelfEntity => ActorEntity;
+
+        public IKernelValueStoreService GetKernelValueStore(ReactiveKernelValueStoreScope scope)
+        {
+            return scope switch
+            {
+                ReactiveKernelValueStoreScope.SceneKernel => KernelValueStore,
+                ReactiveKernelValueStoreScope.ApplicationKernel => ApplicationKernelValueStore,
+                _ => null,
+            };
+        }
     }
 
     public static class ReactiveBindingPolicy
@@ -69,7 +100,7 @@ namespace BC.Base
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveFloatSourceKind sourceKind)
         {
             return sourceKind == ReactiveFloatSourceKind.EntityValueStore ||
-                   sourceKind == ReactiveFloatSourceKind.LocalValueStore
+                   sourceKind == ReactiveFloatSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -77,7 +108,7 @@ namespace BC.Base
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveIntSourceKind sourceKind)
         {
             return sourceKind == ReactiveIntSourceKind.EntityValueStore ||
-                   sourceKind == ReactiveIntSourceKind.LocalValueStore
+                   sourceKind == ReactiveIntSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -85,7 +116,7 @@ namespace BC.Base
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveBoolSourceKind sourceKind)
         {
             return sourceKind == ReactiveBoolSourceKind.EntityValueStore ||
-                   sourceKind == ReactiveBoolSourceKind.LocalValueStore
+                   sourceKind == ReactiveBoolSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -98,7 +129,7 @@ namespace BC.Base
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveEntitySourceKind sourceKind)
         {
             return sourceKind == ReactiveEntitySourceKind.EntityValueStore ||
-                   sourceKind == ReactiveEntitySourceKind.LocalValueStore
+                   sourceKind == ReactiveEntitySourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -106,7 +137,7 @@ namespace BC.Base
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveStringSourceKind sourceKind)
         {
             return sourceKind == ReactiveStringSourceKind.EntityValueStore ||
-                   sourceKind == ReactiveStringSourceKind.LocalValueStore
+                   sourceKind == ReactiveStringSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -114,7 +145,7 @@ namespace BC.Base
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveFaceExpressionIdSourceKind sourceKind)
         {
             return sourceKind == ReactiveFaceExpressionIdSourceKind.EntityValueStore ||
-                   sourceKind == ReactiveFaceExpressionIdSourceKind.LocalValueStore
+                   sourceKind == ReactiveFaceExpressionIdSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -122,7 +153,7 @@ namespace BC.Base
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveShapeExpressionIdSourceKind sourceKind)
         {
             return sourceKind == ReactiveShapeExpressionIdSourceKind.EntityValueStore ||
-               sourceKind == ReactiveShapeExpressionIdSourceKind.LocalValueStore
+               sourceKind == ReactiveShapeExpressionIdSourceKind.KernelValueStore
             ? ReactiveEvaluationMode.Watched
             : ReactiveEvaluationMode.Snapshot;
         }
@@ -130,7 +161,7 @@ namespace BC.Base
         public static ReactiveEvaluationMode GetDefaultBindingMode(ReactiveEntityMoveStateSourceKind sourceKind)
         {
             return sourceKind == ReactiveEntityMoveStateSourceKind.EntityValueStore ||
-                   sourceKind == ReactiveEntityMoveStateSourceKind.LocalValueStore
+                   sourceKind == ReactiveEntityMoveStateSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }

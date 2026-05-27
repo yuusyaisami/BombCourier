@@ -116,11 +116,6 @@ namespace BC.Rendering
                 {
                     warningMessages.Add(FormatWarning(material, triplanarWarning, materials.Length));
                 }
-
-                if (EnvironmentStylizedLitMaterialValidator.TryGetDecalSurfaceModeWarning(material, out string decalWarning))
-                {
-                    warningMessages.Add(FormatWarning(material, decalWarning, materials.Length));
-                }
             }
 
             return warningMessages.ToArray();
@@ -211,22 +206,10 @@ namespace BC.Rendering
             DrawProperty("_WrapLighting");
             DrawProperty("_BandContrast");
             DrawProperty("_BandOffset");
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Main Light Response", EditorStyles.boldLabel);
-            DrawProperty("_MainLightColorInfluence");
-            DrawProperty("_MainLightIntensityResponse");
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Additional Light Response", EditorStyles.boldLabel);
             DrawProperty("_AdditionalLightMode");
             DrawProperty("_AdditionalLightIntensity");
             DrawProperty("_AdditionalLightShadowInfluence");
             DrawProperty("_AdditionalLightColorInfluence");
-            DrawProperty("_AdditionalLightAttenuationPower");
-            DrawProperty("_AdditionalLightAttenuationStepCount");
-            DrawProperty("_AdditionalLightAttenuationSmoothness");
-            DrawProperty("_AdditionalLightPaletteBlend");
-            DrawProperty("_AdditionalFillMaxMask");
-            DrawProperty("_ReceiveDecal");
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Light Band Emission", EditorStyles.boldLabel);

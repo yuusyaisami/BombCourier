@@ -43,8 +43,6 @@ Shader "BC/EnvironmentStylizedLit"
         _WrapLighting ("Wrap Lighting", Range(0, 1)) = 0.15
         _BandContrast ("Band Contrast", Range(0.25, 2)) = 1
         _BandOffset ("Band Offset", Range(-1, 1)) = 0
-        _MainLightColorInfluence ("Main Light Color Influence", Range(0, 1)) = 0.2
-        _MainLightIntensityResponse ("Main Light Intensity Response", Range(0.25, 8)) = 1
 
         _DeepShadowColor ("Deep Shadow Color", Color) = (0.34, 0.40, 0.56, 1)
         _ShadowColor ("Shadow Color", Color) = (0.56, 0.63, 0.79, 1)
@@ -75,12 +73,6 @@ Shader "BC/EnvironmentStylizedLit"
         _AdditionalLightIntensity ("Additional Light Intensity", Range(0, 1)) = 0.5
         _AdditionalLightShadowInfluence ("Additional Light Shadow Influence", Range(0, 1)) = 0.65
         _AdditionalLightColorInfluence ("Additional Light Color Influence", Range(0, 1)) = 0.75
-        _AdditionalLightAttenuationPower ("Additional Light Attenuation Power", Range(0.25, 8)) = 1.8
-        _AdditionalLightAttenuationStepCount ("Additional Light Attenuation Step Count", Range(1, 5)) = 3
-        _AdditionalLightAttenuationSmoothness ("Additional Light Attenuation Smoothness", Range(0, 0.5)) = 0.08
-        _AdditionalLightPaletteBlend ("Additional Light Palette Blend", Range(0, 1)) = 0.65
-        _AdditionalFillMaxMask ("Additional Fill Max Mask", Range(0, 1)) = 0.45
-        [Toggle] _ReceiveDecal ("Receive Decal (Opaque Only)", Float) = 1
 
         [Toggle] _LightBandEmissionEnabled ("Light Band Emission", Float) = 0
         [HDR] _LightBandEmissionColor ("Light Band Emission Color", Color) = (1.4, 1.2, 1.0, 1)
@@ -257,13 +249,11 @@ Shader "BC/EnvironmentStylizedLit"
             #pragma shader_feature_local_fragment _ _ESL_TRIPLANAR_BASEMAP
             #pragma shader_feature_local_fragment _ _ESL_TRIPLANAR_NORMALMAP
             #pragma shader_feature_local_fragment _ _ESL_TRIPLANAR_NOISE
-            #pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile_fragment _ _SCREEN_SPACE_IRRADIANCE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fragment _ _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
-            #pragma multi_compile_fragment _ _RENDER_PASS_ENABLED
             #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
@@ -277,7 +267,6 @@ Shader "BC/EnvironmentStylizedLit"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
             #include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl"

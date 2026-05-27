@@ -135,12 +135,12 @@ MonoBehaviour:
     enabled: 1
     qualityTier: 1
     debugView: 0
-    exposure: 0
-    contrast: 1
-    saturation: 1
-    blackLift: 0.08
-    whiteSoftClamp: 0.25
-    pastelStrength: 0.3
+    exposure: 0.09
+    contrast: 1.104
+    saturation: 1.345
+    blackLift: 0.062
+    whiteSoftClamp: 0.312
+    pastelStrength: 0.216
     highSaturationCompress: 0.5
     pastelLuminanceBias: 0.15
     creamHighlightColor: {r: 1, g: 0.98, b: 0.93, a: 1}
@@ -148,22 +148,22 @@ MonoBehaviour:
     creamHighlightThreshold: 0.7
     creamHighlightSoftness: 0.1
     edgeToneEnabled: 1
-    edgeToneColor: {r: 1, g: 0.98, b: 0.95, a: 1}
-    edgeToneStrength: 0.12
-    edgeToneRadius: 0.62
-    edgeToneSoftness: 0.22
-    edgeSaturationFade: 0.18
+    edgeToneColor: {r: 0, g: 0, b: 0, a: 1}
+    edgeToneStrength: 0.713
+    edgeToneRadius: 0.582
+    edgeToneSoftness: 0.354
+    edgeSaturationFade: 0.249
     edgeBrightnessOffset: 0
     depthHazeEnabled: 1
     depthHazeColor: {r: 0.78, g: 0.86, b: 0.92, a: 1}
-    depthHazeStrength: 0.1
-    depthHazeStart: 0.45
+    depthHazeStrength: 0.164
+    depthHazeStart: 0.369
     depthHazeEnd: 0.95
     depthHazeSaturationFade: 0.18
     depthHazeBrightnessLift: 0.04
     softBloomEnabled: 1
-    softBloomThreshold: 0.82
-    softBloomSoftKnee: 0.18
+    softBloomThreshold: 0.595
+    softBloomSoftKnee: 0.252
     softBloomIntensity: 0.14
     softBloomRadius: 0.65
     softBloomTint: {r: 1, g: 0.96, b: 0.92, a: 1}
@@ -174,14 +174,14 @@ MonoBehaviour:
     halationRadius: 0.55
     blueNoiseTex: {fileID: 0}
     grainEnabled: 1
-    grainStrength: 0.02
+    grainStrength: 0.0296
     grainScale: 1
     grainResponse: 0.6
     grainTemporalStrength: 0.1
     shadowTint: {r: 0.46, g: 0.5, b: 0.68, a: 1}
     midTint: {r: 1, g: 1, b: 1, a: 1}
     highlightTint: {r: 1, g: 0.95, b: 0.86, a: 1}
-    shadowTintStrength: 0.35
+    shadowTintStrength: 0.397
     midTintStrength: 0
     highlightTintStrength: 0.2
 --- !u!114 &7833122117494664109

@@ -273,7 +273,7 @@ namespace BC.Gimmick.ConditionDrivenColliderObject
             {
                 ReactiveBoolSourceKind.Literal => ReactiveEvaluationMode.Snapshot,
                 ReactiveBoolSourceKind.EntityValueStore => ReactiveEvaluationMode.Watched,
-                ReactiveBoolSourceKind.LocalValueStore => ReactiveEvaluationMode.Watched,
+                ReactiveBoolSourceKind.KernelValueStore => ReactiveEvaluationMode.Watched,
                 _ => ReactiveEvaluationMode.Continuous,
             };
         }

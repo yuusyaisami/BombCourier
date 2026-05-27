@@ -12,6 +12,7 @@ namespace BC.Editor
         [SerializeField] internal ReactiveFloat reactiveFloat;
         [SerializeField] internal ReactiveInt reactiveInt;
         [SerializeField] internal ReactiveBool reactiveBool;
+        [SerializeField] internal ReactiveWatchedBool reactiveWatchedBool;
         [SerializeField] internal ReactiveVector3 reactiveVector3;
         [SerializeField] internal ReactiveEntityRef reactiveEntity;
         [SerializeField] internal ReactiveString reactiveString;

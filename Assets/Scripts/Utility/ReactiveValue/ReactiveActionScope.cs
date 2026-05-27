@@ -9,7 +9,6 @@ namespace BC.Base
         private readonly ReactiveValueResolverService resolver;
         private readonly SceneKernel sceneKernel;
         private readonly ActionExecutionHandle executionHandle;
-        private readonly ILocalValueStoreService localValueStore;
         private readonly List<IReactiveBinding> bindings = new();
         private bool isDisposed;
 
@@ -18,13 +17,11 @@ namespace BC.Base
             SceneKernel sceneKernel,
             ActionExecutionHandle executionHandle,
             EntityRef actor,
-            EntityRef trigger,
-            ILocalValueStoreService localValueStore)
+            EntityRef trigger)
         {
             this.resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
             this.sceneKernel = sceneKernel;
             this.executionHandle = executionHandle;
-            this.localValueStore = localValueStore;
             Actor = actor;
             Trigger = trigger;
         }
@@ -287,7 +284,7 @@ namespace BC.Base
 
         private ReactiveEvalContext CreateContext()
         {
-            return new ReactiveEvalContext(sceneKernel, Actor, Trigger, localValueStore);
+            return new ReactiveEvalContext(sceneKernel, Actor, Trigger);
         }
 
         private void ThrowIfDisposed()

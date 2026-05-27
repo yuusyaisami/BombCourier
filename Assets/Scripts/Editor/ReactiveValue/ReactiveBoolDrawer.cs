@@ -12,7 +12,7 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveBoolSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
-                (int)ReactiveBoolSourceKind.LocalValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                (int)ReactiveBoolSourceKind.KernelValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
@@ -20,7 +20,7 @@ namespace BC.Editor
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
             return sourceKind == (int)ReactiveBoolSourceKind.EntityValueStore ||
-                   sourceKind == (int)ReactiveBoolSourceKind.LocalValueStore
+                   sourceKind == (int)ReactiveBoolSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -31,7 +31,7 @@ namespace BC.Editor
             {
                 (int)ReactiveBoolSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveBoolSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
-                (int)ReactiveBoolSourceKind.LocalValueStore => GetReactiveLocalValueSourceHeight(),
+                (int)ReactiveBoolSourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 (int)ReactiveBoolSourceKind.EntityAlive => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("entityAlive").FindPropertyRelative("entity"), true)),
                 (int)ReactiveBoolSourceKind.CompareFloat =>
                     GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("compareFloat").FindPropertyRelative("left"), true)) +
@@ -52,8 +52,8 @@ namespace BC.Editor
                 case ReactiveBoolSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(bool));
                     break;
-                case ReactiveBoolSourceKind.LocalValueStore:
-                    DrawReactiveLocalValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(bool));
+                case ReactiveBoolSourceKind.KernelValueStore:
+                    DrawReactiveKernelValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(bool));
                     break;
                 case ReactiveBoolSourceKind.EntityAlive:
                     DrawPropertyField(ref position, property.FindPropertyRelative("entityAlive").FindPropertyRelative("entity"), "Entity");

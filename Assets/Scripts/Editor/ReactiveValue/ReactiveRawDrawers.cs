@@ -12,7 +12,7 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveStringSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
-                (int)ReactiveStringSourceKind.LocalValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                (int)ReactiveStringSourceKind.KernelValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
@@ -20,7 +20,7 @@ namespace BC.Editor
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
             return sourceKind == (int)ReactiveStringSourceKind.EntityValueStore ||
-                   sourceKind == (int)ReactiveStringSourceKind.LocalValueStore
+                   sourceKind == (int)ReactiveStringSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -31,7 +31,7 @@ namespace BC.Editor
             {
                 (int)ReactiveStringSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveStringSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
-                (int)ReactiveStringSourceKind.LocalValueStore => GetReactiveLocalValueSourceHeight(),
+                (int)ReactiveStringSourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 _ => 0f,
             };
         }
@@ -46,8 +46,8 @@ namespace BC.Editor
                 case ReactiveStringSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(string));
                     break;
-                case ReactiveStringSourceKind.LocalValueStore:
-                    DrawReactiveLocalValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(string));
+                case ReactiveStringSourceKind.KernelValueStore:
+                    DrawReactiveKernelValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(string));
                     break;
             }
         }
@@ -71,7 +71,7 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveFaceExpressionIdSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
-                (int)ReactiveFaceExpressionIdSourceKind.LocalValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                (int)ReactiveFaceExpressionIdSourceKind.KernelValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
@@ -79,7 +79,7 @@ namespace BC.Editor
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
             return sourceKind == (int)ReactiveFaceExpressionIdSourceKind.EntityValueStore ||
-                   sourceKind == (int)ReactiveFaceExpressionIdSourceKind.LocalValueStore
+                   sourceKind == (int)ReactiveFaceExpressionIdSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -90,7 +90,7 @@ namespace BC.Editor
             {
                 (int)ReactiveFaceExpressionIdSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveFaceExpressionIdSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
-                (int)ReactiveFaceExpressionIdSourceKind.LocalValueStore => GetReactiveLocalValueSourceHeight(),
+                (int)ReactiveFaceExpressionIdSourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 _ => 0f,
             };
         }
@@ -105,8 +105,8 @@ namespace BC.Editor
                 case ReactiveFaceExpressionIdSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(FaceExpressionId));
                     break;
-                case ReactiveFaceExpressionIdSourceKind.LocalValueStore:
-                    DrawReactiveLocalValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(FaceExpressionId));
+                case ReactiveFaceExpressionIdSourceKind.KernelValueStore:
+                    DrawReactiveKernelValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(FaceExpressionId));
                     break;
             }
         }
@@ -130,7 +130,7 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveEntityMoveStateSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
-                (int)ReactiveEntityMoveStateSourceKind.LocalValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                (int)ReactiveEntityMoveStateSourceKind.KernelValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
@@ -138,7 +138,7 @@ namespace BC.Editor
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
             return sourceKind == (int)ReactiveEntityMoveStateSourceKind.EntityValueStore ||
-                   sourceKind == (int)ReactiveEntityMoveStateSourceKind.LocalValueStore
+                   sourceKind == (int)ReactiveEntityMoveStateSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -149,7 +149,7 @@ namespace BC.Editor
             {
                 (int)ReactiveEntityMoveStateSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveEntityMoveStateSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
-                (int)ReactiveEntityMoveStateSourceKind.LocalValueStore => GetReactiveLocalValueSourceHeight(),
+                (int)ReactiveEntityMoveStateSourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 _ => 0f,
             };
         }
@@ -164,8 +164,8 @@ namespace BC.Editor
                 case ReactiveEntityMoveStateSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(EntityMoveState));
                     break;
-                case ReactiveEntityMoveStateSourceKind.LocalValueStore:
-                    DrawReactiveLocalValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(EntityMoveState));
+                case ReactiveEntityMoveStateSourceKind.KernelValueStore:
+                    DrawReactiveKernelValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(EntityMoveState));
                     break;
             }
         }
@@ -189,7 +189,7 @@ namespace BC.Editor
             return sourceKind switch
             {
                 (int)ReactiveShapeExpressionIdSourceKind.EntityValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
-                (int)ReactiveShapeExpressionIdSourceKind.LocalValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
+                (int)ReactiveShapeExpressionIdSourceKind.KernelValueStore => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Watched },
                 _ => new[] { ReactiveEvaluationMode.Snapshot, ReactiveEvaluationMode.Continuous },
             };
         }
@@ -197,7 +197,7 @@ namespace BC.Editor
         protected override ReactiveEvaluationMode GetDefaultEvaluationMode(int sourceKind)
         {
             return sourceKind == (int)ReactiveShapeExpressionIdSourceKind.EntityValueStore ||
-                   sourceKind == (int)ReactiveShapeExpressionIdSourceKind.LocalValueStore
+                   sourceKind == (int)ReactiveShapeExpressionIdSourceKind.KernelValueStore
                 ? ReactiveEvaluationMode.Watched
                 : ReactiveEvaluationMode.Snapshot;
         }
@@ -208,7 +208,7 @@ namespace BC.Editor
             {
                 (int)ReactiveShapeExpressionIdSourceKind.Literal => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("literal"))),
                 (int)ReactiveShapeExpressionIdSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
-                (int)ReactiveShapeExpressionIdSourceKind.LocalValueStore => GetReactiveLocalValueSourceHeight(),
+                (int)ReactiveShapeExpressionIdSourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 _ => 0f,
             };
         }
@@ -223,8 +223,8 @@ namespace BC.Editor
                 case ReactiveShapeExpressionIdSourceKind.EntityValueStore:
                     DrawReactiveEntityValueSource(ref position, property.FindPropertyRelative("entityValue"), typeof(ShapeExpressionId));
                     break;
-                case ReactiveShapeExpressionIdSourceKind.LocalValueStore:
-                    DrawReactiveLocalValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(ShapeExpressionId));
+                case ReactiveShapeExpressionIdSourceKind.KernelValueStore:
+                    DrawReactiveKernelValueSource(ref position, property.FindPropertyRelative("localValue"), typeof(ShapeExpressionId));
                     break;
             }
         }

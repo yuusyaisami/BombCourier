@@ -23,8 +23,8 @@ MonoBehaviour:
     selectedCount: 6
   - stepTypeName: BC.ActionSystem.SetValueStoreValueStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639152320481465746
-    selectedCount: 1
+    lastSelectedUtcTicks: 639155006905353858
+    selectedCount: 2
   - stepTypeName: BC.ActionSystem.IfStepAuthoring, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
     lastSelectedUtcTicks: 639152322501573660

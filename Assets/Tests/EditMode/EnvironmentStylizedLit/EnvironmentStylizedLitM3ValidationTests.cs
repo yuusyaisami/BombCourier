@@ -28,18 +28,11 @@ namespace BC.Rendering.Tests
             AssertShaderHasProperty(shader, "_WrapLighting");
             AssertShaderHasProperty(shader, "_BandContrast");
             AssertShaderHasProperty(shader, "_BandOffset");
-            AssertShaderHasProperty(shader, "_MainLightColorInfluence");
-            AssertShaderHasProperty(shader, "_MainLightIntensityResponse");
             AssertShaderHasProperty(shader, "_DeepShadowColor");
             AssertShaderHasProperty(shader, "_ShadowColor");
             AssertShaderHasProperty(shader, "_MidColor");
             AssertShaderHasProperty(shader, "_LightColor");
             AssertShaderHasProperty(shader, "_HighlightColor");
-            AssertShaderHasProperty(shader, "_AdditionalLightAttenuationPower");
-            AssertShaderHasProperty(shader, "_AdditionalLightAttenuationStepCount");
-            AssertShaderHasProperty(shader, "_AdditionalLightAttenuationSmoothness");
-            AssertShaderHasProperty(shader, "_AdditionalLightPaletteBlend");
-            AssertShaderHasProperty(shader, "_AdditionalFillMaxMask");
             AssertShaderHasProperty(shader, "_DebugView");
         }
 
@@ -95,26 +88,10 @@ namespace BC.Rendering.Tests
             StringAssert.Contains("ESL_GetMainLightData", lightingSource);
             StringAssert.Contains("GetMainLight()", lightingSource);
             StringAssert.Contains("ESL_EvaluateBandColor", lightingSource);
-            StringAssert.Contains("ESL_EvaluateLightIntensityResponse", lightingSource);
-            StringAssert.Contains("ESL_EvaluateStylizedLightTint", lightingSource);
-            StringAssert.Contains("ESL_EvaluateLightBandAttenuation", lightingSource);
-            StringAssert.Contains("ESL_EvaluateMainLightBandAttenuation", lightingSource);
-            StringAssert.Contains("ESL_RemapAdditionalLightAttenuation", lightingSource);
-            StringAssert.Contains("float bandIndex = floor(clampedLight * 4.0 + 0.5);", lightingSource);
-            StringAssert.Contains("return max(0.08, steppedAttenuation);", lightingSource);
-            StringAssert.Contains("return max(0.05, steppedAttenuation);", lightingSource);
-            StringAssert.Contains("return _HighlightColor.rgb;", lightingSource);
-            StringAssert.DoesNotContain("smoothstep(0.0, 0.25, clampedLight)", lightingSource);
-            StringAssert.DoesNotContain("smoothstep(0.25, 0.5, clampedLight)", lightingSource);
-            StringAssert.DoesNotContain("smoothstep(0.5, 0.75, clampedLight)", lightingSource);
-            StringAssert.DoesNotContain("smoothstep(0.75, 1.0, clampedLight)", lightingSource);
 
             StringAssert.Contains("ESL_EvaluateStylizedDiffuse", stylizedDiffuseSource);
             StringAssert.Contains("diffuseData.wrappedLight", stylizedDiffuseSource);
             StringAssert.Contains("diffuseData.steppedLight", stylizedDiffuseSource);
-            StringAssert.Contains("diffuseData.mainLightAttenuation", stylizedDiffuseSource);
-            StringAssert.Contains("ESL_EvaluateSpecularLighting(inputData, mainLight, diffuseData.shadowAttenuation, diffuseData.mainLightAttenuation)", stylizedDiffuseSource);
-            StringAssert.Contains("ESL_EvaluateStylizedLightTint(mainLight.color, _MainLightColorInfluence)", stylizedDiffuseSource);
 
             StringAssert.Contains("ESL_ApplyDebugView", debugSource);
             StringAssert.Contains("ESL_DEBUG_STEPPED_LIGHT", debugSource);

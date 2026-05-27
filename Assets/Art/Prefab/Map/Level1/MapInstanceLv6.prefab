@@ -5124,199 +5124,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &671555836647534675
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 579831829095165264}
-  - component: {fileID: 283488424976087764}
-  - component: {fileID: 3414104407144671585}
-  m_Layer: 0
-  m_Name: LeverObject1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &579831829095165264
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 671555836647534675}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.9, y: -5, z: 37.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2734984771565702484}
-  m_Father: {fileID: 6178714537794196283}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &283488424976087764
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 671555836647534675}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ca0f9e984ad274469fb06a229089c1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Gimmick.LeverObject.LeverObjectMB
-  interactionTransform: {fileID: 579831829095165264}
-  promptAnchor: {fileID: 579831829095165264}
-  visualTarget: {fileID: 3414104407144671585}
-  maxInteractionDistance: 2.5
-  maxInteractionAngle: 65
-  requiredHoldDuration: 0
-  promptWorldOffset: {x: 0, y: 1.4, z: 0}
-  promptDetailText: 
-  hasMiddleState: 0
-  initialState: 0
-  leverTransform: {fileID: 579831829095165264}
-  duration: 0.2
-  easingCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: -1.4907123
-      outSlope: -1.4907123
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.052181363
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  left:
-    localEulerAngles: {x: 0, y: 0, z: 0}
-    color: {r: 0.9502111, g: 1, b: 0, a: 1}
-    overrideOffColor: 0
-    offSaturation: 0.215
-    offColor: {r: 0, g: 0, b: 0, a: 0}
-    emitWhenSelected: 1
-    emissionStrength: 0.2
-    simpleBoostIntensity: 0
-  middle:
-    localEulerAngles: {x: 0, y: 0, z: 0}
-    color: {r: 1, g: 1, b: 1, a: 1}
-    overrideOffColor: 0
-    offSaturation: 0
-    offColor: {r: 0, g: 0, b: 0, a: 0}
-    emitWhenSelected: 0
-    emissionStrength: 0
-    simpleBoostIntensity: 0
-  right:
-    localEulerAngles: {x: 0, y: 0, z: 0}
-    color: {r: 0.14013892, g: 1, b: 0, a: 1}
-    overrideOffColor: 0
-    offSaturation: 0.211
-    offColor: {r: 0, g: 0, b: 0, a: 0}
-    emitWhenSelected: 1
-    emissionStrength: 0.2
-    simpleBoostIntensity: 0
-  leftNavigationMesh: {fileID: 2070948089003844941}
-  rightNavigationMesh: {fileID: 6919617951810988388}
-  handleMesh: {fileID: 6277729963815296964}
-  syncEnvironmentSimpleBoost: 1
-  writeStateVariables: 1
-  leftVariable:
-    enabled: 1
-    scope: 1
-    writeOnTrue: 1
-    writeOnFalse: 1
-    entityBoolKey:
-      id: 90005
-      path: GameLogic.IsStateYellow
-      valueTypeName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-    entityTarget:
-      mode: 2
-      selection: 0
-      tag:
-        id: 1
-        path: System.SceneKernel
-  middleVariable:
-    enabled: 0
-    scope: 1
-    writeOnTrue: 1
-    writeOnFalse: 1
-    entityBoolKey:
-      id: 0
-      path: 
-      valueTypeName: 
-    entityTarget:
-      mode: 0
-      selection: 0
-      tag:
-        id: 0
-        path: 
-  rightVariable:
-    enabled: 1
-    scope: 1
-    writeOnTrue: 1
-    writeOnFalse: 1
-    entityBoolKey:
-      id: 90004
-      path: GameLogic.IsStateGreen
-      valueTypeName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-    entityTarget:
-      mode: 2
-      selection: 0
-      tag:
-        id: 1
-        path: System.SceneKernel
-  onLeftInlineAction:
-    _steps: []
-  onMiddleInlineAction:
-    _steps: []
-  onRightInlineAction:
-    _steps: []
-  onLeftWiringActions: []
-  onMiddleWiringActions: []
-  onRightWiringActions: []
-  currentState: 0
-  isTransitioning: 0
-  references:
-    version: 2
-    RefIds: []
---- !u!114 &3414104407144671585
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 671555836647534675}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e314f8ef1b0e0184f98805fee1480d0b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.InteractionVisualTargetMB
-  renderers:
-  - {fileID: 6277729963815296964}
-  - {fileID: 1850398029241615045}
-  - {fileID: 6123892973576590327}
-  - {fileID: 2070948089003844941}
-  - {fileID: 6919617951810988388}
 --- !u!1 &806327545529823619
 GameObject:
   m_ObjectHideFlags: 0
@@ -6220,39 +6027,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
---- !u!1 &1313060795067436359
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 9077075084982315387}
-  m_Layer: 0
-  m_Name: Controll
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &9077075084982315387
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1313060795067436359}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5140250912586376363}
-  - {fileID: 713472994434382250}
-  m_Father: {fileID: 2734984771565702484}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1357615439737440474
 GameObject:
   m_ObjectHideFlags: 0
@@ -7598,41 +7372,6 @@ MonoBehaviour:
   - {fileID: 2195357677041616176}
   godHandObjects:
   - {fileID: 7341742703653671422}
---- !u!1 &2832465867133464036
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2734984771565702484}
-  m_Layer: 0
-  m_Name: Visual
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2734984771565702484
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2832465867133464036}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.099999905, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
-  m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 9077075084982315387}
-  - {fileID: 4951528475821664408}
-  - {fileID: 934022535577001506}
-  - {fileID: 8091920700685931019}
-  m_Father: {fileID: 579831829095165264}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2932714513771279521
 GameObject:
   m_ObjectHideFlags: 0
@@ -9305,6 +9044,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9330,6 +9070,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9354,6 +9095,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9376,6 +9118,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9406,6 +9149,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9431,6 +9175,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9455,6 +9200,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9477,6 +9223,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9541,6 +9288,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9566,6 +9314,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9590,6 +9339,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9612,6 +9362,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9642,6 +9393,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9667,6 +9419,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9691,6 +9444,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9713,6 +9467,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9777,6 +9532,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9802,6 +9558,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9826,6 +9583,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9848,6 +9606,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9878,6 +9637,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9903,6 +9663,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -9927,6 +9688,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -9949,6 +9711,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10013,6 +9776,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10038,6 +9802,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10062,6 +9827,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10084,6 +9850,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10114,6 +9881,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10139,6 +9907,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10163,6 +9932,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10185,6 +9955,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10249,6 +10020,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10274,6 +10046,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10298,6 +10071,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10320,6 +10094,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10350,6 +10125,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10375,6 +10151,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10399,6 +10176,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10421,6 +10199,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10485,6 +10264,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10510,6 +10290,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10534,6 +10315,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10556,6 +10338,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10586,6 +10369,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10611,6 +10395,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -10635,6 +10420,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -10657,6 +10443,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26172,6 +25959,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26197,6 +25985,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -26221,6 +26010,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26243,6 +26033,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26274,6 +26065,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26299,6 +26091,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -26323,6 +26116,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26345,6 +26139,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26376,6 +26171,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26401,6 +26197,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -26425,6 +26222,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26447,6 +26245,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26478,6 +26277,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26503,6 +26303,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -26527,6 +26328,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26549,6 +26351,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -26569,6 +26372,7 @@ MonoBehaviour:
     resetWhenSelected: 1
     visualizationColor: {r: 0.9382466, g: 1, b: 0.08627451, a: 1}
     overrideRuntimePathEmission: 1
+    useVisualizationColorForRuntimePathEmission: 1
     runtimePathEmissionColor: {r: 0.9611671, g: 1, b: 0, a: 1}
     runtimePathActiveEmissionStrength: 2
     runtimePathInactiveEmissionStrength: 0
@@ -26580,9 +26384,7 @@ MonoBehaviour:
     useReactiveCondition: 0
     activeCondition:
       sourceKind: 0
-      evaluationMode: 0
       failurePolicy: 0
-      literal: 1
       entityValue:
         entitySourceKind: 0
         key:
@@ -26590,160 +26392,11 @@ MonoBehaviour:
           path: 
           valueTypeName: 
       localValue:
+        storeScope: 0
         key:
           id: 0
           path: 
           valueTypeName: 
-      entityAlive:
-        entity:
-          sourceKind: 0
-          evaluationMode: 0
-          failurePolicy: 0
-          entityValue:
-            entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          localValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          targetReference:
-            mode: 0
-            selection: 0
-            tag:
-              id: 0
-              path: 
-          fallbackKind: 0
-      compareFloat:
-        left:
-          sourceKind: 0
-          evaluationMode: 0
-          failurePolicy: 0
-          literal: 0
-          entityValue:
-            entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          localValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          distance:
-            fromEntity:
-              sourceKind: 0
-              evaluationMode: 0
-              failurePolicy: 0
-              entityValue:
-                entitySourceKind: 0
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              localValue:
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              targetReference:
-                mode: 0
-                selection: 0
-                tag:
-                  id: 0
-                  path: 
-              fallbackKind: 0
-            toEntity:
-              sourceKind: 0
-              evaluationMode: 0
-              failurePolicy: 0
-              entityValue:
-                entitySourceKind: 0
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              localValue:
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              targetReference:
-                mode: 0
-                selection: 0
-                tag:
-                  id: 0
-                  path: 
-              fallbackKind: 0
-          fallbackValue: 0
-        right:
-          sourceKind: 0
-          evaluationMode: 0
-          failurePolicy: 0
-          literal: 0
-          entityValue:
-            entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          localValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          distance:
-            fromEntity:
-              sourceKind: 0
-              evaluationMode: 0
-              failurePolicy: 0
-              entityValue:
-                entitySourceKind: 0
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              localValue:
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              targetReference:
-                mode: 0
-                selection: 0
-                tag:
-                  id: 0
-                  path: 
-              fallbackKind: 0
-            toEntity:
-              sourceKind: 0
-              evaluationMode: 0
-              failurePolicy: 0
-              entityValue:
-                entitySourceKind: 0
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              localValue:
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              targetReference:
-                mode: 0
-                selection: 0
-                tag:
-                  id: 0
-                  path: 
-              fallbackKind: 0
-          fallbackValue: 0
-        comparison: 0
-        epsilon: 0
       fallbackValue: 1
     useSignalGate: 0
     activateSignal:
@@ -26767,6 +26420,7 @@ MonoBehaviour:
     resetWhenSelected: 1
     visualizationColor: {r: 0.20400894, g: 1, b: 0, a: 1}
     overrideRuntimePathEmission: 1
+    useVisualizationColorForRuntimePathEmission: 1
     runtimePathEmissionColor: {r: 0.21211171, g: 1, b: 0, a: 1}
     runtimePathActiveEmissionStrength: 2
     runtimePathInactiveEmissionStrength: 0
@@ -26778,9 +26432,7 @@ MonoBehaviour:
     useReactiveCondition: 1
     activeCondition:
       sourceKind: 1
-      evaluationMode: 1
       failurePolicy: 0
-      literal: 1
       entityValue:
         entitySourceKind: 1
         key:
@@ -26788,160 +26440,11 @@ MonoBehaviour:
           path: 
           valueTypeName: 
       localValue:
+        storeScope: 0
         key:
           id: 0
           path: 
           valueTypeName: 
-      entityAlive:
-        entity:
-          sourceKind: 0
-          evaluationMode: 0
-          failurePolicy: 0
-          entityValue:
-            entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          localValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          targetReference:
-            mode: 0
-            selection: 0
-            tag:
-              id: 0
-              path: 
-          fallbackKind: 0
-      compareFloat:
-        left:
-          sourceKind: 0
-          evaluationMode: 0
-          failurePolicy: 0
-          literal: 0
-          entityValue:
-            entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          localValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          distance:
-            fromEntity:
-              sourceKind: 0
-              evaluationMode: 0
-              failurePolicy: 0
-              entityValue:
-                entitySourceKind: 0
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              localValue:
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              targetReference:
-                mode: 0
-                selection: 0
-                tag:
-                  id: 0
-                  path: 
-              fallbackKind: 0
-            toEntity:
-              sourceKind: 0
-              evaluationMode: 0
-              failurePolicy: 0
-              entityValue:
-                entitySourceKind: 0
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              localValue:
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              targetReference:
-                mode: 0
-                selection: 0
-                tag:
-                  id: 0
-                  path: 
-              fallbackKind: 0
-          fallbackValue: 0
-        right:
-          sourceKind: 0
-          evaluationMode: 0
-          failurePolicy: 0
-          literal: 0
-          entityValue:
-            entitySourceKind: 0
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          localValue:
-            key:
-              id: 0
-              path: 
-              valueTypeName: 
-          distance:
-            fromEntity:
-              sourceKind: 0
-              evaluationMode: 0
-              failurePolicy: 0
-              entityValue:
-                entitySourceKind: 0
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              localValue:
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              targetReference:
-                mode: 0
-                selection: 0
-                tag:
-                  id: 0
-                  path: 
-              fallbackKind: 0
-            toEntity:
-              sourceKind: 0
-              evaluationMode: 0
-              failurePolicy: 0
-              entityValue:
-                entitySourceKind: 0
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              localValue:
-                key:
-                  id: 0
-                  path: 
-                  valueTypeName: 
-              targetReference:
-                mode: 0
-                selection: 0
-                tag:
-                  id: 0
-                  path: 
-              fallbackKind: 0
-          fallbackValue: 0
-        comparison: 0
-        epsilon: 0
       fallbackValue: 1
     useSignalGate: 0
     activateSignal:
@@ -27061,140 +26564,6 @@ Transform:
   - {fileID: 2151727892928028429}
   m_Father: {fileID: 7395807594669307024}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &827793654368942537
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 2734984771565702484}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-      propertyPath: m_Name
-      value: LeverLeft
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
---- !u!4 &934022535577001506 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-  m_PrefabInstance: {fileID: 827793654368942537}
-  m_PrefabAsset: {fileID: 0}
---- !u!23 &2070948089003844941 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 11313d607339cf046a95d58cfd40e779, type: 3}
-  m_PrefabInstance: {fileID: 827793654368942537}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &1039340398556028481
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 9077075084982315387}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-      propertyPath: m_Name
-      value: LeverPoll
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
---- !u!4 &713472994434382250 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-  m_PrefabInstance: {fileID: 1039340398556028481}
-  m_PrefabAsset: {fileID: 0}
---- !u!23 &1850398029241615045 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 2ca1a9865f5ea6646adb3a2bb15eb04a, type: 3}
-  m_PrefabInstance: {fileID: 1039340398556028481}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1608376110534756985
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -27421,6 +26790,68 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff2c9ef42b222d44959459e10c6e647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!1001 &2671060271706232423
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6178714537794196283}
+    m_Modifications:
+    - target: {fileID: 3188648952488666676, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_Name
+      value: LeverObject1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -16.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 37.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+--- !u!4 &579831829095165264 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3250045130813209399, guid: 4c051874a196dbf4ebb2a60b4ae06e1d, type: 3}
+  m_PrefabInstance: {fileID: 2671060271706232423}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3621279419704144077
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28239,140 +27670,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
   m_PrefabInstance: {fileID: 4565350766672560645}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &4674577559477535552
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 9077075084982315387}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.00000008940696
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-      propertyPath: m_Name
-      value: LeverHandle
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
---- !u!4 &5140250912586376363 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-  m_PrefabInstance: {fileID: 4674577559477535552}
-  m_PrefabAsset: {fileID: 0}
---- !u!23 &6277729963815296964 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 0b01ece7952fdee479e24d13e437a0da, type: 3}
-  m_PrefabInstance: {fileID: 4674577559477535552}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &4845281212537343859
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 2734984771565702484}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: beeb750622562b74d8d2219480870280, type: 3}
-      propertyPath: m_Name
-      value: LeverMiddle
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: beeb750622562b74d8d2219480870280, type: 3}
---- !u!4 &4951528475821664408 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: beeb750622562b74d8d2219480870280, type: 3}
-  m_PrefabInstance: {fileID: 4845281212537343859}
-  m_PrefabAsset: {fileID: 0}
---- !u!23 &6123892973576590327 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: beeb750622562b74d8d2219480870280, type: 3}
-  m_PrefabInstance: {fileID: 4845281212537343859}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6075983555008181584
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28753,73 +28050,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 830568731f876344a80278d9e336cd9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Item.BonusObjectMB
---- !u!1001 &8630865546004313568
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 2734984771565702484}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-      propertyPath: m_Name
-      value: LeverRight
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
---- !u!23 &6919617951810988388 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-  m_PrefabInstance: {fileID: 8630865546004313568}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &8091920700685931019 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b472e4d7450e6bd459097d9ecb89db36, type: 3}
-  m_PrefabInstance: {fileID: 8630865546004313568}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &9014159121677379941
 PrefabInstance:
   m_ObjectHideFlags: 0

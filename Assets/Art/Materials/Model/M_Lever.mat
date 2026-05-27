@@ -28,7 +28,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 9ba0168fc1ab9a24b83d80cbcc06c6d0, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8b46fe840c8cdfb418784f3501cea388, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -90,9 +90,14 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
+    - _AdditionalFillMaxMask: 0.45
+    - _AdditionalLightAttenuationPower: 1.8
+    - _AdditionalLightAttenuationSmoothness: 0.08
+    - _AdditionalLightAttenuationStepCount: 3
     - _AdditionalLightColorInfluence: 0.776
     - _AdditionalLightIntensity: 0.431
     - _AdditionalLightMode: 2
+    - _AdditionalLightPaletteBlend: 0.65
     - _AdditionalLightShadowInfluence: 0.622
     - _AlbedoNoiseStrength: 0.18
     - _AlphaClip: 0
@@ -142,6 +147,8 @@ Material:
     - _LightBandNoiseStrength: 0.08
     - _LightStepCount: 5
     - _LightStepSmoothness: 0.219
+    - _MainLightColorInfluence: 0.2
+    - _MainLightIntensityResponse: 1
     - _Metallic: 0
     - _NoiseDistanceFadeEnd: 32
     - _NoiseDistanceFadeStart: 12

@@ -196,8 +196,6 @@ namespace BC.Rendering
             SetFloat(material, "_WrapLighting", 0.15f);
             SetFloat(material, "_BandContrast", 1f);
             SetFloat(material, "_BandOffset", 0f);
-            SetFloat(material, "_MainLightColorInfluence", 0.2f);
-            SetFloat(material, "_MainLightIntensityResponse", 1f);
             SetColor(material, "_DeepShadowColor", new Color(0.34f, 0.40f, 0.56f, 1f));
             SetColor(material, "_ShadowColor", new Color(0.56f, 0.63f, 0.79f, 1f));
             SetColor(material, "_MidColor", new Color(0.84f, 0.88f, 0.93f, 1f));
@@ -226,11 +224,6 @@ namespace BC.Rendering
             SetFloat(material, "_AdditionalLightIntensity", 0.5f);
             SetFloat(material, "_AdditionalLightShadowInfluence", 0.65f);
             SetFloat(material, "_AdditionalLightColorInfluence", 0.75f);
-            SetFloat(material, "_AdditionalLightAttenuationPower", 1.8f);
-            SetFloat(material, "_AdditionalLightAttenuationStepCount", 3f);
-            SetFloat(material, "_AdditionalLightAttenuationSmoothness", 0.08f);
-            SetFloat(material, "_AdditionalLightPaletteBlend", 0.65f);
-            SetFloat(material, "_AdditionalFillMaxMask", 0.45f);
 
             SetFloat(material, "_TriplanarBaseMapEnabled", 0f);
             SetFloat(material, "_TriplanarNormalMapEnabled", 0f);

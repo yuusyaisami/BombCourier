@@ -116,7 +116,7 @@ namespace BC.Base
             if (!TryResolveWriteMetadata(write, out ValueKeyDescriptor descriptor, out ValueStoreWriteValueKind effectiveKind))
                 return false;
 
-            ReactiveEvalContext evalContext = new ReactiveEvalContext(context.SceneKernel, context.SelfEntity, context.TriggerEntity, null);
+            ReactiveEvalContext evalContext = new ReactiveEvalContext(context.SceneKernel, context.SelfEntity, context.TriggerEntity);
 
             return effectiveKind switch
             {

@@ -13,6 +13,8 @@ namespace BC.Base.Tests
         private const string FloatSourceKindType = "BC.Base.ReactiveFloatSourceKind";
         private const string IntSourceKindType = "BC.Base.ReactiveIntSourceKind";
         private const string BoolSourceKindType = "BC.Base.ReactiveBoolSourceKind";
+        private const string SnapshotBoolSourceKindType = "BC.Base.ReactiveSnapshotBoolSourceKind";
+        private const string WatchedBoolSourceKindType = "BC.Base.ReactiveWatchedBoolSourceKind";
         private const string Vector3SourceKindType = "BC.Base.ReactiveVector3SourceKind";
         private const string EntitySourceKindType = "BC.Base.ReactiveEntitySourceKind";
         private const string StringSourceKindType = "BC.Base.ReactiveStringSourceKind";
@@ -22,6 +24,7 @@ namespace BC.Base.Tests
         private const string TargetResolveModeType = "BC.Base.EntityTargetResolveMode";
         private const string ValueStoreWriteKindType = "BC.ActionSystem.ValueStoreWriteValueKind";
         private const string ValueStoreWriteScopeType = "BC.ActionSystem.ValueStoreWriteStoreScope";
+        private const string KernelValueStoreScopeType = "BC.Base.ReactiveKernelValueStoreScope";
 
         private ScriptableObject host;
         private SerializedObject serializedObject;
@@ -82,14 +85,15 @@ namespace BC.Base.Tests
         }
 
         [Test]
-        public void ReactiveIntDrawerNormalizesLocalStoreContinuousToWatched()
+        public void ReactiveIntDrawerNormalizesKernelStoreContinuousToWatched()
         {
             SerializedProperty property = ReactiveValueTestUtility.FindRootProperty(serializedObject, "reactiveInt");
             PropertyDrawer drawer = ReactiveValueTestUtility.CreateDrawer("BC.Editor.ReactiveIntDrawer");
 
-            SetEnum(property.FindPropertyRelative("sourceKind"), IntSourceKindType, "LocalValueStore");
+            SetEnum(property.FindPropertyRelative("sourceKind"), IntSourceKindType, "KernelValueStore");
             SetEnum(property.FindPropertyRelative("evaluationMode"), EvaluationModeType, "Continuous");
-            AssignValueKey(property.FindPropertyRelative("localValue").FindPropertyRelative("key"), "BC.Base.ValueKeys+Local+Values", "Int0", typeof(int));
+            SetEnum(property.FindPropertyRelative("localValue").FindPropertyRelative("storeScope"), KernelValueStoreScopeType, "SceneKernel");
+            AssignValueKey(property.FindPropertyRelative("localValue").FindPropertyRelative("key"), "BC.Base.ValueKeys+Kernel+Gimmick", "SequenceIndex", typeof(int));
             ApplyChanges();
 
             NormalizeEvaluationMode(drawer, property);
@@ -120,6 +124,50 @@ namespace BC.Base.Tests
                 ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("right"), true)) +
                 ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("comparison"), true)) +
                 ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("epsilon"), true)) +
+                ControlDelta(EditorGUI.GetPropertyHeight(property.FindPropertyRelative("fallbackValue"), true)) -
+                EditorGUIUtility.standardVerticalSpacing;
+
+            Assert.That(drawer.GetPropertyHeight(property, GUIContent.none), Is.EqualTo(expectedHeight).Within(0.001f));
+        }
+
+        [Test]
+        public void ReactiveWatchedBoolDrawerShowsKernelStoreScopeAndFallbackHeight()
+        {
+            SerializedProperty property = ReactiveValueTestUtility.FindRootProperty(serializedObject, "reactiveWatchedBool");
+            PropertyDrawer drawer = ReactiveValueTestUtility.CreateDrawer("BC.Editor.ReactiveWatchedBoolDrawer");
+
+            SetEnum(property.FindPropertyRelative("sourceKind"), WatchedBoolSourceKindType, "KernelValueStore");
+            SetEnum(property.FindPropertyRelative("failurePolicy"), FailurePolicyType, "UseFallback");
+            SetEnum(property.FindPropertyRelative("localValue").FindPropertyRelative("storeScope"), KernelValueStoreScopeType, "ApplicationKernel");
+            AssignValueKey(property.FindPropertyRelative("localValue").FindPropertyRelative("key"), "BC.Base.ValueKeys+Kernel+Gimmick", "GlobalEnabled", typeof(bool));
+            ApplyChanges();
+
+            float expectedHeight =
+                ControlDelta(EditorGUIUtility.singleLineHeight) +
+                ControlDelta(EditorGUIUtility.singleLineHeight) +
+                ControlDelta(EditorGUI.GetPropertyHeight(property.FindPropertyRelative("localValue").FindPropertyRelative("storeScope"), true)) +
+                ControlDelta(EditorGUI.GetPropertyHeight(property.FindPropertyRelative("localValue").FindPropertyRelative("key"), true)) +
+                ControlDelta(EditorGUI.GetPropertyHeight(property.FindPropertyRelative("fallbackValue"), true)) -
+                EditorGUIUtility.standardVerticalSpacing;
+
+            Assert.That(drawer.GetPropertyHeight(property, GUIContent.none), Is.EqualTo(expectedHeight).Within(0.001f));
+            Assert.AreEqual((int)ReactiveValueTestUtility.ParseEnum(KernelValueStoreScopeType, "ApplicationKernel"), property.FindPropertyRelative("localValue").FindPropertyRelative("storeScope").enumValueIndex);
+        }
+
+        [Test]
+        public void ReactiveSnapshotBoolDrawerMeasuresLiteralAndFallbackHeight()
+        {
+            SerializedProperty property = ReactiveValueTestUtility.FindRootProperty(serializedObject, "valueStoreWrite").FindPropertyRelative("boolValue");
+            PropertyDrawer drawer = ReactiveValueTestUtility.CreateDrawer("BC.Editor.ReactiveSnapshotBoolDrawer");
+
+            SetEnum(property.FindPropertyRelative("sourceKind"), SnapshotBoolSourceKindType, "Literal");
+            SetEnum(property.FindPropertyRelative("failurePolicy"), FailurePolicyType, "UseFallback");
+            ApplyChanges();
+
+            float expectedHeight =
+                ControlDelta(EditorGUIUtility.singleLineHeight) +
+                ControlDelta(EditorGUIUtility.singleLineHeight) +
+                ControlDelta(EditorGUI.GetPropertyHeight(property.FindPropertyRelative("literal"), true)) +
                 ControlDelta(EditorGUI.GetPropertyHeight(property.FindPropertyRelative("fallbackValue"), true)) -
                 EditorGUIUtility.standardVerticalSpacing;
 

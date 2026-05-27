@@ -15,16 +15,18 @@ namespace BC.Base.Tests
                 object actor = CreateEntityRef(80u, 1);
                 object trigger = CreateEntityRef(81u, 1);
                 object localValueStore = ReactiveValueTestUtility.CreateInstance("BC.Base.ActionLocalValueStoreService");
-                object localFlagKey = ReactiveValueTestUtility.GetStaticFieldValue("BC.Base.ValueKeys+Local+Flags", "Flag0");
+                object kernelValueStore = ReactiveValueTestUtility.CreateInstance("BC.Base.KernelValueStoreService");
+                object kernelFlagKey = ReactiveValueTestUtility.GetStaticFieldValue("BC.Base.ValueKeys+Kernel+Gimmick", "GlobalEnabled");
                 object localIntKey = ReactiveValueTestUtility.GetStaticFieldValue("BC.Base.ValueKeys+Local+Values", "Int0");
-                object localFlagKeyReference = ReactiveValueTestUtility.InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(bool), localFlagKey);
+                object kernelFlagKeyReference = ReactiveValueTestUtility.InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(bool), kernelFlagKey);
                 object localIntKeyReference = ReactiveValueTestUtility.InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), localIntKey);
 
-                Assert.AreEqual(true, ReactiveValueTestUtility.InvokeGenericMethod(localValueStore, "Set", typeof(bool), localFlagKey, true));
+                ReactiveValueTestUtility.SetPropertyValue(sceneKernel, "KernelValueStore", kernelValueStore);
+                Assert.AreEqual(true, ReactiveValueTestUtility.InvokeGenericMethod(kernelValueStore, "Set", typeof(bool), kernelFlagKey, true));
 
                 object definition = ReactiveValueTestUtility.CreateInstance(
                     "BC.ActionSystem.IfStepRuntime",
-                    ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveBool", "LocalValueStore", localFlagKeyReference),
+                    ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveBool", "KernelValueStore", kernelFlagKeyReference),
                     CreateBlock(CreateLocalIntWriteStep(localIntKeyReference, 11)),
                     CreateBlock(CreateLocalIntWriteStep(localIntKeyReference, 29)));
                 object runtime = ReactiveValueTestUtility.InvokeMethod(definition, "CreateRuntime");
@@ -57,16 +59,18 @@ namespace BC.Base.Tests
                 object actor = CreateEntityRef(82u, 1);
                 object trigger = CreateEntityRef(83u, 1);
                 object localValueStore = ReactiveValueTestUtility.CreateInstance("BC.Base.ActionLocalValueStoreService");
-                object localFlagKey = ReactiveValueTestUtility.GetStaticFieldValue("BC.Base.ValueKeys+Local+Flags", "Flag0");
+                object kernelValueStore = ReactiveValueTestUtility.CreateInstance("BC.Base.KernelValueStoreService");
+                object kernelFlagKey = ReactiveValueTestUtility.GetStaticFieldValue("BC.Base.ValueKeys+Kernel+Gimmick", "GlobalEnabled");
                 object localIntKey = ReactiveValueTestUtility.GetStaticFieldValue("BC.Base.ValueKeys+Local+Values", "Int0");
-                object localFlagKeyReference = ReactiveValueTestUtility.InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(bool), localFlagKey);
+                object kernelFlagKeyReference = ReactiveValueTestUtility.InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(bool), kernelFlagKey);
                 object localIntKeyReference = ReactiveValueTestUtility.InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), localIntKey);
 
-                Assert.AreEqual(true, ReactiveValueTestUtility.InvokeGenericMethod(localValueStore, "Set", typeof(bool), localFlagKey, false));
+                ReactiveValueTestUtility.SetPropertyValue(sceneKernel, "KernelValueStore", kernelValueStore);
+                Assert.AreEqual(true, ReactiveValueTestUtility.InvokeGenericMethod(kernelValueStore, "Set", typeof(bool), kernelFlagKey, false));
 
                 object definition = ReactiveValueTestUtility.CreateInstance(
                     "BC.ActionSystem.IfStepRuntime",
-                    ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveBool", "LocalValueStore", localFlagKeyReference),
+                    ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveBool", "KernelValueStore", kernelFlagKeyReference),
                     CreateBlock(CreateLocalIntWriteStep(localIntKeyReference, 11)),
                     CreateBlock(CreateLocalIntWriteStep(localIntKeyReference, 29)));
                 object runtime = ReactiveValueTestUtility.InvokeMethod(definition, "CreateRuntime");

@@ -120,6 +120,37 @@ namespace BC.Editor.Tests
         }
 
         [Test]
+        public void ActionStepManagedReferenceUtility_CopyStep_PopulatesSystemClipboardWithShowTalkText()
+        {
+            string previousClipboard = EditorGUIUtility.systemCopyBuffer;
+
+            try
+            {
+                SerializedProperty talkStep = AddStep("BC.ActionSystem.ShowTalkStepAuthoring");
+                SerializedProperty talkRequestData = talkStep.FindPropertyRelative("talkRequestData");
+                SerializedProperty speakerCharacter = talkRequestData.FindPropertyRelative("speakerCharacter");
+
+                speakerCharacter.FindPropertyRelative("id").intValue = 2001;
+                speakerCharacter.FindPropertyRelative("path").stringValue = "Npc.Vanilla";
+                talkRequestData.FindPropertyRelative("speakerName").stringValue = string.Empty;
+                talkRequestData.FindPropertyRelative("dialogueText").stringValue = "Line 1\nLine 2";
+                ApplyChanges();
+
+                Type utilityType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepManagedReferenceUtility");
+                InvokeDeclaredMethod(utilityType, null, "CopyStep", talkStep);
+
+                Assert.AreEqual("バニラ: Line 1 Line 2", EditorGUIUtility.systemCopyBuffer);
+            }
+            finally
+            {
+                EditorGUIUtility.systemCopyBuffer = previousClipboard;
+
+                Type clipboardType = GetTypeByFullName("BC.Editor.ActionSystem.ActionStepClipboard");
+                InvokeDeclaredMethod(clipboardType, null, "Clear");
+            }
+        }
+
+        [Test]
         public void InlineActionEditorState_CommitsAndCancelsRenameState()
         {
             SerializedProperty stepProperty = AddStep("BC.ActionSystem.WaitFramesStepAuthoring");

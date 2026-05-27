@@ -35,8 +35,6 @@ Recommended values assume the M14 validation flow in ESL_TestRoom and ESL_Lighti
 | _WrapLighting | 0-1 | 0.15 | 0.1-0.3 | Use to keep broad walls from collapsing to black. |
 | _BandContrast | 0.25-2 | 1 | 0.7-1.3 | Push gently before changing all band colors. |
 | _BandOffset | -1 to 1 | 0 | -0.1 to 0.1 | Prefer small offsets. |
-| _MainLightColorInfluence | 0-1 | 0.2 | 0.1-0.25 | Keep low so the palette drives the look more than the raw Unity light color. |
-| _MainLightIntensityResponse | 0.25-8 | 1 | 0.8-1.5 | Higher values compress the bright core of the main light. |
 | _DeepShadowColor | Color | cool shadow | Preset-owned | Lowest band color. |
 | _ShadowColor | Color | cool shadow | Preset-owned | Main shadow tint. |
 | _MidColor | Color | pale cool | Preset-owned | Middle band color. |
@@ -90,11 +88,6 @@ Recommended values assume the M14 validation flow in ESL_TestRoom and ESL_Lighti
 | _AdditionalLightIntensity | 0-1 | 0.5 | 0-0.6 | Lower values keep point and spot lights supportive rather than dominant. |
 | _AdditionalLightShadowInfluence | 0-1 | 0.65 | 0.4-0.8 | Preserve stylized readability when point / spot lights cast shadows. |
 | _AdditionalLightColorInfluence | 0-1 | 0.75 | 0.5-0.85 | Lower values neutralize colored fill lights. |
-| _AdditionalLightAttenuationPower | 0.25-8 | 1.8 | 1.5-2.5 | Higher values tighten the lit core and reduce round light blobs. |
-| _AdditionalLightAttenuationStepCount | 1-5 | 3 | 3-4 | Controls how many attenuation steps each local light uses. |
-| _AdditionalLightAttenuationSmoothness | 0-0.5 | 0.08 | 0.04-0.12 | Lower values make the attenuation bands harder. |
-| _AdditionalLightPaletteBlend | 0-1 | 0.65 | 0.35-0.7 | Higher values bias local lights back toward the environment palette. |
-| _AdditionalFillMaxMask | 0-1 | 0.45 | 0.25-0.5 | Caps FillOnly so it lifts shadows without washing the room. |
 
 ## Triplanar
 

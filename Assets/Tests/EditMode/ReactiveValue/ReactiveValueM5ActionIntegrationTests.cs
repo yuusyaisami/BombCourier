@@ -313,7 +313,7 @@ namespace BC.Base.Tests
         }
 
         [Test]
-        public void SetValueStoreValueStepRuntimeWritesLocalIntAndReactiveBindingReadsIt()
+        public void ReactiveKernelValueStoreBindingReadsSceneKernelValue()
         {
             object sceneKernel = CreateConfiguredSceneKernel();
 
@@ -325,34 +325,15 @@ namespace BC.Base.Tests
 
                 Assert.IsTrue(TryGetExecution(actionService, handle, out object execution));
 
-                object context = GetPropertyValue(execution, "Context");
-                object localIntKey = GetStaticFieldValue("BC.Base.ValueKeys+Local+Values", "Int0");
-                object localIntKeyReference = InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), localIntKey);
-                object definition = CreateInstance(
-                    "BC.ActionSystem.SetValueStoreValueStepRuntime",
-                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteStoreScope"), "Local"),
-                    InvokeStatic("BC.Base.EntityTargetReference", "Self"),
-                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteValueKind"), "Int"),
-                    localIntKeyReference,
-                    InvokeStatic("BC.Base.ReactiveBool", "LiteralValue", false),
-                    InvokeStatic("BC.Base.ReactiveInt", "LiteralValue", 42),
-                    InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 0f),
-                    InvokeStatic("BC.Base.ReactiveString", "LiteralValue", string.Empty),
-                    InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
-                    InvokeStatic("BC.Base.ReactiveFaceExpressionId", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.FaceExpressionId"), "Neutral")),
-                    InvokeStatic("BC.Base.ReactiveEntityMoveState", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")));
+                object kernelIntKey = GetStaticFieldValue("BC.Base.ValueKeys+Kernel+Gimmick", "SequenceIndex");
+                object kernelIntKeyReference = InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), kernelIntKey);
+                object kernelValueStore = GetPropertyValue(sceneKernel, "KernelValueStore");
 
-                object runtime = InvokeMethod(definition, "CreateRuntime");
-                object status = InvokeMethod(runtime, "Tick", context, 8);
+                Assert.AreEqual(true, InvokeGenericMethod(kernelValueStore, "Set", typeof(int), kernelIntKey, 42));
 
-                Assert.AreEqual("Continue", status.ToString());
-
-                object localValueStore = GetFieldValue(context, "LocalValueStore");
-                Assert.AreEqual(42, InvokeGenericMethod(localValueStore, "Get", typeof(int), localIntKey));
-
-                object localReactive = InvokeStatic("BC.Base.ReactiveInt", "LocalValueStore", localIntKeyReference);
+                object kernelReactive = InvokeStatic("BC.Base.ReactiveInt", "KernelValueStore", kernelIntKeyReference);
                 object scope = GetReactiveScope(execution);
-                object binding = InvokeMethod(scope, "Bind", localReactive);
+                object binding = InvokeMethod(scope, "Bind", kernelReactive);
 
                 AssertSuccessfulResult(InvokeMethod(binding, "Read"), 42);
             }

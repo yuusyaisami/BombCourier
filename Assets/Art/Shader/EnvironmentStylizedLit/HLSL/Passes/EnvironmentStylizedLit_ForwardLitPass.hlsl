@@ -185,31 +185,6 @@ half4 ESL_ComposeFaceAndEdge(half3 faceColor, half faceAlpha, half3 edgeColor, h
     return half4(premultipliedColor / finalAlpha, finalAlpha);
 }
 
-// Opaque面のみDecal受信を適用します。DBufferが無効な経路では入力をそのまま保持します。
-void ESL_ApplyDecalToSurfaceData(float4 positionHCS, inout ESL_SurfaceData surfaceData, inout ESL_InputData inputData)
-{
-    if (_ReceiveDecal <= 0.5 || !ESL_IsOpaqueSurfaceMode())
-    {
-        return;
-    }
-
-    #if defined(_DBUFFER)
-    half3 albedo = surfaceData.albedo;
-    half3 specular = 0.0;
-    half3 normalWS = inputData.normalWS;
-    half metallic = surfaceData.metallic;
-    half occlusion = surfaceData.occlusion;
-    half smoothness = surfaceData.smoothness;
-    ApplyDecal(positionHCS, albedo, specular, normalWS, metallic, occlusion, smoothness);
-
-    surfaceData.albedo = albedo;
-    surfaceData.metallic = metallic;
-    surfaceData.occlusion = occlusion;
-    surfaceData.smoothness = smoothness;
-    inputData.normalWS = normalize(normalWS);
-    #endif
-}
-
 // ForwardLitフラグメント本体。
 // Surface生成 -> StylizedDiffuse評価 -> Debug/Fog -> 必要ならエッジ合成の順で処理します。
 half4 ESL_Fragment(ESL_Varyings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_Target
@@ -225,7 +200,6 @@ half4 ESL_Fragment(ESL_Varyings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMAN
     ESL_SurfaceData surfaceData = ESL_BuildSurfaceData(surfaceContext);
     ESL_ApplyAlphaClip(surfaceData.alpha);
     ESL_InputData inputData = ESL_BuildInputData(input, surfaceData, faceSign);
-    ESL_ApplyDecalToSurfaceData(input.positionHCS, surfaceData, inputData);
     ESL_StylizedDiffuseData diffuseData = ESL_EvaluateStylizedDiffuse(inputData, surfaceData);
 
     // 既存Emissionに、新規2系統の発光加算を重ねて最終発光を作ります。

@@ -58,6 +58,19 @@ namespace BC.Editor.ActionSystem
             return string.IsNullOrWhiteSpace(summary) ? "Unconfigured" : Normalize(summary);
         }
 
+        internal static string GetClipboardText(SerializedProperty stepProperty)
+        {
+            if (stepProperty == null)
+                return string.Empty;
+
+            object step = stepProperty.managedReferenceValue;
+
+            if (step is ShowTalkStepAuthoring)
+                return BuildShowTalkClipboardText(stepProperty);
+
+            return GetSummary(stepProperty);
+        }
+
         internal static string GetStateText(SerializedProperty stepProperty)
         {
             IReadOnlyList<ActionStepBadge> badges = ActionStepChildSlotUtility.GetBadges(stepProperty);
@@ -149,6 +162,64 @@ namespace BC.Editor.ActionSystem
             return bodySummary == "Empty talk"
                 ? talkState
                 : $"{talkState} | {bodySummary}";
+        }
+
+        private static string BuildShowTalkClipboardText(SerializedProperty stepProperty)
+        {
+            SerializedProperty requestProperty = stepProperty.FindPropertyRelative("talkRequestData");
+
+            if (requestProperty == null)
+                return string.Empty;
+
+            string speaker = BuildSpeakerClipboardName(requestProperty);
+            string text = BuildTextSnippet(requestProperty.FindPropertyRelative("dialogueText")?.stringValue, string.Empty);
+
+            if (string.IsNullOrWhiteSpace(speaker))
+                return text;
+
+            if (string.IsNullOrWhiteSpace(text))
+                return speaker;
+
+            return $"{speaker}: {text}";
+        }
+
+        private static string BuildSpeakerClipboardName(SerializedProperty requestProperty)
+        {
+            string speaker = ResolveCharacterDisplayName(requestProperty.FindPropertyRelative("speakerCharacter"));
+
+            if (!string.IsNullOrWhiteSpace(speaker))
+                return speaker;
+
+            string speakerName = Normalize(requestProperty.FindPropertyRelative("speakerName")?.stringValue);
+            return speakerName;
+        }
+
+        private static string ResolveCharacterDisplayName(SerializedProperty characterProperty)
+        {
+            if (characterProperty == null)
+                return string.Empty;
+
+            SerializedProperty idProperty = characterProperty.FindPropertyRelative("id");
+            SerializedProperty pathProperty = characterProperty.FindPropertyRelative("path");
+
+            if (idProperty != null && idProperty.intValue != 0 && CharacterIdRegistry.TryGetDescriptor(new CharacterId(idProperty.intValue), out CharacterIdDescriptor descriptorById))
+                return NormalizeCharacterDisplayName(descriptorById);
+
+            if (pathProperty != null && !string.IsNullOrWhiteSpace(pathProperty.stringValue) && CharacterIdRegistry.TryGetDescriptor(pathProperty.stringValue, out CharacterIdDescriptor descriptorByPath))
+                return NormalizeCharacterDisplayName(descriptorByPath);
+
+            return string.Empty;
+        }
+
+        private static string NormalizeCharacterDisplayName(CharacterIdDescriptor descriptor)
+        {
+            if (!string.IsNullOrWhiteSpace(descriptor.DisplayName))
+                return Normalize(descriptor.DisplayName);
+
+            if (!string.IsNullOrWhiteSpace(descriptor.Path))
+                return Normalize(descriptor.Path);
+
+            return string.Empty;
         }
 
         private static string BuildHideTalkSummary(SerializedProperty stepProperty)
@@ -371,7 +442,7 @@ namespace BC.Editor.ActionSystem
             {
                 ReactiveBoolSourceKind.Literal => property.FindPropertyRelative("literal")?.boolValue == true ? "True" : "False",
                 ReactiveBoolSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
-                ReactiveBoolSourceKind.LocalValueStore => BuildLocalValueSummary(property.FindPropertyRelative("localValue")),
+                ReactiveBoolSourceKind.KernelValueStore => BuildKernelValueSummary(property.FindPropertyRelative("localValue")),
                 ReactiveBoolSourceKind.EntityAlive => $"Alive({BuildReactiveEntitySummary(property.FindPropertyRelative("entityAlive")?.FindPropertyRelative("entity"))})",
                 ReactiveBoolSourceKind.CompareFloat => BuildCompareFloatSummary(property.FindPropertyRelative("compareFloat")),
                 _ => "Unconfigured",
@@ -387,7 +458,7 @@ namespace BC.Editor.ActionSystem
             {
                 ReactiveIntSourceKind.Literal => (property.FindPropertyRelative("literal")?.intValue ?? 0).ToString(CultureInfo.InvariantCulture),
                 ReactiveIntSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
-                ReactiveIntSourceKind.LocalValueStore => BuildLocalValueSummary(property.FindPropertyRelative("localValue")),
+                ReactiveIntSourceKind.KernelValueStore => BuildKernelValueSummary(property.FindPropertyRelative("localValue")),
                 _ => "Unconfigured",
             };
         }
@@ -401,7 +472,7 @@ namespace BC.Editor.ActionSystem
             {
                 ReactiveFloatSourceKind.Literal => FormatFloat(property.FindPropertyRelative("literal")?.floatValue ?? 0f),
                 ReactiveFloatSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
-                ReactiveFloatSourceKind.LocalValueStore => BuildLocalValueSummary(property.FindPropertyRelative("localValue")),
+                ReactiveFloatSourceKind.KernelValueStore => BuildKernelValueSummary(property.FindPropertyRelative("localValue")),
                 ReactiveFloatSourceKind.Distance => "Distance",
                 _ => "Unconfigured",
             };
@@ -416,7 +487,7 @@ namespace BC.Editor.ActionSystem
             {
                 ReactiveStringSourceKind.Literal => BuildTextSnippet(property.FindPropertyRelative("literal")?.stringValue, "Empty text"),
                 ReactiveStringSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
-                ReactiveStringSourceKind.LocalValueStore => BuildLocalValueSummary(property.FindPropertyRelative("localValue")),
+                ReactiveStringSourceKind.KernelValueStore => BuildKernelValueSummary(property.FindPropertyRelative("localValue")),
                 _ => "Unconfigured",
             };
         }
@@ -478,7 +549,7 @@ namespace BC.Editor.ActionSystem
                 ReactiveEntitySourceKind.Self => "Self",
                 ReactiveEntitySourceKind.TriggerEntity => "Trigger",
                 ReactiveEntitySourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
-                ReactiveEntitySourceKind.LocalValueStore => BuildLocalValueSummary(property.FindPropertyRelative("localValue")),
+                ReactiveEntitySourceKind.KernelValueStore => BuildKernelValueSummary(property.FindPropertyRelative("localValue")),
                 ReactiveEntitySourceKind.TargetReference => BuildEntityTargetSummary(property.FindPropertyRelative("targetReference")),
                 _ => "Self",
             };
@@ -499,9 +570,19 @@ namespace BC.Editor.ActionSystem
             return $"{entity}:{key}";
         }
 
-        private static string BuildLocalValueSummary(SerializedProperty property)
+        private static string BuildKernelValueSummary(SerializedProperty property)
         {
-            return BuildValueKeySummary(property?.FindPropertyRelative("key"));
+            if (property == null)
+                return "No key";
+
+            string key = BuildValueKeySummary(property.FindPropertyRelative("key"));
+            SerializedProperty scopeProperty = property.FindPropertyRelative("storeScope");
+            string scope = scopeProperty != null &&
+                scopeProperty.enumValueIndex == (int)ReactiveKernelValueStoreScope.ApplicationKernel
+                ? "App"
+                : "Scene";
+
+            return $"{scope}:{key}";
         }
 
         private static string BuildEntityTargetSummary(SerializedProperty property)

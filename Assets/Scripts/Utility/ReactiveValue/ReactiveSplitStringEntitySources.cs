@@ -6,14 +6,14 @@ namespace BC.Base
     public enum ReactiveWatchedStringSourceKind
     {
         EntityValueStore = 0,
-        LocalValueStore = 1,
+        KernelValueStore = 1,
     }
 
     public enum ReactiveSnapshotStringSourceKind
     {
         Literal = 0,
         EntityValueStore = 1,
-        LocalValueStore = 2,
+        KernelValueStore = 2,
     }
 
     [Serializable]
@@ -22,13 +22,13 @@ namespace BC.Base
         [SerializeField] private ReactiveWatchedStringSourceKind sourceKind;
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private string fallbackValue;
 
         public ReactiveWatchedStringSourceKind SourceKind => sourceKind;
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public string FallbackValue => fallbackValue;
 
         public static ReactiveWatchedString EntityValueStore(
@@ -45,15 +45,15 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveWatchedString LocalValueStore(
+        public static ReactiveWatchedString KernelValueStore(
             ValueKeyReference key,
             string fallbackValue = "")
         {
             return new ReactiveWatchedString
             {
-                sourceKind = ReactiveWatchedStringSourceKind.LocalValueStore,
+                sourceKind = ReactiveWatchedStringSourceKind.KernelValueStore,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
                 fallbackValue = fallbackValue ?? string.Empty,
             };
         }
@@ -66,14 +66,14 @@ namespace BC.Base
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private string literal;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private string fallbackValue;
 
         public ReactiveSnapshotStringSourceKind SourceKind => sourceKind;
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public string Literal => literal;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public string FallbackValue => fallbackValue;
 
         public static ReactiveSnapshotString LiteralValue(string value)
@@ -102,15 +102,15 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveSnapshotString LocalValueStore(
+        public static ReactiveSnapshotString KernelValueStore(
             ValueKeyReference key,
             string fallbackValue = "")
         {
             return new ReactiveSnapshotString
             {
-                sourceKind = ReactiveSnapshotStringSourceKind.LocalValueStore,
+                sourceKind = ReactiveSnapshotStringSourceKind.KernelValueStore,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
                 fallbackValue = fallbackValue ?? string.Empty,
             };
         }
@@ -119,7 +119,7 @@ namespace BC.Base
     public enum ReactiveWatchedEntityRefSourceKind
     {
         EntityValueStore = 0,
-        LocalValueStore = 1,
+        KernelValueStore = 1,
     }
 
     public enum ReactiveSnapshotEntityRefSourceKind
@@ -127,7 +127,7 @@ namespace BC.Base
         Self = 0,
         TriggerEntity = 1,
         EntityValueStore = 2,
-        LocalValueStore = 3,
+        KernelValueStore = 3,
         TargetReference = 4,
     }
 
@@ -137,13 +137,13 @@ namespace BC.Base
         [SerializeField] private ReactiveWatchedEntityRefSourceKind sourceKind;
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private ReactiveEntityFallbackKind fallbackKind;
 
         public ReactiveWatchedEntityRefSourceKind SourceKind => sourceKind;
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public ReactiveEntityFallbackKind FallbackKind => fallbackKind;
 
         public static ReactiveWatchedEntityRef EntityValueStore(
@@ -160,15 +160,15 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveWatchedEntityRef LocalValueStore(
+        public static ReactiveWatchedEntityRef KernelValueStore(
             ValueKeyReference key,
             ReactiveEntityFallbackKind fallbackKind = ReactiveEntityFallbackKind.None)
         {
             return new ReactiveWatchedEntityRef
             {
-                sourceKind = ReactiveWatchedEntityRefSourceKind.LocalValueStore,
+                sourceKind = ReactiveWatchedEntityRefSourceKind.KernelValueStore,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
                 fallbackKind = fallbackKind,
             };
         }
@@ -180,14 +180,14 @@ namespace BC.Base
         [SerializeField] private ReactiveSnapshotEntityRefSourceKind sourceKind;
         [SerializeField] private ReactiveFailurePolicy failurePolicy;
         [SerializeField] private ReactiveEntityValueSource entityValue;
-        [SerializeField] private ReactiveLocalValueSource localValue;
+        [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private EntityTargetReference targetReference;
         [SerializeField] private ReactiveEntityFallbackKind fallbackKind;
 
         public ReactiveSnapshotEntityRefSourceKind SourceKind => sourceKind;
         public ReactiveFailurePolicy FailurePolicy => failurePolicy;
         public ReactiveEntityValueSource EntityValue => entityValue;
-        public ReactiveLocalValueSource LocalValue => localValue;
+        public ReactiveKernelValueSource LocalValue => localValue;
         public EntityTargetReference TargetReferenceValue => targetReference;
         public ReactiveEntityFallbackKind FallbackKind => fallbackKind;
 
@@ -225,15 +225,15 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveSnapshotEntityRef LocalValueStore(
+        public static ReactiveSnapshotEntityRef KernelValueStore(
             ValueKeyReference key,
             ReactiveEntityFallbackKind fallbackKind = ReactiveEntityFallbackKind.None)
         {
             return new ReactiveSnapshotEntityRef
             {
-                sourceKind = ReactiveSnapshotEntityRefSourceKind.LocalValueStore,
+                sourceKind = ReactiveSnapshotEntityRefSourceKind.KernelValueStore,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                localValue = ReactiveLocalValueSource.Create(key),
+                localValue = ReactiveKernelValueSource.Create(key),
                 fallbackKind = fallbackKind,
             };
         }
