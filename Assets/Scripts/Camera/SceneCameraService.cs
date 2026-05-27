@@ -95,7 +95,7 @@ namespace BC.Camera
             focusActive = true;
             focusContext = context;
 
-            if (context.ObserverEntity.IsValid)
+            if (!trackedPlayerEntity.IsValid && context.ObserverEntity.IsValid)
                 SetTrackedPlayer(context.ObserverEntity);
             else
                 RefreshImmediateState();
@@ -107,7 +107,8 @@ namespace BC.Camera
             if (!focusActive && !focusContext.FocusTargetEntity.IsValid)
                 return;
 
-            presentationController.AlignThirdPersonYawToFocusObserver(ResolveFocusObserverEntity());
+            EntityRef alignTarget = trackedPlayerEntity.IsValid ? trackedPlayerEntity : ResolveFocusObserverEntity();
+            presentationController.AlignThirdPersonYawToFocusObserver(alignTarget);
             focusActive = false;
             focusContext = default;
             presentationController.ClearFocusFacing();
@@ -268,8 +269,10 @@ namespace BC.Camera
         // 注視時は observer を優先し、そうでない通常時は追跡中プレイヤーを使う。
         private EntityRef ResolvePresentationPlayerEntity()
         {
-            EntityRef observerEntity = ResolveFocusObserverEntity();
-            return observerEntity.IsValid ? observerEntity : trackedPlayerEntity;
+            if (trackedPlayerEntity.IsValid)
+                return trackedPlayerEntity;
+
+            return ResolveFocusObserverEntity();
         }
 
         // 現在の注視演出で「見る側」として扱う entity を返す。

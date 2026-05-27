@@ -10,7 +10,7 @@ namespace BC.Bomb
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class ChainExplosiveMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IExplosionImpactDetector
+    public sealed class ChainExplosiveMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IExplosionImpactDetector, ICarryReleaseOwnerCollisionGuard
     {
         public event Action<ChainExplosiveMB> Exploded;
         public event Action<ChainExplosiveMB> StartedFuse;
@@ -40,6 +40,7 @@ namespace BC.Bomb
         private bool exploded;
         private bool isHandled;
         private float remainingFuseTime;
+        private float ignoreOwnerCollisionUntilTime;
 
         private readonly List<Collider> ignoredHolderColliders = new(16);
         private readonly List<EntityImpactResponseMB> explosionImpactResponses = new(16);
@@ -84,11 +85,14 @@ namespace BC.Bomb
 
         private void OnDisable()
         {
+            ignoreOwnerCollisionUntilTime = 0f;
             ClearIgnoredHolderCollisions();
         }
 
         private void Update()
         {
+            TickReleaseOwnerCollisionIgnore();
+
             if (!fuseStarted || exploded)
                 return;
 
@@ -124,6 +128,7 @@ namespace BC.Bomb
                 return;
 
             isHandled = false;
+            ignoreOwnerCollisionUntilTime = 0f;
             ClearIgnoredHolderCollisions();
             transform.SetParent(null, true);
 
@@ -141,8 +146,30 @@ namespace BC.Bomb
                 return false;
 
             isHandled = false;
+            ignoreOwnerCollisionUntilTime = 0f;
             ClearIgnoredHolderCollisions();
             return CushionRigidbodyImpactApplier.Apply(transform, rb, impactResult);
+        }
+
+        public void IgnoreOwnerCollisionAfterRelease(Transform ownerRoot, float durationSeconds)
+        {
+            if (ownerRoot == null || explosiveCollider == null || durationSeconds <= 0f)
+                return;
+
+            ConfigureHeldHolderCollisionIgnore(ownerRoot);
+            ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
+        }
+
+        private void TickReleaseOwnerCollisionIgnore()
+        {
+            if (ignoreOwnerCollisionUntilTime <= 0f)
+                return;
+
+            if (Time.time < ignoreOwnerCollisionUntilTime)
+                return;
+
+            ignoreOwnerCollisionUntilTime = 0f;
+            ClearIgnoredHolderCollisions();
         }
 
         public void BeginFuse()
@@ -238,8 +265,8 @@ namespace BC.Bomb
             if (handlePoint == null || explosiveCollider == null)
                 return;
 
-            CharacterController ownerController = handlePoint.GetComponentInParent<CharacterController>();
-            Transform ownerRoot = ownerController != null ? ownerController.transform : handlePoint.root;
+            EntityMB ownerEntity = handlePoint.GetComponentInParent<EntityMB>();
+            Transform ownerRoot = ownerEntity != null ? ownerEntity.transform : handlePoint.root;
             if (ownerRoot == null)
                 return;
 

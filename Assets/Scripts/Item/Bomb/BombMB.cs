@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using BC.Base;
 using BC.Gimmick.Cushion;
@@ -65,7 +66,7 @@ namespace BC.Bomb
                 if (hit == null)
                     continue;
 
-                Vector3 hitPoint = hit.ClosestPoint(sourceTransform.position);
+                Vector3 hitPoint = ResolveSafeClosestPoint(hit, sourceTransform.position);
                 Vector3 direction = hitPoint - sourceTransform.position;
 
                 if (direction.sqrMagnitude <= 0.0001f)
@@ -101,6 +102,26 @@ namespace BC.Bomb
             }
 
             impactResponseBuffer.Clear();
+        }
+
+        private static Vector3 ResolveSafeClosestPoint(Collider collider, Vector3 origin)
+        {
+            if (collider == null)
+                return origin;
+
+            if (collider is BoxCollider || collider is SphereCollider || collider is CapsuleCollider)
+                return collider.ClosestPoint(origin);
+
+            if (collider is MeshCollider meshCollider)
+            {
+                if (meshCollider.convex)
+                    return meshCollider.ClosestPoint(origin);
+
+                // 非凸 MeshCollider は ClosestPoint が警告になるため bounds で近似する。
+                return meshCollider.bounds.ClosestPoint(origin);
+            }
+
+            return collider.bounds.ClosestPoint(origin);
         }
 
         private static void NotifyImpactDetector(Rigidbody hitRigidbody, Vector3 direction, float forceMagnitude)
@@ -165,7 +186,7 @@ namespace BC.Bomb
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class BombMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IBombImpactDetector, IExplosionImpactDetector, IInteractionPromptDetailTextProvider, IStageCheckpointParticipant
+    public sealed class BombMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IBombImpactDetector, IExplosionImpactDetector, IInteractionPromptDetailTextProvider, IStageCheckpointParticipant, ICarryReleaseOwnerCollisionGuard
     {
         public event Action<BombMB> Exploded;
         public event Action<BombMB> StartedFuse;
@@ -200,6 +221,7 @@ namespace BC.Bomb
         private bool isHandled;
         private float remainingFuseTime;
         private float ignoreImpactExplosionUntilTime;
+        private float ignoreOwnerCollisionUntilTime;
         private bool hasPreviousHeldPosition;
         private Vector3 previousHeldPosition;
         private float lastImpactThreshold;
@@ -325,12 +347,15 @@ namespace BC.Bomb
 
         private void OnDisable()
         {
+            ignoreOwnerCollisionUntilTime = 0f;
             ClearIgnoredPlayerCollisions();
             hasPreviousHeldPosition = false;
         }
 
         private void Update()
         {
+            TickReleaseOwnerCollisionIgnore();
+
             if (exploded)
                 return;
 
@@ -418,6 +443,10 @@ namespace BC.Bomb
             // 落下しないようにする
             rb.useGravity = false;
             ConfigureHeldPlayerCollisionIgnore(handlePoint);
+            LogBombDebug(
+                $"OnHandle scene={gameObject.scene.name} frame={Time.frameCount} handlePoint={handlePoint.name} handlePointRoot={DescribeTransform(handlePoint.root)} parentBefore={DescribeTransform(transform.parent)} " +
+                $"rbKinematic={rb.isKinematic} rbDetectCollisions={rb.detectCollisions} rbUseGravity={rb.useGravity} ignoredPlayerColliders={ignoredPlayerColliders.Count} " +
+                $"ignoreImpactUntil={ignoreImpactExplosionUntilTime:F3} ignoreOwnerUntil={ignoreOwnerCollisionUntilTime:F3}");
 
             transform.SetParent(handlePoint, true);
             transform.localPosition = Vector3.zero;
@@ -436,8 +465,13 @@ namespace BC.Bomb
             if (exploded)
                 return;
 
+            LogBombDebug(
+                $"OnRelease scene={gameObject.scene.name} frame={Time.frameCount} throwVelocity={throwVelocity} parentBefore={DescribeTransform(transform.parent)} " +
+                $"ignoredPlayerColliders={ignoredPlayerColliders.Count} ignoreImpactUntil={ignoreImpactExplosionUntilTime:F3} ignoreOwnerUntil={ignoreOwnerCollisionUntilTime:F3}");
+
             isHandled = false;
             ignoreImpactExplosionUntilTime = Time.time + impactExplosionGraceTime;
+            ignoreOwnerCollisionUntilTime = 0f;
             hasPreviousHeldPosition = false;
             ClearIgnoredPlayerCollisions();
 
@@ -484,7 +518,13 @@ namespace BC.Bomb
             RecordImpactForce(impactForce, explosionThreshold);
 
             if (impactForce >= explosionThreshold)
+            {
+                LogBombDebug(
+                    $"CollisionExplosionCandidate scene={gameObject.scene.name} frame={Time.frameCount} other={DescribeCollider(collision.collider)} " +
+                    $"rawImpactForce={rawImpactForce:F3} effectiveImpactForce={impactForce:F3} relativeVelocity={collision.relativeVelocity} " +
+                    $"ignoreImpactUntil={ignoreImpactExplosionUntilTime:F3} isHandled={isHandled}");
                 Explode();
+            }
         }
 
         public bool HandleCushionImpact(CushionImpactData impactData, CushionImpactResult impactResult)
@@ -493,6 +533,7 @@ namespace BC.Bomb
                 return false;
 
             isHandled = false;
+            ignoreOwnerCollisionUntilTime = 0f;
             ClearIgnoredPlayerCollisions();
             hasPreviousHeldPosition = false;
             ignoreImpactExplosionUntilTime = Time.time + impactExplosionGraceTime;
@@ -520,6 +561,18 @@ namespace BC.Bomb
             }
 
             return CushionRigidbodyImpactApplier.Apply(transform, rb, appliedResult);
+        }
+
+        public void IgnoreOwnerCollisionAfterRelease(Transform ownerRoot, float durationSeconds)
+        {
+            if (ownerRoot == null || bombCollider == null || durationSeconds <= 0f)
+                return;
+
+            ConfigureHeldPlayerCollisionIgnore(ownerRoot);
+            ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
+            LogBombDebug(
+                $"IgnoreOwnerCollisionAfterRelease scene={gameObject.scene.name} frame={Time.frameCount} ownerRoot={DescribeTransform(ownerRoot)} duration={durationSeconds:F3} " +
+                $"ignoredPlayerColliders={ignoredPlayerColliders.Count} ignoreOwnerUntil={ignoreOwnerCollisionUntilTime:F3}");
         }
 
         public void OnBombImpact(Vector3 direction, float impactForce)
@@ -615,6 +668,9 @@ namespace BC.Bomb
                 return;
 
             exploded = true;
+            LogBombDebug(
+                $"Explode scene={gameObject.scene.name} frame={Time.frameCount} position={transform.position} lastImpactForce={LastImpactForce:F3} threshold={lastImpactThreshold:F3} " +
+                $"isHandled={isHandled} fuseStarted={fuseStarted} remainingFuseTime={remainingFuseTime:F3} ignoredPlayerColliders={ignoredPlayerColliders.Count}");
             ClearIgnoredPlayerCollisions();
             hasPreviousHeldPosition = false;
 
@@ -666,9 +722,9 @@ namespace BC.Bomb
             if (handlePoint == null || bombCollider == null)
                 return;
 
-            CharacterController ownerController = handlePoint.GetComponentInParent<CharacterController>();
-            Transform ownerRoot = ownerController != null
-                ? ownerController.transform
+            EntityMB ownerEntity = handlePoint.GetComponentInParent<EntityMB>();
+            Transform ownerRoot = ownerEntity != null
+                ? ownerEntity.transform
                 : handlePoint.root;
 
             if (ownerRoot == null)
@@ -686,6 +742,10 @@ namespace BC.Bomb
                 Physics.IgnoreCollision(bombCollider, ownerCollider, true);
                 ignoredPlayerColliders.Add(ownerCollider);
             }
+
+            LogBombDebug(
+                $"ConfigureHeldPlayerCollisionIgnore scene={gameObject.scene.name} frame={Time.frameCount} handlePoint={DescribeTransform(handlePoint)} ownerEntity={DescribeTransform(ownerEntity != null ? ownerEntity.transform : null)} " +
+                $"ownerRoot={DescribeTransform(ownerRoot)} ownerColliderCount={ownerColliders.Length} ignoredCount={ignoredPlayerColliders.Count}");
         }
 
         private bool CanIgnorePlayerCollider(Collider ownerCollider)
@@ -706,6 +766,8 @@ namespace BC.Bomb
 
         private void ClearIgnoredPlayerCollisions()
         {
+            int ignoredCount = ignoredPlayerColliders.Count;
+
             if (bombCollider != null)
             {
                 for (int i = 0; i < ignoredPlayerColliders.Count; i++)
@@ -718,6 +780,26 @@ namespace BC.Bomb
             }
 
             ignoredPlayerColliders.Clear();
+
+            if (ignoredCount > 0)
+            {
+                LogBombDebug(
+                    $"ClearIgnoredPlayerCollisions scene={gameObject.scene.name} frame={Time.frameCount} clearedCount={ignoredCount} bombColliderEnabled={bombCollider != null && bombCollider.enabled}");
+            }
+        }
+
+        private void TickReleaseOwnerCollisionIgnore()
+        {
+            if (ignoreOwnerCollisionUntilTime <= 0f)
+                return;
+
+            if (Time.time < ignoreOwnerCollisionUntilTime)
+                return;
+
+            LogBombDebug(
+                $"TickReleaseOwnerCollisionIgnore scene={gameObject.scene.name} frame={Time.frameCount} ownerCollisionIgnoreExpired ignoreOwnerUntil={ignoreOwnerCollisionUntilTime:F3}");
+            ignoreOwnerCollisionUntilTime = 0f;
+            ClearIgnoredPlayerCollisions();
         }
 
         private sealed class BombCheckpointState
@@ -802,6 +884,73 @@ namespace BC.Bomb
             }
 
             return false;
+        }
+
+        private void LogBombDebug(string message)
+        {
+            if (!Debug.isDebugBuild && !Application.isEditor)
+                return;
+
+            Debug.Log($"[BombCarry] {name} :: {message}", this);
+        }
+
+        private static string DescribeTransform(Transform target)
+        {
+            return target != null ? target.name : "(null)";
+        }
+
+        private static string DescribeCollider(Collider collider)
+        {
+            if (collider == null)
+                return "(null)";
+
+            return $"{collider.name}(tag={collider.tag},layer={collider.gameObject.layer},trigger={collider.isTrigger},rb={(collider.attachedRigidbody != null ? collider.attachedRigidbody.name : "null")})";
+        }
+
+        private string BuildHeldCollisionDebugSummary()
+        {
+            Bounds bounds = bombCollider.bounds;
+            float probeRadius = bounds.extents.magnitude + Mathf.Max(0.0f, heldCollisionProbePadding);
+
+            int hitCount = Physics.OverlapSphereNonAlloc(
+                bounds.center,
+                probeRadius,
+                heldCollisionHits,
+                ~0,
+                QueryTriggerInteraction.Ignore);
+
+            StringBuilder builder = new StringBuilder(256);
+            builder.Append("probeRadius=").Append(probeRadius.ToString("F3"))
+                .Append(" hitCount=").Append(hitCount)
+                .Append(" ignoredPlayerColliders=").Append(ignoredPlayerColliders.Count)
+                .Append(" candidates=[");
+
+            int appendedCount = 0;
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider hit = heldCollisionHits[i];
+
+                if (hit == null)
+                    continue;
+
+                if (appendedCount > 0)
+                    builder.Append("; ");
+
+                builder.Append(ShouldIgnoreHeldCollision(hit) ? "skip:" : "hit:")
+                    .Append(DescribeCollider(hit));
+
+                appendedCount++;
+
+                if (appendedCount >= 8)
+                {
+                    builder.Append("; ...");
+                    break;
+                }
+            }
+
+            builder.Append(']');
+            return builder.ToString();
         }
 
         private bool ShouldIgnoreHeldCollision(Collider hit)

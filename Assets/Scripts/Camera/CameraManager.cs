@@ -242,6 +242,16 @@ namespace BC.Camera
             currentThirdPersonTarget = null;
         }
 
+        public void ClearThirdPersonTarget()
+        {
+            if (thirdPersonCamera == null)
+                return;
+
+            thirdPersonCamera.Follow = null;
+            thirdPersonCamera.LookAt = null;
+            currentThirdPersonTarget = null;
+        }
+
         // SceneCameraService が third person rig を補正できるように、必要コンポーネントをまとめて取り出す。
         public bool TryGetThirdPersonRig(out CinemachineThirdPersonFollow thirdPersonFollow, out CinemachineRotateWithFollowTarget rotateWithFollowTarget)
         {

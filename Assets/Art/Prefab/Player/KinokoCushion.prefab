@@ -143,6 +143,7 @@ GameObject:
   - component: {fileID: 1494632643632687833}
   - component: {fileID: 2469909993995623199}
   - component: {fileID: 2873683816355028704}
+  - component: {fileID: 2912906091872981857}
   m_Layer: 6
   m_Name: KinokoCushion
   m_TagString: Untagged
@@ -264,8 +265,8 @@ MonoBehaviour:
   - id: 1001
     path: Actor.Player
   bounceRate: 1
-  minBounceSpeed: 12
-  maxBounceSpeed: 30
+  minBounceSpeed: 6
+  maxBounceSpeed: 15
   convergenceBounceSpeed: 8
   minBounceOutputSpeedToApply: 0.1
   highJumpSpeedMultiplier: 1.5
@@ -280,6 +281,7 @@ MonoBehaviour:
   hardLandingTargetTags:
   - id: 1001
     path: Actor.Player
+  enableDebugLog: 1
 --- !u!114 &2469909993995623199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,6 +323,26 @@ MonoBehaviour:
   probeRadius: 0.2
   probeDistance: 2
   probeTriggerInteraction: 1
+--- !u!114 &2912906091872981857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9025351276914114289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a2160c8625a4f9a9b8e4b16a84e9b0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.RigidbodySupportRiderMB
+  targetRigidbody: {fileID: 8048606531051936782}
+  maxSupportAngle: 55
+  ignoreWhenKinematic: 1
+  ignoreWhenParented: 1
+  carryPositionRate: 1
+  carryVelocityRate: 1
+  maxCarryCorrectionSpeed: 30
+  maxSupportVelocity: 30
 --- !u!1001 &7242170216207396790
 PrefabInstance:
   m_ObjectHideFlags: 0

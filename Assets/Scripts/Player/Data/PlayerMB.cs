@@ -269,8 +269,12 @@ namespace BC.Base
             {
                 bodyRigidbody.position = position;
                 bodyRigidbody.rotation = rotation;
-                bodyRigidbody.linearVelocity = Vector3.zero;
-                bodyRigidbody.angularVelocity = Vector3.zero;
+
+                if (!bodyRigidbody.isKinematic)
+                {
+                    bodyRigidbody.linearVelocity = Vector3.zero;
+                    bodyRigidbody.angularVelocity = Vector3.zero;
+                }
             }
 
             transform.position = position;

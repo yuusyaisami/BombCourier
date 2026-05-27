@@ -635,8 +635,10 @@ namespace BC.Gimmick.FilterObject
 
             public FilterIgnoreKey(Collider blockingCollider, Collider otherCollider)
             {
+#pragma warning disable CS0618
                 blockingColliderInstanceId = blockingCollider != null ? blockingCollider.GetInstanceID() : 0;
                 otherColliderInstanceId = otherCollider != null ? otherCollider.GetInstanceID() : 0;
+#pragma warning restore CS0618
             }
 
             public bool Equals(FilterIgnoreKey other)

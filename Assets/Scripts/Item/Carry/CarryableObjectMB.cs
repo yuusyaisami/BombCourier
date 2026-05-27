@@ -1,22 +1,25 @@
 using System.Collections.Generic;
 using BC.Base;
-using BC.Item;
+using BC.Player;
 using UnityEngine;
 
-namespace BC.Gimmick.Cushion
+namespace BC.Item
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class CushionMB : MonoBehaviour, ICarryableItem, ICushionImpactSource, ICarryReleaseOwnerCollisionGuard
+    public sealed class CarryableObjectMB : MonoBehaviour, ICarryableItem, ICarryReleaseOwnerCollisionGuard, IInteractionPromptDetailTextProvider
     {
         [Header("Carry")]
-        [Tooltip("このクッションを持ち運び可能にするかを指定します。")]
+        [Tooltip("このオブジェクトを持ち運び可能にするかを指定します。")]
         [SerializeField] private bool canBeCarried = true;
 
+        [Header("Prompt")]
+        [Tooltip("プロンプト詳細表示に使う任意テキストです。空なら詳細表示は出しません。")]
+        [SerializeField, TextArea] private string promptDetailText = string.Empty;
+
         private Rigidbody rb;
-        private Collider cushionCollider;
-        private EntityMB entityMB;
+        private Collider objectCollider;
         private bool isHandled;
         private float ignoreOwnerCollisionUntilTime;
         private readonly List<Collider> ignoredHolderColliders = new(16);
@@ -24,14 +27,12 @@ namespace BC.Gimmick.Cushion
         public Transform ItemTransform => transform;
         public bool IsHandled => isHandled;
         public bool CanBeCarried => canBeCarried && enabled && gameObject.activeInHierarchy;
-        public Transform CushionImpactRoot => transform;
-        public EntityTagId CushionImpactTag => ResolveImpactTag();
+        public string PromptDetailText => promptDetailText ?? string.Empty;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
-            cushionCollider = GetComponent<Collider>();
-            entityMB = GetComponentInParent<EntityMB>();
+            objectCollider = GetComponent<Collider>();
         }
 
         private void OnDisable()
@@ -59,6 +60,7 @@ namespace BC.Gimmick.Cushion
 
             isHandled = true;
 
+            // 掴んでいる間は物理挙動を止め、ハンドル位置に追従させる。
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
@@ -90,76 +92,24 @@ namespace BC.Gimmick.Cushion
             rb.AddForce(throwVelocity, ForceMode.VelocityChange);
         }
 
-        public bool HandleCushionImpact(CushionImpactData impactData, CushionImpactResult impactResult)
-        {
-            if (!impactResult.IsHandled || rb == null)
-                return false;
-
-            isHandled = false;
-            ignoreOwnerCollisionUntilTime = 0f;
-            ClearIgnoredHolderCollisions();
-            return CushionRigidbodyImpactApplier.Apply(transform, rb, impactResult);
-        }
-
         public void IgnoreOwnerCollisionAfterRelease(Transform ownerRoot, float durationSeconds)
         {
-            if (ownerRoot == null || cushionCollider == null || durationSeconds <= 0f)
+            if (ownerRoot == null || objectCollider == null || durationSeconds <= 0f)
                 return;
 
             ConfigureHeldHolderCollisionIgnore(ownerRoot);
             ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
-            LogCushionCarryDebug($"IgnoreOwnerCollisionAfterRelease owner={ownerRoot.name} duration={durationSeconds:F3} ignoredCount={ignoredHolderColliders.Count}");
-        }
-
-        private void OnCollisionEnter(Collision collision)
-        {
-            if (isHandled || rb == null || cushionCollider == null)
-                return;
-
-            CushionSurfaceMB surface = collision.collider.GetComponentInParent<CushionSurfaceMB>();
-
-            if (surface == null)
-                return;
-
-            ContactPoint contact = collision.contactCount > 0 ? collision.GetContact(0) : default;
-            float impactForce = collision.impulse.magnitude / Mathf.Max(Time.fixedDeltaTime, 0.0001f);
-            CushionImpactData impactData = new CushionImpactData(
-                gameObject,
-                transform,
-                entityMB,
-                CushionImpactTag,
-                rb,
-                cushionCollider,
-                collision.contactCount > 0 ? contact.point : transform.position,
-                collision.contactCount > 0 ? contact.normal : -collision.relativeVelocity.normalized,
-                rb.linearVelocity,
-                impactForce);
-
-            if (surface.TryEvaluate(impactData, out CushionImpactResult result))
-            {
-                HandleCushionImpact(impactData, result);
-            }
-        }
-
-        private EntityTagId ResolveImpactTag()
-        {
-            if (entityMB != null && entityMB.Tag.IsValid)
-                return entityMB.Tag;
-
-            return EntityTags.Gimmick.Cushion.Id;
         }
 
         private void ConfigureHeldHolderCollisionIgnore(Transform handlePoint)
         {
             ClearIgnoredHolderCollisions();
 
-            if (handlePoint == null || cushionCollider == null)
+            if (handlePoint == null || objectCollider == null)
                 return;
 
             EntityMB ownerEntity = handlePoint.GetComponentInParent<EntityMB>();
-            Transform ownerRoot = ownerEntity != null
-                ? ownerEntity.transform
-                : handlePoint.root;
+            Transform ownerRoot = ownerEntity != null ? ownerEntity.transform : handlePoint.root;
 
             if (ownerRoot == null)
                 return;
@@ -173,17 +123,15 @@ namespace BC.Gimmick.Cushion
                 if (!CanIgnoreHolderCollider(ownerCollider))
                     continue;
 
-                Physics.IgnoreCollision(cushionCollider, ownerCollider, true);
+                Physics.IgnoreCollision(objectCollider, ownerCollider, true);
                 ignoredHolderColliders.Add(ownerCollider);
             }
-
-            LogCushionCarryDebug($"ConfigureHeldHolderCollisionIgnore owner={ownerRoot.name} ownerColliderCount={ownerColliders.Length} ignoredCount={ignoredHolderColliders.Count}");
         }
 
         private bool CanIgnoreHolderCollider(Collider ownerCollider)
         {
             if (ownerCollider == null ||
-                ownerCollider == cushionCollider ||
+                ownerCollider == objectCollider ||
                 !ownerCollider.enabled ||
                 !ownerCollider.gameObject.activeInHierarchy)
             {
@@ -198,26 +146,18 @@ namespace BC.Gimmick.Cushion
 
         private void ClearIgnoredHolderCollisions()
         {
-            if (cushionCollider != null)
+            if (objectCollider != null)
             {
                 for (int i = 0; i < ignoredHolderColliders.Count; i++)
                 {
                     Collider ignored = ignoredHolderColliders[i];
 
                     if (ignored != null)
-                        Physics.IgnoreCollision(cushionCollider, ignored, false);
+                        Physics.IgnoreCollision(objectCollider, ignored, false);
                 }
             }
 
             ignoredHolderColliders.Clear();
-            LogCushionCarryDebug("ClearIgnoredHolderCollisions");
-        }
-
-        [System.Diagnostics.Conditional("UNITY_EDITOR")]
-        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
-        private void LogCushionCarryDebug(string message)
-        {
-            Debug.Log($"[CushionCarry] {name} :: {message}", this);
         }
     }
 }

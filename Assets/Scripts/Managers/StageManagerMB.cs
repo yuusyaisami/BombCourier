@@ -61,7 +61,12 @@ namespace BC.Manager
             }
 
             StageData data = stageData.StageData[stageIndex];
-            GameObject stageInstance = Instantiate(data.stagePrefab, stageRoot);
+            Transform parent = stageRoot != null && stageRoot.gameObject.scene.name != "DontDestroyOnLoad"
+                ? stageRoot
+                : null;
+            GameObject stageInstance = parent != null
+                ? Instantiate(data.stagePrefab, parent)
+                : Instantiate(data.stagePrefab);
             this.stageInstance = stageInstance.transform;
             return ResolveStageRuntime(stageInstance, data);
         }

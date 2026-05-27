@@ -88,7 +88,9 @@ namespace BC.Base
         [Header("Runtime Debug")]
         [SerializeField] private float lastLandingDownwardSpeed;
         [SerializeField] private float lastLandingFallDistance;
+    #pragma warning disable CS0414
         [SerializeField] private bool lastLandingSuppressedByCushion;
+    #pragma warning restore CS0414
 
         private IEntityRagdollController ragdollController;
         private IAnimatorParameterController animatorParameterController;

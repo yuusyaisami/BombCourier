@@ -47,10 +47,24 @@ namespace BC.Player
         [SerializeField, Min(0f)] private float dropForwardVelocity = 0.75f;
         [Tooltip("ドロップ時にキャリア速度へ掛ける平面成分の割合です。")]
         [SerializeField, Range(0f, 1f)] private float dropCarrierPlanarVelocityFactor = 0.35f;
+        [Tooltip("投擲直後に、投げた本人との衝突を無視する時間です。")]
+        [SerializeField, Min(0f)] private float throwOwnerCollisionIgnoreDuration = 0.2f;
         [Tooltip("手ぶら状態で投擲予測を出し始めるまでの保持時間です。")]
         [SerializeField, Min(0f)] private float emptyHandThrowPreviewHoldTime = 0.2f;
         [Tooltip("カメラ forward に加える上向き補正角度です。")]
         [SerializeField, Range(0f, 30f)] private float throwUpwardCompensationAngle = 8f;
+
+        [Header("Release Safety")]
+        [Tooltip("リリース時にプレイヤーと重ならないよう、前方へ追加する最小オフセットです。")]
+        [SerializeField, Min(0.0f)] private float releasePositionSafetyMargin = 0.06f;
+        [Tooltip("安全位置探索で前方へ試行する最大距離です。")]
+        [SerializeField, Min(0.0f)] private float releasePositionSearchDistance = 0.8f;
+        [Tooltip("安全位置探索の分割数です。大きいほど高精度ですが負荷が増えます。")]
+        [SerializeField, Min(1)] private int releasePositionSearchSteps = 12;
+        [Tooltip("地面めり込み回避のため、リリース位置に加える上方向オフセットです。")]
+        [SerializeField] private float releasePositionVerticalBias = 0.02f;
+        [Tooltip("リリース位置補正の詳細ログを出力します。")]
+        [SerializeField] private bool enableReleaseSafetyDebugLog;
 
         [Header("Trajectory")]
         [Tooltip("投擲予測線を描画する LineRenderer です。")]
@@ -402,6 +416,11 @@ namespace BC.Player
 
             if (item is BombMB bomb && GameLogicManagerMB.Instance != null)
             {
+                EntityMB ownerEntity = handleItemPoint != null ? handleItemPoint.GetComponentInParent<EntityMB>() : null;
+                LogThrowReleaseDebug(
+                    $"BombPickup item={bomb.name} scene={gameObject.scene.name} handlePoint={handleItemPoint.name} handleRoot={(handleItemPoint.root != null ? handleItemPoint.root.name : "(null)")} ownerEntity={(ownerEntity != null ? ownerEntity.name : "(null)")}",
+                    this);
+
                 // Reload は「掴む直前」へ戻す。ここで先に checkpoint を積むことで、
                 // 起爆開始後に手持ち状態を復元してしまう不整合を防ぐ。
                 GameLogicManagerMB.Instance.CaptureRetryCheckpointBeforeBombPickup(bomb);
@@ -443,11 +462,37 @@ namespace BC.Player
                 return;
             }
 
+            if (currentlyHandledItem is BombMB bomb)
+            {
+                LogThrowReleaseDebug(
+                    $"BombRelease item={bomb.name} scene={gameObject.scene.name} kind={releaseKind} handlePoint={(handleItemPoint != null ? handleItemPoint.name : "(null)")} handleRoot={(handleItemPoint != null && handleItemPoint.root != null ? handleItemPoint.root.name : "(null)")}",
+                    this);
+            }
+
             Vector3 releaseVelocity = releaseKind == HeldItemReleaseKind.Throw
                 ? BuildThrowVelocity()
                 : BuildDropVelocity();
 
-            currentlyHandledItem.OnRelease(releaseVelocity);
+            ICarryableItem releasingItem = currentlyHandledItem;
+
+            bool hasSafePose = TryResolveSafeReleasePose(
+                releasingItem,
+                releaseKind,
+                releaseVelocity,
+                out Vector3 resolvedReleasePosition,
+                out int resolvedStep,
+                out int overlapCount,
+                out bool fallbackUsed);
+
+            if (hasSafePose || fallbackUsed)
+                ApplyReleasePose(releasingItem, resolvedReleasePosition);
+
+            LogReleaseSafetyDebug(
+                $"Release kind={releaseKind} hasSafePose={hasSafePose} fallbackUsed={fallbackUsed} step={resolvedStep} overlapCount={overlapCount} resolvedPosition={resolvedReleasePosition} releaseVelocity={releaseVelocity}",
+                this);
+
+            releasingItem.OnRelease(releaseVelocity);
+            ApplyThrowOwnerCollisionIgnore(releasingItem, releaseKind, releaseVelocity);
 
             if (releaseKind == HeldItemReleaseKind.Throw)
                 throwSequence++;
@@ -469,9 +514,230 @@ namespace BC.Player
 
             // 着地ショックでの手放しは「投げた」扱いにしない。
             // 投擲トリガーを増やすと着地アニメーションと競合するため、throwSequence は進めない。
-            currentlyHandledItem.OnRelease(releaseVelocity);
+            ICarryableItem releasingItem = currentlyHandledItem;
+
+            bool hasSafePose = TryResolveSafeReleasePose(
+                releasingItem,
+                HeldItemReleaseKind.Throw,
+                releaseVelocity,
+                out Vector3 resolvedReleasePosition,
+                out int resolvedStep,
+                out int overlapCount,
+                out bool fallbackUsed);
+
+            if (hasSafePose || fallbackUsed)
+                ApplyReleasePose(releasingItem, resolvedReleasePosition);
+
+            LogReleaseSafetyDebug(
+                $"ForceRelease hasSafePose={hasSafePose} fallbackUsed={fallbackUsed} step={resolvedStep} overlapCount={overlapCount} resolvedPosition={resolvedReleasePosition} releaseVelocity={releaseVelocity}",
+                this);
+
+            releasingItem.OnRelease(releaseVelocity);
+            ApplyThrowOwnerCollisionIgnore(releasingItem, HeldItemReleaseKind.Throw, releaseVelocity);
             ClearHeldState();
             return true;
+        }
+
+        private bool TryResolveSafeReleasePose(
+            ICarryableItem releasingItem,
+            HeldItemReleaseKind releaseKind,
+            Vector3 releaseVelocity,
+            out Vector3 resolvedPosition,
+            out int resolvedStep,
+            out int overlapCount,
+            out bool fallbackUsed)
+        {
+            resolvedPosition = handleItemPoint != null
+                ? handleItemPoint.position
+                : transform.position;
+            resolvedStep = 0;
+            overlapCount = 0;
+            fallbackUsed = false;
+
+            if (releasingItem == null || releasingItem.ItemTransform == null)
+                return false;
+
+            Transform ownerRoot = ResolveOwnerCollisionRoot();
+            Transform itemRoot = releasingItem.ItemTransform;
+
+            if (ownerRoot == null || itemRoot == null)
+                return false;
+
+            Collider[] itemColliders = itemRoot.GetComponentsInChildren<Collider>(true);
+            Collider[] ownerColliders = ownerRoot.GetComponentsInChildren<Collider>(true);
+
+            if (itemColliders == null || itemColliders.Length == 0 || ownerColliders == null || ownerColliders.Length == 0)
+                return false;
+
+            Vector3 searchDirection = ResolveReleaseSearchDirection(releaseKind, releaseVelocity);
+            float startOffset = Mathf.Max(0.0f, releasePositionSafetyMargin);
+            float maxDistance = Mathf.Max(startOffset, releasePositionSearchDistance);
+            int steps = Mathf.Max(1, releasePositionSearchSteps);
+
+            Vector3 startPosition = (handleItemPoint != null ? handleItemPoint.position : itemRoot.position) +
+                                    (Vector3.up * releasePositionVerticalBias);
+
+            int bestOverlapCount = int.MaxValue;
+            Vector3 bestPosition = startPosition;
+            int bestStep = 0;
+
+            for (int i = 0; i <= steps; i++)
+            {
+                float t = steps > 0 ? (i / (float)steps) : 1.0f;
+                float distance = Mathf.Lerp(startOffset, maxDistance, t);
+                Vector3 candidate = startPosition + (searchDirection * distance);
+
+                int candidateOverlapCount = CountOwnerOverlapsAtPose(itemRoot, itemColliders, ownerColliders, candidate, itemRoot.rotation);
+
+                if (candidateOverlapCount < bestOverlapCount)
+                {
+                    bestOverlapCount = candidateOverlapCount;
+                    bestPosition = candidate;
+                    bestStep = i;
+                }
+
+                if (candidateOverlapCount == 0)
+                {
+                    resolvedPosition = candidate;
+                    resolvedStep = i;
+                    overlapCount = 0;
+                    return true;
+                }
+            }
+
+            resolvedPosition = bestPosition;
+            resolvedStep = bestStep;
+            overlapCount = bestOverlapCount;
+            fallbackUsed = bestOverlapCount < int.MaxValue;
+            return false;
+        }
+
+        private static void ApplyReleasePose(ICarryableItem releasingItem, Vector3 resolvedPosition)
+        {
+            if (releasingItem?.ItemTransform == null)
+                return;
+
+            releasingItem.ItemTransform.position = resolvedPosition;
+        }
+
+        private static int CountOwnerOverlapsAtPose(
+            Transform itemRoot,
+            Collider[] itemColliders,
+            Collider[] ownerColliders,
+            Vector3 rootPosition,
+            Quaternion rootRotation)
+        {
+            int overlapCount = 0;
+
+            for (int i = 0; i < itemColliders.Length; i++)
+            {
+                Collider itemCollider = itemColliders[i];
+
+                if (itemCollider == null || !itemCollider.enabled || !itemCollider.gameObject.activeInHierarchy)
+                    continue;
+
+                Vector3 itemLocalPosition = itemRoot.InverseTransformPoint(itemCollider.transform.position);
+                Quaternion itemLocalRotation = Quaternion.Inverse(itemRoot.rotation) * itemCollider.transform.rotation;
+
+                Vector3 itemWorldPosition = rootPosition + (rootRotation * itemLocalPosition);
+                Quaternion itemWorldRotation = rootRotation * itemLocalRotation;
+
+                for (int j = 0; j < ownerColliders.Length; j++)
+                {
+                    Collider ownerCollider = ownerColliders[j];
+
+                    if (ownerCollider == null ||
+                        !ownerCollider.enabled ||
+                        !ownerCollider.gameObject.activeInHierarchy ||
+                        ownerCollider.transform.IsChildOf(itemRoot))
+                    {
+                        continue;
+                    }
+
+                    if (Physics.ComputePenetration(
+                            itemCollider,
+                            itemWorldPosition,
+                            itemWorldRotation,
+                            ownerCollider,
+                            ownerCollider.transform.position,
+                            ownerCollider.transform.rotation,
+                            out _,
+                            out _))
+                    {
+                        overlapCount++;
+                    }
+                }
+            }
+
+            return overlapCount;
+        }
+
+        private Vector3 ResolveReleaseSearchDirection(HeldItemReleaseKind releaseKind, Vector3 releaseVelocity)
+        {
+            Vector3 direction;
+
+            if (releaseKind == HeldItemReleaseKind.Throw)
+            {
+                direction = BuildThrowDirection();
+            }
+            else
+            {
+                direction = BuildDropDirection();
+            }
+
+            if (direction.sqrMagnitude <= 0.0001f)
+                direction = new Vector3(releaseVelocity.x, 0.0f, releaseVelocity.z);
+
+            direction.y = 0.0f;
+
+            if (direction.sqrMagnitude <= 0.0001f)
+                direction = transform.forward;
+
+            direction.y = 0.0f;
+            return direction.sqrMagnitude <= 0.0001f ? Vector3.forward : direction.normalized;
+        }
+
+        private void ApplyThrowOwnerCollisionIgnore(ICarryableItem releasedItem, HeldItemReleaseKind releaseKind, Vector3 releaseVelocity)
+        {
+            if (releasedItem is not ICarryReleaseOwnerCollisionGuard collisionGuard)
+            {
+                LogThrowReleaseDebug($"OwnerCollisionIgnore skipped item={releasedItem?.GetType().Name ?? "(null)"} reason=no-guard kind={releaseKind} releaseVelocity={releaseVelocity}", this);
+                return;
+            }
+
+            if (throwOwnerCollisionIgnoreDuration <= 0f)
+            {
+                LogThrowReleaseDebug($"OwnerCollisionIgnore skipped item={releasedItem.GetType().Name} reason=duration<=0 kind={releaseKind} releaseVelocity={releaseVelocity}", this);
+                return;
+            }
+
+            Transform ownerRoot = ResolveOwnerCollisionRoot();
+
+            if (ownerRoot == null)
+            {
+                LogThrowReleaseDebug($"OwnerCollisionIgnore skipped item={releasedItem.GetType().Name} reason=owner-root-null kind={releaseKind} releaseVelocity={releaseVelocity}", this);
+                return;
+            }
+
+            collisionGuard.IgnoreOwnerCollisionAfterRelease(ownerRoot, throwOwnerCollisionIgnoreDuration);
+            LogThrowReleaseDebug($"OwnerCollisionIgnore applied item={releasedItem.GetType().Name} owner={ownerRoot.name} duration={throwOwnerCollisionIgnoreDuration:F3} kind={releaseKind} releaseVelocity={releaseVelocity}", this);
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private static void LogThrowReleaseDebug(string message, UnityEngine.Object context)
+        {
+            UnityEngine.Debug.Log($"[PlayerItemHandle] {message}", context);
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private void LogReleaseSafetyDebug(string message, UnityEngine.Object context)
+        {
+            if (!enableReleaseSafetyDebugLog)
+                return;
+
+            UnityEngine.Debug.Log($"[PlayerItemReleaseSafety] {message}", context);
         }
 
         // 現在持っているアイテムの tag を取得する。
@@ -853,13 +1119,31 @@ namespace BC.Player
             if (handleItemPoint == null)
                 return transform;
 
-            // 予測線がプレイヤー自身のCharacterControllerに当たって即終了しないよう、所持者Rootを除外する。
-            CharacterController ownerController = handleItemPoint.GetComponentInParent<CharacterController>();
+            EntityMB ownerEntity = handleItemPoint.GetComponentInParent<EntityMB>();
 
-            if (ownerController != null)
-                return ownerController.transform;
+            if (ownerEntity != null)
+                return ownerEntity.transform;
 
             return handleItemPoint.root != null ? handleItemPoint.root : transform;
+        }
+
+        private Transform ResolveOwnerCollisionRoot()
+        {
+            if (handleItemPoint != null)
+            {
+                EntityMB ownerEntity = handleItemPoint.GetComponentInParent<EntityMB>();
+                if (ownerEntity != null)
+                    return ownerEntity.transform;
+
+                if (handleItemPoint.root != null)
+                    return handleItemPoint.root;
+            }
+
+            EntityMB selfEntity = GetComponentInParent<EntityMB>();
+            if (selfEntity != null)
+                return selfEntity.transform;
+
+            return transform.root != null ? transform.root : transform;
         }
 
         // 軌跡描画用 LineRenderer を遅延生成・初期化する。

@@ -1,9 +1,19 @@
 using UnityEngine;
+using BC.Base;
 
 namespace BC.Gimmick.Cushion
 {
     public static class CushionRigidbodyImpactApplier
     {
+        public static void ApplyBounceToVelocityChannels(ref VelocityChannels channels, Vector3 bounceVelocity)
+        {
+            channels.InputPlanar = Vector3.zero;
+            // Keep vertical bounce in Vertical so gravity and grounded logic treat it like a jump arc.
+            channels.Vertical = bounceVelocity.y;
+            channels.External = new Vector3(bounceVelocity.x, 0.0f, bounceVelocity.z);
+            channels.InheritedSupport = Vector3.zero;
+        }
+
         public static bool Apply(Transform targetTransform, Rigidbody rb, CushionImpactResult impactResult)
         {
             if (targetTransform == null || rb == null || !impactResult.IsHandled)

@@ -16,4 +16,9 @@ namespace BC.Item
     {
         bool TryGetJumpHeightMultiplier(out float jumpHeightMultiplier);
     }
+
+    public interface ICarryReleaseOwnerCollisionGuard
+    {
+        void IgnoreOwnerCollisionAfterRelease(Transform ownerRoot, float durationSeconds);
+    }
 }

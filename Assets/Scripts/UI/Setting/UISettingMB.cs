@@ -27,8 +27,6 @@ namespace BC.UI
         [SerializeField] private Toggle vSyncToggle; // 垂直同期のオンオフを切り替えるトグル
         [SerializeField] private TMP_Dropdown qualityLevelDropdown; // グラフィック品質のレベルを選択するドロップダウン
 
-        private bool isInitialized = false;
-
         private bool isShowing = false;
         private void Awake()
         {
@@ -73,17 +71,24 @@ namespace BC.UI
                 sfxVolumeSlider.onValueChanged.RemoveListener(OnSFXVolumeSliderChanged);
         }
 
-        public async UniTask ShowPanelAsync()
+        public UniTask ShowPanelAsync()
         {
+            if (isShowing)
+                return UniTask.CompletedTask;
+
             // パネルを表示するアニメーションやエフェクトをここで実装することができます。
             canvasGroup.alpha = 1f; // フェードインの例
             canvasGroup.interactable = true;
             gameObject.SetActive(true);
             isShowing = true;
 
+            return UniTask.CompletedTask;
         }
         public async UniTask HidePanelAsync()
         {
+            if (!isShowing)
+                return;
+
             isShowing = false;
             canvasGroup.interactable = false;
             await canvasGroup.DOFade(0f, 0.1f).OnComplete(() => gameObject.SetActive(false)); // フェードアウトの例
@@ -109,8 +114,6 @@ namespace BC.UI
 
             if (sfxVolumeSlider != null)
                 sfxVolumeSlider.value = sfxVolume;
-
-            isInitialized = true;
 
             UpdateCameraSensitivityValueText(cameraSensitivity);
         }

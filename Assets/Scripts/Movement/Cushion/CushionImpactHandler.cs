@@ -119,7 +119,8 @@ namespace BC.Base
             CushionHighJumpBuffer highJumpBuffer,
             bool hasBufferedHighJumpInput,
             float groundedStickVelocity,
-            float currentTime)
+            float currentTime,
+            float coyoteTime)
         {
             if (runtimeState == null || highJumpBuffer == null)
                 return default;
@@ -138,11 +139,9 @@ namespace BC.Base
                 return default;
 
             VelocityChannels channels = runtimeState.Velocity;
-            channels.InputPlanar = Vector3.zero;
-            channels.Vertical = highJumpBounceVelocity.y;
-            channels.External = new Vector3(highJumpBounceVelocity.x, 0.0f, highJumpBounceVelocity.z);
-            channels.InheritedSupport = Vector3.zero;
+            CushionRigidbodyImpactApplier.ApplyBounceToVelocityChannels(ref channels, highJumpBounceVelocity);
             runtimeState.Velocity = channels;
+            MarkBounceLaunchState(runtimeState, currentTime, coyoteTime);
 
             highJumpBuffer.Clear();
             return new CushionApplyResult(true, true, true, highJumpBounceVelocity);
@@ -207,11 +206,10 @@ namespace BC.Base
             }
 
             VelocityChannels channels = runtimeState.Velocity;
-            channels.InputPlanar = Vector3.zero;
-            channels.Vertical = bounceVelocity.y;
-            channels.External = new Vector3(bounceVelocity.x, 0.0f, bounceVelocity.z);
-            channels.InheritedSupport = Vector3.zero;
+            CushionRigidbodyImpactApplier.ApplyBounceToVelocityChannels(ref channels, bounceVelocity);
             runtimeState.Velocity = channels;
+            MarkBounceLaunchState(runtimeState, currentTime, coyoteTime);
+            LogDebug($"ApplyBounce responseBounce={impactResult.BounceVelocity} resolvedBounce={bounceVelocity} vertical={channels.Vertical:F3} external={channels.External} highJumpConsumed={consumedHighJumpInput}");
 
             return new CushionApplyResult(true, consumedHighJumpInput, raiseHighJumpEvent, bounceVelocity);
         }
@@ -224,6 +222,27 @@ namespace BC.Base
             channels.InheritedSupport = Vector3.zero;
             channels.Vertical = groundedStickVelocity;
             runtimeState.Velocity = channels;
+            LogDebug($"ApplyStop vertical={channels.Vertical:F3} external={channels.External}");
+        }
+
+        private static void MarkBounceLaunchState(EntityMoveRuntimeState runtimeState, float currentTime, float coyoteTime)
+        {
+            float launchSuppressionTime = Mathf.Max(0.02f, coyoteTime);
+            runtimeState.LastJumpTime = currentTime;
+            runtimeState.LastGroundedTime = -999.0f;
+            runtimeState.LastSupportLaunchTime = currentTime;
+            runtimeState.GroundSnapDisabledUntilTime = Mathf.Max(runtimeState.GroundSnapDisabledUntilTime, currentTime + launchSuppressionTime);
+            runtimeState.SupportReattachDisabledUntilTime = Mathf.Max(runtimeState.SupportReattachDisabledUntilTime, currentTime + launchSuppressionTime);
+            runtimeState.IsGrounded = false;
+            runtimeState.WasGrounded = false;
+            runtimeState.Ground = default;
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private static void LogDebug(string message)
+        {
+            UnityEngine.Debug.Log($"[CushionImpactHandler] {message}");
         }
     }
 }

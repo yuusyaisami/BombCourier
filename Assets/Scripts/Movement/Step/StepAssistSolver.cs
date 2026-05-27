@@ -162,7 +162,9 @@ namespace BC.Base
                 if (hit == null || hit.transform.IsChildOf(ownerTransform))
                     continue;
 
-                Vector3 closestPoint = hit.ClosestPoint(capsuleCenter);
+                Vector3 closestPoint = CanUsePhysicsClosestPoint(hit)
+                    ? hit.ClosestPoint(capsuleCenter)
+                    : hit.ClosestPointOnBounds(capsuleCenter);
                 if (closestPoint.y <= candidateFeetY + SurfaceSkin)
                     continue;
 
@@ -170,6 +172,20 @@ namespace BC.Base
             }
 
             return true;
+        }
+
+        private static bool CanUsePhysicsClosestPoint(Collider collider)
+        {
+            if (collider == null)
+                return false;
+
+            if (collider is BoxCollider || collider is SphereCollider || collider is CapsuleCollider)
+                return true;
+
+            if (collider is MeshCollider meshCollider)
+                return meshCollider.convex;
+
+            return false;
         }
 
         private static bool TryFindStepGround(

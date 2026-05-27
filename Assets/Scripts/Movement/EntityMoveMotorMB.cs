@@ -116,6 +116,12 @@ namespace BC.Base
         [Header("Cushion")]
         [Tooltip("クッション接触の連続反応を抑えるクールダウンです。")]
         [SerializeField, Min(0.0f)] private float cushionImpactCooldown = 0.12f;
+        [Tooltip("true の時、Player の重力設定と Rigidbody 重力差を補正して、Item と近いバウンド高さに揃えます。")]
+        [SerializeField] private bool normalizeCushionBounceHeightToPhysicsGravity = true;
+        [Tooltip("バウンド高さ比較の基準重力です。0 以下なら Physics.gravity.y の絶対値を使います。")]
+        [SerializeField, Min(0.0f)] private float cushionReferenceGravity = 0.0f;
+        [Tooltip("バウンド高さ補正の強さです。1 でフル補正、0 で補正なしです。")]
+        [SerializeField, Range(0.0f, 1.0f)] private float cushionBounceHeightCompensation = 1.0f;
 
         [Header("Contact Push")]
         [Tooltip("接触した相手を押し返す処理を有効にするかを指定します。")]
@@ -138,6 +144,8 @@ namespace BC.Base
         [SerializeField] private bool currentCanMoveByInput;
         [Tooltip("現在の Move.CanMoveBySystem をデバッグ表示する値です。")]
         [SerializeField] private bool currentCanMoveBySystem;
+        [Tooltip("Cushion の適用ログを出力します。問題調査用です。")]
+        [SerializeField] private bool enableCushionDebugLog;
 
         private const int MaxGroundHits = 8;
         private const float AutoMoveStopSpeedSqr = 0.01f;
@@ -233,7 +241,7 @@ namespace BC.Base
 
             if (bodyRigidbody == null || bodyCollider == null)
             {
-                Debug.LogError($"{nameof(EntityMoveMotorMB)}: Rigidbody or CapsuleCollider is missing.", this);
+                UnityEngine.Debug.LogError($"{nameof(EntityMoveMotorMB)}: Rigidbody or CapsuleCollider is missing.", this);
                 enabled = false;
                 return;
             }
@@ -358,8 +366,14 @@ namespace BC.Base
             UpdateVerticalVelocity(dt, isGrounded);
             UpdateExternalVelocity(dt);
 
-            ProcessBufferedContacts();
+            bool handledCushionImpact = ProcessBufferedContacts();
             SyncVelocityChannelsFromLegacyFields();
+
+            if (handledCushionImpact && !runtimeState.Ground.IsValid)
+            {
+                isGrounded = false;
+                ground = default;
+            }
 
             Vector3 bodyVelocity = GetBodyVelocity();
             PositionCorrection totalCorrection = PositionCorrection.None;
@@ -475,7 +489,8 @@ namespace BC.Base
                 cushionHighJumpBuffer,
                 HasBufferedHighJumpInput(),
                 groundedStickVelocity,
-                Time.time);
+                Time.time,
+                coyoteTime);
 
             if (CommitCushionApplyResult(pendingHighJumpResult))
                 return;
@@ -834,10 +849,12 @@ namespace BC.Base
         }
 
         // M4: buffered contacts を分類し、制約・押し返し・クッション反応を固定順で適用する。
-        private void ProcessBufferedContacts()
+        private bool ProcessBufferedContacts()
         {
+            bool handledCushionImpact = false;
+
             if (moveContactBuffer.Count <= 0)
-                return;
+                return false;
 
             MovementBodyGeometry bodyGeometry = BuildCurrentBodyGeometry();
             ContactClassifier.Classify(moveContactBuffer, in bodyGeometry, in runtimeState.Ground, maxGroundAngle, contactCeilingBand);
@@ -876,9 +893,15 @@ namespace BC.Base
 
                 if (cushionProcessedColliders.Add(contact.Collider))
                 {
-                    Vector3 incomingVelocity = bodyRigidbody != null
-                        ? bodyRigidbody.linearVelocity
-                        : CurrentVelocity;
+                    // BufferCollision 時点の相対速度を優先して、接地補正後に 0 へ潰れた速度を参照しないようにする。
+                    Vector3 incomingVelocity = contact.RelativeVelocity;
+
+                    if (incomingVelocity.sqrMagnitude <= 0.0001f)
+                    {
+                        incomingVelocity = bodyRigidbody != null
+                            ? bodyRigidbody.linearVelocity
+                            : CurrentVelocity;
+                    }
 
                     if (!CushionImpactHandler.TryProcessContact(
                             contact,
@@ -903,9 +926,23 @@ namespace BC.Base
                         continue;
                     }
 
-                    CommitCushionApplyResult(applyResult);
+                    LogCushionDebug($"Contact hit collider={contact.Collider.name} point={contact.Point} normal={contact.Normal} incoming={incomingVelocity} applyHandled={applyResult.Handled} highJumpEvent={applyResult.ShouldRaiseHighJumpEvent} eventVelocity={applyResult.HighJumpEventVelocity}");
+
+                    if (CommitCushionApplyResult(applyResult))
+                    {
+                        handledCushionImpact = true;
+
+                        // Bounce で地上状態を解除した場合、同 tick 後段の ground 判定にも即時反映する。
+                        if (!runtimeState.Ground.IsValid)
+                        {
+                            ground = default;
+                            break;
+                        }
+                    }
                 }
             }
+
+            return handledCushionImpact;
         }
 
         // 壁へ入り込む速度成分を取り除く。
@@ -1095,13 +1132,93 @@ namespace BC.Base
             if (applyResult.ShouldConsumeHighJumpInput)
                 ConsumeHighJumpInput();
 
+            bool compensated = TryApplyCushionBounceHeightCompensation(out float beforeVertical, out float afterVertical, out float compensationScale);
+
             SyncLegacyVelocityFieldsFromChannels();
             ApplyCurrentVelocityToBody(GetBodyVelocity());
+
+            VelocityChannels channels = runtimeState.Velocity;
+            Vector3 rbVelocity = bodyRigidbody != null ? bodyRigidbody.linearVelocity : Vector3.zero;
+            float runtimeGravityAbs = Mathf.Max(0.0001f, Mathf.Abs(gravity));
+            float referenceGravityAbs = Mathf.Max(0.0001f, ResolveCushionReferenceGravity());
+            float predictedApex = channels.Vertical > 0.0f
+                ? (channels.Vertical * channels.Vertical) / (2.0f * runtimeGravityAbs)
+                : 0.0f;
+            float equivalentPhysicsApex = channels.Vertical > 0.0f
+                ? (channels.Vertical * channels.Vertical) / (2.0f * referenceGravityAbs)
+                : 0.0f;
+
+            LogCushionDebug(
+                $"Committed handled={applyResult.Handled} consumedHighJump={applyResult.ShouldConsumeHighJumpInput} raisedHighJump={applyResult.ShouldRaiseHighJumpEvent} eventVelocity={applyResult.HighJumpEventVelocity} channels(Input={channels.InputPlanar}, Vertical={channels.Vertical:F3}, External={channels.External}, Inherited={channels.InheritedSupport}) rbVelocity={rbVelocity} isGrounded={ground.IsValid} moveState={MoveState} gravity={gravity:F3} referenceGravity={referenceGravityAbs:F3} compensated={compensated} beforeVertical={beforeVertical:F3} afterVertical={afterVertical:F3} compensationScale={compensationScale:F3} predictedApex={predictedApex:F3} equivalentPhysicsApex={equivalentPhysicsApex:F3}");
 
             if (applyResult.ShouldRaiseHighJumpEvent)
                 CushionHighJumped?.Invoke(new CushionHighJumpEventData(applyResult.HighJumpEventVelocity));
 
             return true;
+        }
+
+        private bool TryApplyCushionBounceHeightCompensation(out float beforeVertical, out float afterVertical, out float compensationScale)
+        {
+            beforeVertical = 0.0f;
+            afterVertical = 0.0f;
+            compensationScale = 1.0f;
+
+            if (!normalizeCushionBounceHeightToPhysicsGravity)
+                return false;
+
+            if (cushionBounceHeightCompensation <= 0.0001f)
+                return false;
+
+            VelocityChannels channels = runtimeState.Velocity;
+            beforeVertical = channels.Vertical;
+
+            if (beforeVertical <= 0.0001f)
+            {
+                afterVertical = beforeVertical;
+                return false;
+            }
+
+            float runtimeGravityAbs = Mathf.Abs(gravity);
+            float referenceGravityAbs = ResolveCushionReferenceGravity();
+
+            if (runtimeGravityAbs <= 0.0001f || referenceGravityAbs <= 0.0001f)
+            {
+                afterVertical = beforeVertical;
+                return false;
+            }
+
+            float targetScale = Mathf.Sqrt(runtimeGravityAbs / referenceGravityAbs);
+            compensationScale = Mathf.Lerp(1.0f, targetScale, cushionBounceHeightCompensation);
+
+            if (compensationScale <= 1.0001f)
+            {
+                afterVertical = beforeVertical;
+                return false;
+            }
+
+            channels.Vertical = beforeVertical * compensationScale;
+            runtimeState.Velocity = channels;
+            afterVertical = channels.Vertical;
+            return true;
+        }
+
+        private float ResolveCushionReferenceGravity()
+        {
+            if (cushionReferenceGravity > 0.0001f)
+                return cushionReferenceGravity;
+
+            float physicsGravityAbs = Mathf.Abs(Physics.gravity.y);
+            return physicsGravityAbs > 0.0001f ? physicsGravityAbs : 9.81f;
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private void LogCushionDebug(string message)
+        {
+            if (!enableCushionDebugLog)
+                return;
+
+            UnityEngine.Debug.Log($"[CushionMotor] {name} :: {message}", this);
         }
 
         // 高跳びに使えるジャンプ入力が残っているか確認する。
@@ -1346,7 +1463,7 @@ namespace BC.Base
                 return;
 
             lastColliderPolicyErrorMessage = errorMessage;
-            Debug.LogError($"{nameof(EntityMoveMotorMB)} collider policy violation:\n{errorMessage}", this);
+            UnityEngine.Debug.LogError($"{nameof(EntityMoveMotorMB)} collider policy violation:\n{errorMessage}", this);
         }
 
         private readonly struct GroundInfo

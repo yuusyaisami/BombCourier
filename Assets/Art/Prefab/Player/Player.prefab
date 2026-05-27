@@ -851,6 +851,7 @@ MonoBehaviour:
   contactCeilingBand: 0.08
   currentCanMoveByInput: 0
   currentCanMoveBySystem: 0
+  enableCushionDebugLog: 1
 --- !u!114 &1469540994083200100
 MonoBehaviour:
   m_ObjectHideFlags: 0

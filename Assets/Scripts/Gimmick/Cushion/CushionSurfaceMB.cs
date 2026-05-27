@@ -85,20 +85,31 @@ namespace BC.Gimmick.Cushion
             EntityTagReference.From(EntityTags.Actor.Player)
         };
 
+        [Header("Debug")]
+        [Tooltip("クッション評価の詳細ログを出力します。問題調査用です。")]
+        [SerializeField] private bool enableDebugLog;
+
         public bool TryEvaluate(CushionImpactData impactData, out CushionImpactResult result)
         {
             result = CushionImpactResult.NotHandled;
 
             if (ShouldIgnoreSelfImpact(impactData.SourceRoot))
+            {
+                LogDebug($"Ignored self impact source={GetSourceName(impactData)}");
                 return false;
+            }
 
             if (!MatchesTargetTag(impactData.SourceTag))
+            {
+                LogDebug($"Tag mismatch source={GetSourceName(impactData)} tag={impactData.SourceTag} acceptAnyTag={acceptAnyTag} targetTagCount={(targetTags != null ? targetTags.Length : 0)}");
                 return false;
+            }
 
             // Bounce率0は「受け止める」。0より大きい時だけ指定方向へ跳ね返す。
             if (bounceRate <= 0.0001f)
             {
                 result = BuildStopResult(impactData);
+                LogEvaluation(impactData, result, Vector3.zero, 0.0f);
                 return true;
             }
 
@@ -108,6 +119,7 @@ namespace BC.Gimmick.Cushion
             if (bounceVelocityMagnitude < Mathf.Max(0.0f, minBounceOutputSpeedToApply))
             {
                 result = BuildStopResult(impactData);
+                LogEvaluation(impactData, result, direction, bounceVelocityMagnitude);
                 return true;
             }
 
@@ -115,6 +127,7 @@ namespace BC.Gimmick.Cushion
                 direction * bounceVelocityMagnitude,
                 ResolveBounceSpeedLimit(bounceVelocityMagnitude),
                 highJumpSpeedMultiplier);
+            LogEvaluation(impactData, result, direction, bounceVelocityMagnitude);
             return true;
         }
 
@@ -179,14 +192,21 @@ namespace BC.Gimmick.Cushion
                 return Mathf.Max(0.0f, scaledSpeed);
             }
 
-            float convergedSpeed = scaledSpeed;
+            // BounceRate=1 は min/max を厳密に満たす。
+            // convergence は overshoot 時の収束パラメータとして保持しつつ、最終値は必ず範囲内にクランプする。
+            float targetSpeed = scaledSpeed;
+            if (hasMaxSpeed && targetSpeed > resolvedMaxSpeed)
+                targetSpeed = resolvedMaxSpeed;
+            if (hasMinSpeed && targetSpeed < resolvedMinSpeed)
+                targetSpeed = resolvedMinSpeed;
+
             float convergenceStep = Mathf.Max(0.001f, convergenceBounceSpeed);
+            float convergedSpeed = Mathf.MoveTowards(scaledSpeed, targetSpeed, convergenceStep);
 
-            if (hasMaxSpeed && convergedSpeed > resolvedMaxSpeed)
-                convergedSpeed = Mathf.MoveTowards(convergedSpeed, resolvedMaxSpeed, convergenceStep);
-
-            if (hasMinSpeed && convergedSpeed < resolvedMinSpeed)
-                convergedSpeed = Mathf.MoveTowards(convergedSpeed, resolvedMinSpeed, convergenceStep);
+            if (hasMaxSpeed)
+                convergedSpeed = Mathf.Min(convergedSpeed, resolvedMaxSpeed);
+            if (hasMinSpeed)
+                convergedSpeed = Mathf.Max(convergedSpeed, resolvedMinSpeed);
 
             return Mathf.Max(0f, convergedSpeed);
         }
@@ -259,6 +279,32 @@ namespace BC.Gimmick.Cushion
                 return false;
 
             return transform == sourceRoot || transform.IsChildOf(sourceRoot) || sourceRoot.IsChildOf(transform);
+        }
+
+        private void LogEvaluation(in CushionImpactData impactData, in CushionImpactResult result, Vector3 direction, float resolvedSpeed)
+        {
+            if (!enableDebugLog)
+                return;
+
+            LogDebug(
+                $"Evaluate source={GetSourceName(impactData)} tag={impactData.SourceTag} incoming={impactData.IncomingVelocity} response={result.ResponseKind} bounceVelocity={result.BounceVelocity} resolvedDirection={direction} resolvedSpeed={resolvedSpeed:F3} bounceRate={bounceRate:F3} min={minBounceSpeed:F3} max={maxBounceSpeed:F3}",
+                impactData.SourceGameObject);
+        }
+
+        private void LogDebug(string message, UnityEngine.Object context = null)
+        {
+            if (!enableDebugLog)
+                return;
+
+            Debug.Log($"[CushionSurface] {name} :: {message}", context != null ? context : this);
+        }
+
+        private static string GetSourceName(in CushionImpactData impactData)
+        {
+            if (impactData.SourceGameObject != null)
+                return impactData.SourceGameObject.name;
+
+            return impactData.SourceRoot != null ? impactData.SourceRoot.name : "(null)";
         }
     }
 }

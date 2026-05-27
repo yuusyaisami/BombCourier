@@ -385,14 +385,8 @@ namespace BC.Managers
 
             if (TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) && resolvedSceneKernel.Cameras != null)
             {
-                // 会話中に話者だけ変わるケースでは、focus target だけ更新して
-                // talk camera の初期化/priority リセットを避ける。
-                bool observerChanged = isConversationFocusActive &&
-                                      !activeConversationFocusContext.ObserverEntity.Equals(nextContext.ObserverEntity);
-
-                if (observerChanged)
-                    resolvedSceneKernel.Cameras.EndFocus();
-
+                // 会話中の話者/observer 切り替えは focus を落とさず差し替える。
+                // EndFocus を挟むと 1 フレームだけ入力ロックと TalkCamera が外れてしまう。
                 resolvedSceneKernel.Cameras.BeginFocus(nextContext);
                 activeConversationFocusContext = nextContext;
                 isConversationFocusActive = true;
