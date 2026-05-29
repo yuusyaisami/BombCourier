@@ -322,7 +322,7 @@ public enum ReactiveBoolSourceKind
     EntityValueStore = 1,
     KernelValueStore = 2,
     EntityAlive = 3,
-    CompareFloat = 4,
+    CompareNumber = 4,
 }
 ```
 
@@ -721,7 +721,7 @@ private sealed class Runtime : IActionNodeRuntime
 - `ReactiveEntityRef -> TargetReference`
 - `ReactiveVector3 -> EntityTransformPosition / EntityTransformForward / Add / Direction`
 - `ReactiveFloat -> Distそうしたら
-- `ReactiveBool -> EntityAlive / CompareFloat`
+- `ReactiveBool -> EntityAlive / CompareNumber`
 
 ### M5: Action 統合
 
@@ -780,7 +780,7 @@ M7 で固定する保証:
 - `ReactiveBoolDrawer` が EntityAlive + Watched を Snapshot へ正規化する。
 - `ReactiveVector3` の Transform payload が wrapper 側 `SourceKind` に合わせて `ReactiveTransformSourceKind` を矯正する。
 - `ReactiveEntityRefDrawer` が TargetReference + Watched を Snapshot へ正規化する。
-- `Distance` / `CompareFloat` / `Direction` / `TargetReference(TagSearch)` / `UseFallback` の inspector 高さ契約が崩れない。
+- `Distance` / `CompareNumber` / `Direction` / `TargetReference(TagSearch)` / `UseFallback` の inspector 高さ契約が崩れない。
 
 既存 fixture が引き続き担保する runtime coverage:
 

@@ -15,8 +15,8 @@ MonoBehaviour:
   stepSelectionEntries:
   - stepTypeName: BC.ActionSystem.ShowTalkStepAuthoring, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639154587404383466
-    selectedCount: 49
+    lastSelectedUtcTicks: 639156322314420180
+    selectedCount: 50
   - stepTypeName: BC.ActionSystem.ShowTalkChoiceStepAuthoring, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
     lastSelectedUtcTicks: 639152308942205180

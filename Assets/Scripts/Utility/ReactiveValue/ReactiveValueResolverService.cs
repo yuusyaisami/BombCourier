@@ -96,7 +96,7 @@ namespace BC.Base
                 ReactiveBoolSourceKind.EntityValueStore => ResolveEntityStoreValue<bool>(context, value.EntityValue),
                 ReactiveBoolSourceKind.KernelValueStore => ResolveKernelStoreValue<bool>(context, value.LocalValue),
                 ReactiveBoolSourceKind.EntityAlive => ResolveEntityAlive(context, value.EntityAliveSource),
-                ReactiveBoolSourceKind.CompareFloat => ResolveCompareFloat(context, value.CompareFloatSource),
+                ReactiveBoolSourceKind.CompareNumber => ResolveCompareNumber(context, value.CompareNumberSource),
                 _ => FailUnsupportedSource<bool>(nameof(ReactiveBool), value.SourceKind.ToString(), context),
             };
         }
@@ -109,7 +109,7 @@ namespace BC.Base
                 ReactiveSnapshotBoolSourceKind.EntityValueStore => ResolveEntityStoreValue<bool>(context, value.EntityValue),
                 ReactiveSnapshotBoolSourceKind.KernelValueStore => ResolveKernelStoreValue<bool>(context, value.LocalValue),
                 ReactiveSnapshotBoolSourceKind.EntityAlive => ResolveEntityAlive(context, value.EntityAliveSource),
-                ReactiveSnapshotBoolSourceKind.CompareFloat => ResolveCompareFloat(context, value.CompareFloatSource),
+                ReactiveSnapshotBoolSourceKind.CompareNumber => ResolveCompareNumber(context, value.CompareNumberSource),
                 _ => FailUnsupportedSource<bool>(nameof(ReactiveSnapshotBool), value.SourceKind.ToString(), context),
             };
         }
@@ -441,21 +441,49 @@ namespace BC.Base
             return ReactiveResult<bool>.Ok(isAlive);
         }
 
-        private ReactiveResult<bool> ResolveCompareFloat(
+        private ReactiveResult<bool> ResolveCompareNumber(
             in ReactiveEvalContext context,
-            in ReactiveFloatCompareSource source)
+            in ReactiveNumberCompareSource source)
         {
-            ReactiveResult<float> left = ResolveFloat(context, source.Left);
+            ReactiveResult<double> left = ResolveNumberOperand(context, source.LeftValueKind, source.LeftFloat, source.LeftInt);
 
             if (!left.Success)
                 return ReactiveResult<bool>.Fail(left.Error);
 
-            ReactiveResult<float> right = ResolveFloat(context, source.Right);
+            ReactiveResult<double> right = ResolveNumberOperand(context, source.RightValueKind, source.RightFloat, source.RightInt);
 
             if (!right.Success)
                 return ReactiveResult<bool>.Fail(right.Error);
 
             return ReactiveResult<bool>.Ok(EvaluateComparison(left.Value, right.Value, source.Comparison, source.Epsilon));
+        }
+
+        private ReactiveResult<double> ResolveNumberOperand(
+            in ReactiveEvalContext context,
+            ReactiveNumberValueKind valueKind,
+            in ReactiveFloat floatValue,
+            in ReactiveInt intValue)
+        {
+            switch (valueKind)
+            {
+                case ReactiveNumberValueKind.Float:
+                    ReactiveResult<float> floatResult = ResolveFloat(context, floatValue);
+                    return floatResult.Success
+                        ? ReactiveResult<double>.Ok(floatResult.Value)
+                        : ReactiveResult<double>.Fail(floatResult.Error);
+
+                case ReactiveNumberValueKind.Int:
+                    ReactiveResult<int> intResult = ResolveInt(context, intValue);
+                    return intResult.Success
+                        ? ReactiveResult<double>.Ok(intResult.Value)
+                        : ReactiveResult<double>.Fail(intResult.Error);
+
+                default:
+                    return ReactiveErrorUtility.Fail<double>(
+                        ReactiveErrorCode.UnsupportedSource,
+                        $"ReactiveNumberValueKind '{valueKind}' is not supported.",
+                        context);
+            }
         }
 
         private ReactiveResult<Vector3> ResolveTransformVector(
@@ -844,21 +872,21 @@ namespace BC.Base
         }
 
         private static bool EvaluateComparison(
-            float left,
-            float right,
-            ReactiveFloatComparisonKind comparison,
+            double left,
+            double right,
+            ReactiveNumberComparisonKind comparison,
             float epsilon)
         {
-            float safeEpsilon = Mathf.Max(0f, epsilon);
+            double safeEpsilon = Math.Max(0d, epsilon);
 
             return comparison switch
             {
-                ReactiveFloatComparisonKind.Equal => Mathf.Abs(left - right) <= safeEpsilon,
-                ReactiveFloatComparisonKind.NotEqual => Mathf.Abs(left - right) > safeEpsilon,
-                ReactiveFloatComparisonKind.Greater => left > right + safeEpsilon,
-                ReactiveFloatComparisonKind.GreaterOrEqual => left >= right - safeEpsilon,
-                ReactiveFloatComparisonKind.Less => left < right - safeEpsilon,
-                ReactiveFloatComparisonKind.LessOrEqual => left <= right + safeEpsilon,
+                ReactiveNumberComparisonKind.Equal => Math.Abs(left - right) <= safeEpsilon,
+                ReactiveNumberComparisonKind.NotEqual => Math.Abs(left - right) > safeEpsilon,
+                ReactiveNumberComparisonKind.Greater => left > right + safeEpsilon,
+                ReactiveNumberComparisonKind.GreaterOrEqual => left >= right - safeEpsilon,
+                ReactiveNumberComparisonKind.Less => left < right - safeEpsilon,
+                ReactiveNumberComparisonKind.LessOrEqual => left <= right + safeEpsilon,
                 _ => false,
             };
         }

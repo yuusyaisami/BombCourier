@@ -142,8 +142,8 @@ namespace BC.Base
             [CharacterDisplayName("ねずみ")]
             public static readonly CharacterId Nezumi = new(2003);
 
-            [CharacterDisplayName("ヤグモ")]
-            public static readonly CharacterId Yagumo = new(2004);
+            [CharacterDisplayName("ヤクモ")]
+            public static readonly CharacterId Yakumo = new(2004);
         }
     }
 }

@@ -444,7 +444,7 @@ namespace BC.Editor.ActionSystem
                 ReactiveBoolSourceKind.EntityValueStore => BuildScopedEntityValueSummary(property.FindPropertyRelative("entityValue")),
                 ReactiveBoolSourceKind.KernelValueStore => BuildKernelValueSummary(property.FindPropertyRelative("localValue")),
                 ReactiveBoolSourceKind.EntityAlive => $"Alive({BuildReactiveEntitySummary(property.FindPropertyRelative("entityAlive")?.FindPropertyRelative("entity"))})",
-                ReactiveBoolSourceKind.CompareFloat => BuildCompareFloatSummary(property.FindPropertyRelative("compareFloat")),
+                ReactiveBoolSourceKind.CompareNumber => BuildCompareNumberSummary(property.FindPropertyRelative("compareNumber")),
                 _ => "Unconfigured",
             };
         }
@@ -511,15 +511,27 @@ namespace BC.Editor.ActionSystem
             return Normalize(displayNames[index]);
         }
 
-        private static string BuildCompareFloatSummary(SerializedProperty property)
+        private static string BuildCompareNumberSummary(SerializedProperty property)
         {
             if (property == null)
                 return "Compare";
 
-            string left = BuildReactiveFloatSummary(property.FindPropertyRelative("left"));
-            string right = BuildReactiveFloatSummary(property.FindPropertyRelative("right"));
+            string left = BuildReactiveNumberOperandSummary(property, "leftValueKind", "leftFloat", "leftInt");
+            string right = BuildReactiveNumberOperandSummary(property, "rightValueKind", "rightFloat", "rightInt");
             string op = BuildComparisonOperator(property.FindPropertyRelative("comparison"));
             return $"{left} {op} {right}";
+        }
+
+        private static string BuildReactiveNumberOperandSummary(
+            SerializedProperty property,
+            string kindPropertyName,
+            string floatPropertyName,
+            string intPropertyName)
+        {
+            SerializedProperty kindProperty = property.FindPropertyRelative(kindPropertyName);
+            return kindProperty != null && kindProperty.enumValueIndex == (int)ReactiveNumberValueKind.Int
+                ? BuildReactiveIntSummary(property.FindPropertyRelative(intPropertyName))
+                : BuildReactiveFloatSummary(property.FindPropertyRelative(floatPropertyName));
         }
 
         private static string BuildComparisonOperator(SerializedProperty comparisonProperty)
@@ -527,14 +539,14 @@ namespace BC.Editor.ActionSystem
             if (comparisonProperty == null)
                 return "==";
 
-            return (ReactiveFloatComparisonKind)comparisonProperty.enumValueIndex switch
+            return (ReactiveNumberComparisonKind)comparisonProperty.enumValueIndex switch
             {
-                ReactiveFloatComparisonKind.Equal => "==",
-                ReactiveFloatComparisonKind.NotEqual => "!=",
-                ReactiveFloatComparisonKind.Greater => ">",
-                ReactiveFloatComparisonKind.GreaterOrEqual => ">=",
-                ReactiveFloatComparisonKind.Less => "<",
-                ReactiveFloatComparisonKind.LessOrEqual => "<=",
+                ReactiveNumberComparisonKind.Equal => "==",
+                ReactiveNumberComparisonKind.NotEqual => "!=",
+                ReactiveNumberComparisonKind.Greater => ">",
+                ReactiveNumberComparisonKind.GreaterOrEqual => ">=",
+                ReactiveNumberComparisonKind.Less => "<",
+                ReactiveNumberComparisonKind.LessOrEqual => "<=",
                 _ => "==",
             };
         }

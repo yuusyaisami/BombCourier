@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BC.Base
 {
@@ -24,7 +25,7 @@ namespace BC.Base
         EntityValueStore = 1,
         KernelValueStore = 2,
         EntityAlive = 3,
-        CompareFloat = 4,
+        CompareNumber = 4,
     }
 
     public enum ReactiveVector3SourceKind
@@ -118,7 +119,13 @@ namespace BC.Base
         TriggerEntity = 2,
     }
 
-    public enum ReactiveFloatComparisonKind
+    public enum ReactiveNumberValueKind
+    {
+        Float = 0,
+        Int = 1,
+    }
+
+    public enum ReactiveNumberComparisonKind
     {
         Equal = 0,
         NotEqual = 1,
@@ -199,28 +206,91 @@ namespace BC.Base
     }
 
     [Serializable]
-    public struct ReactiveFloatCompareSource
+    public struct ReactiveNumberCompareSource
     {
-        [SerializeField] private ReactiveFloat left;
-        [SerializeField] private ReactiveFloat right;
-        [SerializeField] private ReactiveFloatComparisonKind comparison;
+        [SerializeField] private ReactiveNumberValueKind leftValueKind;
+        [FormerlySerializedAs("left")]
+        [SerializeField] private ReactiveFloat leftFloat;
+        [SerializeField] private ReactiveInt leftInt;
+        [SerializeField] private ReactiveNumberValueKind rightValueKind;
+        [FormerlySerializedAs("right")]
+        [SerializeField] private ReactiveFloat rightFloat;
+        [SerializeField] private ReactiveInt rightInt;
+        [SerializeField] private ReactiveNumberComparisonKind comparison;
         [SerializeField] private float epsilon;
 
-        public ReactiveFloat Left => left;
-        public ReactiveFloat Right => right;
-        public ReactiveFloatComparisonKind Comparison => comparison;
+        public ReactiveNumberValueKind LeftValueKind => leftValueKind;
+        public ReactiveFloat LeftFloat => leftFloat;
+        public ReactiveInt LeftInt => leftInt;
+        public ReactiveNumberValueKind RightValueKind => rightValueKind;
+        public ReactiveFloat RightFloat => rightFloat;
+        public ReactiveInt RightInt => rightInt;
+        public ReactiveNumberComparisonKind Comparison => comparison;
         public float Epsilon => epsilon;
 
-        public static ReactiveFloatCompareSource Create(
+        public static ReactiveNumberCompareSource Create(
             ReactiveFloat left,
             ReactiveFloat right,
-            ReactiveFloatComparisonKind comparison,
+            ReactiveNumberComparisonKind comparison,
             float epsilon)
         {
-            return new ReactiveFloatCompareSource
+            return new ReactiveNumberCompareSource
             {
-                left = left,
-                right = right,
+                leftValueKind = ReactiveNumberValueKind.Float,
+                leftFloat = left,
+                rightValueKind = ReactiveNumberValueKind.Float,
+                rightFloat = right,
+                comparison = comparison,
+                epsilon = Mathf.Max(0f, epsilon),
+            };
+        }
+
+        public static ReactiveNumberCompareSource Create(
+            ReactiveInt left,
+            ReactiveInt right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon)
+        {
+            return new ReactiveNumberCompareSource
+            {
+                leftValueKind = ReactiveNumberValueKind.Int,
+                leftInt = left,
+                rightValueKind = ReactiveNumberValueKind.Int,
+                rightInt = right,
+                comparison = comparison,
+                epsilon = Mathf.Max(0f, epsilon),
+            };
+        }
+
+        public static ReactiveNumberCompareSource Create(
+            ReactiveFloat left,
+            ReactiveInt right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon)
+        {
+            return new ReactiveNumberCompareSource
+            {
+                leftValueKind = ReactiveNumberValueKind.Float,
+                leftFloat = left,
+                rightValueKind = ReactiveNumberValueKind.Int,
+                rightInt = right,
+                comparison = comparison,
+                epsilon = Mathf.Max(0f, epsilon),
+            };
+        }
+
+        public static ReactiveNumberCompareSource Create(
+            ReactiveInt left,
+            ReactiveFloat right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon)
+        {
+            return new ReactiveNumberCompareSource
+            {
+                leftValueKind = ReactiveNumberValueKind.Int,
+                leftInt = left,
+                rightValueKind = ReactiveNumberValueKind.Float,
+                rightFloat = right,
                 comparison = comparison,
                 epsilon = Mathf.Max(0f, epsilon),
             };
@@ -438,7 +508,8 @@ namespace BC.Base
         [SerializeField] private ReactiveEntityValueSource entityValue;
         [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private ReactiveBoolEntityAliveSource entityAlive;
-        [SerializeField] private ReactiveFloatCompareSource compareFloat;
+        [FormerlySerializedAs("compareFloat")]
+        [SerializeField] private ReactiveNumberCompareSource compareNumber;
         [SerializeField] private bool fallbackValue;
 
         public ReactiveBoolSourceKind SourceKind => sourceKind;
@@ -448,7 +519,7 @@ namespace BC.Base
         public ReactiveEntityValueSource EntityValue => entityValue;
         public ReactiveKernelValueSource LocalValue => localValue;
         public ReactiveBoolEntityAliveSource EntityAliveSource => entityAlive;
-        public ReactiveFloatCompareSource CompareFloatSource => compareFloat;
+        public ReactiveNumberCompareSource CompareNumberSource => compareNumber;
         public bool FallbackValue => fallbackValue;
 
         public static ReactiveBool LiteralValue(bool value, ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
@@ -503,19 +574,67 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveBool CompareFloat(
+        public static ReactiveBool CompareNumber(
             ReactiveFloat left,
             ReactiveFloat right,
-            ReactiveFloatComparisonKind comparison,
+            ReactiveNumberComparisonKind comparison,
             float epsilon = 0.0001f,
             ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
         {
             return new ReactiveBool
             {
-                sourceKind = ReactiveBoolSourceKind.CompareFloat,
+                sourceKind = ReactiveBoolSourceKind.CompareNumber,
                 evaluationMode = evaluationMode,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                compareFloat = ReactiveFloatCompareSource.Create(left, right, comparison, epsilon),
+                compareNumber = ReactiveNumberCompareSource.Create(left, right, comparison, epsilon),
+            };
+        }
+
+        public static ReactiveBool CompareNumber(
+            ReactiveInt left,
+            ReactiveInt right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon = 0.0001f,
+            ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
+        {
+            return new ReactiveBool
+            {
+                sourceKind = ReactiveBoolSourceKind.CompareNumber,
+                evaluationMode = evaluationMode,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                compareNumber = ReactiveNumberCompareSource.Create(left, right, comparison, epsilon),
+            };
+        }
+
+        public static ReactiveBool CompareNumber(
+            ReactiveFloat left,
+            ReactiveInt right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon = 0.0001f,
+            ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
+        {
+            return new ReactiveBool
+            {
+                sourceKind = ReactiveBoolSourceKind.CompareNumber,
+                evaluationMode = evaluationMode,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                compareNumber = ReactiveNumberCompareSource.Create(left, right, comparison, epsilon),
+            };
+        }
+
+        public static ReactiveBool CompareNumber(
+            ReactiveInt left,
+            ReactiveFloat right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon = 0.0001f,
+            ReactiveEvaluationMode evaluationMode = ReactiveEvaluationMode.Snapshot)
+        {
+            return new ReactiveBool
+            {
+                sourceKind = ReactiveBoolSourceKind.CompareNumber,
+                evaluationMode = evaluationMode,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                compareNumber = ReactiveNumberCompareSource.Create(left, right, comparison, epsilon),
             };
         }
     }

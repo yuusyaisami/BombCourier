@@ -152,6 +152,62 @@ namespace BC.Editor
             DrawFilteredValueKey(ref position, property.FindPropertyRelative("key"), "Key", valueType);
         }
 
+        protected static float GetReactiveNumberCompareSourceHeight(SerializedProperty property)
+        {
+            if (property == null)
+                return 0f;
+
+            return GetReactiveNumberCompareOperandHeight(property, "leftValueKind", "leftFloat", "leftInt") +
+                   GetReactiveNumberCompareOperandHeight(property, "rightValueKind", "rightFloat", "rightInt") +
+                   GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("comparison"))) +
+                   GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("epsilon")));
+        }
+
+        protected static void DrawReactiveNumberCompareSource(ref Rect position, SerializedProperty property)
+        {
+            if (property == null)
+                return;
+
+            DrawReactiveNumberCompareOperand(ref position, property, "leftValueKind", "leftFloat", "leftInt", "Left");
+            DrawReactiveNumberCompareOperand(ref position, property, "rightValueKind", "rightFloat", "rightInt", "Right");
+            DrawPropertyField(ref position, property.FindPropertyRelative("comparison"), "Comparison");
+            DrawPropertyField(ref position, property.FindPropertyRelative("epsilon"), "Epsilon");
+        }
+
+        private static float GetReactiveNumberCompareOperandHeight(
+            SerializedProperty property,
+            string kindPropertyName,
+            string floatPropertyName,
+            string intPropertyName)
+        {
+            return GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative(kindPropertyName))) +
+                   GetControlDelta(GetPropertyHeightWithChildren(GetReactiveNumberCompareOperandValueProperty(property, kindPropertyName, floatPropertyName, intPropertyName), true));
+        }
+
+        private static void DrawReactiveNumberCompareOperand(
+            ref Rect position,
+            SerializedProperty property,
+            string kindPropertyName,
+            string floatPropertyName,
+            string intPropertyName,
+            string label)
+        {
+            DrawPropertyField(ref position, property.FindPropertyRelative(kindPropertyName), $"{label} Type");
+            DrawPropertyField(ref position, GetReactiveNumberCompareOperandValueProperty(property, kindPropertyName, floatPropertyName, intPropertyName), label);
+        }
+
+        private static SerializedProperty GetReactiveNumberCompareOperandValueProperty(
+            SerializedProperty property,
+            string kindPropertyName,
+            string floatPropertyName,
+            string intPropertyName)
+        {
+            SerializedProperty kindProperty = property.FindPropertyRelative(kindPropertyName);
+            return kindProperty != null && kindProperty.enumValueIndex == (int)ReactiveNumberValueKind.Int
+                ? property.FindPropertyRelative(intPropertyName)
+                : property.FindPropertyRelative(floatPropertyName);
+        }
+
         protected static float GetEntityTargetReferenceHeight(SerializedProperty property)
         {
             if (property == null)

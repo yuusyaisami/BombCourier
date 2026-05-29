@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BC.Base
 {
@@ -15,7 +16,7 @@ namespace BC.Base
         EntityValueStore = 1,
         KernelValueStore = 2,
         EntityAlive = 3,
-        CompareFloat = 4,
+        CompareNumber = 4,
     }
 
     [Serializable]
@@ -70,7 +71,8 @@ namespace BC.Base
         [SerializeField] private ReactiveEntityValueSource entityValue;
         [SerializeField] private ReactiveKernelValueSource localValue;
         [SerializeField] private ReactiveBoolEntityAliveSource entityAlive;
-        [SerializeField] private ReactiveFloatCompareSource compareFloat;
+        [FormerlySerializedAs("compareFloat")]
+        [SerializeField] private ReactiveNumberCompareSource compareNumber;
         [SerializeField] private bool fallbackValue;
 
         public ReactiveSnapshotBoolSourceKind SourceKind => sourceKind;
@@ -79,7 +81,7 @@ namespace BC.Base
         public ReactiveEntityValueSource EntityValue => entityValue;
         public ReactiveKernelValueSource LocalValue => localValue;
         public ReactiveBoolEntityAliveSource EntityAliveSource => entityAlive;
-        public ReactiveFloatCompareSource CompareFloatSource => compareFloat;
+        public ReactiveNumberCompareSource CompareNumberSource => compareNumber;
         public bool FallbackValue => fallbackValue;
 
         public static ReactiveSnapshotBool LiteralValue(bool value)
@@ -130,17 +132,59 @@ namespace BC.Base
             };
         }
 
-        public static ReactiveSnapshotBool CompareFloat(
+        public static ReactiveSnapshotBool CompareNumber(
             ReactiveFloat left,
             ReactiveFloat right,
-            ReactiveFloatComparisonKind comparison,
+            ReactiveNumberComparisonKind comparison,
             float epsilon = 0.0001f)
         {
             return new ReactiveSnapshotBool
             {
-                sourceKind = ReactiveSnapshotBoolSourceKind.CompareFloat,
+                sourceKind = ReactiveSnapshotBoolSourceKind.CompareNumber,
                 failurePolicy = ReactiveFailurePolicy.FailAction,
-                compareFloat = ReactiveFloatCompareSource.Create(left, right, comparison, epsilon),
+                compareNumber = ReactiveNumberCompareSource.Create(left, right, comparison, epsilon),
+            };
+        }
+
+        public static ReactiveSnapshotBool CompareNumber(
+            ReactiveInt left,
+            ReactiveInt right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon = 0.0001f)
+        {
+            return new ReactiveSnapshotBool
+            {
+                sourceKind = ReactiveSnapshotBoolSourceKind.CompareNumber,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                compareNumber = ReactiveNumberCompareSource.Create(left, right, comparison, epsilon),
+            };
+        }
+
+        public static ReactiveSnapshotBool CompareNumber(
+            ReactiveFloat left,
+            ReactiveInt right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon = 0.0001f)
+        {
+            return new ReactiveSnapshotBool
+            {
+                sourceKind = ReactiveSnapshotBoolSourceKind.CompareNumber,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                compareNumber = ReactiveNumberCompareSource.Create(left, right, comparison, epsilon),
+            };
+        }
+
+        public static ReactiveSnapshotBool CompareNumber(
+            ReactiveInt left,
+            ReactiveFloat right,
+            ReactiveNumberComparisonKind comparison,
+            float epsilon = 0.0001f)
+        {
+            return new ReactiveSnapshotBool
+            {
+                sourceKind = ReactiveSnapshotBoolSourceKind.CompareNumber,
+                failurePolicy = ReactiveFailurePolicy.FailAction,
+                compareNumber = ReactiveNumberCompareSource.Create(left, right, comparison, epsilon),
             };
         }
     }

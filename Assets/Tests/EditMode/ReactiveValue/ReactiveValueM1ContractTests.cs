@@ -12,11 +12,11 @@ namespace BC.Base.Tests
         {
             AssertEnumMembers("BC.Base.ReactiveEvaluationMode", "Snapshot", "Watched", "Continuous");
             AssertEnumMembers("BC.Base.ReactiveFailurePolicy", "FailAction", "UseFallback");
-            AssertEnumMembers("BC.Base.ReactiveFloatSourceKind", "Literal", "EntityValueStore", "Distance");
-            AssertEnumMembers("BC.Base.ReactiveIntSourceKind", "Literal", "EntityValueStore");
-            AssertEnumMembers("BC.Base.ReactiveBoolSourceKind", "Literal", "EntityValueStore", "EntityAlive", "CompareFloat");
+            AssertEnumMembers("BC.Base.ReactiveFloatSourceKind", "Literal", "EntityValueStore", "KernelValueStore", "Distance");
+            AssertEnumMembers("BC.Base.ReactiveIntSourceKind", "Literal", "EntityValueStore", "KernelValueStore");
+            AssertEnumMembers("BC.Base.ReactiveBoolSourceKind", "Literal", "EntityValueStore", "KernelValueStore", "EntityAlive", "CompareNumber");
             AssertEnumMembers("BC.Base.ReactiveVector3SourceKind", "Literal", "EntityTransformPosition", "EntityTransformForward", "AddPosition", "AddForward", "Direction");
-            AssertEnumMembers("BC.Base.ReactiveEntitySourceKind", "Self", "TriggerEntity", "EntityValueStore", "TargetReference");
+            AssertEnumMembers("BC.Base.ReactiveEntitySourceKind", "Self", "TriggerEntity", "EntityValueStore", "KernelValueStore", "TargetReference");
         }
 
         [Test]

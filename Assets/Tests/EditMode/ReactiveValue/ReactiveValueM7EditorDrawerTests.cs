@@ -101,7 +101,7 @@ namespace BC.Base.Tests
         }
 
         [Test]
-        public void ReactiveBoolDrawerNormalizesEntityAliveWatchedAndMeasuresCompareFloatFallbackHeight()
+        public void ReactiveBoolDrawerNormalizesEntityAliveWatchedAndMeasuresCompareNumberFallbackHeight()
         {
             SerializedProperty property = ReactiveValueTestUtility.FindRootProperty(serializedObject, "reactiveBool");
             PropertyDrawer drawer = ReactiveValueTestUtility.CreateDrawer("BC.Editor.ReactiveBoolDrawer");
@@ -113,15 +113,17 @@ namespace BC.Base.Tests
             NormalizeEvaluationMode(drawer, property);
             AssertEnum(property.FindPropertyRelative("evaluationMode"), EvaluationModeType, "Snapshot");
 
-            SetEnum(property.FindPropertyRelative("sourceKind"), BoolSourceKindType, "CompareFloat");
+            SetEnum(property.FindPropertyRelative("sourceKind"), BoolSourceKindType, "CompareNumber");
             SetEnum(property.FindPropertyRelative("failurePolicy"), FailurePolicyType, "UseFallback");
             ApplyChanges();
 
-            SerializedProperty compareProperty = property.FindPropertyRelative("compareFloat");
+            SerializedProperty compareProperty = property.FindPropertyRelative("compareNumber");
             float expectedHeight =
                 BaseDrawerHeight() +
-                ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("left"), true)) +
-                ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("right"), true)) +
+                ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("leftValueKind"), true)) +
+                ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("leftFloat"), true)) +
+                ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("rightValueKind"), true)) +
+                ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("rightFloat"), true)) +
                 ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("comparison"), true)) +
                 ControlDelta(EditorGUI.GetPropertyHeight(compareProperty.FindPropertyRelative("epsilon"), true)) +
                 ControlDelta(EditorGUI.GetPropertyHeight(property.FindPropertyRelative("fallbackValue"), true)) -

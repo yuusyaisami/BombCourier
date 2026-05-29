@@ -68,18 +68,28 @@ namespace BC.Base.Tests
                 object targetSpec = InvokeStatic("BC.Base.ReactiveEntityRef", "TargetReference", CreateTagSearchTargetReference(9202));
                 object distanceSpec = InvokeStatic("BC.Base.ReactiveFloat", "Distance", selfSpec, targetSpec);
                 object literalFive = InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 5f);
+                object literalFiveInt = InvokeStatic("BC.Base.ReactiveInt", "LiteralValue", 5);
                 object compareSpec = InvokeStatic(
                     "BC.Base.ReactiveBool",
-                    "CompareFloat",
+                    "CompareNumber",
                     distanceSpec,
                     literalFive,
-                    GetReactiveFloatComparisonKind("Equal"),
+                    GetReactiveNumberComparisonKind("Equal"),
+                    0.001f,
+                    GetReactiveEvaluationMode("Snapshot"));
+                object mixedCompareSpec = InvokeStatic(
+                    "BC.Base.ReactiveBool",
+                    "CompareNumber",
+                    distanceSpec,
+                    literalFiveInt,
+                    GetReactiveNumberComparisonKind("Equal"),
                     0.001f,
                     GetReactiveEvaluationMode("Snapshot"));
                 object aliveSpec = InvokeStatic("BC.Base.ReactiveBool", "EntityAlive", selfSpec);
 
                 AssertSuccessfulFloatResult(InvokeResolve(resolver, "ResolveFloat", context, distanceSpec), 5f);
                 AssertSuccessfulResult(InvokeResolve(resolver, "ResolveBool", context, compareSpec), true);
+                AssertSuccessfulResult(InvokeResolve(resolver, "ResolveBool", context, mixedCompareSpec), true);
                 AssertSuccessfulResult(InvokeResolve(resolver, "ResolveBool", context, aliveSpec), true);
 
                 UnregisterEntity(sceneKernel, actor);
@@ -340,9 +350,9 @@ namespace BC.Base.Tests
             return Enum.Parse(GetTypeByFullName("BC.Base.ReactiveEvaluationMode"), memberName);
         }
 
-        private static object GetReactiveFloatComparisonKind(string memberName)
+        private static object GetReactiveNumberComparisonKind(string memberName)
         {
-            return Enum.Parse(GetTypeByFullName("BC.Base.ReactiveFloatComparisonKind"), memberName);
+            return Enum.Parse(GetTypeByFullName("BC.Base.ReactiveNumberComparisonKind"), memberName);
         }
 
         private static Type GetTypeByFullName(string fullName)

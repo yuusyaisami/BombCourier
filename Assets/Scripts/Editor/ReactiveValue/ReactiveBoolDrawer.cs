@@ -33,11 +33,7 @@ namespace BC.Editor
                 (int)ReactiveBoolSourceKind.EntityValueStore => GetReactiveEntityValueSourceHeight(),
                 (int)ReactiveBoolSourceKind.KernelValueStore => GetReactiveKernelValueSourceHeight(),
                 (int)ReactiveBoolSourceKind.EntityAlive => GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("entityAlive").FindPropertyRelative("entity"), true)),
-                (int)ReactiveBoolSourceKind.CompareFloat =>
-                    GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("compareFloat").FindPropertyRelative("left"), true)) +
-                    GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("compareFloat").FindPropertyRelative("right"), true)) +
-                    GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("compareFloat").FindPropertyRelative("comparison"))) +
-                    GetControlDelta(GetPropertyHeightWithChildren(property.FindPropertyRelative("compareFloat").FindPropertyRelative("epsilon"))),
+                (int)ReactiveBoolSourceKind.CompareNumber => GetReactiveNumberCompareSourceHeight(property.FindPropertyRelative("compareNumber")),
                 _ => 0f,
             };
         }
@@ -58,12 +54,8 @@ namespace BC.Editor
                 case ReactiveBoolSourceKind.EntityAlive:
                     DrawPropertyField(ref position, property.FindPropertyRelative("entityAlive").FindPropertyRelative("entity"), "Entity");
                     break;
-                case ReactiveBoolSourceKind.CompareFloat:
-                    SerializedProperty compareProperty = property.FindPropertyRelative("compareFloat");
-                    DrawPropertyField(ref position, compareProperty.FindPropertyRelative("left"), "Left");
-                    DrawPropertyField(ref position, compareProperty.FindPropertyRelative("right"), "Right");
-                    DrawPropertyField(ref position, compareProperty.FindPropertyRelative("comparison"), "Comparison");
-                    DrawPropertyField(ref position, compareProperty.FindPropertyRelative("epsilon"), "Epsilon");
+                case ReactiveBoolSourceKind.CompareNumber:
+                    DrawReactiveNumberCompareSource(ref position, property.FindPropertyRelative("compareNumber"));
                     break;
             }
         }

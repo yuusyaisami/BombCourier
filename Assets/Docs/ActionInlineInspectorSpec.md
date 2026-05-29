@@ -315,7 +315,7 @@ If の condition summary は以下の優先で短くまとめる。
 - EntityValueStore: `<entity>:<key>`
 - LocalValueStore: `L:<key>`
 - EntityAlive: `Alive(<entity>)`
-- CompareFloat: `<left> <op> <right>`
+- CompareNumber: `<left> <op> <right>`
 
 `<op>` は以下へ圧縮する。
 
