@@ -4,6 +4,7 @@ using BC.Audio;
 using BC.Stage;
 using BC.UI.Effect;
 using Cysharp.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,6 +20,7 @@ namespace BC.UI.Title
         [SerializeField] private UIButtonFlashMB  buttonFlash;
         [SerializeField] private Image            previewImage;
         [SerializeField] private Image            lockedOverlay;
+        [SerializeField] private TextMeshProUGUI stageTitleText;
 
         [Header("Sound")]
         [Tooltip("フォーカスしたときの SE です。")]
@@ -44,6 +46,7 @@ namespace BC.UI.Title
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
             button.onClick.AddListener(OnClick);
+            noiseOutline?.SetFocused(false);
 
             // Navigation は UIStageSelectNavigationMB が明示指定するため無効化
             Navigation nav = button.navigation;
@@ -52,7 +55,7 @@ namespace BC.UI.Title
         }
 
         /// <summary>ステージデータを設定し表示を更新する。</summary>
-        public void Setup(StageData data, int index, bool isUnlocked)
+        public void Setup(StageData data, int index, bool isUnlocked, int starCount)
         {
             StageData       = data;
             StageIndex      = index;
@@ -61,6 +64,12 @@ namespace BC.UI.Title
             if (previewImage != null)
                 previewImage.sprite = data?.previewSprite;
 
+            if (stageTitleText != null)
+            {
+                stageTitleText.text = data != null ? data.stageName ?? string.Empty : string.Empty;
+                stageTitleText.color = ResolveTitleColor(starCount);
+            }
+
             if (lockedOverlay != null)
                 lockedOverlay.gameObject.SetActive(!isUnlocked);
 
@@ -68,6 +77,17 @@ namespace BC.UI.Title
 
             if (canvasGroup != null)
                 canvasGroup.alpha = isUnlocked ? 1f : 0.45f;
+        }
+
+        private static Color ResolveTitleColor(int starCount)
+        {
+            return starCount switch
+            {
+                3 => Color.yellow,
+                2 => new Color(0.5f, 0.85f, 1f, 1f),
+                1 => Color.white,
+                _ => Color.white,
+            };
         }
 
         /// <summary>フォーカス状態を設定する。Outline アニメーションが切り替わる。</summary>

@@ -15,19 +15,19 @@ MonoBehaviour:
   stepSelectionEntries:
   - stepTypeName: BC.ActionSystem.ShowTalkStepAuthoring, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639156322314420180
-    selectedCount: 50
+    lastSelectedUtcTicks: 639157482083674740
+    selectedCount: 65
   - stepTypeName: BC.ActionSystem.ShowTalkChoiceStepAuthoring, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639152308942205180
-    selectedCount: 6
+    lastSelectedUtcTicks: 639157483128038887
+    selectedCount: 16
   - stepTypeName: BC.ActionSystem.SetValueStoreValueStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639155006905353858
-    selectedCount: 2
+    lastSelectedUtcTicks: 639157481917152002
+    selectedCount: 7
   - stepTypeName: BC.ActionSystem.IfStepAuthoring, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639152322501573660
-    selectedCount: 1
+    lastSelectedUtcTicks: 639157481641354528
+    selectedCount: 6
   inlineActionSettings:
     reserved: 0

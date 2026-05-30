@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Febucci.TextAnimatorCore.Text;
 using Febucci.TextAnimatorForUnity;
+using System.Reflection;
 
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -29,6 +30,13 @@ namespace BC.UI
         private bool isShowingTalk; // 会話UIが表示されているかどうかのフラグ
         private bool bodyTextCompleted; // 本文の表示完了状態。Typewriterイベントで更新する。
         private AudioDataSO currentTalkCharacterSound; // 現在の話者の文字江サウンド。
+        private string currentDialogueText = string.Empty;
+        private int fallbackVisibleCharIndex;
+        private bool isMuteWithinParentheses;
+
+        private static readonly string[] CharacterDataCharMemberNames = { "character", "Character", "c", "char" };
+        private static MemberInfo cachedCharacterDataCharMember;
+        private static bool hasResolvedCharacterDataCharMember;
 
         public InputAction NextTalkInputAction => nextTalkInputAction != null ? nextTalkInputAction.action : null;
 
@@ -38,9 +46,13 @@ namespace BC.UI
             currentTalkCharacterSound = sound;
         }
 
-        private void OnCharacterVisible(CharacterData _)
+        private void OnCharacterVisible(CharacterData characterData)
         {
             if (currentTalkCharacterSound == null) return;
+
+            if (ShouldMuteCharacterSound(characterData))
+                return;
+
             AudioSystemMB.Instance?.PlaySE(currentTalkCharacterSound);
         }
 
@@ -118,6 +130,10 @@ namespace BC.UI
                 return;
             }
 
+            // 会話UIが非アクティブ開始でも入力が死なないよう、表示時に明示的に有効化する。
+            if (nextTalkInputAction != null)
+                nextTalkInputAction.action.Enable();
+
             // 文字サイズなどの見た目設定を先に反映する。
             ApplyTextEffect(talkRequestData.textEffectData);
 
@@ -126,6 +142,9 @@ namespace BC.UI
 
             // 新しい本文を開始する時点で、会話制御側の完了フラグを初期化する。
             bodyTextCompleted = string.IsNullOrEmpty(talkRequestData.dialogueText);
+            currentDialogueText = talkRequestData.dialogueText ?? string.Empty;
+            fallbackVisibleCharIndex = 0;
+            isMuteWithinParentheses = false;
 
             // 話者名と本文を typewriter 経由で更新する。
             if (speakerNameTypewriter != null)
@@ -187,7 +206,7 @@ namespace BC.UI
                     PlayNextIndicator();
                 }
 
-                if (nextTalkInputAction != null && nextTalkInputAction.action.WasPressedThisFrame())
+                if (WasAdvancePressedThisFrame())
                 {
                     if (!bodyTextCompleted)
                     {
@@ -215,7 +234,51 @@ namespace BC.UI
         private bool IsSubmitActuated()
         {
             InputAction action = nextTalkInputAction != null ? nextTalkInputAction.action : null;
-            return action != null && action.IsPressed();
+            if (action != null && action.IsPressed())
+                return true;
+
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.enterKey.isPressed || Keyboard.current.numpadEnterKey.isPressed || Keyboard.current.spaceKey.isPressed)
+                    return true;
+            }
+
+            if (Mouse.current != null && Mouse.current.leftButton.isPressed)
+                return true;
+
+            if (Gamepad.current != null)
+            {
+                Gamepad gp = Gamepad.current;
+                if (gp.buttonSouth.isPressed || gp.startButton.isPressed)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool WasAdvancePressedThisFrame()
+        {
+            InputAction action = nextTalkInputAction != null ? nextTalkInputAction.action : null;
+            if (action != null && action.WasPressedThisFrame())
+                return true;
+
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
+                    return true;
+            }
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                return true;
+
+            if (Gamepad.current != null)
+            {
+                Gamepad gp = Gamepad.current;
+                if (gp.buttonSouth.wasPressedThisFrame || gp.startButton.wasPressedThisFrame)
+                    return true;
+            }
+
+            return false;
         }
 
         // Typewriter の本文表示が完了した時に呼ばれる。Inspector からの登録でもコード登録でも使える。
@@ -250,6 +313,9 @@ namespace BC.UI
             await TalkRoot.DOScaleY(0f, duration).SetEase(Ease.InBack).AsyncWaitForCompletion();
             isShowingTalk = false;
             bodyTextCompleted = false;
+            currentDialogueText = string.Empty;
+            fallbackVisibleCharIndex = 0;
+            isMuteWithinParentheses = false;
 
             if (canvasGroup != null)
             {
@@ -292,6 +358,107 @@ namespace BC.UI
             }
 
             nextIndicatorAnimator.Stop();
+        }
+
+        private bool ShouldMuteCharacterSound(CharacterData characterData)
+        {
+            if (!TryResolveVisibleCharacter(characterData, out char visibleChar))
+                return isMuteWithinParentheses;
+
+            if (visibleChar == '(')
+            {
+                isMuteWithinParentheses = true;
+                return true;
+            }
+
+            if (visibleChar == ')')
+            {
+                bool wasMute = isMuteWithinParentheses;
+                isMuteWithinParentheses = false;
+                return wasMute;
+            }
+
+            return isMuteWithinParentheses;
+        }
+
+        private bool TryResolveVisibleCharacter(CharacterData characterData, out char visibleChar)
+        {
+            if (TryResolveCharacterFromCharacterData(characterData, out visibleChar))
+                return true;
+
+            // CharacterData から文字取得できない場合のフォールバック。
+            // dialogueText の先頭から順に進めるため、タグを含む文本ではズレる可能性がある。
+            if (string.IsNullOrEmpty(currentDialogueText) || fallbackVisibleCharIndex >= currentDialogueText.Length)
+            {
+                visibleChar = default;
+                return false;
+            }
+
+            visibleChar = currentDialogueText[fallbackVisibleCharIndex];
+            fallbackVisibleCharIndex++;
+            return true;
+        }
+
+        private static bool TryResolveCharacterFromCharacterData(CharacterData characterData, out char visibleChar)
+        {
+            if (!hasResolvedCharacterDataCharMember)
+            {
+                ResolveCharacterDataCharMember();
+                hasResolvedCharacterDataCharMember = true;
+            }
+
+            if (cachedCharacterDataCharMember == null)
+            {
+                visibleChar = default;
+                return false;
+            }
+
+            object value = cachedCharacterDataCharMember switch
+            {
+                FieldInfo fieldInfo => fieldInfo.GetValue(characterData),
+                PropertyInfo propertyInfo => propertyInfo.GetValue(characterData),
+                _ => null,
+            };
+
+            if (value is char ch)
+            {
+                visibleChar = ch;
+                return true;
+            }
+
+            if (value is string str && str.Length > 0)
+            {
+                visibleChar = str[0];
+                return true;
+            }
+
+            visibleChar = default;
+            return false;
+        }
+
+        private static void ResolveCharacterDataCharMember()
+        {
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            System.Type type = typeof(CharacterData);
+
+            for (int i = 0; i < CharacterDataCharMemberNames.Length; i++)
+            {
+                string memberName = CharacterDataCharMemberNames[i];
+
+                FieldInfo field = type.GetField(memberName, flags);
+                if (field != null)
+                {
+                    cachedCharacterDataCharMember = field;
+                    return;
+                }
+
+                PropertyInfo property = type.GetProperty(memberName, flags);
+                if (property != null)
+                {
+                    cachedCharacterDataCharMember = property;
+                    return;
+                }
+            }
         }
     }
 }

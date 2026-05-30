@@ -22,13 +22,16 @@ namespace BC.UI
         [SerializeField] private Color selectedOutlineColor = new(1f, 0.95f, 0.35f, 1f);
         [SerializeField] private Vector2 selectedOutlineDistance = new(2f, -2f);
         [SerializeField, Range(0.1f, 1f)] private float navigationDeadZone = 0.5f;
+        [SerializeField, Min(0.01f)] private float navigationInitialRepeatDelay = 0.22f;
+        [SerializeField, Min(0.01f)] private float navigationRepeatInterval = 0.10f;
 
         private readonly List<UITalkChoiceItemMB> activeItems = new();
         private readonly List<UITalkChoiceItemMB> pooledItems = new();
         private VerticalLayoutGroup verticalLayoutGroup;
         private ContentSizeFitter contentSizeFitter;
         private UITalkChoiceItemMB runtimeChoiceTemplate;
-        private bool navigationHeld;
+        private int lastNavigationDirection;
+        private float navigationRepeatTimer;
         private int clickedItemIndex = -1;
 
         private RectTransform ChoiceRoot => choiceRoot != null ? choiceRoot : transform as RectTransform;
@@ -49,7 +52,7 @@ namespace BC.UI
         {
             moveSelectionInputAction?.action.Disable();
             submitChoiceInputAction?.action.Disable();
-            navigationHeld = false;
+            ResetNavigationRepeatState();
         }
 
         private void OnDestroy()
@@ -92,7 +95,7 @@ namespace BC.UI
             {
                 // 会話送りに使った同一フレームの入力をそのまま選択確定へ流さないようにする。
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
-                navigationHeld = IsNavigationActuated();
+                ResetNavigationRepeatState();
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -142,7 +145,7 @@ namespace BC.UI
             }
 
             activeItems.Clear();
-            navigationHeld = false;
+            ResetNavigationRepeatState();
             clickedItemIndex = -1;
         }
 
@@ -304,41 +307,81 @@ namespace BC.UI
 
         private int ReadNavigationStep()
         {
-            InputAction action = moveSelectionInputAction?.action;
-            if (action == null)
-                return 0;
-
-            Vector2 input = action.ReadValue<Vector2>();
-            float verticalMagnitude = Mathf.Abs(input.y);
-            float horizontalMagnitude = Mathf.Abs(input.x);
-
-            int direction = 0;
-            if (verticalMagnitude >= navigationDeadZone)
-                direction = input.y > 0f ? -1 : 1;
-            else if (horizontalMagnitude >= navigationDeadZone)
-                direction = input.x > 0f ? 1 : -1;
-
+            int direction = ReadNavigationDirection();
             if (direction == 0)
             {
-                navigationHeld = false;
+                ResetNavigationRepeatState();
                 return 0;
             }
 
-            if (navigationHeld)
+            if (direction != lastNavigationDirection)
+            {
+                lastNavigationDirection = direction;
+                navigationRepeatTimer = Mathf.Max(0.01f, navigationInitialRepeatDelay);
+                return direction;
+            }
+
+            navigationRepeatTimer -= Time.unscaledDeltaTime;
+            if (navigationRepeatTimer > 0f)
                 return 0;
 
-            navigationHeld = true;
+            navigationRepeatTimer = Mathf.Max(0.01f, navigationRepeatInterval);
             return direction;
         }
 
-        private bool IsNavigationActuated()
+        private int ReadNavigationDirection()
         {
             InputAction action = moveSelectionInputAction?.action;
-            if (action == null)
-                return false;
+            if (action != null)
+            {
+                Vector2 input = action.ReadValue<Vector2>();
+                int actionDirection = ResolveDirectionFromVector(input);
+                if (actionDirection != 0)
+                    return actionDirection;
+            }
 
-            Vector2 input = action.ReadValue<Vector2>();
-            return Mathf.Abs(input.x) >= navigationDeadZone || Mathf.Abs(input.y) >= navigationDeadZone;
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.upArrowKey.isPressed || Keyboard.current.wKey.isPressed)
+                    return -1;
+                if (Keyboard.current.downArrowKey.isPressed || Keyboard.current.sKey.isPressed)
+                    return 1;
+            }
+
+            if (Gamepad.current != null)
+            {
+                Gamepad gp = Gamepad.current;
+                if (gp.dpad.up.isPressed)
+                    return -1;
+                if (gp.dpad.down.isPressed)
+                    return 1;
+
+                int stickDirection = ResolveDirectionFromVector(gp.leftStick.ReadValue());
+                if (stickDirection != 0)
+                    return stickDirection;
+            }
+
+            return 0;
+        }
+
+        private int ResolveDirectionFromVector(Vector2 input)
+        {
+            float verticalMagnitude = Mathf.Abs(input.y);
+            float horizontalMagnitude = Mathf.Abs(input.x);
+
+            if (verticalMagnitude >= navigationDeadZone)
+                return input.y > 0f ? -1 : 1;
+
+            if (horizontalMagnitude >= navigationDeadZone)
+                return input.x > 0f ? 1 : -1;
+
+            return 0;
+        }
+
+        private void ResetNavigationRepeatState()
+        {
+            lastNavigationDirection = 0;
+            navigationRepeatTimer = 0f;
         }
 
         private bool WasSubmitPressed(InputAction fallbackSubmitAction)

@@ -5,6 +5,7 @@ using BC.Base;
 using BC.Stage;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -34,6 +35,16 @@ namespace BC.UI.Title
         [SerializeField] private Image backgroundImageA;
         [SerializeField] private Image backgroundImageB;
         [SerializeField, Min(0f)] private float bgCrossFadeDuration = 0.4f;
+
+        [Header("Stage Detail")]
+        [SerializeField] private TextMeshProUGUI stageTitleText;
+        [SerializeField] private Image clearedRewardImage;
+        [SerializeField] private Sprite clearedRewardEarnedSprite;
+        [SerializeField] private Image bonusRewardImage;
+        [SerializeField] private Sprite bonusRewardEarnedSprite;
+        [SerializeField] private Image fastClearRewardImage;
+        [SerializeField] private Sprite fastClearRewardEarnedSprite;
+        [SerializeField] private Sprite rewardUncollectedSprite;
 
         [Header("Stage Registry")]
         [SerializeField] private StageRegistrySO stageRegistry;
@@ -79,6 +90,8 @@ namespace BC.UI.Title
 
             if (inactiveBgImage != null)
                 inactiveBgImage.color = Color.clear;
+
+            ResetStageDetailPanel();
 
             // ステージアイテム初期化
             SetupStageItems();
@@ -142,8 +155,10 @@ namespace BC.UI.Title
 
                 StageData data      = (i < stages.Count) ? stages[i] : null;
                 bool      unlocked  = (progress != null) ? progress.IsUnlocked(i) : (i == 0);
+                TitleStageProgressServiceMB.StageProgressData stageProgress =
+                    (progress != null) ? progress.GetStageProgress(i) : TitleStageProgressServiceMB.GetStageProgressPersisted(i);
 
-                item.Setup(data, i, unlocked);
+                item.Setup(data, i, unlocked, stageProgress.TotalStarCount);
                 item.OnFocused  += OnItemFocused;
                 item.OnSelected += OnItemSelected;
             }
@@ -193,6 +208,7 @@ namespace BC.UI.Title
         public override async UniTask HideAsync(CancellationToken ct)
         {
             pageCanvasGroup.interactable = false;
+            ResetStageDetailPanel();
 
             await pageCanvasGroup
                 .DOFade(0f, pageOutDuration)
@@ -244,6 +260,7 @@ namespace BC.UI.Title
         private void OnItemFocused(UIStageSelectItemMB item)
         {
             CrossFadeBackground(item.StageData?.backgroundSprite).Forget();
+            RefreshStageDetailPanel(item);
         }
 
         private void OnItemSelected(UIStageSelectItemMB item)
@@ -300,6 +317,46 @@ namespace BC.UI.Title
         private void OnBackButtonClicked()
         {
             TitleSceneManagerMB.Instance?.GoToMainPageAsync(destroyCancellationToken).Forget();
+        }
+
+        private void RefreshStageDetailPanel(UIStageSelectItemMB item)
+        {
+            if (item == null)
+            {
+                ResetStageDetailPanel();
+                return;
+            }
+
+            if (stageTitleText != null)
+            {
+                stageTitleText.text = item.StageData != null ? item.StageData.stageName ?? string.Empty : string.Empty;
+            }
+
+            TitleStageProgressServiceMB.StageProgressData progress = TitleStageProgressServiceMB.GetStageProgressPersisted(item.StageIndex);
+            ApplyRewardSprite(clearedRewardImage, progress.IsCleared, clearedRewardEarnedSprite);
+            ApplyRewardSprite(bonusRewardImage, progress.HasBonusReward, bonusRewardEarnedSprite);
+            ApplyRewardSprite(fastClearRewardImage, progress.HasFastClearReward, fastClearRewardEarnedSprite);
+        }
+
+        private void ResetStageDetailPanel()
+        {
+            if (stageTitleText != null)
+            {
+                stageTitleText.text = string.Empty;
+            }
+
+            ApplyRewardSprite(clearedRewardImage, false, clearedRewardEarnedSprite);
+            ApplyRewardSprite(bonusRewardImage, false, bonusRewardEarnedSprite);
+            ApplyRewardSprite(fastClearRewardImage, false, fastClearRewardEarnedSprite);
+        }
+
+        private void ApplyRewardSprite(Image image, bool earned, Sprite earnedSprite)
+        {
+            if (image == null)
+                return;
+
+            image.sprite = earned ? earnedSprite : rewardUncollectedSprite;
+            image.enabled = image.sprite != null;
         }
     }
 }

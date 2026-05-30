@@ -138,13 +138,19 @@ namespace BC.Bomb
 
         private static void NotifyImpactReceiver(Collider hitCollider, Vector3 direction, float forceMagnitude)
         {
-            if (hitCollider.TryGetComponent(out IExplosionImpactReceiver explosionReceiver))
+            IExplosionImpactReceiver explosionReceiver = hitCollider.GetComponent<IExplosionImpactReceiver>()
+                                                       ?? hitCollider.GetComponentInParent<IExplosionImpactReceiver>();
+
+            if (explosionReceiver != null)
             {
                 explosionReceiver.OnExplosionImpactReceived(direction, forceMagnitude);
                 return;
             }
 
-            if (hitCollider.TryGetComponent(out IBombImpactReceiver legacyReceiver))
+            IBombImpactReceiver legacyReceiver = hitCollider.GetComponent<IBombImpactReceiver>()
+                                               ?? hitCollider.GetComponentInParent<IBombImpactReceiver>();
+
+            if (legacyReceiver != null)
                 legacyReceiver.OnBombImpactReceived(direction, forceMagnitude);
         }
 
@@ -267,6 +273,9 @@ namespace BC.Bomb
         {
             return new BombCheckpointState(
                 transform.parent,
+                transform.localPosition,
+                transform.localRotation,
+                transform.localScale,
                 fuseStarted,
                 exploded,
                 isHandled,
@@ -287,6 +296,9 @@ namespace BC.Bomb
             // これにより Reload 復帰直後に held 判定で即爆発する経路を防ぐ。
             return new BombCheckpointState(
             transform.parent,
+            transform.localPosition,
+            transform.localRotation,
+            transform.localScale,
             false,
             false,
             false,
@@ -307,6 +319,9 @@ namespace BC.Bomb
 
             ClearIgnoredPlayerCollisions();
             transform.SetParent(checkpointState.Parent, true);
+            transform.localPosition = checkpointState.LocalPosition;
+            transform.localRotation = checkpointState.LocalRotation;
+            transform.localScale = checkpointState.LocalScale;
 
             fuseStarted = checkpointState.FuseStarted;
             exploded = checkpointState.Exploded;
@@ -323,8 +338,22 @@ namespace BC.Bomb
                 rb.isKinematic = checkpointState.IsKinematic;
                 rb.useGravity = checkpointState.UseGravity;
                 rb.detectCollisions = checkpointState.DetectCollisions;
-                rb.linearVelocity = checkpointState.LinearVelocity;
-                rb.angularVelocity = checkpointState.AngularVelocity;
+
+                if (!rb.isKinematic)
+                {
+                    rb.linearVelocity = checkpointState.LinearVelocity;
+                    rb.angularVelocity = checkpointState.AngularVelocity;
+                }
+                else
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+            }
+
+            if (bombCollider != null)
+            {
+                bombCollider.enabled = !isHandled && !exploded;
             }
 
             if (startFuseEffect != null)
@@ -445,7 +474,9 @@ namespace BC.Bomb
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
-            rb.detectCollisions = true;
+            rb.detectCollisions = false;
+            if (bombCollider != null)
+                bombCollider.enabled = false;
 
             // 落下しないようにする
             rb.useGravity = false;
@@ -487,6 +518,8 @@ namespace BC.Bomb
             rb.isKinematic = false;
             rb.detectCollisions = true;
             rb.useGravity = true;
+            if (bombCollider != null)
+                bombCollider.enabled = true;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.AddForce(throwVelocity, ForceMode.VelocityChange);
@@ -838,6 +871,9 @@ namespace BC.Bomb
         {
             public BombCheckpointState(
                 Transform parent,
+                Vector3 localPosition,
+                Quaternion localRotation,
+                Vector3 localScale,
                 bool fuseStarted,
                 bool exploded,
                 bool isHandled,
@@ -851,6 +887,9 @@ namespace BC.Bomb
                 Vector3 angularVelocity)
             {
                 Parent = parent;
+                LocalPosition = localPosition;
+                LocalRotation = localRotation;
+                LocalScale = localScale;
                 FuseStarted = fuseStarted;
                 Exploded = exploded;
                 IsHandled = isHandled;
@@ -865,6 +904,9 @@ namespace BC.Bomb
             }
 
             public Transform Parent { get; }
+            public Vector3 LocalPosition { get; }
+            public Quaternion LocalRotation { get; }
+            public Vector3 LocalScale { get; }
             public bool FuseStarted { get; }
             public bool Exploded { get; }
             public bool IsHandled { get; }

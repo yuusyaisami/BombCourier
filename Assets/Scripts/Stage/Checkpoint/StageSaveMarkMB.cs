@@ -84,8 +84,11 @@ namespace BC.Stage
 
             if (rb != null)
             {
-                rb.linearVelocity = snapshot.LinearVelocity;
-                rb.angularVelocity = snapshot.AngularVelocity;
+                if (!rb.isKinematic)
+                {
+                    rb.linearVelocity = snapshot.LinearVelocity;
+                    rb.angularVelocity = snapshot.AngularVelocity;
+                }
                 rb.Sleep();
             }
 

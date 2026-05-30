@@ -409,6 +409,7 @@ GameObject:
   - component: {fileID: 1469540994083200100}
   - component: {fileID: 9190420324000731801}
   - component: {fileID: -1993309423423878992}
+  - component: {fileID: 1607328629353800611}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -587,6 +588,11 @@ MonoBehaviour:
   isSpawnParameter: IsSpawn
   onRaiseBodyParameter: OnRaiseBody
   upperBodyLayerName: UpperBody
+  onJumpAction:
+    _steps: []
+  references:
+    version: 2
+    RefIds: []
 --- !u!114 &4490053635938583149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615,8 +621,17 @@ MonoBehaviour:
   throwForceChargeTime: 1.5
   dropForwardVelocity: 0.75
   dropCarrierPlanarVelocityFactor: 0.35
+  throwOwnerCollisionIgnoreDuration: 0.2
   emptyHandThrowPreviewHoldTime: 0.2
   throwUpwardCompensationAngle: 18.5
+  releasePositionSafetyMargin: 0.06
+  releasePositionSearchDistance: 0.8
+  releasePositionSearchSteps: 12
+  releasePositionVerticalBias: 0.02
+  enableReleaseSafetyDebugLog: 0
+  pickUpSound: {fileID: 11400000, guid: 96de1b9d4b9d4b04f9dfdfb08b751105, type: 2}
+  throwSound: {fileID: 11400000, guid: 73760ba42657d984b9b4ea6e7fc5ab21, type: 2}
+  dropSound: {fileID: 11400000, guid: b29c5805522e9494d816d05e01beb786, type: 2}
   trajectoryLineRenderer: {fileID: 6412110987682579754}
   trajectoryCollisionMask:
     serializedVersion: 2
@@ -843,6 +858,9 @@ MonoBehaviour:
   externalVelocityDamping: 6
   minExternalVelocity: 0.03
   cushionImpactCooldown: 0.12
+  normalizeCushionBounceHeightToPhysicsGravity: 1
+  cushionReferenceGravity: 0
+  cushionBounceHeightCompensation: 1
   pushRigidbodiesOnContact: 1
   contactPushImpulse: 0.35
   contactPushSpeedMultiplier: 0.2
@@ -949,6 +967,25 @@ MonoBehaviour:
     applyNonTalkingShapeExpression: 0
     nonTalkingShapeExpressionId: 0
     restoreStateShapeExpressionOnStop: 0
+  talkCharacterSound: {fileID: 11400000, guid: 95a29e9408f873b4c934277b9b13a533, type: 2}
+--- !u!114 &1607328629353800611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7982850033400161385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49d12306ebf9adf4ba39296e77c429bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Player.PlayerFootstepMB
+  walkClips:
+  - {fileID: 11400000, guid: 4bda91532c055804e86c2573fe9bffa6, type: 2}
+  runClips: []
+  isSpeedSplitEnabled: 0
+  speedSplitThreshold: 0.7
+  playerAnimation: {fileID: 7130468073425802841}
 --- !u!1 &8098859386636133588
 GameObject:
   m_ObjectHideFlags: 0

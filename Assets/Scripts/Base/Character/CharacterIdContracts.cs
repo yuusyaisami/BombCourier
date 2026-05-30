@@ -136,8 +136,8 @@ namespace BC.Base
             [CharacterDisplayName("バニラ")]
             public static readonly CharacterId Vanilla = new(2001);
 
-            [CharacterDisplayName("モニカ")]
-            public static readonly CharacterId Monicar = new(2002);
+            [CharacterDisplayName("モンド")]
+            public static readonly CharacterId Mondo = new(2002);
 
             [CharacterDisplayName("ねずみ")]
             public static readonly CharacterId Nezumi = new(2003);

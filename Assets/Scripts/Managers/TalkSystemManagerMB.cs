@@ -162,6 +162,8 @@ namespace BC.Managers
 
         [SerializeField] private UITalkSystemMB talkSystemUIManagerMB;
         [SerializeField] private UITalkChoiceSystemMB talkChoiceUIManagerMB;
+        [Header("Camera")]
+        [SerializeField] private bool lockConversationFocusUntilHide = true;
 
         private CancellationTokenSource cancellationTokenSource;
         private EntityRef activeTalkActor;
@@ -388,6 +390,10 @@ namespace BC.Managers
         private void BeginConversationCameraFocus(EntityRef actor, EntityRef viewer)
         {
             SceneCameraFocusContext nextContext = new SceneCameraFocusContext(actor, viewer);
+
+            // 会話表示中は初回のフォーカス中心を維持し、話者切替によるカメラの揺れを防ぐ。
+            if (isConversationFocusActive && lockConversationFocusUntilHide)
+                return;
 
             // ShowTalk が連続で呼ばれても、同じ会話対象なら talk camera を再初期化しない。
             // HideTalk まで同じフォーカスを維持して、毎行ごとの位置リセットを防ぐ。

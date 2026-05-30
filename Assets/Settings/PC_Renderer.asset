@@ -135,55 +135,55 @@ MonoBehaviour:
     enabled: 1
     qualityTier: 1
     debugView: 0
-    exposure: 0.12
-    contrast: 1
-    saturation: 1.417
-    blackLift: 0.174
+    exposure: 0.28
+    contrast: 1.07
+    saturation: 1.413
+    blackLift: 0.187
     whiteSoftClamp: 0.407
-    pastelStrength: 0.216
-    highSaturationCompress: 0.5
-    pastelLuminanceBias: 0.15
+    pastelStrength: 0.184
+    highSaturationCompress: 0.503
+    pastelLuminanceBias: -0.009
     creamHighlightColor: {r: 1, g: 0.98, b: 0.93, a: 1}
-    creamHighlightStrength: 0.25
-    creamHighlightThreshold: 0.7
+    creamHighlightStrength: 0.184
+    creamHighlightThreshold: 0.74
     creamHighlightSoftness: 0.1
     edgeToneEnabled: 1
     edgeToneColor: {r: 0, g: 0, b: 0, a: 1}
-    edgeToneStrength: 0.713
-    edgeToneRadius: 0.582
+    edgeToneStrength: 0.421
+    edgeToneRadius: 0.606
     edgeToneSoftness: 0.354
     edgeSaturationFade: 0.249
     edgeBrightnessOffset: 0
     depthHazeEnabled: 1
     depthHazeColor: {r: 0.78, g: 0.86, b: 0.92, a: 1}
-    depthHazeStrength: 0.164
-    depthHazeStart: 0.369
+    depthHazeStrength: 0.22
+    depthHazeStart: 0.501
     depthHazeEnd: 0.95
     depthHazeSaturationFade: 0.18
     depthHazeBrightnessLift: 0.04
     softBloomEnabled: 1
-    softBloomThreshold: 0.595
-    softBloomSoftKnee: 0.252
-    softBloomIntensity: 0.14
+    softBloomThreshold: 0.943
+    softBloomSoftKnee: 0.56
+    softBloomIntensity: 0.331
     softBloomRadius: 0.65
     softBloomTint: {r: 1, g: 0.96, b: 0.92, a: 1}
     halationEnabled: 1
-    halationStrength: 0.04
+    halationStrength: 0.094
     halationColor: {r: 1, g: 0.74, b: 0.62, a: 1}
     halationThreshold: 0.88
     halationRadius: 0.55
     blueNoiseTex: {fileID: 0}
     grainEnabled: 1
-    grainStrength: 0.0074
+    grainStrength: 0.0075
     grainScale: 1
     grainResponse: 0.6
     grainTemporalStrength: 0.1
     shadowTint: {r: 0.46, g: 0.5, b: 0.68, a: 1}
     midTint: {r: 1, g: 1, b: 1, a: 1}
     highlightTint: {r: 1, g: 0.95, b: 0.86, a: 1}
-    shadowTintStrength: 0.397
+    shadowTintStrength: 0.204
     midTintStrength: 0
-    highlightTintStrength: 0.2
+    highlightTintStrength: 0.161
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 0

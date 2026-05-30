@@ -20947,6 +20947,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3019938517546035353}
     - target: {fileID: 4281229540882188256, guid: d8a4515adc1a63d489a1cbca29138f5a, type: 3}
+      propertyPath: breakForceThreshold
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4281229540882188256, guid: d8a4515adc1a63d489a1cbca29138f5a, type: 3}
       propertyPath: goalData.goalCamera
       value: 
       objectReference: {fileID: 3430519972656309422}

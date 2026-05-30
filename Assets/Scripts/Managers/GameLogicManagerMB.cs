@@ -12,6 +12,7 @@ using BC.Managers;
 using BC.Player;
 using BC.Stage;
 using BC.UI;
+using BC.UI.Title;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Unity.Cinemachine;
@@ -80,6 +81,7 @@ namespace BC.Manager
         private bool resetArmed;
         private bool hasStartedAnyBombFuseThisStage;
         private bool isShuttingDown;
+        private bool introPathSkipRequested;
 
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
@@ -210,7 +212,8 @@ namespace BC.Manager
                 stageCheckpoint,
                 resolvedPlayer.transform.position,
                 resolvedPlayer.transform.rotation,
-                targetBomb));
+                targetBomb,
+                targetBomb.CaptureRetryCheckpointState()));
 
             resetArmed = false;
             SetCurrentBomb(targetBomb);
@@ -429,6 +432,9 @@ namespace BC.Manager
             bool isBonusItem = currentBonusObject != null && currentBonusObject.IsCollected;
             sceneKernel.ValueStore.Set<bool>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.IsBonusItem, isBonusItem);
 
+            // タイトル画面の解放状態とステージ報酬を永続化する。
+            TitleStageProgressServiceMB.SaveStageResultPersisted(currentGameStage, isBonusItem, isFastClear);
+
 
             PlayerMB resolvedPlayer = ResolvePlayerInstance();
             if (resolvedPlayer == null)
@@ -623,6 +629,8 @@ namespace BC.Manager
             if (IsDestroyedOrShuttingDown())
                 return;
 
+            introPathSkipRequested = false;
+
             if (CameraManager.Instance == null)
             {
                 Debug.LogError("GameLogicManagerMB: CameraManager.Instance is null.", this);
@@ -681,19 +689,26 @@ namespace BC.Manager
                 if (IsDestroyedOrShuttingDown())
                     return;
 
-                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
+                if (!introPathSkipRequested)
+                    await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0.2f, 0.5f); // フェードインさせる
+
                 await playPathTask;
 
                 if (IsDestroyedOrShuttingDown())
                     return;
+
+                // Skip 経路では PlayPath 完了 callback が走らない場合があるため、ここで黒フェードを保証する。
+                if (introPathSkipRequested && uiFadeEffectMB != null)
+                {
+                    await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f);
+                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                }
 
                 PlayerMB resolvedPlayer = ResolvePlayerInstance();
                 if (resolvedPlayer != null)
                 {
                     resolvedPlayer.PlayRespawnEffect(); // プレイヤーのスポーンエフェクトを再生する
                 }
-                // 少し待つ
-                await UniTask.Delay(800);
 
                 if (IsDestroyedOrShuttingDown() || resolvedPlayer == null)
                     return;
@@ -728,6 +743,7 @@ namespace BC.Manager
                 }
 
                 introSkipCts?.Dispose();
+                introPathSkipRequested = false;
 
                 if (introSkipShown && introPathSkipUI != null)
                 {
@@ -756,6 +772,14 @@ namespace BC.Manager
             catch (OperationCanceledException)
             {
                 return;
+            }
+
+            introPathSkipRequested = true;
+
+            if (!IsDestroyedOrShuttingDown() && uiFadeEffectMB != null)
+            {
+                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f);
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             }
 
             if (!IsDestroyedOrShuttingDown())
@@ -796,6 +820,14 @@ namespace BC.Manager
             itemHandleState?.RestoreRetryCheckpointState();
 
             StageManagerMB.Instance.ReloadStage(retryCheckpoint.StageCheckpoint);
+
+            if (retryCheckpoint.Bomb != null && retryCheckpoint.BombRetryState != null)
+            {
+                if (!retryCheckpoint.Bomb.gameObject.activeSelf)
+                    retryCheckpoint.Bomb.gameObject.SetActive(true);
+
+                retryCheckpoint.Bomb.RestoreCheckpointState(retryCheckpoint.BombRetryState);
+            }
 
             if (resolvedPlayer != null)
             {
@@ -1167,17 +1199,20 @@ namespace BC.Manager
             StageCheckpointSnapshot stageCheckpoint,
             Vector3 playerPosition,
             Quaternion playerRotation,
-            BombMB bomb)
+            BombMB bomb,
+            object bombRetryState)
         {
             StageCheckpoint = stageCheckpoint;
             PlayerPosition = playerPosition;
             PlayerRotation = playerRotation;
             Bomb = bomb;
+            BombRetryState = bombRetryState;
         }
 
         public StageCheckpointSnapshot StageCheckpoint { get; }
         public Vector3 PlayerPosition { get; }
         public Quaternion PlayerRotation { get; }
         public BombMB Bomb { get; }
+        public object BombRetryState { get; }
     }
 }

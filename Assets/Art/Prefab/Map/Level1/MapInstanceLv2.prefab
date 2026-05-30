@@ -7005,6 +7005,7 @@ MonoBehaviour:
   goalData:
     goalCamera: {fileID: 949840481674196722}
     playerTargetPoint: {x: 0, y: 0.24, z: -12.29}
+    isFinalGoal: 0
     goalTransform: {fileID: 514045046858842509}
   bonusObject: {fileID: 5139713186206649234}
   bombs:
@@ -15793,6 +15794,7 @@ Transform:
   - {fileID: 2414880672883020417}
   - {fileID: 81109220776239907}
   - {fileID: 9077898882666240435}
+  - {fileID: 3260288080671820688}
   m_Father: {fileID: 8042257866616949859}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4599463972760819926
@@ -15957,16 +15959,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   breakEffectPrefab: {fileID: 0}
   breakableParts: []
+  autoCollectChildRigidbodies: 0
+  maxBreakablePartsToActivate: -1
   breakForceThreshold: 75
   explosionForce: 75
+  partCollisionEnableDelay: 0.08
+  breakStabilizeDuration: 0.75
+  maxPartLinearSpeed: 8
+  maxPartAngularSpeed: 20
+  maxPartDepenetrationVelocity: 2
   breakForceDirection: {x: 0, y: 0, z: -1}
   breakForceOrigin: {fileID: 2370501850498211883}
   gateCollider: {fileID: 963327285321849057}
+  breakSound: {fileID: 0}
   isGoalGate: 1
   goalTriggerObject: {fileID: 819056221266901701}
   goalData:
     goalCamera: {fileID: 949840481674196722}
     playerTargetPoint: {x: 0, y: 0.24, z: -12.29}
+    isFinalGoal: 0
     goalTransform: {fileID: 514045046858842509}
 --- !u!1 &5274600776776359470
 GameObject:
@@ -26230,6 +26241,119 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!1 &8767302152200591236
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3260288080671820688}
+  - component: {fileID: 8456407811390490625}
+  - component: {fileID: 7121363893983204282}
+  - component: {fileID: 994845252920877828}
+  m_Layer: 0
+  m_Name: Quad
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3260288080671820688
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8767302152200591236}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.70710677, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 8.992, y: 11.407, z: -4.776}
+  m_LocalScale: {x: 2.79, y: 3.28, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 789274547476768100}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!33 &8456407811390490625
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8767302152200591236}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &7121363893983204282
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8767302152200591236}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: f6d186729be96ec48a884863fd56e08f, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &994845252920877828
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8767302152200591236}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &8825358721561468603
 GameObject:
   m_ObjectHideFlags: 0
@@ -27394,7 +27518,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: interactionAction._steps.Array.size
-      value: 16
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'managedReferences[30532875499340237]'
@@ -27481,6 +27605,10 @@ PrefabInstance:
       value: Assembly-CSharp BC.ActionSystem.ShowTalkStepAuthoring
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: 'managedReferences[30533034660856518]'
+      value: Assembly-CSharp BC.ActionSystem.ShowTalkStepAuthoring
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[0]'
       value: 30532875499340237
       objectReference: {fileID: 0}
@@ -27506,42 +27634,46 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[6]'
-      value: 30532875499340243
+      value: 30533034660856518
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[7]'
-      value: 30532875499340244
+      value: 30532875499340243
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[8]'
-      value: 30533001124511829
+      value: 30532875499340244
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[9]'
-      value: 30532875499340245
+      value: 30533001124511829
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[10]'
-      value: 30532875499340246
+      value: 30532875499340245
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[11]'
-      value: 30532875499340247
+      value: 30532875499340246
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[12]'
-      value: 30532875499340248
+      value: 30532875499340247
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[13]'
-      value: 30532875499340249
+      value: 30532875499340248
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[14]'
-      value: 30532875499340250
+      value: 30532875499340249
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[15]'
+      value: 30532875499340250
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: 'interactionAction._steps.Array.data[16]'
       value: 30532875499340251
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -27626,6 +27758,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533001124511829].DisplayName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].DisplayName
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -27801,6 +27937,14 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.speakerName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.talkStateId
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.dialogueText
       value: "\u3053\u3093\u306B\u3061\u306F\u3001\u56DA\u308F\u308C\u306E\u30CD\u30BA\u30DF\u3055\u3093!"
       objectReference: {fileID: 0}
@@ -27818,8 +27962,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340242].talkRequestData.dialogueText
-      value: "\u305D\u3046\u306D\u3047...\u6B21\u306B\u3042\u306A\u305F\u306F\u3001\u305D\u3053\u306E\u5D16\u304B\u3089\u6301\u3063\u3066\u3044\u308B\u7206\u5F3E\u3054\u3068\u843D\u3061\u308B\u3002\n\u305D\u3057\u3066\u843D\u4E0B\u306E\u885D\u6483\u3067\u30C9\u30AB\u30F3\uFF01
-        \u3063\u3066\u7206\u6B7B\u3059\u308B\u308F\uFF01 \u304D\u3063\u3068\u5091\u4F5C\u306B\u306A\u308B\u308F\u306D\uFF01"
+      value: "\u305D\u3046\u306D\u3047...\u6B21\u306B\u3042\u306A\u305F\u306F\u3001\n\u305D\u3053\u306E\u5D16\u304B\u3089\u6301\u3063\u3066\u3044\u308B\u7206\u5F3E\u3054\u3068\u843D\u3061\u308B\u3002"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340243].talkRequestData.dialogueText
@@ -27876,6 +28019,11 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533001124511829].talkRequestData.dialogueText
       value: "\u3053\u308C\u306F\u547D\u4EE4\u3088\u3001\u7D76\u5BFE\u3060\u304B\u3089\u306D\uFF01"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.dialogueText
+      value: "\u305D\u3057\u3066\u843D\u4E0B\u306E\u885D\u6483\u3067\u30C9\u30AB\u30F3\uFF01
+        \n\u3063\u3066\u7206\u6B7B\u3059\u308B\u308F\uFF01 \u304D\u3063\u3068\u5091\u4F5C\u306B\u306A\u308B\u308F\u306D\uFF01"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].stableId
@@ -28058,6 +28206,14 @@ PrefabInstance:
       value: 2001
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.actionToggleVersion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.speakerCharacter.id
+      value: 2001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.useOnStartTalkAction
       value: 0
       objectReference: {fileID: 0}
@@ -28134,6 +28290,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.useOnStartTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.speakerCharacter.path
       value: Npc.Vanilla
       objectReference: {fileID: 0}
@@ -28207,6 +28367,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533001124511829].talkRequestData.speakerCharacter.path
+      value: Npc.Vanilla
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.speakerCharacter.path
       value: Npc.Vanilla
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -28362,6 +28526,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.textEffectData.fontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.useOnCompleteTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.isWaitingActionCompleted
       value: 0
       objectReference: {fileID: 0}
@@ -28435,6 +28607,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533001124511829].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.isWaitingActionCompleted
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -28519,6 +28695,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533001124511829].talkRequestData.textEffectData.applyFontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.textEffectData.applyFontSize
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -28638,6 +28818,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.onStartTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].inlineAction._steps.Array.size
       value: 3
       objectReference: {fileID: 0}
@@ -28751,6 +28935,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533001124511829].talkRequestData.onCompleteTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.onCompleteTalkAction._steps.Array.size
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29134,6 +29322,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.epsilon
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.localValue.storeScope
       value: 0
       objectReference: {fileID: 0}
@@ -29156,6 +29348,10 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.stringValue.localValue.key.path
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.epsilon
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.localValue.storeScope
@@ -29254,6 +29450,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.comparison
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.entityMoveStateValue.failurePolicy
       value: 0
       objectReference: {fileID: 0}
@@ -29275,6 +29475,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.shapeExpressionValue.fallbackValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.comparison
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29342,6 +29546,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftValueKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.entityValue.targetReference.selection
       value: 0
       objectReference: {fileID: 0}
@@ -29356,6 +29564,10 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.intValue.localValue.key.valueTypeName
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftValueKind
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.entityValue.targetReference.selection
@@ -29375,6 +29587,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightValueKind
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29406,6 +29622,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightValueKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityValue.entitySourceKind
       value: 0
       objectReference: {fileID: 0}
@@ -29431,6 +29651,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.literal
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29470,6 +29694,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.literal
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityAlive.entity.sourceKind
       value: 0
       objectReference: {fileID: 0}
@@ -29499,6 +29727,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.shapeExpressionValue.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.literal
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29532,6 +29764,10 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.stringValue.localValue.key.valueTypeName
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.literal
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.entityMoveStateValue.localValue.key.path
@@ -29574,6 +29810,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.literal
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.fallbackKind
       value: 0
       objectReference: {fileID: 0}
@@ -29611,6 +29851,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.fallbackValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.literal
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29658,6 +29902,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.literal
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.failurePolicy
       value: 0
       objectReference: {fileID: 0}
@@ -29686,6 +29938,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.literal
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityAlive.entity.failurePolicy
       value: 0
       objectReference: {fileID: 0}
@@ -29706,6 +29966,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.evaluationMode
       value: 0
       objectReference: {fileID: 0}
@@ -29722,6 +29986,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityAlive.entity.evaluationMode
       value: 0
       objectReference: {fileID: 0}
@@ -29734,7 +30002,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.fromEntity.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.sourceKind
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29746,11 +30022,35 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.fallbackValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.fromEntity.evaluationMode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.fallbackValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.sourceKind
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29763,6 +30063,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.fallbackValue
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29782,6 +30094,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.fallbackValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityAlive.entity.localValue.key.id
       value: 0
       objectReference: {fileID: 0}
@@ -29795,6 +30119,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.fallbackValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.evaluationMode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -29814,6 +30150,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.fallbackValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityAlive.entity.entityValue.key.id
       value: 0
       objectReference: {fileID: 0}
@@ -29828,6 +30176,18 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.localValue.key.path
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.fallbackValue
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.localValue.key.path
@@ -29858,6 +30218,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.fallbackValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityAlive.entity.localValue.key.path
       value: 
       objectReference: {fileID: 0}
@@ -29884,6 +30256,14 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.entityValue.key.path
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.evaluationMode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.entityValue.key.path
@@ -29934,6 +30314,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityAlive.entity.entityValue.key.path
       value: 
       objectReference: {fileID: 0}
@@ -29978,6 +30366,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.localValue.storeScope
       value: 0
       objectReference: {fileID: 0}
@@ -30002,6 +30398,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityAlive.entity.localValue.storeScope
       value: 0
       objectReference: {fileID: 0}
@@ -30022,6 +30426,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.targetReference.tag.id
       value: 0
       objectReference: {fileID: 0}
@@ -30035,6 +30451,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.toEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.entityValue.key.id
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30054,12 +30482,60 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.fromEntity.localValue.storeScope
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.floatValue.distance.fromEntity.localValue.storeScope
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.entityValue.key.path
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.targetReference.tag.path
@@ -30071,6 +30547,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.toEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.entityValue.key.path
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30086,11 +30578,35 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityAlive.entity.targetReference.selection
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.toEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.localValue.storeScope
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30102,7 +30618,23 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.fromEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.entityValue.key.path
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30122,6 +30654,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.fromEntity.targetReference.selection
       value: 0
       objectReference: {fileID: 0}
@@ -30136,6 +30672,10 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.localValue.key.valueTypeName
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.localValue.storeScope
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.floatValue.distance.fromEntity.targetReference.selection
@@ -30298,6 +30838,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.distance.fromEntity.entityValue.key.valueTypeName
       value: 
       objectReference: {fileID: 0}
@@ -30312,6 +30860,14 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.failurePolicy
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.localValue.key.valueTypeName
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.floatValue.distance.fromEntity.entityValue.key.valueTypeName
@@ -30330,6 +30886,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftInt.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.failurePolicy
       value: 0
       objectReference: {fileID: 0}
@@ -30342,12 +30910,40 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftInt.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.evaluationMode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.fromEntity.failurePolicy
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightInt.entityValue.key.valueTypeName
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.evaluationMode
@@ -30358,12 +30954,44 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightInt.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.localValue.key.id
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.fromEntity.evaluationMode
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.localValue.key.valueTypeName
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.localValue.key.id
@@ -30374,6 +31002,22 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.entityValue.key.id
       value: 0
       objectReference: {fileID: 0}
@@ -30382,12 +31026,36 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.fallbackKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.entityValue.key.id
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.localValue.key.id
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.fallbackKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.entityValue.key.valueTypeName
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.localValue.key.id
@@ -30402,6 +31070,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.fallbackKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.localValue.key.id
       value: 0
       objectReference: {fileID: 0}
@@ -30411,6 +31091,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.sourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.fallbackKind
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30434,6 +31126,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.fallbackKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.entityValue.key.id
       value: 0
       objectReference: {fileID: 0}
@@ -30454,6 +31158,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.fallbackKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.localValue.key.path
       value: 
       objectReference: {fileID: 0}
@@ -30471,6 +31187,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.targetReference.mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.fallbackKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.evaluationMode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30494,6 +31222,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.fallbackKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.entityValue.key.path
       value: 
       objectReference: {fileID: 0}
@@ -30511,6 +31251,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.failurePolicy
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30534,6 +31282,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.failurePolicy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.localValue.storeScope
       value: 0
       objectReference: {fileID: 0}
@@ -30547,6 +31303,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.evaluationMode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30566,6 +31330,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.evaluationMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.targetReference.tag.id
       value: 0
       objectReference: {fileID: 0}
@@ -30575,6 +31347,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.fromEntity.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.localValue.key.id
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30590,6 +31370,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.targetReference.selection
       value: 0
       objectReference: {fileID: 0}
@@ -30600,6 +31388,18 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.targetReference.tag.path
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.entityValue.key.id
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.targetReference.selection
@@ -30614,12 +31414,44 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.targetReference.tag.path
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.targetReference.selection
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.targetReference.mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.localValue.key.path
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.targetReference.tag.path
@@ -30630,6 +31462,26 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.targetReference.mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.localValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.targetReference.selection
       value: 0
       objectReference: {fileID: 0}
@@ -30638,12 +31490,52 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.targetReference.mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.targetReference.selection
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.right.distance.fromEntity.targetReference.tag.path
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.entityValue.key.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.targetReference.mode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.entityValue.entitySourceKind
@@ -30655,6 +31547,26 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.fromEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.targetReference.mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.localValue.storeScope
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30670,6 +31582,26 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.targetReference.mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.localValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.entityValue.key.valueTypeName
       value: 
       objectReference: {fileID: 0}
@@ -30680,6 +31612,22 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.localValue.key.valueTypeName
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.targetReference.mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.targetReference.tag.id
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.toEntity.entityValue.key.valueTypeName
@@ -30694,6 +31642,22 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.entityValue.key.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.targetReference.mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.entityValue.entitySourceKind
       value: 0
       objectReference: {fileID: 0}
@@ -30704,6 +31668,18 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.toEntity.entityValue.key.valueTypeName
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.localValue.storeScope
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.entityValue.entitySourceKind
@@ -30718,6 +31694,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.localValue.storeScope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.distance.fromEntity.entityValue.key.valueTypeName
       value: 
       objectReference: {fileID: 0}
@@ -30727,6 +31715,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.fromEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.targetReference.tag.path
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -30742,11 +31742,159 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.targetReference.tag.id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.right.distance.fromEntity.entityValue.key.valueTypeName
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareFloat.right.distance.fromEntity.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.targetReference.tag.path
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.targetReference.selection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.toEntity.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.toEntity.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.leftFloat.distance.fromEntity.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.entityValue.entitySourceKind
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.localValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.entityValue.key.valueTypeName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.compareNumber.rightFloat.distance.fromEntity.entityValue.key.valueTypeName
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6430549957021245030, guid: d363be833c43a174582360160d17b393, type: 3}

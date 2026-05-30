@@ -36,16 +36,23 @@ namespace BC.UI.Effect
         private Material outlineMaterial;
         private Tweener currentTween;
         private bool ownsOutlineMaterial;
+        private bool isFocused;
         private Vector2 lastAppliedRectSize;
 
         private void Awake()
         {
             EnsureOutlineChild();
+
+            if (Application.isPlaying)
+                SetFocusedImmediate(false);
         }
 
         private void OnEnable()
         {
             EnsureOutlineChild();
+
+            if (Application.isPlaying)
+                SetFocusedImmediate(false);
         }
 
         private void LateUpdate()
@@ -166,6 +173,8 @@ namespace BC.UI.Effect
         {
             if (outlineMaterial == null) return;
 
+            isFocused = focused;
+
             currentTween?.Kill();
             float target = focused ? 1f : 0f;
 
@@ -182,6 +191,16 @@ namespace BC.UI.Effect
                     fadeDuration)
                 .SetEase(Ease.OutQuad)
                 .SetUpdate(true);
+        }
+
+        private void SetFocusedImmediate(bool focused)
+        {
+            if (outlineMaterial == null)
+                return;
+
+            isFocused = focused;
+            currentTween?.Kill();
+            outlineMaterial.SetFloat(PropIntensity, focused ? 1f : 0f);
         }
 
         /// <summary>アウトラインカラーと幅を実行時に変更する。</summary>
