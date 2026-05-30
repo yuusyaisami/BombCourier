@@ -1,3 +1,4 @@
+using BC.Audio;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -20,6 +21,12 @@ namespace BC.Effects.Impact
         [SerializeField, Min(0.0f)] private float surfaceOffset = 0.015f;
         [SerializeField, Min(0.0f)] private float minSpeedMultiplier = 0.75f;
         [SerializeField, Min(0.0f)] private float maxSpeedMultiplier = 2.25f;
+
+        [Header("Sound")]
+        // 衝撃時に再生するサウンド。衝撃の強さに応じて音量が変わる。
+        [SerializeField] private AudioDataSO impactSound;
+        // この値以上の NormalizedStrength のときだけサウンドを再生する。
+        [SerializeField, Range(0f, 1f)] private float minImpactStrengthForSound = 0.1f;
 
         private ObjectPool<PooledImpactParticleMB> particlePool;
         private bool isDestroying;
@@ -71,6 +78,14 @@ namespace BC.Effects.Impact
             float speedMultiplier = Mathf.Lerp(minSpeedMultiplier, maxSpeedMultiplier, request.NormalizedStrength);
             PooledImpactParticleMB particle = particlePool.Get();
             particle.Play(request, baseColor, speedMultiplier, surfaceOffset, ReleaseParticle);
+
+            // 衝撃強度に応じた音を、ヒット位置から 3D 再生する。
+            if (impactSound != null && impactSound.Clip != null && request.NormalizedStrength >= minImpactStrengthForSound)
+            {
+                float volumeScale = impactSound.BaseVolume * request.NormalizedStrength;
+                AudioSource.PlayClipAtPoint(impactSound.Clip, request.Point, volumeScale);
+            }
+
             return true;
         }
 

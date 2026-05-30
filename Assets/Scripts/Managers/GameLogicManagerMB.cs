@@ -16,6 +16,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 namespace BC.Manager
 {
     // ゲーム進行全体をまとめるメインの司令塔。
@@ -45,6 +46,8 @@ namespace BC.Manager
         [SerializeField] private UIFadeEffectMB uiFadeEffectMB; // 画面フェードを担当する UI 側の制御。
         [SerializeField] private UIGameSceneManagerMB uiGameSceneManagerMB; // ゲーム中 UI 全体の表示/非表示を担う。
         [SerializeField] private EntityMB playerPrefab; // スポーン用プレイヤー prefab。
+        [Header("Return To Title")]
+        [SerializeField, Min(0)] private int titleSceneBuildIndex = 0; // クリア後に戻る title scene の build index。
         [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用に直接参照する stage instance。
         [SerializeField, Min(0)] private int debugStartStageIndex = 0; // 起動時にロードする stage index。
         // 現在のゲーム進行にぶら下がる主要参照群。
@@ -59,6 +62,7 @@ namespace BC.Manager
         private CameraPathSequenceAuthoringMB currentCameraPath; // 現在の camera path。
         private EntityRef playerRef; // player の EntityRef。
         public Action<PlayerMB> OnPlayerSpawned; // player spawn 通知。
+        public Action<PlayerMB> OnPlayerUpdated; // player 参照更新通知。
         public Action<BombMB> OnCurrentBombChanged; // current bomb 変更通知。
         public Action<BombMB> OnStartBombFuse; // fuse 開始通知。
         public Action OnEndBombFuse; // fuse 終了通知。
@@ -79,6 +83,7 @@ namespace BC.Manager
 
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
+        public int CurrentStageIndex => currentGameStage;
         public RetryActionMode CurrentRetryActionMode => ResolveRetryActionMode();
         public bool HasRetryCheckpoint => retryCheckpointStack.Count > 0;
         public bool HasStartedAnyBombFuseThisStage => hasStartedAnyBombFuseThisStage || HasAnySceneBombFuseStartedOrExploded();
@@ -361,6 +366,7 @@ namespace BC.Manager
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, true);
+                GameBGMManagerMB.Instance?.PlayGameplayBGM();
             }
             else if (newState == GameState.FusePlaying)
             {
@@ -386,6 +392,10 @@ namespace BC.Manager
             {
                 NextStageAsync().Forget(); // 次のステージに進む処理を実行する
             }
+            else if (newState == GameState.ReturnToTitle)
+            {
+                ReturnToTitleAsync().Forget();
+            }
             else if (newState == GameState.GameOver)
             {
                 // ゲームオーバーになったときの処理
@@ -404,17 +414,20 @@ namespace BC.Manager
                 return;
             }
             // Bombのカウントダウン時間をValueStoreに反映
+            // 評価データは SelfEntityRef (gameLogicManagerRef) に書き込む。
+            // UIStageClearMB は GameLogicManagerMB.Instance.SelfEntityRef でこれを読むため、
+            // playerRef に書くと読み取り先が合わず評価星が正しく表示されない。
             if (sceneKernel != null && gameLogicManagerRef.IsValid)
             {
-                sceneKernel.ValueStore.Set<float>(playerRef, ValueKeys.Kernel.Evaluation.CountdownTime, timeSinceStartBomb);
-                sceneKernel.ValueStore.Set<float>(playerRef, ValueKeys.Kernel.Evaluation.FastClearThreshold, currentClearTimeThreshold);
+                sceneKernel.ValueStore.Set<float>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.CountdownTime, timeSinceStartBomb);
+                sceneKernel.ValueStore.Set<float>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.FastClearThreshold, currentClearTimeThreshold);
             }
             // スコア計算を行う
             bool isFastClear = timeSinceStartBomb <= currentClearTimeThreshold;
-            sceneKernel.ValueStore.Set<bool>(playerRef, ValueKeys.Kernel.Evaluation.IsFastClear, isFastClear);
+            sceneKernel.ValueStore.Set<bool>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.IsFastClear, isFastClear);
             // アイテム取得はできたかどうか
             bool isBonusItem = currentBonusObject != null && currentBonusObject.IsCollected;
-            sceneKernel.ValueStore.Set<bool>(playerRef, ValueKeys.Kernel.Evaluation.IsBonusItem, isBonusItem);
+            sceneKernel.ValueStore.Set<bool>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.IsBonusItem, isBonusItem);
 
 
             PlayerMB resolvedPlayer = ResolvePlayerInstance();
@@ -456,9 +469,13 @@ namespace BC.Manager
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, false);
             }
 
-            if (currentGodHand != null)
+            // ファイナルステージじゃないなら、godhandをゴールの位置に移動させる
+            if (!currentGoalData.IsFinalGoal)
             {
-                currentGodHand.SetTargetPosition(); // GodHandをゴールの位置に移動させる
+                if (currentGodHand != null)
+                {
+                    currentGodHand.SetTargetPosition(); // GodHandをゴールの位置に移動させる
+                }
             }
 
 
@@ -467,7 +484,11 @@ namespace BC.Manager
         {
             if (IsDestroyedOrShuttingDown() || playerInstance == null || currentGoalData == null || currentGodHand == null)
                 return;
-
+            if (currentGoalData.IsFinalGoal)
+            {
+                await FinalStageGoalAsync();
+                return;
+            }
             PlayerAnimationMB playerAnimationController = playerInstance.GetComponentInChildren<PlayerAnimationMB>();
             playerAnimationController?.SetNextStageActive(true); // プレイヤーのアニメーションパラメーターを更新して、次のステージに進むためのアニメーションを再生する
             currentGodHand.Catch(playerInstance); // プレイヤーをGodHandにつかまらせる
@@ -496,6 +517,33 @@ namespace BC.Manager
             // 次のステージに進むための処理
             await LoadStageAsync(currentGameStage + 1);
 
+        }
+        private async UniTask FinalStageGoalAsync()
+        {
+            // ここでは最後のステージのゴールに到達した際の処理を行う
+
+            // エンディング BGM をゲームプレイ BGM からクロスフェードで切り替える
+            GameBGMManagerMB.Instance?.PlayEndingBGM();
+
+            await UniTask.Delay(1000); // ゴール到達後の演出のために少し待つ
+            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードアウトさせる
+
+            var gameEndUI = UIManagerMB.Instance != null ? UIManagerMB.Instance.GameEndUI : null;
+            if (gameEndUI == null)
+            {
+                Debug.LogError("GameLogicManagerMB: UIGameEndMB is not assigned.", this);
+                if (GameStateManagerMB.Instance != null)
+                    GameStateManagerMB.Instance.ChangeState(GameState.ReturnToTitle);
+                return;
+            }
+
+            await gameEndUI.ShowAsync(destroyCancellationToken);
+
+            if (IsDestroyedOrShuttingDown())
+                return;
+
+            if (GameStateManagerMB.Instance != null)
+                GameStateManagerMB.Instance.ChangeState(GameState.ReturnToTitle);
         }
         private async UniTask LookAtAsync(Transform origin, Vector3 targetPosition, float duration = 1f)
         {
@@ -528,6 +576,46 @@ namespace BC.Manager
         {
             currentGameStage = stageIndex;
             await LoadGameStageAsync(playIntro);
+        }
+
+        private async UniTask ReturnToTitleAsync()
+        {
+            if (IsDestroyedOrShuttingDown())
+                return;
+
+            if (uiGameSceneManagerMB != null)
+            {
+                uiGameSceneManagerMB.ShowTopPanel(false, 0f);
+                uiGameSceneManagerMB.ShowBottomPanel(false, 0f);
+            }
+
+            if (uiFadeEffectMB != null)
+            {
+                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f);
+            }
+
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+
+            if (IsDestroyedOrShuttingDown())
+                return;
+
+            if (titleSceneBuildIndex < 0)
+            {
+                Debug.LogError("GameLogicManagerMB: titleSceneBuildIndex is invalid.", this);
+                return;
+            }
+
+            AsyncOperation loadOperation = SceneManager.LoadSceneAsync(titleSceneBuildIndex, LoadSceneMode.Single);
+            if (loadOperation == null)
+            {
+                Debug.LogError($"GameLogicManagerMB: failed to load title scene build index {titleSceneBuildIndex}.", this);
+                return;
+            }
+
+            while (!loadOperation.isDone)
+            {
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
         }
         // ゲームステージをロードするための具体的な処理
         private async UniTask PlayCameraPathSequence()
@@ -574,6 +662,10 @@ namespace BC.Manager
             {
                 // 黒画面の間に path camera を開始し、TPS カメラが見える瞬間をなくす。
                 CameraManager.Instance.SetPathCameraPosition(currentCameraPath, playerRef);
+
+                // Intro カメラ演出開始: BGM をフェードアウトして Intro SE を再生する。
+                // 演出終了後は SetupPlaying 状態で PlayGameplayBGM() が呼ばれ BGM が再開する。
+                GameBGMManagerMB.Instance?.StopBGMForIntro();
 
                 UniTask playPathTask = CameraManager.Instance.PlayPathAsync(currentCameraPath, playerRef, async () =>
                 {
@@ -865,6 +957,7 @@ namespace BC.Manager
                 RegisterStageEntities(result.stageInstance);
                 playerInstance = ResolvePlayerInstance();
                 OnPlayerSpawned?.Invoke(playerInstance);
+                OnPlayerUpdated?.Invoke(playerInstance);
                 playerRef = playerInstance != null ? playerInstance.GetComponent<EntityMB>().Entity : default;
                 sceneKernel.Cameras?.SetTrackedPlayer(playerRef);
 
@@ -941,6 +1034,7 @@ namespace BC.Manager
 
             playerInstance = null;
             playerRef = default;
+            OnPlayerUpdated?.Invoke(playerInstance);
 
             sceneKernel?.Cameras?.SetTrackedPlayer(default);
         }
@@ -1015,6 +1109,7 @@ namespace BC.Manager
             }
 
             OnPlayerSpawned?.Invoke(playerInstance);
+            OnPlayerUpdated?.Invoke(playerInstance);
             playerRef = result.Entity;
             sceneKernel.Cameras?.SetTrackedPlayer(playerRef);
 

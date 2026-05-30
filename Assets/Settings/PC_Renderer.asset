@@ -135,11 +135,11 @@ MonoBehaviour:
     enabled: 1
     qualityTier: 1
     debugView: 0
-    exposure: 0.09
-    contrast: 1.104
-    saturation: 1.345
-    blackLift: 0.062
-    whiteSoftClamp: 0.312
+    exposure: 0.12
+    contrast: 1
+    saturation: 1.417
+    blackLift: 0.174
+    whiteSoftClamp: 0.407
     pastelStrength: 0.216
     highSaturationCompress: 0.5
     pastelLuminanceBias: 0.15
@@ -174,7 +174,7 @@ MonoBehaviour:
     halationRadius: 0.55
     blueNoiseTex: {fileID: 0}
     grainEnabled: 1
-    grainStrength: 0.0296
+    grainStrength: 0.0074
     grainScale: 1
     grainResponse: 0.6
     grainTemporalStrength: 0.1

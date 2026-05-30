@@ -5180,19 +5180,24 @@ MonoBehaviour:
   - id: 2001
     path: Item.Bomb
   bounceRate: 0
-  bounceSpeed: 8
   minBounceSpeed: 0
   maxBounceSpeed: 12
+  convergenceBounceSpeed: 8
+  minBounceOutputSpeedToApply: 0.1
   highJumpSpeedMultiplier: 1.5
   bounceDirectionMode: 0
   customLocalDirection: {x: 0, y: 1, z: 0}
   attachWhenStopped: 0
+  defaultRetainedVelocityRate: 0
+  stopDampenRules: []
   attachPoint: {fileID: 0}
   suppressHardLanding: 1
   acceptAnyHardLandingTag: 1
   hardLandingTargetTags:
   - id: 1001
     path: Actor.Player
+  contactSound: {fileID: 0}
+  enableDebugLog: 0
 --- !u!114 &6721551280174016489
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12061,6 +12066,7 @@ MonoBehaviour:
   goalData:
     goalCamera: {fileID: 949840481674196722}
     playerTargetPoint: {x: 0, y: 0.24, z: -12.29}
+    isFinalGoal: 0
     goalTransform: {fileID: 514045046858842509}
   bonusObject: {fileID: 5139713186206649234}
   bombs:
@@ -12447,6 +12453,7 @@ Transform:
   - {fileID: 81109220776239907}
   - {fileID: 9077898882666240435}
   - {fileID: 639000304066691620}
+  - {fileID: 1578461773994505029}
   m_Father: {fileID: 2440146312495742978}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3654326499667670851
@@ -12628,6 +12635,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12653,6 +12661,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -12677,6 +12686,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12699,6 +12709,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12729,6 +12740,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12754,6 +12766,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -12778,6 +12791,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12800,6 +12814,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12864,6 +12879,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12889,6 +12905,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -12913,6 +12930,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12935,6 +12953,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12965,6 +12984,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -12990,6 +13010,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13014,6 +13035,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13036,6 +13058,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13100,6 +13123,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13125,6 +13149,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13149,6 +13174,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13171,6 +13197,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13201,6 +13228,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13226,6 +13254,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13250,6 +13279,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13272,6 +13302,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13336,6 +13367,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13361,6 +13393,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13385,6 +13418,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13407,6 +13441,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13437,6 +13472,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13462,6 +13498,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13486,6 +13523,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13508,6 +13546,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13572,6 +13611,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13597,6 +13637,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13621,6 +13662,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13643,6 +13685,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13673,6 +13716,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13698,6 +13742,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13722,6 +13767,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13744,6 +13790,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13808,6 +13855,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13833,6 +13881,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13857,6 +13906,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13879,6 +13929,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13909,6 +13960,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13934,6 +13986,7 @@ MonoBehaviour:
                 path: 
                 valueTypeName: 
             localValue:
+              storeScope: 0
               key:
                 id: 0
                 path: 
@@ -13958,6 +14011,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -13980,6 +14034,7 @@ MonoBehaviour:
               path: 
               valueTypeName: 
           localValue:
+            storeScope: 0
             key:
               id: 0
               path: 
@@ -14025,6 +14080,7 @@ MonoBehaviour:
       fieldOfView: 92.1
     onArriveAction:
       _steps: []
+  positionsStoredAsLocal: 1
   selectedPointIndex: 2
   references:
     version: 2
@@ -15752,6 +15808,8 @@ MonoBehaviour:
   impactExplosionGraceTime: 0.2
   heldImpactExplosionSpeed: 2
   heldCollisionProbePadding: 0.02
+  explosionSound: {fileID: 0}
+  fuseLoopSound: {fileID: 0}
 --- !u!114 &471484773860579850
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16262,11 +16320,13 @@ MonoBehaviour:
   breakForceDirection: {x: 0, y: 0, z: -1}
   breakForceOrigin: {fileID: 2370501850498211883}
   gateCollider: {fileID: 963327285321849057}
+  breakSound: {fileID: 0}
   isGoalGate: 1
   goalTriggerObject: {fileID: 819056221266901701}
   goalData:
     goalCamera: {fileID: 949840481674196722}
     playerTargetPoint: {x: 0, y: 0.24, z: -12.29}
+    isFinalGoal: 0
     goalTransform: {fileID: 514045046858842509}
 --- !u!1 &5249035622061937857
 GameObject:
@@ -21765,6 +21825,111 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!1 &8680240947769746000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1578461773994505029}
+  - component: {fileID: 1805327129288601894}
+  - component: {fileID: 3442773258317552943}
+  - component: {fileID: 3553770797316165097}
+  m_Layer: 0
+  m_Name: Plane
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1578461773994505029
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8680240947769746000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4, y: -4.36, z: -17}
+  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7709220913830741554}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &1805327129288601894
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8680240947769746000}
+  m_Mesh: {fileID: -462981019419857548, guid: e9055de3c81d5e7458a83ca4817c4986, type: 3}
+--- !u!23 &3442773258317552943
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8680240947769746000}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 9380863c6c8aacd4c8ddd2627905241d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3553770797316165097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8680240947769746000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4936b6d14d7627a439524faddb5eb30d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GroundFogPlayerBinder
+  fogRenderers:
+  - {fileID: 3442773258317552943}
 --- !u!1 &8849022360215950736
 GameObject:
   m_ObjectHideFlags: 0

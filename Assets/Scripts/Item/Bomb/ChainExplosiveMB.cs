@@ -285,9 +285,7 @@ namespace BC.Bomb
         private bool CanIgnoreHolderCollider(Collider ownerCollider)
         {
             if (ownerCollider == null ||
-                ownerCollider == explosiveCollider ||
-                !ownerCollider.enabled ||
-                !ownerCollider.gameObject.activeInHierarchy)
+                ownerCollider == explosiveCollider)
             {
                 return false;
             }

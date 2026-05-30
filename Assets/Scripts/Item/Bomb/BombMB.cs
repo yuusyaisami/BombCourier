@@ -210,6 +210,12 @@ namespace BC.Bomb
         [SerializeField] private float heldImpactExplosionSpeed = 2.0f;
         [SerializeField] private float heldCollisionProbePadding = 0.02f;
 
+        [Header("Sound")]
+        // 爆発時に再生するサウンド。
+        [SerializeField] private BC.Audio.AudioDataSO explosionSound;
+        // Fuse中にループ再生するサウンド。爆弾内の AudioSource から 3D 位置で出る。
+        [SerializeField] private BC.Audio.AudioDataSO fuseLoopSound;
+
         private Rigidbody rb;
         private Collider bombCollider;
         private SceneKernelMB kernelMB;
@@ -218,6 +224,7 @@ namespace BC.Bomb
 
         private bool fuseStarted;
         private bool exploded;
+        private AudioSource fuseAudioSource; // Fuse ループ用の 3D AudioSource。
         private bool isHandled;
         private float remainingFuseTime;
         private float ignoreImpactExplosionUntilTime;
@@ -498,6 +505,25 @@ namespace BC.Bomb
                 startFuseEffect.Play();
             }
 
+            // Fuse ループサウンドを 3D AudioSource で再生開始する。
+            if (fuseLoopSound != null && fuseLoopSound.Clip != null)
+            {
+                if (fuseAudioSource == null)
+                {
+                    fuseAudioSource = gameObject.AddComponent<AudioSource>();
+                    fuseAudioSource.spatialBlend = 1f;
+                    fuseAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+                    fuseAudioSource.minDistance = 1f;
+                    fuseAudioSource.maxDistance = 20f;
+                    fuseAudioSource.playOnAwake = false;
+                }
+                fuseAudioSource.clip = fuseLoopSound.Clip;
+                fuseAudioSource.volume = fuseLoopSound.BaseVolume;
+                fuseAudioSource.pitch = fuseLoopSound.Pitch;
+                fuseAudioSource.loop = true;
+                fuseAudioSource.Play();
+            }
+
             StartedFuse?.Invoke(this);
         }
 
@@ -668,6 +694,14 @@ namespace BC.Bomb
                 return;
 
             exploded = true;
+
+            // Fuse ループサウンドを停止する。
+            if (fuseAudioSource != null && fuseAudioSource.isPlaying)
+                fuseAudioSource.Stop();
+
+            // 爆発サウンドを 3D 位置から再生する。
+            if (explosionSound != null && explosionSound.Clip != null)
+                AudioSource.PlayClipAtPoint(explosionSound.Clip, transform.position, explosionSound.BaseVolume);
             LogBombDebug(
                 $"Explode scene={gameObject.scene.name} frame={Time.frameCount} position={transform.position} lastImpactForce={LastImpactForce:F3} threshold={lastImpactThreshold:F3} " +
                 $"isHandled={isHandled} fuseStarted={fuseStarted} remainingFuseTime={remainingFuseTime:F3} ignoredPlayerColliders={ignoredPlayerColliders.Count}");
@@ -751,9 +785,7 @@ namespace BC.Bomb
         private bool CanIgnorePlayerCollider(Collider ownerCollider)
         {
             if (ownerCollider == null ||
-                ownerCollider == bombCollider ||
-                !ownerCollider.enabled ||
-                !ownerCollider.gameObject.activeInHierarchy)
+                    ownerCollider == bombCollider)
             {
                 return false;
             }

@@ -1,9 +1,13 @@
 using System.Threading;
+using BC.ActionSystem;
 using BC.Base;
 using BC.Manager;
+using BC.UI.Effect;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Febucci.TextAnimatorForUnity;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace BC.UI
@@ -18,6 +22,7 @@ namespace BC.UI
         [SerializeField] private Button returnToTitleButton;
         [SerializeField] private Button nextStageButton;
         [Header("Score Display")]
+        [SerializeField] private Image clearIcon; // クリアアイコンを表示する Image コンポーネント
         [SerializeField] private Image clearStar; // スコアを表示するテキストコンポーネント
         [SerializeField] private Sprite clearStarSprite; // 0点のときに表示するスプライト
 
@@ -30,6 +35,10 @@ namespace BC.UI
         [SerializeField] private TooltipTargetMB fastClearStarTooltipTarget; // 早いクリアのツールチップを表示するための TooltipTargetMB コンポーネント
         [SerializeField] private Sprite TransparentSprite; // 星がない状態を表す透明なスプライト
 
+        [Header("Text")]
+        [SerializeField] private TypewriterComponent stageClearText; // ステージクリアのテキスト
+        [SerializeField] private string stageClearMessage = "STAGE {0} REPORT!"; // ステージクリアメッセージのフォーマット
+
         [Header("Effects")]
         // ゴール時に再生する UI パーティクル（Canvas 上で動作するパーティクルシステムを割り当てる）
         [SerializeField] private UIFallEffectMB goalParticle;
@@ -41,8 +50,20 @@ namespace BC.UI
         [SerializeField] private float revealDuration = 0.1f;
         [SerializeField] private float delayShowDuration = 0.5f;
 
+        [Header("Actions")]
+        [SerializeField] private InlineAction onFadeInAction;
+        [SerializeField] private InlineAction onClearStarAction;
+        [SerializeField] private InlineAction onBonusItemStarAction;
+        [SerializeField] private InlineAction onFastClearStarAction;
+        [SerializeField] private InlineAction onReturnToTitleFocusAction;
+        [SerializeField] private InlineAction onReturnToTitleClickAction;
+        [SerializeField] private InlineAction onNextStageFocusAction;
+        [SerializeField] private InlineAction onNextStageClickAction;
+
         private CancellationTokenSource _cts;
         private SceneKernel sceneKernel;
+        private UINoiseOutlineMB returnToTitleOutline;
+        private UINoiseOutlineMB nextStageOutline;
 
         private void Awake()
         {
@@ -64,14 +85,35 @@ namespace BC.UI
 
 
             GameStateManagerMB.Instance.StateMachine.Subscribe(OnGameStateChanged);
-            // ボタンのクリックイベントにリスナーを登録
+
+            // UINoiseOutlineMB をボタンに追加する（既に付いていれば再利用）。
             if (returnToTitleButton != null)
             {
+                returnToTitleOutline = returnToTitleButton.GetComponent<UINoiseOutlineMB>()
+                    ?? returnToTitleButton.gameObject.AddComponent<UINoiseOutlineMB>();
                 returnToTitleButton.onClick.AddListener(OnReturnToTitleButtonClicked);
+                AddPointerFocusHandlers(
+                    returnToTitleButton.gameObject,
+                    () =>
+                    {
+                        returnToTitleOutline?.SetFocused(true);
+                        ExecuteInlineAction(onReturnToTitleFocusAction);
+                    },
+                    () => returnToTitleOutline?.SetFocused(false));
             }
             if (nextStageButton != null)
             {
+                nextStageOutline = nextStageButton.GetComponent<UINoiseOutlineMB>()
+                    ?? nextStageButton.gameObject.AddComponent<UINoiseOutlineMB>();
                 nextStageButton.onClick.AddListener(OnNextStageButtonClicked);
+                AddPointerFocusHandlers(
+                    nextStageButton.gameObject,
+                    () =>
+                    {
+                        nextStageOutline?.SetFocused(true);
+                        ExecuteInlineAction(onNextStageFocusAction);
+                    },
+                    () => nextStageOutline?.SetFocused(false));
             }
         }
 
@@ -97,14 +139,49 @@ namespace BC.UI
 
         private void OnReturnToTitleButtonClicked()
         {
+            ExecuteInlineAction(onReturnToTitleClickAction);
             HideAsync().Forget();
             GameStateManagerMB.Instance.StateMachine.ChangeState(GameState.ReturnToTitle);
         }
+
         private void OnNextStageButtonClicked()
         {
+            ExecuteInlineAction(onNextStageClickAction);
             HideAsync().Forget();
             GameStateManagerMB.Instance.StateMachine.ChangeState(GameState.NextStage);
-            Debug.Log("Next Stage button clicked. Transitioning to next stage.");
+        }
+
+        // PointerEnter / PointerExit の EventTrigger をランタイムで登録するヘルパー。
+        private static void AddPointerFocusHandlers(GameObject target, System.Action onEnter, System.Action onExit)
+        {
+            EventTrigger trigger = target.GetComponent<EventTrigger>() ?? target.AddComponent<EventTrigger>();
+
+            EventTrigger.Entry enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            enterEntry.callback.AddListener(_ => onEnter?.Invoke());
+            trigger.triggers.Add(enterEntry);
+
+            EventTrigger.Entry exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+            exitEntry.callback.AddListener(_ => onExit?.Invoke());
+            trigger.triggers.Add(exitEntry);
+
+            // ゲームパッド対応: Select / Deselect で同様に処理する。
+            EventTrigger.Entry selectEntry = new EventTrigger.Entry { eventID = EventTriggerType.Select };
+            selectEntry.callback.AddListener(_ => onEnter?.Invoke());
+            trigger.triggers.Add(selectEntry);
+
+            EventTrigger.Entry deselectEntry = new EventTrigger.Entry { eventID = EventTriggerType.Deselect };
+            deselectEntry.callback.AddListener(_ => onExit?.Invoke());
+            trigger.triggers.Add(deselectEntry);
+        }
+
+        // sceneKernel がある場合は GameLogicManager の EntityRef を actor にして InlineAction を実行する。
+        private void ExecuteInlineAction(InlineAction action)
+        {
+            if (action == null) return;
+            EntityRef actor = GameLogicManagerMB.Instance != null
+                ? GameLogicManagerMB.Instance.SelfEntityRef
+                : default;
+            InlineActionExecutionUtility.ExecuteAndForget(this, actor, action);
         }
 
         private async UniTaskVoid ShowAsync()
@@ -116,6 +193,9 @@ namespace BC.UI
             await UniTask.Delay((int)(delayShowDuration * 1000), cancellationToken: _cts.Token);
             InputManagerMB.EnsureInstance().UnlockCursor();
 
+            // パネルが表示される前に InlineAction を実行する。
+            ExecuteInlineAction(onFadeInAction);
+
             returnToTitleButton.gameObject.SetActive(false);
             nextStageButton.gameObject.SetActive(false);
             returnToTitleButton.interactable = false;
@@ -123,6 +203,22 @@ namespace BC.UI
 
             // starsを初期化
             ResetStars();
+
+            // ステージクリアのテキストを設定
+            if (stageClearText != null)
+            {
+                stageClearText.ShowText(string.Format(stageClearMessage, GameLogicManagerMB.Instance.CurrentStageIndex + 1));
+            }
+
+            // clearIcon をアニメーと表示
+            if (clearIcon != null)
+            {
+                clearIcon.transform.localScale = new Vector3(1f, 0f, 1f);
+                clearIcon.gameObject.SetActive(true);
+                await clearIcon.transform.DOScale(Vector3.one, 0.1f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
+            }
+
+            // パーティクルを再生
 
             // Y スケールを 0 → 1 にアニメーション
             float elapsed = 0f;
@@ -150,6 +246,7 @@ namespace BC.UI
             clearStar.rectTransform.localScale = new Vector3(2f, 2f, 2f);
             clearStar.sprite = clearStarSprite;
             clearStarTooltipTarget.TooltipText = "やりきることが大事！";
+            ExecuteInlineAction(onClearStarAction);
             await clearStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
             // 画面をシェイク
             await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
@@ -163,7 +260,7 @@ namespace BC.UI
                 bonusItemStar.rectTransform.localScale = new Vector3(2f, 2f, 2f);
                 bonusItemStar.sprite = bonusItemStarSprite;
                 bonusItemStarTooltipTarget.TooltipText = "ボーナスアイテムをゲット！";
-
+                ExecuteInlineAction(onBonusItemStarAction);
                 await bonusItemStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
                 await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
                 await UniTask.Delay(300, cancellationToken: _cts.Token); // 0.3秒待機
@@ -188,7 +285,7 @@ namespace BC.UI
 
                 // 詳細な条件は ValueStore から取得してツールチップに反映する
                 fastClearStarTooltipTarget.TooltipText = "爆弾のFuseタイムが短いともらえるスターです！\n今回のクリアタイム: " + clearTime.ToString("F2") + "秒\n早いクリアの条件: " + fastClearThreshold.ToString("F2") + "秒以下";
-
+                ExecuteInlineAction(onFastClearStarAction);
                 await fastClearStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
                 await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
                 await UniTask.Delay(300, cancellationToken: _cts.Token); // 0.3秒待機
@@ -227,6 +324,14 @@ namespace BC.UI
             if (goalParticle != null)
             {
                 goalParticle.EndFallEffect();
+            }
+            if (stageClearText != null)
+            {
+                stageClearText.ShowText(string.Empty);
+            }
+            if (clearIcon != null)
+            {
+                clearIcon.gameObject.SetActive(false);
             }
 
             try

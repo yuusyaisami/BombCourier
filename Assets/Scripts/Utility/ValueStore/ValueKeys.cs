@@ -548,5 +548,42 @@ namespace BC.Base
                     );
             }
         }
+
+        // アプリケーション全体の設定値。ApplicationKernel.KernelValueStore に格納する。
+        // UISettingMB から書き込み、AudioSystem / CameraController 等が Read する一方向バス。
+        public static class AppSettings
+        {
+            public static readonly ValueKey<float> MusicVolume =
+                new ValueKey<float>(
+                    new ValueKeyId(20001),
+                    "AppSettings.MusicVolume",
+                    1f,
+                    ValueCompositionMode.Raw
+                );
+
+            public static readonly ValueKey<float> SFXVolume =
+                new ValueKey<float>(
+                    new ValueKeyId(20002),
+                    "AppSettings.SFXVolume",
+                    1f,
+                    ValueCompositionMode.Raw
+                );
+
+            public static readonly ValueKey<float> CameraSensitivity =
+                new ValueKey<float>(
+                    new ValueKeyId(20003),
+                    "AppSettings.CameraSensitivity",
+                    0.08f,
+                    ValueCompositionMode.Raw
+                );
+
+            public static readonly ValueKey<bool> InvertYAxis =
+                new ValueKey<bool>(
+                    new ValueKeyId(20004),
+                    "AppSettings.InvertYAxis",
+                    false,
+                    ValueCompositionMode.Raw
+                );
+        }
     }
 }

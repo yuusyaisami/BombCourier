@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using BC.ActionSystem;
+using BC.Audio;
 using BC.Base;
 using BC.Player;
 using BC.Rendering;
@@ -226,6 +227,15 @@ namespace BC.Gimmick.LeverObject
         [SerializeField] private InlineAction onMiddleInlineAction;
         [Tooltip("状態が Right に変わった後に実行する InlineAction です。")]
         [SerializeField] private InlineAction onRightInlineAction;
+
+        [Header("Sound")]
+        [Tooltip("状態が Left に変わった後に再生するサウンドです。")]
+        [SerializeField] private AudioDataSO onLeftSound;
+        [ShowIf(nameof(hasMiddleState))]
+        [Tooltip("状態が Middle に変わった後に再生するサウンドです。")]
+        [SerializeField] private AudioDataSO onMiddleSound;
+        [Tooltip("状態が Right に変わった後に再生するサウンドです。")]
+        [SerializeField] private AudioDataSO onRightSound;
 
         [Header("WiringAction")]
         [Tooltip("状態が Left に変わった後に実行する WiringAction 群です。")]
@@ -581,16 +591,19 @@ namespace BC.Gimmick.LeverObject
             {
                 case LeverDirection.Left:
                     WiringActionRunner.ExecuteAll(onLeftWiringActions, context);
+                    PlaySoundAt(onLeftSound);
                     ExecuteInlineAction(onLeftInlineAction, eventData);
                     break;
 
                 case LeverDirection.Middle:
                     WiringActionRunner.ExecuteAll(onMiddleWiringActions, context);
+                    PlaySoundAt(onMiddleSound);
                     ExecuteInlineAction(onMiddleInlineAction, eventData);
                     break;
 
                 case LeverDirection.Right:
                     WiringActionRunner.ExecuteAll(onRightWiringActions, context);
+                    PlaySoundAt(onRightSound);
                     ExecuteInlineAction(onRightInlineAction, eventData);
                     break;
             }
@@ -654,6 +667,14 @@ namespace BC.Gimmick.LeverObject
                 LeverDirection.Right => right,
                 _ => left,
             };
+        }
+
+        private void PlaySoundAt(AudioDataSO sound)
+        {
+            if (sound == null || sound.Clip == null)
+                return;
+
+            AudioSource.PlayClipAtPoint(sound.Clip, transform.position, sound.BaseVolume);
         }
     }
 }

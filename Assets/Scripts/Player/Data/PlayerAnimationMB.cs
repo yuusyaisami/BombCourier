@@ -1,3 +1,4 @@
+using BC.ActionSystem;
 using BC.Animation;
 using UnityEngine;
 
@@ -44,6 +45,10 @@ namespace BC.Base
         [Header("Layer")]
         [SerializeField] private string upperBodyLayerName = "UpperBody";
 
+        [Header("Actions")]
+        [Tooltip("ジャンプ時に実行する InlineAction。")]
+        [SerializeField] private InlineAction onJumpAction;
+
         private IEntityMoveAnimationSource moveSource;
         private IEntityHandleItemAnimationSource handleItemSource;
         private ValueStoreService valueStoreService;
@@ -52,6 +57,7 @@ namespace BC.Base
         private ValueWatchHandle<bool> isItemThrowAimingHandle;
         private ValueWatchHandle<int> throwSequenceHandle;
         private int lastSeenThrowSequenceVersion;
+        private EntityMoveMotorMB subscribedMotor; // Jumped イベント貴読用。
 
         private void Reset()
         {
@@ -61,6 +67,15 @@ namespace BC.Base
         private void Awake()
         {
             Initialize();
+        }
+
+        private void OnDestroy()
+        {
+            if (subscribedMotor != null)
+            {
+                subscribedMotor.Jumped -= OnJumped;
+                subscribedMotor = null;
+            }
         }
 
         private void Start()
@@ -139,21 +154,52 @@ namespace BC.Base
         private void ResolveMoveSource()
         {
             if (TryAssignMoveSource(moveSourceBehaviour))
+            {
+                TrySubscribeJumpEvent();
                 return;
+            }
 
             MonoBehaviour[] behaviours = GetComponentsInParent<MonoBehaviour>(true);
             for (int i = 0; i < behaviours.Length; i++)
             {
                 if (TryAssignMoveSource(behaviours[i]))
+                {
+                    TrySubscribeJumpEvent();
                     return;
+                }
             }
 
             behaviours = GetComponentsInChildren<MonoBehaviour>(true);
             for (int i = 0; i < behaviours.Length; i++)
             {
                 if (TryAssignMoveSource(behaviours[i]))
+                {
+                    TrySubscribeJumpEvent();
                     return;
+                }
             }
+        }
+
+        private void TrySubscribeJumpEvent()
+        {
+            if (subscribedMotor != null)
+                return;
+
+            EntityMoveMotorMB motor = moveSourceBehaviour as EntityMoveMotorMB;
+            if (motor == null && moveSource is EntityMoveMotorMB motorFromSource)
+                motor = motorFromSource;
+
+            if (motor != null)
+            {
+                motor.Jumped += OnJumped;
+                subscribedMotor = motor;
+            }
+        }
+
+        private void OnJumped()
+        {
+            ResolveRuntimeReferences();
+            InlineActionExecutionUtility.ExecuteAndForget(this, entityRef, onJumpAction, default, "Jump");
         }
 
         private bool TryAssignMoveSource(MonoBehaviour behaviour)

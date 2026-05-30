@@ -1,8 +1,10 @@
 using System.Threading;
+using BC.Audio;
 using BC.Base;
 using BC.Managers;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Febucci.TextAnimatorCore.Text;
 using Febucci.TextAnimatorForUnity;
 
 using UnityEngine;
@@ -26,8 +28,21 @@ namespace BC.UI
         [SerializeField] private bool advanceOnSkipInput = true; // 文字送り中の入力で全文表示したあと、同じ入力で次stepへ進むか。
         private bool isShowingTalk; // 会話UIが表示されているかどうかのフラグ
         private bool bodyTextCompleted; // 本文の表示完了状態。Typewriterイベントで更新する。
+        private AudioDataSO currentTalkCharacterSound; // 現在の話者の文字江サウンド。
 
         public InputAction NextTalkInputAction => nextTalkInputAction != null ? nextTalkInputAction.action : null;
+
+        // 話者のキャラクターサウンドを設定する。TalkSystemManagerMB から会話弓に呼ばれる。
+        public void SetCharacterSound(AudioDataSO sound)
+        {
+            currentTalkCharacterSound = sound;
+        }
+
+        private void OnCharacterVisible(CharacterData _)
+        {
+            if (currentTalkCharacterSound == null) return;
+            AudioSystemMB.Instance?.PlaySE(currentTalkCharacterSound);
+        }
 
         private void Awake()
         {
@@ -45,6 +60,8 @@ namespace BC.UI
             {
                 bodyTypewriter.onTextShowed.RemoveListener(NotifyBodyTextShowed);
                 bodyTypewriter.onTextShowed.AddListener(NotifyBodyTextShowed);
+                bodyTypewriter.onCharacterVisible.RemoveListener(OnCharacterVisible);
+                bodyTypewriter.onCharacterVisible.AddListener(OnCharacterVisible);
             }
         }
 
@@ -53,6 +70,7 @@ namespace BC.UI
             if (bodyTypewriter != null)
             {
                 bodyTypewriter.onTextShowed.RemoveListener(NotifyBodyTextShowed);
+                bodyTypewriter.onCharacterVisible.RemoveListener(OnCharacterVisible);
             }
 
             nextTalkInputAction?.action.Disable();
@@ -63,6 +81,7 @@ namespace BC.UI
             if (bodyTypewriter != null)
             {
                 bodyTypewriter.onTextShowed.RemoveListener(NotifyBodyTextShowed);
+                bodyTypewriter.onCharacterVisible.RemoveListener(OnCharacterVisible);
             }
 
             nextTalkInputAction?.action.Disable();

@@ -43,6 +43,10 @@ namespace BC.Camera
         private ValueStoreService valueStore;
         private EntityRef entityRef;
         private ValueWatchHandle<bool> canLookByInputHandle;
+        // ApplicationKernel.KernelValueStore 経由で Setting 画面から書き込まれる感度・反転設定。
+        // null の場合は Inspector のフォールバック値を使う。
+        private ValueWatchHandle<float> appSensitivityHandle;
+        private ValueWatchHandle<bool> appInvertYHandle;
 
         public Transform CameraTarget => cameraTarget;
         public Vector3 ThrowShoulderOffset => throwShoulderOffset;
@@ -93,10 +97,17 @@ namespace BC.Camera
             float deltaYaw;
             float deltaPitch;
 
+            float effectiveSensitivity = appSensitivityHandle != null
+                ? appSensitivityHandle.CurrentValue
+                : mouseSensitivity;
+            bool effectiveInvertY = appInvertYHandle != null
+                ? appInvertYHandle.CurrentValue
+                : invertY;
+
             if (isMouse)
             {
-                deltaYaw = look.x * mouseSensitivity;
-                deltaPitch = look.y * mouseSensitivity;
+                deltaYaw = look.x * effectiveSensitivity;
+                deltaPitch = look.y * effectiveSensitivity;
             }
             else
             {
@@ -106,7 +117,7 @@ namespace BC.Camera
 
             yaw += deltaYaw;
 
-            if (invertY)
+            if (effectiveInvertY)
                 pitch += deltaPitch;
             else
                 pitch -= deltaPitch;
@@ -191,6 +202,17 @@ namespace BC.Camera
 
             if (canLookByInputHandle == null && valueStore != null && entityRef.IsValid)
                 canLookByInputHandle = valueStore.GetHandle(entityRef, ValueKeys.Camera.CanLookByInput);
+
+            // AppSettings ハンドルは ApplicationKernel から一度だけ取得する。
+            KernelValueStoreService appStore =
+                ApplicationKernelMB.Instance?.Kernel?.KernelValueStore;
+            if (appStore != null)
+            {
+                if (appSensitivityHandle == null)
+                    appSensitivityHandle = appStore.GetHandle(ValueKeys.AppSettings.CameraSensitivity);
+                if (appInvertYHandle == null)
+                    appInvertYHandle = appStore.GetHandle(ValueKeys.AppSettings.InvertYAxis);
+            }
         }
 
         private void RefreshLookGateDebugValue()

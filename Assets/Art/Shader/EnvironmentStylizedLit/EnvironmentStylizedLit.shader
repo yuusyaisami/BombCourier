@@ -123,7 +123,7 @@ Shader "BC/EnvironmentStylizedLit"
         _NoiseDistanceFadeStart ("Noise Distance Fade Start", Range(0, 100)) = 12
         _NoiseDistanceFadeEnd ("Noise Distance Fade End", Range(0, 100)) = 32
 
-        [Enum(Off,0,NdotL,1,WrappedLight,2,SteppedLight,3,BandColor,4,WorldNoise,5,BandNoise,6,CombinedLightIntensity,7,LightBandEmissionMask,8,SimpleBoostFresnel,9)] _DebugView ("Debug View", Float) = 0
+        [Range(0, 9)] _DebugView ("Debug View", Float) = 0
     }
 
     SubShader

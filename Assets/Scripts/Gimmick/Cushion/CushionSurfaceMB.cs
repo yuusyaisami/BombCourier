@@ -1,4 +1,5 @@
 using System;
+using BC.Audio;
 using BC.Base;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -85,6 +86,10 @@ namespace BC.Gimmick.Cushion
             EntityTagReference.From(EntityTags.Actor.Player)
         };
 
+        [Header("Sound")]
+        [Tooltip("衝突を受け付けたときに再生するサウンドです。")]
+        [SerializeField] private AudioDataSO contactSound;
+
         [Header("Debug")]
         [Tooltip("クッション評価の詳細ログを出力します。問題調査用です。")]
         [SerializeField] private bool enableDebugLog;
@@ -110,6 +115,7 @@ namespace BC.Gimmick.Cushion
             {
                 result = BuildStopResult(impactData);
                 LogEvaluation(impactData, result, Vector3.zero, 0.0f);
+                PlayContactSound(impactData.Point);
                 return true;
             }
 
@@ -120,6 +126,7 @@ namespace BC.Gimmick.Cushion
             {
                 result = BuildStopResult(impactData);
                 LogEvaluation(impactData, result, direction, bounceVelocityMagnitude);
+                PlayContactSound(impactData.Point);
                 return true;
             }
 
@@ -128,6 +135,7 @@ namespace BC.Gimmick.Cushion
                 ResolveBounceSpeedLimit(bounceVelocityMagnitude),
                 highJumpSpeedMultiplier);
             LogEvaluation(impactData, result, direction, bounceVelocityMagnitude);
+            PlayContactSound(impactData.Point);
             return true;
         }
 
@@ -305,6 +313,14 @@ namespace BC.Gimmick.Cushion
                 return impactData.SourceGameObject.name;
 
             return impactData.SourceRoot != null ? impactData.SourceRoot.name : "(null)";
+        }
+
+        private void PlayContactSound(Vector3 position)
+        {
+            if (contactSound == null || contactSound.Clip == null)
+                return;
+
+            AudioSource.PlayClipAtPoint(contactSound.Clip, position, contactSound.BaseVolume);
         }
     }
 }

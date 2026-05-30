@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using BC.Animation;
+using BC.Audio;
 using BC.Base;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -165,6 +166,10 @@ namespace BC.Managers
         [SerializeField] private TalkStatePresentationEntry[] statePresentations = Array.Empty<TalkStatePresentationEntry>();
         [SerializeField] private TalkActivityPresentationSettings activityPresentation;
 
+        [Header("Sound")]
+        // テキスト表示時に文字単位で再生するサウンド。キャラクターごとに設定する。
+        [SerializeField] private AudioDataSO talkCharacterSound;
+
         private EntityRef entityRef;
         private ValueStoreService valueStore;
         private bool missingAnimationWarningLogged;
@@ -178,6 +183,7 @@ namespace BC.Managers
 
         public EntityRef Entity => entityMB != null && entityMB.HasEntity ? entityMB.Entity : entityRef;
         public CharacterIdReference CharacterId => characterId;
+        public BC.Audio.AudioDataSO TalkCharacterSound => talkCharacterSound;
 
         private void OnEnable()
         {

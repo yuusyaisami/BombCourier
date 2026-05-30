@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using BC.Audio;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,14 @@ namespace BC.UI
         [SerializeField] private Canvas fadeCanvas;
         [SerializeField] private FadeType defaultFadeType = FadeType.Single;
         [SerializeField] private float defaultFadeAmount = 1f;
+
+        [Header("Sound")]
+        // フェードアウト時に再生するサウンド。
+        [SerializeField] private AudioDataSO fadeOutSound;
+        // フェードイン時に再生するサウンド。
+        [SerializeField] private AudioDataSO fadeInSound;
+        // この値以上のアルファ変化量のときだけサウンドを再生する。
+        [SerializeField, Min(0f)] private float minFadeDeltaForSound = 0.5f;
 
         private CancellationTokenSource activeFadeCancellationTokenSource;
 
@@ -69,14 +78,21 @@ namespace BC.UI
         {
             StartFadeAsync(fadeType, amount, duration).Forget();
         }
+
+        public UniTask StartFadeAsync(FadeType fadeType, float amount, float duration)
+        {
+            return StartFadeAsync(fadeType, amount, duration, true);
+        }
+
         /// <summary>
         /// フェードを開始する非同期メソッド。既にフェードが進行中の場合はキャンセルしてから新しいフェードを開始する。
         /// </summary>
         /// <param name="fadeType">フェードの種類</param>
         /// <param name="amount">フェードの目標アルファ値 (0 = 完全に透明, 1 = 完全に不透明)</param>
         /// <param name="duration">フェードの時間</param>
+        /// <param name="playSound">サウンドを再生するかどうか (default: true)</param>
         /// <returns></returns>
-        public async UniTask StartFadeAsync(FadeType fadeType, float amount, float duration)
+        public async UniTask StartFadeAsync(FadeType fadeType, float amount, float duration, bool playSound = true)
         {
             CancellationTokenSource fadeCancellationTokenSource = BeginNewFade();
             float clampedAmount = Mathf.Clamp01(amount);
@@ -86,6 +102,22 @@ namespace BC.UI
             {
                 SetFadeType(fadeType);
                 SetCanvasVisible(true);
+
+                // 変化量がしきい値以上ならフェード方向に応じてサウンドを再生する。
+                if (playSound && AudioSystemMB.Instance != null)
+                {
+                    float startAmount = GetCurrentAmount(fadeType);
+                    float delta = Mathf.Abs(clampedAmount - startAmount);
+                    if (delta >= minFadeDeltaForSound)
+                    {
+                        // ターゲットが現在値より大きい = 画面が濃くなる = フェードアウト気味。
+                        if (clampedAmount > startAmount && fadeOutSound != null)
+                            AudioSystemMB.Instance.PlaySE(fadeOutSound);
+                        else if (clampedAmount < startAmount && fadeInSound != null)
+                            AudioSystemMB.Instance.PlaySE(fadeInSound);
+                    }
+                }
+
                 await FadeRoutine(fadeType, clampedAmount, safeDuration, fadeCancellationTokenSource.Token);
             }
             catch (OperationCanceledException) when (fadeCancellationTokenSource.IsCancellationRequested)

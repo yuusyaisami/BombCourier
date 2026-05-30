@@ -102,11 +102,9 @@ namespace BC.Manager
 
         public InputPromptDeviceKind ResolvePromptDeviceKind(InputAction action)
         {
-            if (action?.activeControl != null)
-            {
-                UpdateLastUsedPromptDeviceKind(action.activeControl.device);
-            }
-
+            // CurrentPromptDeviceKind は HandleInputEvent が全入力イベントを監視して管理する。
+            // action.activeControl.device から更新すると、最後にそのアクションを起動した
+            // デバイスで上書きされてしまい、デバイス切り替え検出が壊れる。
             return CurrentPromptDeviceKind;
         }
 

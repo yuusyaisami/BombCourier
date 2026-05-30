@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using BC.ActionSystem;
+using BC.Audio;
 using BC.Base;
 using BC.Bomb;
 using BC.Utility;
@@ -43,6 +44,10 @@ namespace BC.Gimmick.ExplosionResponseObject
         [SerializeField] private InlineAction onActivatedInlineAction;
         [Tooltip("状態が Off に変わった直後に実行する InlineAction です。")]
         [SerializeField] private InlineAction onDeactivatedInlineAction;
+
+        [Header("Sound")]
+        [Tooltip("爆風を検出したときに再生するサウンドです。")]
+        [SerializeField] private AudioDataSO explosionDetectedSound;
 
         [Header("Debug")]
         [Tooltip("実行中の現在状態です。")]
@@ -111,6 +116,9 @@ namespace BC.Gimmick.ExplosionResponseObject
             lastImpactForce = Mathf.Max(0f, impactForce);
             if (lastImpactForce < minimumImpactForce)
                 return;
+
+            if (explosionDetectedSound != null && explosionDetectedSound.Clip != null)
+                AudioSource.PlayClipAtPoint(explosionDetectedSound.Clip, transform.position, explosionDetectedSound.BaseVolume);
 
             HandleImpact();
         }

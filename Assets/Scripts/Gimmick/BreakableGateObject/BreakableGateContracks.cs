@@ -8,9 +8,10 @@ namespace BC.Gimmick
     {
         [SerializeField] private CinemachineCamera goalCamera;
         [SerializeField] private Vector3 playerTargetPoint; // ゴール後Playerが移動する位置
+        [SerializeField] private bool isFinalGoal; // 最終ゴールかどうか (これはゲームの最後のステージ)
         public Transform goalTransform; // GoalDataを持つオブジェクトのTransformキャッシュ
         public Vector3 Target => goalTransform != null ? goalTransform.position + playerTargetPoint : playerTargetPoint;
         public CinemachineCamera GoalCamera => goalCamera;
-
+        public bool IsFinalGoal => isFinalGoal;
     }
 }

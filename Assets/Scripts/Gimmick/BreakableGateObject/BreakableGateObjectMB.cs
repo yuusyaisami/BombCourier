@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BC.Audio;
 using BC.Bomb;
 using BC.Manager;
 using Sirenix.OdinInspector;
@@ -16,6 +17,10 @@ namespace BC.Gimmick
         [SerializeField] private Vector3 breakForceDirection = Vector3.up; // 力の方向
         [SerializeField] private Transform breakForceOrigin; // 力の発生源
         [SerializeField] private Collider gateCollider; // 壊れる前の当たり判定。壊れた後は無効にする。
+
+        [Header("Sound")]
+        [Tooltip("ゲートが破壊されたときに再生するサウンドです。")]
+        [SerializeField] private AudioDataSO breakSound;
         [Header("Goal Gate Settings")]
         [SerializeField] private bool isGoalGate = false;
         [SerializeField, ShowIf("isGoalGate")] private EntityTriggerObjectMB goalTriggerObject; // ゴールルームのトリガーオブジェクト
@@ -89,6 +94,10 @@ namespace BC.Gimmick
         private void BreakGate(Vector3 impactPoint, float impactForce)
         {
             isBroken = true;
+
+            // 破壊サウンドの再生
+            if (breakSound != null && breakSound.Clip != null)
+                AudioSource.PlayClipAtPoint(breakSound.Clip, transform.position, breakSound.BaseVolume);
 
             // 破壊エフェクトの生成
             if (breakEffectPrefab != null)

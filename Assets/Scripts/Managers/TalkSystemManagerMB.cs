@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using BC.ActionSystem;
+using BC.Audio;
 using BC.Base;
 using BC.Camera;
 using BC.UI;
@@ -241,6 +242,20 @@ namespace BC.Managers
             }
 
             talkChoiceUIManagerMB?.ClearChoicesImmediate();
+
+            // 話者の TalkAdapterMB からキャラクターサウンドを取得して UI に渡す。
+            {
+                AudioDataSO characterSound = null;
+                if (TryResolveSceneKernel(out SceneKernel resolvedKernel) &&
+                    resolvedKernel.EntityComponents != null &&
+                    actor.IsValid &&
+                    resolvedKernel.EntityComponents.TryResolve(actor, out TalkAdapterMB speakingAdapter))
+                {
+                    characterSound = speakingAdapter.TalkCharacterSound;
+                }
+                talkSystemUIManagerMB.SetCharacterSound(characterSound);
+            }
+
             await talkSystemUIManagerMB.ShowTalk(talkRequestData, currentTalkCancellation.Token);
 
             // Typewriter 側 callback が取りこぼされても、ShowTalk 復帰時点で speaking 表現は必ず落とす。

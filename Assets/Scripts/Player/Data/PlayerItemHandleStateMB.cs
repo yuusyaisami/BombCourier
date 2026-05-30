@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BC.Audio;
 using BC.Base;
 using BC.Bomb;
 using BC.Item;
@@ -65,6 +66,14 @@ namespace BC.Player
         [SerializeField] private float releasePositionVerticalBias = 0.02f;
         [Tooltip("リリース位置補正の詳細ログを出力します。")]
         [SerializeField] private bool enableReleaseSafetyDebugLog;
+
+        [Header("Sound")]
+        [Tooltip("アイテムを拾ったときに再生するサウンドです。")]
+        [SerializeField] private AudioDataSO pickUpSound;
+        [Tooltip("投げたときに再生するサウンドです。")]
+        [SerializeField] private AudioDataSO throwSound;
+        [Tooltip("落としたときに再生するサウンドです。")]
+        [SerializeField] private AudioDataSO dropSound;
 
         [Header("Trajectory")]
         [Tooltip("投擲予測線を描画する LineRenderer です。")]
@@ -448,6 +457,13 @@ namespace BC.Player
             throwChargePendingTimer = 0f;
 
             item.OnHandle(handleItemPoint);
+
+            if (pickUpSound != null && pickUpSound.Clip != null)
+            {
+                Vector3 pickUpPos = handleItemPoint != null ? handleItemPoint.position : transform.position;
+                AudioSource.PlayClipAtPoint(pickUpSound.Clip, pickUpPos, pickUpSound.BaseVolume);
+            }
+
             ApplyCarryJumpPenaltyIfNeeded(item);
 
             PublishRuntimeValues();
@@ -492,6 +508,16 @@ namespace BC.Player
                 this);
 
             releasingItem.OnRelease(releaseVelocity);
+
+            {
+                AudioDataSO releaseSound = releaseKind == HeldItemReleaseKind.Throw ? throwSound : dropSound;
+                if (releaseSound != null && releaseSound.Clip != null)
+                {
+                    Vector3 releasePos = handleItemPoint != null ? handleItemPoint.position : transform.position;
+                    AudioSource.PlayClipAtPoint(releaseSound.Clip, releasePos, releaseSound.BaseVolume);
+                }
+            }
+
             ApplyThrowOwnerCollisionIgnore(releasingItem, releaseKind, releaseVelocity);
 
             if (releaseKind == HeldItemReleaseKind.Throw)

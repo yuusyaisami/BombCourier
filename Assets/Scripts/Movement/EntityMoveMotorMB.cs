@@ -188,6 +188,8 @@ namespace BC.Base
         public bool IsGrounded => ground.IsValid;
         public bool IsDead => runtimeState.IsDead;
         public event Action<CushionHighJumpEventData> CushionHighJumped;
+        /// <summary>ジャンプした時に発火するイベント。</summary>
+        public event Action Jumped;
         public Vector3 GroundNormal => ground.IsValid ? ground.Normal : Vector3.up;
         public Vector3 GroundPoint => ground.IsValid ? ground.Point : transform.position;
         public Transform GroundTransform => ground.IsValid ? ground.Transform : null;
@@ -514,6 +516,7 @@ namespace BC.Base
                 runtimeState.JumpBufferCounter = 0.0f;
                 runtimeState.LastGroundedTime = -999.0f;
                 StateMachine.ChangeState(EntityMoveState.Jumping);
+                Jumped?.Invoke();
                 return;
             }
 
