@@ -1,4 +1,5 @@
 using BC.Base;
+using BC.Inputs;
 using BC.Manager;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,6 +13,8 @@ namespace BC.UI
         [SerializeField][SerializeReference] private IAnimationSpriteClipSource resetTextAnimClipSource;
         [SerializeField] private SpriteAnimationPlayerMB spriteAnimationPlayer;
         [SerializeField] private InputActionReference reloadInputActionReference;
+        [SerializeField] private Image actionIconImage;
+        [SerializeField] private Sprite fallbackActionIcon;
         [SerializeField] private Slider reloadProgressSlider;
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField, Min(0f)] private float stationarySpeedThreshold = 0.05f;
@@ -26,17 +29,34 @@ namespace BC.UI
         private float autoReloadFadeTimer;
         private bool isVisible;
         private bool isBoundToGameLogic;
+        private bool isBoundToInputPromptManager;
         private bool wasAutoReloadVisible;
         private bool autoReloadFadeActive;
+        private InputPromptDeviceKind lastPromptDeviceKind = InputPromptDeviceKind.Unknown;
 
         private void Start()
         {
             SetVisible(false, RetryActionMode.None, forceRefresh: true);
             TryBindGameLogic();
+            TryBindInputPromptManager();
+            RefreshPromptIcon(forceRefresh: true);
+        }
+
+        private void OnEnable()
+        {
+            TryBindInputPromptManager();
+            RefreshPromptIcon(forceRefresh: true);
+        }
+
+        private void OnDisable()
+        {
+            UnbindInputPromptManager();
         }
 
         private void OnDestroy()
         {
+            UnbindInputPromptManager();
+
             if (isBoundToGameLogic && GameLogicManagerMB.Instance != null)
             {
                 GameLogicManagerMB.Instance.OnPlayerSpawned -= HandlePlayerSpawned;
@@ -52,6 +72,8 @@ namespace BC.UI
         private void Update()
         {
             TryBindGameLogic();
+            TryBindInputPromptManager();
+            RefreshPromptIcon();
 
             GameLogicManagerMB gameLogic = GameLogicManagerMB.Instance;
             if (gameLogic == null || !gameLogic.TryGetRetryActionMode(out RetryActionMode retryMode))
@@ -142,6 +164,11 @@ namespace BC.UI
 
             UpdateProgress();
             UpdateAutoReloadFade();
+        }
+
+        private void HandlePromptDeviceKindChanged(InputPromptDeviceKind _)
+        {
+            RefreshPromptIcon(forceRefresh: true);
         }
 
         private bool IsRetryBlockedBySpecialPresentation()
@@ -239,6 +266,27 @@ namespace BC.UI
             reloadProgressSlider.value = Mathf.SmoothStep(0f, 1f, progress);
         }
 
+        private void RefreshPromptIcon(bool forceRefresh = false)
+        {
+            if (actionIconImage == null)
+                return;
+
+            InputManagerMB inputManager = InputManagerMB.Instance;
+            InputPromptDeviceKind currentDeviceKind = inputManager != null
+                ? inputManager.CurrentPromptDeviceKind
+                : InputPromptDeviceKind.Unknown;
+
+            if (!forceRefresh && currentDeviceKind == lastPromptDeviceKind)
+                return;
+
+            Sprite resolvedIcon = InputPromptIconResolver.ResolveIcon(inputManager, reloadInputActionReference, fallbackActionIcon);
+            if (!ReferenceEquals(actionIconImage.sprite, resolvedIcon))
+                actionIconImage.sprite = resolvedIcon;
+
+            actionIconImage.enabled = resolvedIcon != null;
+            lastPromptDeviceKind = currentDeviceKind;
+        }
+
         private void TryBindGameLogic()
         {
             if (isBoundToGameLogic || GameLogicManagerMB.Instance == null)
@@ -247,6 +295,23 @@ namespace BC.UI
             GameLogicManagerMB.Instance.OnPlayerSpawned += HandlePlayerSpawned;
             HandlePlayerSpawned(GameLogicManagerMB.Instance.PlayerInstance);
             isBoundToGameLogic = true;
+        }
+
+        private void TryBindInputPromptManager()
+        {
+            if (isBoundToInputPromptManager || InputManagerMB.Instance == null)
+                return;
+
+            InputManagerMB.Instance.PromptDeviceKindChanged += HandlePromptDeviceKindChanged;
+            isBoundToInputPromptManager = true;
+        }
+
+        private void UnbindInputPromptManager()
+        {
+            if (isBoundToInputPromptManager && InputManagerMB.Instance != null)
+                InputManagerMB.Instance.PromptDeviceKindChanged -= HandlePromptDeviceKindChanged;
+
+            isBoundToInputPromptManager = false;
         }
     }
 }

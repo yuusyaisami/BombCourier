@@ -378,6 +378,7 @@ namespace BC.Base
                     image = GetComponent<Image>();
             }
         }
+#endif
 
         private void OnTargetKindChanged()
         {
@@ -385,6 +386,6 @@ namespace BC.Base
             // 参照を消すと戻した時に再設定が面倒なので、ここでは消さない。
             // Inspector表示だけ ShowIf で片方を隠す。
         }
+
     }
 }
-#endif

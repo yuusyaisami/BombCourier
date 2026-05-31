@@ -107,6 +107,8 @@ namespace BC.UI.Effect
                         ownsOutlineMaterial = true;
                     }
 
+                    EnsureRuntimeMaterialInstance();
+
                     ApplyProperties();
                     return;
                 }
@@ -139,7 +141,29 @@ namespace BC.UI.Effect
             outlineImage.color = Color.white;
             ownsOutlineMaterial = true;
 
+            EnsureRuntimeMaterialInstance();
+
             ApplyProperties();
+        }
+
+        private void EnsureRuntimeMaterialInstance()
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (outlineImage == null || outlineMaterial == null)
+                return;
+
+            // prefab / editor 由来の共有 material を実行時インスタンスに分離する。
+            if (ownsOutlineMaterial)
+                return;
+
+            outlineMaterial = new Material(outlineMaterial)
+            {
+                name = "UINoiseOutline_RuntimeMat"
+            };
+            outlineImage.material = outlineMaterial;
+            ownsOutlineMaterial = true;
         }
 
         private void ApplyProperties()

@@ -13,6 +13,8 @@ namespace BC.Camera
     public sealed class ThirdPersonCameraController : MonoBehaviour, ICameraController
     {
         private const string ExpectedLookActionName = "Look";
+        private const string KeyCameraSensitivity = "Settings.CameraSensitivity";
+        private const string KeyInvertYAxis = "Settings.InvertYAxis";
 
         [Header("Target")]
         [SerializeField] private Transform cameraTarget;
@@ -99,10 +101,10 @@ namespace BC.Camera
 
             float effectiveSensitivity = appSensitivityHandle != null
                 ? appSensitivityHandle.CurrentValue
-                : mouseSensitivity;
+                : PlayerPrefs.GetFloat(KeyCameraSensitivity, mouseSensitivity);
             bool effectiveInvertY = appInvertYHandle != null
                 ? appInvertYHandle.CurrentValue
-                : invertY;
+                : PlayerPrefs.GetInt(KeyInvertYAxis, invertY ? 1 : 0) == 1;
 
             if (isMouse)
             {
@@ -204,8 +206,13 @@ namespace BC.Camera
                 canLookByInputHandle = valueStore.GetHandle(entityRef, ValueKeys.Camera.CanLookByInput);
 
             // AppSettings ハンドルは ApplicationKernel から一度だけ取得する。
-            KernelValueStoreService appStore =
-                ApplicationKernelMB.Instance?.Kernel?.KernelValueStore;
+            ApplicationKernelMB appKernelMB = ApplicationKernelMB.Instance;
+            if (appKernelMB == null)
+                appKernelMB = UnityEngine.Object.FindAnyObjectByType<ApplicationKernelMB>();
+
+            KernelValueStoreService appStore = appKernelMB != null
+                ? appKernelMB.Kernel?.KernelValueStore
+                : null;
             if (appStore != null)
             {
                 if (appSensitivityHandle == null)

@@ -93,6 +93,15 @@ namespace BC.Managers
                 audio.StopBGM(crossfadeDuration);
         }
 
+        /// <summary>現在の BGM をフェードアウト停止する。</summary>
+        public void StopBGM(float fadeOutDuration = 0.5f)
+        {
+            AudioSystemMB audio = AudioSystemMB.Instance;
+            if (audio == null) return;
+
+            audio.StopBGM(Mathf.Max(0f, fadeOutDuration));
+        }
+
         /// <summary>
         /// Intro カメラ演出開始時の BGM 制御。
         /// BGM を introFadeOutDuration でフェードアウトして停止し、introCameraStartSE を再生する。
@@ -102,6 +111,7 @@ namespace BC.Managers
         {
             AudioSystemMB audio = AudioSystemMB.Instance;
             if (audio == null) return;
+            if (introCameraStartSE == null) return;
 
             audio.StopBGM(introFadeOutDuration);
 

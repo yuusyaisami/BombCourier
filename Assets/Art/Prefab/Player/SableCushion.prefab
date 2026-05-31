@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 2469909993995623199}
   - component: {fileID: 2873683816355028704}
   - component: {fileID: 8417656126735646282}
+  - component: {fileID: 4031289261615151705}
   m_Layer: 6
   m_Name: SableCushion
   m_TagString: Untagged
@@ -151,6 +152,8 @@ MonoBehaviour:
   hardLandingTargetTags:
   - id: 1001
     path: Actor.Player
+  contactSound: {fileID: 0}
+  enableDebugLog: 0
 --- !u!114 &2469909993995623199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,6 +215,22 @@ MonoBehaviour:
   carryVelocityRate: 1
   maxCarryCorrectionSpeed: 30
   maxSupportVelocity: 30
+--- !u!114 &4031289261615151705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9025351276914114289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95d106de869059f46ba96319f276b075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageSaveMarkMB
+  excludeFromCheckpoint: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
 --- !u!1001 &6923436437825639952
 PrefabInstance:
   m_ObjectHideFlags: 0

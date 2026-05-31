@@ -60,13 +60,14 @@ namespace BC.Stage
             BreakableGateObjectMB[] goalGates = GetComponentsInChildren<BreakableGateObjectMB>(true);
             for (int i = 0; i < goalGates.Length; i++)
             {
-                GoalData candidate = goalGates[i] != null ? goalGates[i].GoalData : null;
-                if (candidate == null)
+                BreakableGateObjectMB candidateGate = goalGates[i];
+                GoalData candidate = candidateGate != null ? candidateGate.GoalData : null;
+                if (candidateGate == null || !candidateGate.IsGoalGate || candidate == null)
                 {
                     continue;
                 }
 
-                goalGate = goalGates[i];
+                goalGate = candidateGate;
                 goalData = candidate;
                 break;
             }

@@ -327,6 +327,7 @@ MonoBehaviour:
     applyNonTalkingShapeExpression: 1
     nonTalkingShapeExpressionId: 10
     restoreStateShapeExpressionOnStop: 1
+  talkCharacterSound: {fileID: 11400000, guid: 5d8a56f1d693d284b91c7ff61d47b05e, type: 2}
 --- !u!136 &2584835043207313473
 CapsuleCollider:
   m_ObjectHideFlags: 0

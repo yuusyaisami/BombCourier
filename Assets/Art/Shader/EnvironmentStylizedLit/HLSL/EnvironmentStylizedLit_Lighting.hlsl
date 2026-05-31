@@ -143,24 +143,24 @@ float ESL_EvaluateAdditionalQuantizedTerm(float ndotl)
 
 float ESL_EvaluateAdditionalLightModeTerm(int additionalLightMode, float ndotl, float mainShadowAttenuation, float mainNdotL)
 {
+	float modeTerm = 0.0;
+
 	if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_FILL_ONLY)
 	{
 		// FillOnlyは「主光の影・未照射を補う」用途。
 		// ただし光量そのものは量子化し、LightStepCountで段数を制御します。
-		return ESL_EvaluateAdditionalQuantizedTerm(ndotl) * ESL_EvaluateAdditionalFillMask(mainShadowAttenuation, mainNdotL);
+		modeTerm = ESL_EvaluateAdditionalQuantizedTerm(ndotl) * ESL_EvaluateAdditionalFillMask(mainShadowAttenuation, mainNdotL);
 	}
-
-	if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_QUANTIZED)
+	else if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_QUANTIZED)
 	{
-		return ESL_EvaluateAdditionalQuantizedTerm(ndotl);
+		modeTerm = ESL_EvaluateAdditionalQuantizedTerm(ndotl);
 	}
-
-	if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_CONTINUOUS)
+	else if (additionalLightMode == ESL_ADDITIONAL_LIGHT_MODE_CONTINUOUS)
 	{
-		return ESL_EvaluateAdditionalContinuousTerm(ndotl);
+		modeTerm = ESL_EvaluateAdditionalContinuousTerm(ndotl);
 	}
 
-	return 0.0;
+	return modeTerm;
 }
 
 ESL_AdditionalLightingData ESL_EvaluateAdditionalLighting(ESL_InputData inputData, float mainShadowAttenuation, float mainNdotL)
@@ -219,7 +219,7 @@ ESL_AdditionalLightingData ESL_EvaluateAdditionalLighting(ESL_InputData inputDat
 	#endif
 
 	// ピクセル追加光パス。ライトレイヤー一致時のみ寄与を加算します。
-	int additionalLightsCount = GetAdditionalLightsCount();
+	uint additionalLightsCount = (uint)GetAdditionalLightsCount();
 	uint meshRenderingLayers = GetMeshRenderingLayer();
 
 	LIGHT_LOOP_BEGIN(additionalLightsCount)

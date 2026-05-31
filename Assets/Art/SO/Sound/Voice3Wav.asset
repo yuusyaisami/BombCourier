@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94e94c1c30b15f743920456ff08f61c4, type: 3}
   m_Name: Voice3Wav
   m_EditorClassIdentifier: Assembly-CSharp::BC.Audio.AudioDataSO
-  clip: {fileID: 8300000, guid: 5679e0dda380a324589cf0a66372c6db, type: 3}
-  baseVolume: 1
+  clip: {fileID: 8300000, guid: bf262ecf5d670574a855e19c67fad759, type: 3}
+  baseVolume: 0.527
   pitch: 1

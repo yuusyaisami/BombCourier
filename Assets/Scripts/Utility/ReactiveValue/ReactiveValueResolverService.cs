@@ -642,10 +642,15 @@ namespace BC.Base
             }
         }
 
-        private static ReactiveResult<T> ResolveKernelStoreValue<T>(
+        private ReactiveResult<T> ResolveKernelStoreValue<T>(
             in ReactiveEvalContext context,
             in ReactiveKernelValueSource source)
         {
+            if (source.StoreScope == ReactiveKernelValueStoreScope.SceneKernel)
+            {
+                return ResolveSceneKernelEntityStoreValue<T>(context, source);
+            }
+
             IKernelValueStoreService kernelValueStore = context.GetKernelValueStore(source.StoreScope);
 
             if (kernelValueStore == null)
@@ -673,10 +678,15 @@ namespace BC.Base
             }
         }
 
-        private static ReactiveResult<ValueWatchHandle<T>> ResolveKernelStoreHandle<T>(
+        private ReactiveResult<ValueWatchHandle<T>> ResolveKernelStoreHandle<T>(
             in ReactiveEvalContext context,
             in ReactiveKernelValueSource source)
         {
+            if (source.StoreScope == ReactiveKernelValueStoreScope.SceneKernel)
+            {
+                return ResolveSceneKernelEntityStoreHandle<T>(context, source);
+            }
+
             IKernelValueStoreService kernelValueStore = context.GetKernelValueStore(source.StoreScope);
 
             if (kernelValueStore == null)
@@ -702,6 +712,106 @@ namespace BC.Base
                     exception.Message,
                     context);
             }
+        }
+
+        private ReactiveResult<T> ResolveSceneKernelEntityStoreValue<T>(
+            in ReactiveEvalContext context,
+            in ReactiveKernelValueSource source)
+        {
+            if (!TryResolveSceneKernel(context, out SceneKernel resolvedSceneKernel, out ReactiveError kernelError))
+                return ReactiveResult<T>.Fail(kernelError);
+
+            if (resolvedSceneKernel.EntityValueStore == null)
+            {
+                return ReactiveErrorUtility.Fail<T>(
+                    ReactiveErrorCode.MissingValueStore,
+                    "EntityValueStore is not available on the current SceneKernel.",
+                    context);
+            }
+
+            if (!TryResolveSceneKernelEntity(resolvedSceneKernel, out EntityRef sceneKernelEntity))
+            {
+                return ReactiveErrorUtility.Fail<T>(
+                    ReactiveErrorCode.TargetNotFound,
+                    "SceneKernel entity was not found in SceneKernel.EntitiesRegistry.",
+                    context);
+            }
+
+            if (!TryResolveValueKey(source.Key, context, out ValueKey<T> key, out ReactiveError keyError))
+                return ReactiveResult<T>.Fail(keyError);
+
+            try
+            {
+                T resolvedValue = resolvedSceneKernel.EntityValueStore.Get(sceneKernelEntity, key);
+                return ReactiveResult<T>.Ok(resolvedValue);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return ReactiveErrorUtility.Fail<T>(
+                    ReactiveErrorCode.ValueStoreReadFailed,
+                    exception.Message,
+                    context);
+            }
+        }
+
+        private ReactiveResult<ValueWatchHandle<T>> ResolveSceneKernelEntityStoreHandle<T>(
+            in ReactiveEvalContext context,
+            in ReactiveKernelValueSource source)
+        {
+            if (!TryResolveSceneKernel(context, out SceneKernel resolvedSceneKernel, out ReactiveError kernelError))
+                return ReactiveResult<ValueWatchHandle<T>>.Fail(kernelError);
+
+            if (resolvedSceneKernel.EntityValueStore == null)
+            {
+                return ReactiveErrorUtility.Fail<ValueWatchHandle<T>>(
+                    ReactiveErrorCode.MissingValueStore,
+                    "EntityValueStore is not available on the current SceneKernel.",
+                    context);
+            }
+
+            if (!TryResolveSceneKernelEntity(resolvedSceneKernel, out EntityRef sceneKernelEntity))
+            {
+                return ReactiveErrorUtility.Fail<ValueWatchHandle<T>>(
+                    ReactiveErrorCode.TargetNotFound,
+                    "SceneKernel entity was not found in SceneKernel.EntitiesRegistry.",
+                    context);
+            }
+
+            if (!TryResolveValueKey(source.Key, context, out ValueKey<T> key, out ReactiveError keyError))
+                return ReactiveResult<ValueWatchHandle<T>>.Fail(keyError);
+
+            try
+            {
+                ValueWatchHandle<T> handle = resolvedSceneKernel.EntityValueStore.GetHandle(sceneKernelEntity, key);
+                return ReactiveResult<ValueWatchHandle<T>>.Ok(handle, handle.Version);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return ReactiveErrorUtility.Fail<ValueWatchHandle<T>>(
+                    ReactiveErrorCode.ValueStoreReadFailed,
+                    exception.Message,
+                    context);
+            }
+        }
+
+        private static bool TryResolveSceneKernelEntity(SceneKernel sceneKernel, out EntityRef sceneKernelEntity)
+        {
+            sceneKernelEntity = default;
+
+            if (sceneKernel?.EntitiesRegistry == null)
+                return false;
+
+            var entities = sceneKernel.EntitiesRegistry.GetEntitiesByTag(EntityTags.System.SceneKernel.Id);
+            for (int index = 0; index < entities.Count; index++)
+            {
+                if (!entities[index].IsValid)
+                    continue;
+
+                sceneKernelEntity = entities[index];
+                return true;
+            }
+
+            return false;
         }
 
         private bool TryResolveSceneKernel(

@@ -1132,6 +1132,7 @@ namespace BC.Gimmick.MovingPlatform
         private struct RailSegmentState
         {
             public bool IsActive;
+            public bool IsTransfer;
             public MovingPlatformRailLayerRoute.ResolvedStepKind Kind;
             public MovingPlatformPose StartPose;
             public MovingPlatformPose EndPose;
@@ -1147,6 +1148,8 @@ namespace BC.Gimmick.MovingPlatform
         private readonly MovingPlatformRailGraph graph;
         private readonly MovingPlatformRailLayerRoute[] routes;
         private readonly List<MovingPlatformRailTransitionEvent> pendingTransitionEvents = new();
+        private readonly float maxRouteLinearSpeed;
+        private readonly float maxTransferLinearSpeed;
 
         private RailSegmentState activeSegment;
         private MovingPlatformBasePose railReferencePose;
@@ -1155,10 +1158,20 @@ namespace BC.Gimmick.MovingPlatform
         private int currentRouteSegmentCursor = -1;
         private int currentRouteDirection = 1;
         private bool segmentPaused;
+        private readonly List<int> transferNodePath = new();
+        private int transferNodeCursor = -1;
+        private int transferTargetLayerIndex = -1;
+        private bool transferResetWhenSelected;
 
-        public MovingPlatformRailController(MovingPlatformRailGraph graph, IReadOnlyList<MovingPlatformRailLayerRoute> routes)
+        public MovingPlatformRailController(
+            MovingPlatformRailGraph graph,
+            IReadOnlyList<MovingPlatformRailLayerRoute> routes,
+            float maxRouteLinearSpeed,
+            float maxTransferLinearSpeed)
         {
             this.graph = graph;
+            this.maxRouteLinearSpeed = Mathf.Max(0.1f, maxRouteLinearSpeed);
+            this.maxTransferLinearSpeed = Mathf.Max(0.1f, maxTransferLinearSpeed);
 
             if (routes == null)
             {
@@ -1191,6 +1204,7 @@ namespace BC.Gimmick.MovingPlatform
         public void Reset(in MovingPlatformBasePose basePose, Vector3 currentWorldPosition)
         {
             AbortActiveSegment(false);
+            ClearTransferState();
             railReferencePose = basePose;
             hasRailReferencePose = true;
             currentRouteLayerIndex = -1;
@@ -1219,6 +1233,7 @@ namespace BC.Gimmick.MovingPlatform
                 return false;
 
             AbortActiveSegment(false);
+            ClearTransferState();
             railReferencePose = basePose;
             hasRailReferencePose = true;
             currentRouteLayerIndex = layerIndex;
@@ -1226,6 +1241,42 @@ namespace BC.Gimmick.MovingPlatform
             currentRouteDirection = 1;
             segmentPaused = false;
             pendingTransitionEvents.Clear();
+            return true;
+        }
+
+        public bool BeginLayerTransition(
+            int layerIndex,
+            in MovingPlatformBasePose basePose,
+            Vector3 currentWorldPosition,
+            bool resetWhenSelected)
+        {
+            if (!IsValidRouteIndex(layerIndex))
+                return false;
+
+            railReferencePose = basePose;
+            hasRailReferencePose = true;
+
+            if (currentRouteLayerIndex < 0 || currentRouteLayerIndex == layerIndex)
+            {
+                ClearTransferState();
+                currentRouteLayerIndex = layerIndex;
+                currentRouteDirection = 1;
+                currentRouteSegmentCursor = resetWhenSelected ? -1 : currentRouteSegmentCursor;
+                return true;
+            }
+
+            AbortActiveSegment(true);
+
+            if (!TryBuildTransferPath(currentRouteLayerIndex, layerIndex, currentWorldPosition, basePose, resetWhenSelected))
+            {
+                ClearTransferState();
+                return false;
+            }
+
+            currentRouteLayerIndex = layerIndex;
+            currentRouteSegmentCursor = -1;
+            currentRouteDirection = 1;
+            transferResetWhenSelected = resetWhenSelected;
             return true;
         }
 
@@ -1270,6 +1321,7 @@ namespace BC.Gimmick.MovingPlatform
                 currentRouteLayerIndex = requestedLayerIndex;
                 currentRouteSegmentCursor = -1;
                 currentRouteDirection = 1;
+                ClearTransferState();
             }
 
             if (segmentPaused && activeSegment.IsActive)
@@ -1291,8 +1343,16 @@ namespace BC.Gimmick.MovingPlatform
             {
                 if (!activeSegment.IsActive)
                 {
-                    if (!TryBeginStep(requestedLayerIndex, currentPose, ref sequenceCompleted))
-                        break;
+                    if (HasPendingTransfer(requestedLayerIndex))
+                    {
+                        if (!TryBeginTransferStep(currentPose))
+                            continue;
+                    }
+                    else
+                    {
+                        if (!TryBeginStep(requestedLayerIndex, currentPose, ref sequenceCompleted))
+                            break;
+                    }
                 }
 
                 if (!activeSegment.IsActive)
@@ -1378,14 +1438,23 @@ namespace BC.Gimmick.MovingPlatform
         {
             MovingPlatformPose endPose = ResolveEndPose(segment, currentPose);
             bool waitSignal = segment.Kind == MovingPlatformRailLayerRoute.ResolvedStepKind.WaitSignal;
+            float duration = waitSignal ? 0.01f : Mathf.Max(0.0001f, segment.Duration);
+
+            if (!waitSignal && segment.Kind == MovingPlatformRailLayerRoute.ResolvedStepKind.Move)
+            {
+                float distance = Vector3.Distance(currentPose.Position, endPose.Position);
+                float minDuration = distance / maxRouteLinearSpeed;
+                duration = Mathf.Max(duration, minDuration);
+            }
 
             activeSegment = new RailSegmentState
             {
                 IsActive = true,
+                IsTransfer = false,
                 Kind = segment.Kind,
                 StartPose = currentPose,
                 EndPose = endPose,
-                Duration = waitSignal ? 0.01f : Mathf.Max(0.0001f, segment.Duration),
+                Duration = duration,
                 Elapsed = 0f,
                 EasingMode = segment.EasingMode,
                 WaitSignalId = segment.WaitSignalId,
@@ -1465,10 +1534,18 @@ namespace BC.Gimmick.MovingPlatform
             if (!activeSegment.IsActive)
                 return;
 
+            bool wasTransfer = activeSegment.IsTransfer;
             bool shouldEmitExit = activeSegment.RouteLayerIndex >= 0 && activeSegment.RouteSegmentIndex >= 0;
             int routeLayerIndex = activeSegment.RouteLayerIndex;
             int routeSegmentIndex = activeSegment.RouteSegmentIndex;
             activeSegment = default;
+
+            if (wasTransfer)
+            {
+                transferNodeCursor++;
+                if (transferNodeCursor >= transferNodePath.Count - 1)
+                    FinalizeTransferState();
+            }
 
             if (shouldEmitExit)
             {
@@ -1494,6 +1571,215 @@ namespace BC.Gimmick.MovingPlatform
 
             activeSegment = default;
             segmentPaused = false;
+        }
+
+        private bool HasPendingTransfer(int requestedLayerIndex)
+        {
+            return transferNodeCursor >= 0 &&
+                   transferNodePath.Count >= 2 &&
+                   transferTargetLayerIndex == requestedLayerIndex;
+        }
+
+        private bool TryBeginTransferStep(in MovingPlatformPose currentPose)
+        {
+            if (transferNodeCursor < 0 || transferNodePath.Count < 2)
+                return false;
+
+            if (transferNodeCursor >= transferNodePath.Count - 1)
+            {
+                FinalizeTransferState();
+                return false;
+            }
+
+            int fromNodeIndex = transferNodePath[transferNodeCursor];
+            int toNodeIndex = transferNodePath[transferNodeCursor + 1];
+
+            float duration = 0.2f;
+            MovingPlatformEasingMode easingMode = MovingPlatformEasingMode.SmoothStep;
+
+            if (graph.TryGetAnyEdge(fromNodeIndex, toNodeIndex, out MovingPlatformRailGraph.EdgeData edge))
+            {
+                duration = edge.Duration;
+                easingMode = edge.EasingMode;
+            }
+            else
+            {
+                float distance = Vector3.Distance(
+                    graph.GetWorldPosition(railReferencePose, fromNodeIndex),
+                    graph.GetWorldPosition(railReferencePose, toNodeIndex));
+                duration = Mathf.Max(0.05f, distance / 4.0f);
+            }
+
+            Vector3 targetPosition = graph.GetWorldPosition(railReferencePose, toNodeIndex);
+            float transferDistance = Vector3.Distance(currentPose.Position, targetPosition);
+            float transferMinDuration = transferDistance / maxTransferLinearSpeed;
+            duration = Mathf.Max(duration, transferMinDuration);
+
+            activeSegment = new RailSegmentState
+            {
+                IsActive = true,
+                IsTransfer = true,
+                Kind = MovingPlatformRailLayerRoute.ResolvedStepKind.Move,
+                StartPose = currentPose,
+                EndPose = new MovingPlatformPose(targetPosition, currentPose.Rotation, currentPose.LocalScale),
+                Duration = Mathf.Max(0.0001f, duration),
+                Elapsed = 0f,
+                EasingMode = easingMode,
+                WaitSignalId = default,
+                WaitSignalTriggered = true,
+                RouteLayerIndex = -1,
+                RouteSegmentIndex = -1,
+            };
+
+            segmentPaused = false;
+            return true;
+        }
+
+        private bool TryBuildTransferPath(
+            int fromLayerIndex,
+            int toLayerIndex,
+            Vector3 currentWorldPosition,
+            in MovingPlatformBasePose basePose,
+            bool resetWhenSelected)
+        {
+            if (!IsValidRouteIndex(fromLayerIndex) || !IsValidRouteIndex(toLayerIndex))
+                return false;
+
+            if (!TryResolveTransferStartNode(fromLayerIndex, currentWorldPosition, basePose, out int startNodeIndex))
+                return false;
+
+            var targetNodes = new List<int>(8);
+            MovingPlatformRailLayerRoute toRoute = routes[toLayerIndex];
+            if (resetWhenSelected)
+            {
+                if (toRoute.NodeCount <= 0)
+                    return false;
+
+                targetNodes.Add(toRoute.GetNodeIndexAt(0));
+            }
+            else
+            {
+                for (int i = 0; i < toRoute.NodeCount; i++)
+                    targetNodes.Add(toRoute.GetNodeIndexAt(i));
+            }
+
+            if (targetNodes.Count <= 0)
+                return false;
+
+            if (!graph.TryFindShortestPathToAny(basePose, startNodeIndex, targetNodes, out List<int> nodePath, out _))
+                return false;
+
+            if (nodePath == null || nodePath.Count < 2)
+                return false;
+
+            transferNodePath.Clear();
+            for (int i = 0; i < nodePath.Count; i++)
+                transferNodePath.Add(nodePath[i]);
+
+            transferNodeCursor = 0;
+            transferTargetLayerIndex = toLayerIndex;
+            transferResetWhenSelected = resetWhenSelected;
+            return true;
+        }
+
+        private bool TryResolveNearestNodeOnRoute(
+            int layerIndex,
+            Vector3 currentWorldPosition,
+            in MovingPlatformBasePose basePose,
+            out int nearestNodeIndex)
+        {
+            nearestNodeIndex = -1;
+            if (!IsValidRouteIndex(layerIndex))
+                return false;
+
+            MovingPlatformRailLayerRoute route = routes[layerIndex];
+            if (route.NodeCount <= 0)
+                return false;
+
+            float bestDistanceSqr = float.MaxValue;
+            for (int i = 0; i < route.NodeCount; i++)
+            {
+                int nodeIndex = route.GetNodeIndexAt(i);
+                Vector3 worldPosition = graph.GetWorldPosition(basePose, nodeIndex);
+                float distanceSqr = (currentWorldPosition - worldPosition).sqrMagnitude;
+                if (distanceSqr >= bestDistanceSqr)
+                    continue;
+
+                bestDistanceSqr = distanceSqr;
+                nearestNodeIndex = nodeIndex;
+            }
+
+            return nearestNodeIndex >= 0;
+        }
+
+        private bool TryResolveTransferStartNode(
+            int fromLayerIndex,
+            Vector3 currentWorldPosition,
+            in MovingPlatformBasePose basePose,
+            out int startNodeIndex)
+        {
+            if (TryResolveNearestNodeOnRoute(fromLayerIndex, currentWorldPosition, basePose, out startNodeIndex))
+                return true;
+
+            if (!graph.TryFindNearestLocation(basePose, currentWorldPosition, out MovingPlatformRailLocation location) || !location.IsValid)
+            {
+                startNodeIndex = -1;
+                return false;
+            }
+
+            if (!location.IsOnSegment)
+            {
+                startNodeIndex = location.FromNodeIndex;
+                return startNodeIndex >= 0;
+            }
+
+            Vector3 fromWorld = graph.GetWorldPosition(basePose, location.FromNodeIndex);
+            Vector3 toWorld = graph.GetWorldPosition(basePose, location.ToNodeIndex);
+            float fromDistanceSqr = (currentWorldPosition - fromWorld).sqrMagnitude;
+            float toDistanceSqr = (currentWorldPosition - toWorld).sqrMagnitude;
+            startNodeIndex = fromDistanceSqr <= toDistanceSqr ? location.FromNodeIndex : location.ToNodeIndex;
+            return startNodeIndex >= 0;
+        }
+
+        private void FinalizeTransferState()
+        {
+            int targetLayerIndex = transferTargetLayerIndex;
+            int arrivalNodeIndex = transferNodePath.Count > 0 ? transferNodePath[transferNodePath.Count - 1] : -1;
+            bool resetWhenSelected = transferResetWhenSelected;
+
+            ClearTransferState();
+
+            if (!IsValidRouteIndex(targetLayerIndex))
+                return;
+
+            currentRouteLayerIndex = targetLayerIndex;
+
+            if (resetWhenSelected)
+            {
+                currentRouteSegmentCursor = -1;
+                currentRouteDirection = 1;
+                return;
+            }
+
+            MovingPlatformRailLayerRoute route = routes[targetLayerIndex];
+            if (arrivalNodeIndex >= 0 && route.TryFindNodeCursor(arrivalNodeIndex, 1, out int cursor, out int resolvedDirection))
+            {
+                currentRouteSegmentCursor = cursor;
+                currentRouteDirection = resolvedDirection;
+            }
+            else
+            {
+                currentRouteSegmentCursor = -1;
+                currentRouteDirection = 1;
+            }
+        }
+
+        private void ClearTransferState()
+        {
+            transferNodePath.Clear();
+            transferNodeCursor = -1;
+            transferTargetLayerIndex = -1;
+            transferResetWhenSelected = false;
         }
 
         private bool IsValidRouteIndex(int routeLayerIndex)

@@ -42,14 +42,22 @@ namespace BC.Stage
                 transform.localRotation,
                 transform.localScale,
                 rb != null,
+                rb != null && rb.isKinematic,
+                rb == null || rb.useGravity,
+                rb == null || rb.detectCollisions,
                 rb != null ? rb.linearVelocity : Vector3.zero,
                 rb != null ? rb.angularVelocity : Vector3.zero,
+                rb != null && rb.IsSleeping(),
                 participantSnapshots.ToArray()
             );
         }
 
         internal void Restore(StageObjectSnapshot snapshot)
         {
+            bool shouldActivateBeforeRestore = saveActiveSelf && snapshot.ActiveSelf && !gameObject.activeSelf;
+            if (shouldActivateBeforeRestore)
+                gameObject.SetActive(true);
+
             Rigidbody rb = saveRigidbody && snapshot.HasRigidbody && TryGetComponent(out Rigidbody cachedRigidbody)
                 ? cachedRigidbody
                 : null;
@@ -84,12 +92,25 @@ namespace BC.Stage
 
             if (rb != null)
             {
-                if (!rb.isKinematic)
+                rb.isKinematic = snapshot.IsKinematic;
+                rb.useGravity = snapshot.UseGravity;
+                rb.detectCollisions = snapshot.DetectCollisions;
+
+                if (!snapshot.IsKinematic)
                 {
                     rb.linearVelocity = snapshot.LinearVelocity;
                     rb.angularVelocity = snapshot.AngularVelocity;
                 }
-                rb.Sleep();
+                else
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+
+                if (snapshot.IsSleeping || snapshot.IsKinematic)
+                    rb.Sleep();
+                else
+                    rb.WakeUp();
             }
 
             for (int i = 0; i < snapshot.ParticipantSnapshots.Length; i++)
@@ -102,10 +123,11 @@ namespace BC.Stage
                 }
             }
 
-            if (saveActiveSelf)
-            {
-                gameObject.SetActive(snapshot.ActiveSelf);
-            }
+            if (!saveActiveSelf)
+                return;
+
+            if (!snapshot.ActiveSelf && gameObject.activeSelf)
+                gameObject.SetActive(false);
         }
     }
 
@@ -128,8 +150,12 @@ namespace BC.Stage
         public readonly Quaternion LocalRotation;
         public readonly Vector3 LocalScale;
         public readonly bool HasRigidbody;
+        public readonly bool IsKinematic;
+        public readonly bool UseGravity;
+        public readonly bool DetectCollisions;
         public readonly Vector3 LinearVelocity;
         public readonly Vector3 AngularVelocity;
+        public readonly bool IsSleeping;
         public readonly StageParticipantSnapshot[] ParticipantSnapshots;
 
         public StageObjectSnapshot(
@@ -140,8 +166,12 @@ namespace BC.Stage
             Quaternion localRotation,
             Vector3 localScale,
             bool hasRigidbody,
+            bool isKinematic,
+            bool useGravity,
+            bool detectCollisions,
             Vector3 linearVelocity,
             Vector3 angularVelocity,
+            bool isSleeping,
             StageParticipantSnapshot[] participantSnapshots)
         {
             Target = target;
@@ -151,8 +181,12 @@ namespace BC.Stage
             LocalRotation = localRotation;
             LocalScale = localScale;
             HasRigidbody = hasRigidbody;
+            IsKinematic = isKinematic;
+            UseGravity = useGravity;
+            DetectCollisions = detectCollisions;
             LinearVelocity = linearVelocity;
             AngularVelocity = angularVelocity;
+            IsSleeping = isSleeping;
             ParticipantSnapshots = participantSnapshots ?? Array.Empty<StageParticipantSnapshot>();
         }
     }

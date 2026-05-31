@@ -27,8 +27,26 @@ namespace BC.UI
         [SerializeField, Min(0f)] private float minFadeDeltaForSound = 0.5f;
 
         private CancellationTokenSource activeFadeCancellationTokenSource;
+        private FadeType activeFadeType;
+        private float activeFadeAmount;
 
         public Canvas FadeCanvas => fadeCanvas;
+
+        public void EnsureVisibleHierarchy()
+        {
+            Transform current = transform;
+            while (current != null)
+            {
+                if (!current.gameObject.activeSelf)
+                    current.gameObject.SetActive(true);
+
+                current = current.parent;
+            }
+
+            if (fadeCanvas != null)
+                fadeCanvas.enabled = true;
+        }
+
         private void Awake()
         {
             if (fadeCanvas == null)
@@ -40,6 +58,12 @@ namespace BC.UI
             // 初期状態を設定する
             SetFadeType(defaultFadeType);
             ApplyFadeState(defaultFadeType, defaultFadeAmount);
+        }
+
+        private void OnRectTransformDimensionsChange()
+        {
+            // Window サイズ変更時も最後のフェード形状を維持する。
+            ApplyFadeState(activeFadeType, activeFadeAmount);
         }
 
         private void OnDestroy()
@@ -213,19 +237,23 @@ namespace BC.UI
 
         private void ApplyFadeState(FadeType fadeType, float amount)
         {
+            activeFadeType = fadeType;
+            activeFadeAmount = Mathf.Clamp01(amount);
+
             switch (fadeType)
             {
                 case FadeType.Single:
-                    ApplySingleFade(amount);
+                    ApplySingleFade(activeFadeAmount);
                     break;
                 case FadeType.TopBottom:
-                    ApplyTopBottomFade(amount);
+                    ApplyTopBottomFade(activeFadeAmount);
                     break;
             }
         }
 
         private void ApplySingleFade(float amount)
         {
+            EnsureFullScreenRect(fadeImage);
             SetImageAlpha(fadeImage, amount);
         }
 
@@ -235,6 +263,9 @@ namespace BC.UI
             {
                 return;
             }
+
+            EnsureTopBottomBarRect(topFadeImage.rectTransform, true);
+            EnsureTopBottomBarRect(bottomFadeImage.rectTransform, false);
 
             RectTransform referenceRect = GetTopBottomReferenceRect();
             if (referenceRect == null)
@@ -265,6 +296,40 @@ namespace BC.UI
             }
 
             return fadeCanvas != null ? fadeCanvas.transform as RectTransform : null;
+        }
+
+        private static void EnsureFullScreenRect(Image image)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            RectTransform rect = image.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+        }
+
+        private static void EnsureTopBottomBarRect(RectTransform rect, bool isTop)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            float y = isTop ? 1f : 0f;
+            rect.anchorMin = new Vector2(0f, y);
+            rect.anchorMax = new Vector2(1f, y);
+            rect.pivot = new Vector2(0.5f, y);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(0f, rect.sizeDelta.y);
+            rect.offsetMin = new Vector2(0f, rect.offsetMin.y);
+            rect.offsetMax = new Vector2(0f, rect.offsetMax.y);
         }
 
         private void SetCanvasVisible(bool isVisible)

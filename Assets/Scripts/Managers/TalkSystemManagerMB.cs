@@ -166,7 +166,9 @@ namespace BC.Managers
         [SerializeField] private bool lockConversationFocusUntilHide = true;
 
         private CancellationTokenSource cancellationTokenSource;
-        private EntityRef activeTalkActor;
+        private EntityRef activeTalkOwnerActor;
+        private EntityRef activeTalkPresentationActor;
+        private TalkAdapterMB activeTalkPresentationAdapter;
         private bool isConversationFocusActive;
         private SceneCameraFocusContext activeConversationFocusContext;
         private SceneKernel sceneKernel;
@@ -197,7 +199,9 @@ namespace BC.Managers
             }
 
             EndConversationCameraFocus();
-            activeTalkActor = default;
+            activeTalkOwnerActor = default;
+            activeTalkPresentationActor = default;
+            activeTalkPresentationAdapter = null;
 
             if (Instance == this)
             {
@@ -207,6 +211,16 @@ namespace BC.Managers
 
         // 重複会話が来たら、古い処理を止めて新しい会話へ切り替える。
         public async UniTask ShowTalk(EntityRef actor, EntityRef viewer, TalkRequestData talkRequestData)
+        {
+            await ShowTalk(actor, actor, null, viewer, talkRequestData);
+        }
+
+        internal async UniTask ShowTalk(
+            EntityRef ownerActor,
+            EntityRef presentationActor,
+            TalkAdapterMB presentationAdapter,
+            EntityRef viewer,
+            TalkRequestData talkRequestData)
         {
             talkRequestData.EnsureInlineActionFlagsInitialized();
             talkRequestData.speakerName = talkRequestData.ResolveSpeakerDisplayName();
@@ -226,12 +240,15 @@ namespace BC.Managers
 
             cancellationTokenSource = new CancellationTokenSource();
             CancellationTokenSource currentTalkCancellation = cancellationTokenSource;
-            activeTalkActor = actor;
+            activeTalkOwnerActor = ownerActor.IsValid ? ownerActor : presentationActor;
+            activeTalkPresentationActor = presentationActor.IsValid ? presentationActor : activeTalkOwnerActor;
+            activeTalkPresentationAdapter = presentationAdapter;
 
-            BeginConversationCameraFocus(actor, viewer);
+            EntityRef focusTargetActor = ResolveCameraFocusActor(activeTalkPresentationActor, activeTalkOwnerActor, viewer);
+            BeginConversationCameraFocus(focusTargetActor, viewer);
 
             await ExecuteInlineActionAsync(
-                actor,
+                activeTalkOwnerActor,
                 viewer,
                 talkRequestData.OnStartTalkAction,
                 talkRequestData.isWaitingActionCompleted,
@@ -247,14 +264,7 @@ namespace BC.Managers
 
             // 話者の TalkAdapterMB からキャラクターサウンドを取得して UI に渡す。
             {
-                AudioDataSO characterSound = null;
-                if (TryResolveSceneKernel(out SceneKernel resolvedKernel) &&
-                    resolvedKernel.EntityComponents != null &&
-                    actor.IsValid &&
-                    resolvedKernel.EntityComponents.TryResolve(actor, out TalkAdapterMB speakingAdapter))
-                {
-                    characterSound = speakingAdapter.TalkCharacterSound;
-                }
+                AudioDataSO characterSound = ResolveActivePresentationAdapter()?.TalkCharacterSound;
                 talkSystemUIManagerMB.SetCharacterSound(characterSound);
             }
 
@@ -272,7 +282,7 @@ namespace BC.Managers
             // ここで同じ token を action 実行にも渡すと、HideTalk 自身が complete action を
             // 自己キャンセルしてしまい、UI が閉じる前に action 連鎖が中断されます。
             await ExecuteInlineActionAsync(
-                actor,
+                activeTalkOwnerActor,
                 viewer,
                 talkRequestData.OnCompleteTalkAction,
                 talkRequestData.isWaitingActionCompleted,
@@ -296,43 +306,102 @@ namespace BC.Managers
             adapter = null;
             speakerEntity = default;
 
-            if (!talkRequestData.HasSpeakerCharacter)
-                return false;
-
             if (!TryResolveSceneKernel(out SceneKernel resolvedSceneKernel))
             {
                 Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: failed to resolve scene kernel for speaker lookup.", this);
                 return false;
             }
 
-            bool resolved = characterDataBase.TryResolveTalkAdapter(
-                talkRequestData.speakerCharacter,
-                resolvedSceneKernel,
-                out adapter,
-                out speakerEntity);
+            bool resolved = false;
+            CharacterIdReference resolvedByNameReference = default;
+            bool hasResolvedByName = false;
+
+            if (talkRequestData.HasSpeakerCharacter)
+            {
+                resolved = characterDataBase.TryResolveTalkAdapter(
+                    talkRequestData.speakerCharacter,
+                    resolvedSceneKernel,
+                    out adapter,
+                    out speakerEntity);
+            }
+
+            if (!resolved && TryResolveSpeakerReferenceFromName(talkRequestData.speakerName, out resolvedByNameReference))
+            {
+                hasResolvedByName = true;
+
+                if (!talkRequestData.HasSpeakerCharacter || !talkRequestData.speakerCharacter.Equals(resolvedByNameReference))
+                {
+                    resolved = characterDataBase.TryResolveTalkAdapter(
+                        resolvedByNameReference,
+                        resolvedSceneKernel,
+                        out adapter,
+                        out speakerEntity);
+                }
+            }
 
             if (!resolved)
             {
+                string speakerName = string.IsNullOrWhiteSpace(talkRequestData.speakerName)
+                    ? "(empty)"
+                    : talkRequestData.speakerName;
+                string fallbackText = hasResolvedByName
+                    ? $", fallbackByName='{resolvedByNameReference}'"
+                    : string.Empty;
+
                 Debug.LogWarning(
-                    $"{nameof(TalkSystemManagerMB)}: speaker '{talkRequestData.speakerCharacter}' is not registered in {nameof(CharacterDataBaseService)}.",
+                    $"{nameof(TalkSystemManagerMB)}: speaker lookup failed. speakerCharacter='{talkRequestData.speakerCharacter}', speakerName='{speakerName}'{fallbackText}.",
                     this);
             }
 
             return resolved;
         }
 
-        public async UniTask HideTalk(EntityRef actor, HideTalkRequestData requestData)
+        private static bool TryResolveSpeakerReferenceFromName(string speakerName, out CharacterIdReference characterReference)
         {
-            if (!activeTalkActor.IsValid)
+            characterReference = default;
+
+            if (string.IsNullOrWhiteSpace(speakerName))
+                return false;
+
+            string normalizedName = speakerName.Trim();
+
+            if (CharacterIdRegistry.TryGetDescriptor(normalizedName, out CharacterIdDescriptor byPathDescriptor))
             {
-                Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: HideTalk ignored because there is no active talk actor. requestActor={actor}", this);
-                return;
+                characterReference = CharacterIdReference.From(byPathDescriptor.Id);
+                return true;
             }
 
-            if (!activeTalkActor.Equals(actor))
+            for (int i = 0; i < CharacterIdRegistry.AllDescriptors.Count; i++)
+            {
+                CharacterIdDescriptor descriptor = CharacterIdRegistry.AllDescriptors[i];
+
+                if (string.Equals(descriptor.DisplayName, normalizedName, StringComparison.Ordinal) ||
+                    string.Equals(descriptor.Path, normalizedName, StringComparison.Ordinal) ||
+                    string.Equals(descriptor.DisplayName, normalizedName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(descriptor.Path, normalizedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    characterReference = CharacterIdReference.From(descriptor.Id);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public async UniTask<bool> HideTalk(EntityRef actor, HideTalkRequestData requestData)
+        {
+            if (!activeTalkOwnerActor.IsValid && !activeTalkPresentationActor.IsValid)
+            {
+                Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: HideTalk ignored because there is no active talk actor. requestActor={actor}", this);
+                return false;
+            }
+
+            bool isOwnerActor = activeTalkOwnerActor.IsValid && activeTalkOwnerActor.Equals(actor);
+            bool isPresentationActor = activeTalkPresentationActor.IsValid && activeTalkPresentationActor.Equals(actor);
+            if (!isOwnerActor && !isPresentationActor)
             {
                 Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: ignored hide request from non-active actor {actor}.", this);
-                return;
+                return false;
             }
 
             // 非表示要求が来たら、待機中の入力処理を止める。
@@ -350,9 +419,13 @@ namespace BC.Managers
             }
 
             talkChoiceUIManagerMB?.ClearChoicesImmediate();
+            ResolveActivePresentationAdapter()?.HandleTalkHidden(requestData);
 
             EndConversationCameraFocus();
-            activeTalkActor = default;
+            activeTalkOwnerActor = default;
+            activeTalkPresentationActor = default;
+            activeTalkPresentationAdapter = null;
+            return true;
         }
 
         public async UniTask<TalkChoiceSelectionResult> ShowChoicesAsync(
@@ -377,14 +450,11 @@ namespace BC.Managers
         // Typewriter 完了時に speaking 表現を解除する通知入口。
         public void NotifyTalkTypingCompleted()
         {
-            if (!activeTalkActor.IsValid)
+            TalkAdapterMB talkAdapter = ResolveActivePresentationAdapter();
+            if (talkAdapter == null)
                 return;
 
-            if (!TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) || resolvedSceneKernel.EntityComponents == null)
-                return;
-
-            if (resolvedSceneKernel.EntityComponents.TryResolve(activeTalkActor, out TalkAdapterMB talkAdapter))
-                talkAdapter.NotifyTalkTypingCompleted();
+            talkAdapter.NotifyTalkTypingCompleted();
         }
 
         private void BeginConversationCameraFocus(EntityRef actor, EntityRef viewer)
@@ -412,6 +482,45 @@ namespace BC.Managers
                 activeConversationFocusContext = nextContext;
                 isConversationFocusActive = true;
             }
+        }
+
+        private EntityRef ResolveCameraFocusActor(EntityRef presentationActor, EntityRef ownerActor, EntityRef viewer)
+        {
+            EntityRef focusActor = presentationActor.IsValid ? presentationActor : ownerActor;
+
+            // Talk camera の observer は実質 player を基準に解決されるため、
+            // focus target も player だと重心が player 単体へ寄ってしまう。
+            // 可能なら player 以外を優先して会話の中点を安定させる。
+            if (focusActor.IsValid && IsPlayerEntity(focusActor) && viewer.IsValid && !IsPlayerEntity(viewer))
+                return viewer;
+
+            if (ownerActor.IsValid && IsPlayerEntity(ownerActor) && viewer.IsValid && !IsPlayerEntity(viewer))
+                return viewer;
+
+            if (viewer.IsValid && IsPlayerEntity(viewer) && focusActor.IsValid && !IsPlayerEntity(focusActor))
+                return focusActor;
+
+            if (focusActor.IsValid && viewer.IsValid && !focusActor.Equals(viewer))
+                return focusActor;
+
+            if (ownerActor.IsValid)
+                return ownerActor;
+
+            return focusActor;
+        }
+
+        private bool IsPlayerEntity(EntityRef entity)
+        {
+            if (!entity.IsValid)
+                return false;
+
+            if (!TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) || resolvedSceneKernel.EntityComponents == null)
+                return false;
+
+            if (!resolvedSceneKernel.EntityComponents.TryResolve(entity, out EntityMB entityMB) || entityMB == null)
+                return false;
+
+            return entityMB.Tag.Equals(EntityTags.Actor.Player.Id);
         }
 
         private UniTask ExecuteInlineActionAsync(
@@ -458,6 +567,24 @@ namespace BC.Managers
 
             activeConversationFocusContext = default;
             isConversationFocusActive = false;
+        }
+
+        private TalkAdapterMB ResolveActivePresentationAdapter()
+        {
+            if (activeTalkPresentationAdapter != null)
+                return activeTalkPresentationAdapter;
+
+            if (!activeTalkPresentationActor.IsValid)
+                return null;
+
+            if (!TryResolveSceneKernel(out SceneKernel resolvedKernel) || resolvedKernel.EntityComponents == null)
+                return null;
+
+            if (!resolvedKernel.EntityComponents.TryResolve(activeTalkPresentationActor, out TalkAdapterMB talkAdapter))
+                return null;
+
+            activeTalkPresentationAdapter = talkAdapter;
+            return talkAdapter;
         }
 
         private bool TryResolveSceneKernel(out SceneKernel resolvedSceneKernel)

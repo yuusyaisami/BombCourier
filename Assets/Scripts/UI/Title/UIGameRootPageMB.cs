@@ -12,17 +12,17 @@ namespace BC.UI.Title
     public sealed class UIGameRootPageMB : TitlePageBase
     {
         [Header("Animation")]
-        [SerializeField, Min(0f)] private float fadeInDuration  = 0.5f;
+        [SerializeField, Min(0f)] private float fadeInDuration = 0.5f;
         [SerializeField, Min(0f)] private float fadeOutDuration = 0.4f;
 
         private CanvasGroup canvasGroup;
-        private bool        waitingForInput;
-        private bool        inputReceived;
+        private bool waitingForInput;
+        private bool inputReceived;
 
         private void Awake()
         {
             canvasGroup = GetComponent<CanvasGroup>();
-            canvasGroup.alpha        = 0f;
+            canvasGroup.alpha = 0f;
             canvasGroup.interactable = false;
         }
 
@@ -38,12 +38,12 @@ namespace BC.UI.Title
                 .WithCancellation(ct);
 
             canvasGroup.interactable = true;
-            waitingForInput          = true;
+            waitingForInput = true;
         }
 
         public override async UniTask HideAsync(CancellationToken ct)
         {
-            waitingForInput          = false;
+            waitingForInput = false;
             canvasGroup.interactable = false;
 
             await canvasGroup
@@ -59,18 +59,18 @@ namespace BC.UI.Title
         private void Update()
         {
             if (!waitingForInput) return;
-            if (inputReceived)    return;
+            if (inputReceived) return;
 
             // 任意入力検知 (キーボード・マウス・ゲームパッド すべて)
             bool anyKeyThisFrame = Keyboard.current?.anyKey.wasPressedThisFrame == true
-                                || Mouse.current?.leftButton.wasPressedThisFrame    == true
-                                || Mouse.current?.rightButton.wasPressedThisFrame   == true
+                                || Mouse.current?.leftButton.wasPressedThisFrame == true
+                                || Mouse.current?.rightButton.wasPressedThisFrame == true
                                 || (Gamepad.current?.wasUpdatedThisFrame == true &&
                                     Gamepad.current.buttonSouth.wasPressedThisFrame);
 
             if (!anyKeyThisFrame) return;
 
-            inputReceived   = true;
+            inputReceived = true;
             waitingForInput = false;
             OnAnyInputReceived().Forget();
         }
@@ -80,7 +80,7 @@ namespace BC.UI.Title
             TitleSceneManagerMB manager = TitleSceneManagerMB.Instance;
             if (manager == null) return;
 
-            await manager.GoToMainPageAsync(destroyCancellationToken);
+            await manager.GoToMainPageAsync(true, destroyCancellationToken);
         }
     }
 }

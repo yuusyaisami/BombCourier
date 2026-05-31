@@ -200,7 +200,7 @@ namespace BC.ActionSystem
 
         public EntityComponentResolverService EntityComponents => SceneKernel?.EntityComponents;
         public ValueStoreService EntityValueStore => SceneKernel?.EntityValueStore;
-        public KernelValueStoreService KernelValueStore => SceneKernel?.KernelValueStore;
+        public KernelValueStoreService KernelValueStore => ApplicationKernelMB.Instance?.Kernel?.KernelValueStore;
         public EventService Events => SceneKernel?.Events;
         public EntityRef SelfEntity => ActorEntity;
     }

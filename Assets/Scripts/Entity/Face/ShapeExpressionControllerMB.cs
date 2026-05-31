@@ -121,6 +121,8 @@ namespace BC.Character
         private bool segmentActive;
         private bool enteringExpression;
         private bool started;
+        private bool hasLoggedMissingValueStore;
+        private bool hasLoggedMissingEntity;
 
         public ShapeExpressionId CurrentExpression => currentExpression;
 
@@ -388,10 +390,15 @@ namespace BC.Character
 
             if (kernelMB == null || kernelMB.Kernel == null || kernelMB.Kernel.EntityValueStore == null)
             {
-                Debug.LogError($"{nameof(ShapeExpressionControllerMB)}: ValueStore is not found.", this);
-                enabled = false;
+                if (!hasLoggedMissingValueStore)
+                {
+                    Debug.LogWarning($"{nameof(ShapeExpressionControllerMB)}: ValueStore is not found yet.", this);
+                    hasLoggedMissingValueStore = true;
+                }
                 return false;
             }
+
+            hasLoggedMissingValueStore = false;
 
             valueStore = kernelMB.Kernel.EntityValueStore;
 
@@ -399,10 +406,15 @@ namespace BC.Character
 
             if (entityMB == null || !entityMB.HasEntity)
             {
-                Debug.LogError($"{nameof(ShapeExpressionControllerMB)}: EntityMB is not found or not bound.", this);
-                enabled = false;
+                if (!hasLoggedMissingEntity)
+                {
+                    Debug.LogWarning($"{nameof(ShapeExpressionControllerMB)}: EntityMB is not found or not bound yet.", this);
+                    hasLoggedMissingEntity = true;
+                }
                 return false;
             }
+
+            hasLoggedMissingEntity = false;
 
             entityRef = entityMB.Entity;
             return true;
@@ -559,6 +571,8 @@ namespace BC.Character
             expressionSubscription?.Dispose();
             expressionSubscription = null;
             expressionHandle = null;
+            hasLoggedMissingValueStore = false;
+            hasLoggedMissingEntity = false;
         }
 
         private void OnDestroy()

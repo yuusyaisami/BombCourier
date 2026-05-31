@@ -81,22 +81,12 @@ namespace BC.ActionSystem
         public static bool TryResolveSceneKernel(Component contextComponent, out SceneKernel sceneKernel)
         {
             sceneKernel = null;
-
-            SceneKernelMB kernelMB = null;
-            if (contextComponent != null)
-            {
-                kernelMB = contextComponent.GetComponentInParent<SceneKernelMB>();
-            }
-
-            if (kernelMB == null)
-            {
-                kernelMB = UnityEngine.Object.FindAnyObjectByType<SceneKernelMB>();
-            }
-
-            if (kernelMB == null)
-            {
+            if (contextComponent == null)
                 return false;
-            }
+
+            SceneKernelMB kernelMB = contextComponent.GetComponentInParent<SceneKernelMB>();
+            if (kernelMB == null)
+                return false;
 
             sceneKernel = kernelMB.Kernel;
             return sceneKernel != null;

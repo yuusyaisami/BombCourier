@@ -57,6 +57,10 @@ namespace BC.Managers
             ApplyEnter(entityAnimation);
         }
 
+        public bool CanApplyExitReset =>
+            SupportsAutoReset &&
+            !string.IsNullOrWhiteSpace(parameterName);
+
         public void EnsureDefaultAutoReset()
         {
             if (autoResetInitialized)
@@ -178,8 +182,11 @@ namespace BC.Managers
         private ShapeExpressionId lastStateShapeExpression;
         private bool hasCurrentTalkStatePresentation;
         private TalkStateId currentTalkStateId;
+        private int talkStatePresentationVersion;
+        private int currentTalkStatePresentationVersion;
         private bool isTalkingActivityActive;
         private bool isCharacterRegistered;
+        private bool missingEntityWarningLogged;
 
         public EntityRef Entity => entityMB != null && entityMB.HasEntity ? entityMB.Entity : entityRef;
         public CharacterIdReference CharacterId => characterId;
@@ -218,47 +225,83 @@ namespace BC.Managers
             TalkRequestData requestData,
             CancellationToken cancellationToken = default)
         {
-            if (!TryResolveRuntimeDependencies(out EntityRef actor, out TalkSystemManagerMB talkSystemManager))
+            if (!TryResolveRuntimeDependencies(out EntityRef actor, out _))
+                return false;
+
+            return await TryShowTalkAsyncInternal(actor, viewer, requestData, cancellationToken);
+        }
+
+        private async UniTask<bool> TryShowTalkAsyncInternal(
+            EntityRef ownerActor,
+            EntityRef viewer,
+            TalkRequestData requestData,
+            CancellationToken cancellationToken)
+        {
+            if (!TryResolveRuntimeDependencies(out EntityRef presentationActor, out TalkSystemManagerMB talkSystemManager))
                 return false;
 
             if (requestData.HasSpeakerCharacter)
             {
-                if (!talkSystemManager.TryResolveSpeakerAdapter(requestData, out TalkAdapterMB targetAdapter, out _))
+                if (!talkSystemManager.TryResolveSpeakerAdapter(requestData, out TalkAdapterMB targetAdapter, out EntityRef speakerEntity))
                     return false;
 
                 if (targetAdapter != null && !ReferenceEquals(targetAdapter, this))
                 {
+                    if (!targetAdapter.TryResolveRuntimeDependenciesNoWarning(out EntityRef targetActor, out _))
+                    {
+                        // speaker 解決先がまだ bind 完了していない場合は委譲せず、
+                        // 現在の actor/viewer で会話を継続して camera focus 崩れを防ぐ。
+                        targetActor = default;
+                    }
+
+                    if (targetActor.IsValid)
+                    {
+                        speakerEntity = targetActor;
+                    }
+
                     EntityRef redirectedViewer = viewer;
 
                     // speaker を別 adapter へ委譲した結果、viewer まで speaker 自身になると
                     // talk camera の pivot が speaker 単体に寄ってしまう。
                     // この場合は元の actor を observer として引き継ぐ。
-                    if (redirectedViewer.IsValid && targetAdapter.Entity.IsValid && redirectedViewer.Equals(targetAdapter.Entity) &&
-                        actor.IsValid && !actor.Equals(targetAdapter.Entity))
+                    if (redirectedViewer.IsValid && speakerEntity.IsValid && redirectedViewer.Equals(speakerEntity) &&
+                        ownerActor.IsValid && !ownerActor.Equals(speakerEntity))
                     {
-                        redirectedViewer = actor;
+                        redirectedViewer = ownerActor;
                     }
 
-                    return await targetAdapter.TryShowTalkAsync(redirectedViewer, requestData, cancellationToken);
+                    if (!redirectedViewer.IsValid && ownerActor.IsValid && (!speakerEntity.IsValid || !ownerActor.Equals(speakerEntity)))
+                    {
+                        redirectedViewer = ownerActor;
+                    }
+
+                    if (speakerEntity.IsValid)
+                        return await targetAdapter.TryShowTalkAsyncInternal(ownerActor, redirectedViewer, requestData, cancellationToken);
                 }
             }
 
             ApplyTalkState(requestData.talkStateId, logMissingState: true);
+            int appliedPresentationVersion = currentTalkStatePresentationVersion;
             ApplyTalkingActivity(true);
             bool completed = false;
 
             try
             {
-                await talkSystemManager.ShowTalk(actor, viewer, requestData);
+                await talkSystemManager.ShowTalk(ownerActor, presentationActor, this, viewer, requestData);
                 completed = true;
                 return true;
             }
             finally
             {
+                ClearCurrentTalkStatePresentationIfVersion(appliedPresentationVersion);
+
                 // ShowTalk 側で中断された場合は HideTalk が呼ばれないため、
                 // Talk 状態をここで確実に戻して状態リークを防ぐ。
                 if (!completed)
+                {
+                    ResetAllConfiguredTalkAnimationParameters();
                     ApplyTalkingActivity(false);
+                }
             }
         }
 
@@ -275,8 +318,11 @@ namespace BC.Managers
             if (!TryResolveRuntimeDependencies(out EntityRef actor, out TalkSystemManagerMB talkSystemManager))
                 return false;
 
-            await talkSystemManager.HideTalk(actor, requestData).AttachExternalCancellation(cancellationToken);
+            return await talkSystemManager.HideTalk(actor, requestData).AttachExternalCancellation(cancellationToken);
+        }
 
+        internal void HandleTalkHidden(HideTalkRequestData requestData)
+        {
             ClearCurrentTalkStatePresentation();
 
             if (requestData.applyTalkStateOverride)
@@ -284,8 +330,10 @@ namespace BC.Managers
             else
                 ApplyDefaultIdlePresentation();
 
+            // Hide 時に idle state 適用で再セットされた talk 用 parameter も必ず落とす。
+            ResetAllConfiguredTalkAnimationParameters();
+
             ApplyTalkingActivity(false);
-            return true;
         }
 
         private void ResolveSerializedReferences()
@@ -352,10 +400,9 @@ namespace BC.Managers
             if (talkSystemManager == null)
                 return false;
 
-            if (entityMB == null || !entityMB.HasEntity)
+            if (!TryResolveActorEntity(out actor, logWarning: false))
                 return false;
 
-            actor = entityMB.Entity;
             entityRef = actor;
             return true;
         }
@@ -373,13 +420,9 @@ namespace BC.Managers
                 return false;
             }
 
-            if (entityMB == null || !entityMB.HasEntity)
-            {
-                Debug.LogWarning($"{nameof(TalkAdapterMB)}: {nameof(EntityMB)} is missing or not bound.", this);
+            if (!TryResolveActorEntity(out actor, logWarning: true))
                 return false;
-            }
 
-            actor = entityMB.Entity;
             entityRef = actor;
 
             talkSystemManager.RegisterTalkAdapter(characterId, actor, this);
@@ -396,6 +439,51 @@ namespace BC.Managers
             }
 
             return true;
+        }
+
+        private bool TryResolveActorEntity(out EntityRef actor, bool logWarning)
+        {
+            actor = default;
+
+            if (entityMB != null && entityMB.HasEntity)
+            {
+                actor = entityMB.Entity;
+                missingEntityWarningLogged = false;
+                return true;
+            }
+
+            EntityMB parentEntity = GetComponentInParent<EntityMB>();
+            if (parentEntity != null && parentEntity.HasEntity)
+            {
+                entityMB = parentEntity;
+                actor = parentEntity.Entity;
+                missingEntityWarningLogged = false;
+                return true;
+            }
+
+            EntityMB childEntity = GetComponentInChildren<EntityMB>(true);
+            if (childEntity != null && childEntity.HasEntity)
+            {
+                entityMB = childEntity;
+                actor = childEntity.Entity;
+                missingEntityWarningLogged = false;
+                return true;
+            }
+
+            if (entityRef.IsValid)
+            {
+                actor = entityRef;
+                missingEntityWarningLogged = false;
+                return true;
+            }
+
+            if (logWarning && !missingEntityWarningLogged)
+            {
+                Debug.LogWarning($"{nameof(TalkAdapterMB)}: {nameof(EntityMB)} is missing or not bound.", this);
+                missingEntityWarningLogged = true;
+            }
+
+            return false;
         }
 
         private void ApplyDefaultIdlePresentation()
@@ -429,6 +517,8 @@ namespace BC.Managers
             presentation.ApplyEnter(entityAnimation, valueStore, Entity);
             currentTalkStateId = talkStateId;
             hasCurrentTalkStatePresentation = true;
+            talkStatePresentationVersion++;
+            currentTalkStatePresentationVersion = talkStatePresentationVersion;
 
             // talk 専用 bool は state 側の parameter write で上書きさせない。
             if (!isTalkingActivityActive && entityAnimation != null)
@@ -445,6 +535,40 @@ namespace BC.Managers
 
             hasCurrentTalkStatePresentation = false;
             currentTalkStateId = default;
+            currentTalkStatePresentationVersion = 0;
+        }
+
+        private void ClearCurrentTalkStatePresentationIfVersion(int presentationVersion)
+        {
+            if (!hasCurrentTalkStatePresentation)
+                return;
+
+            if (currentTalkStatePresentationVersion != presentationVersion)
+                return;
+
+            ClearCurrentTalkStatePresentation();
+        }
+
+        private void ResetAllConfiguredTalkAnimationParameters()
+        {
+            if (entityAnimation == null || statePresentations == null)
+                return;
+
+            for (int presentationIndex = 0; presentationIndex < statePresentations.Length; presentationIndex++)
+            {
+                TalkAnimatorParameterWrite[] parameterWrites = statePresentations[presentationIndex].parameterWrites;
+                if (parameterWrites == null)
+                    continue;
+
+                for (int parameterIndex = 0; parameterIndex < parameterWrites.Length; parameterIndex++)
+                {
+                    TalkAnimatorParameterWrite parameterWrite = parameterWrites[parameterIndex];
+                    if (!parameterWrite.CanApplyExitReset)
+                        continue;
+
+                    parameterWrite.ApplyExit(entityAnimation);
+                }
+            }
         }
 
         private void ApplyTalkingActivity(bool isTalking)

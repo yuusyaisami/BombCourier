@@ -112,6 +112,7 @@ namespace BC.Gimmick.MovingPlatform
         private WiringAction[] actions = Array.Empty<WiringAction>();
 
         public override string SegmentName => "InlineAction";
+        public IReadOnlyList<WiringAction> Actions => actions ?? Array.Empty<WiringAction>();
 
         public int Execute(in WiringActionContext context)
         {
@@ -288,6 +289,8 @@ namespace BC.Gimmick.MovingPlatform
         public bool UseReactiveCondition => useReactiveCondition;
         public bool UseSignalGate => useSignalGate;
         public ReactiveWatchedBool ActiveCondition => activeCondition;
+        public KernelSignalReference ActivateSignal => activateSignal;
+        public KernelSignalReference DeactivateSignal => deactivateSignal;
         public MovingPlatformPlaybackMode PlaybackMode => playbackMode;
         public MovingPlatformTimingControl DefaultTimingControl => defaultTimingControl;
         public float DefaultDuration => Mathf.Max(0.01f, defaultDuration);

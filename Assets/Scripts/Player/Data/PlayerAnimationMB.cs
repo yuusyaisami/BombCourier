@@ -58,6 +58,7 @@ namespace BC.Base
         private ValueWatchHandle<int> throwSequenceHandle;
         private int lastSeenThrowSequenceVersion;
         private EntityMoveMotorMB subscribedMotor; // Jumped イベント貴読用。
+        private bool missingRaiseBodyTriggerLogged;
 
         private void Reset()
         {
@@ -100,7 +101,17 @@ namespace BC.Base
 
         public void PlayRaiseBody()
         {
-            EntityAnimation.SetTrigger(onRaiseBodyParameter);
+            if (TryResolveRaiseBodyTriggerName(out string triggerName))
+            {
+                EntityAnimation.SetTrigger(triggerName);
+                return;
+            }
+
+            if (!missingRaiseBodyTriggerLogged)
+            {
+                Debug.LogWarning($"{nameof(PlayerAnimationMB)}: raise-body trigger was not found on Animator.", this);
+                missingRaiseBodyTriggerLogged = true;
+            }
         }
 
         public void SetNextStageActive(bool active)
@@ -149,6 +160,47 @@ namespace BC.Base
 
             if (moveSourceBehaviour == null)
                 moveSourceBehaviour = GetComponent<EntityMoveMotorMB>();
+        }
+
+        private bool TryResolveRaiseBodyTriggerName(out string triggerName)
+        {
+            triggerName = null;
+
+            EntityAnimationMB animation = EntityAnimation;
+            Animator animator = animation != null ? animation.Animator : null;
+            if (animator == null)
+                return false;
+
+            if (HasTrigger(animator, onRaiseBodyParameter))
+            {
+                triggerName = onRaiseBodyParameter;
+                return true;
+            }
+
+            const string fallbackTrigger = "RaiseBody";
+            if (HasTrigger(animator, fallbackTrigger))
+            {
+                triggerName = fallbackTrigger;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool HasTrigger(Animator animator, string parameterName)
+        {
+            if (animator == null || string.IsNullOrWhiteSpace(parameterName))
+                return false;
+
+            AnimatorControllerParameter[] parameters = animator.parameters;
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                AnimatorControllerParameter parameter = parameters[i];
+                if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == parameterName)
+                    return true;
+            }
+
+            return false;
         }
 
         private void ResolveMoveSource()

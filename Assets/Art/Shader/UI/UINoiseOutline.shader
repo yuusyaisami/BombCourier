@@ -100,6 +100,12 @@ Shader "BC/UI/NoiseOutline"
 
             float4 _ClipRect;
 
+            float ESL_Get2DClipping(float2 position, float4 clipRect)
+            {
+                float2 inside = step(clipRect.xy, position) * step(position, clipRect.zw);
+                return inside.x * inside.y;
+            }
+
             float hash21(float2 p)
             {
                 p = frac(p * float2(123.34, 456.21));
@@ -162,7 +168,7 @@ Shader "BC/UI/NoiseOutline"
                 half4 col = outlineColor;
 
 #ifdef UNITY_UI_CLIP_RECT
-                col.a *= UnityGet2DClipping(IN.worldPos.xy, _ClipRect);
+                col.a *= ESL_Get2DClipping(IN.worldPos.xy, _ClipRect);
 #endif
 #ifdef UNITY_UI_ALPHACLIP
                 clip(col.a - 0.001);

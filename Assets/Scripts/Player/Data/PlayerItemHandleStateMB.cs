@@ -90,6 +90,8 @@ namespace BC.Player
         [SerializeField, Min(0.001f)] private float trajectoryLineWidth = 0.04f;
         [Tooltip("投擲予測ラインの色です。")]
         [SerializeField] private Color trajectoryColor = new Color(1.0f, 0.62f, 0.08f, 0.9f);
+        [Tooltip("投擲予測ライン用の fallback マテリアルです。Build で Shader が欠ける場合に指定してください。")]
+        [SerializeField] private Material trajectoryLineFallbackMaterial;
         [Tooltip("トリガーコライダーを予測判定に含めるかを指定します。")]
         [SerializeField] private bool includeTriggerCollidersInTrajectory = true;
         [Tooltip("着地点マーカーを表示し始める最小距離です。")]
@@ -98,6 +100,8 @@ namespace BC.Player
         [SerializeField, Min(0.01f)] private float trajectoryHitMarkerDiameter = 0.24f;
         [Tooltip("着地点マーカーの色です。")]
         [SerializeField] private Color trajectoryHitMarkerColor = new Color(1.0f, 0.82f, 0.24f, 0.95f);
+        [Tooltip("着地点マーカー用の fallback マテリアルです。Build で Shader が欠ける場合に指定してください。")]
+        [SerializeField] private Material trajectoryHitMarkerFallbackMaterial;
 
         [Header("Runtime Debug")]
         [Tooltip("現在インタラクト可能かをデバッグ表示するための runtime 値です。")]
@@ -107,6 +111,8 @@ namespace BC.Player
 
 
         private static readonly ValueModifierTagId CarryItemJumpPenaltyTag = new ValueModifierTagId(10003);
+    private static readonly int BaseColorShaderPropertyId = Shader.PropertyToID("_BaseColor");
+    private static readonly int ColorShaderPropertyId = Shader.PropertyToID("_Color");
         private const int MaxTrajectoryHits = 16;
         // アイテムを拾った後、プレイヤーが入力を離すまで次のアイテムを拾えないようにするためのフラグ。これがないと、例えば爆弾を投げた瞬間にもう一度掴んでしまう。
         private bool waitForPickupInputRelease; // 拾い直後の入力を投擲へ流さないための抑止フラグ。
@@ -130,7 +136,7 @@ namespace BC.Player
         private float throwForceChargeTimer; // 投擲チャージ時間。
         private Vector3[] trajectoryPoints = new Vector3[32]; // 軌跡描画用の点列。
         private Material ownedTrajectoryMaterial; // 軌跡用に内部生成した材質。
-        private Material ownedTrajectoryHitMarkerMaterial; // 着地点マーカー用の内部生成材質。
+        private MaterialPropertyBlock trajectoryHitMarkerPropertyBlock; // 着地点マーカー色反映用。
         private Transform trajectoryHitMarkerTransform; // 着地点マーカーの Transform。
         private Renderer trajectoryHitMarkerRenderer; // 着地点マーカーの Renderer。
         private bool isEmptyHandThrowPreviewActive; // 手ぶら投擲予測が有効かどうか。
@@ -244,12 +250,6 @@ namespace BC.Player
             {
                 Destroy(ownedTrajectoryMaterial);
                 ownedTrajectoryMaterial = null;
-            }
-
-            if (ownedTrajectoryHitMarkerMaterial != null)
-            {
-                Destroy(ownedTrajectoryHitMarkerMaterial);
-                ownedTrajectoryHitMarkerMaterial = null;
             }
         }
 
@@ -1192,6 +1192,12 @@ namespace BC.Player
 
             if (trajectoryLineRenderer.sharedMaterial == null)
             {
+                if (trajectoryLineFallbackMaterial != null)
+                {
+                    trajectoryLineRenderer.sharedMaterial = trajectoryLineFallbackMaterial;
+                    return;
+                }
+
                 Shader shader = Shader.Find("Sprites/Default");
 
                 if (shader == null)
@@ -1227,24 +1233,16 @@ namespace BC.Player
             if (trajectoryHitMarkerRenderer == null)
                 return;
 
-            if (ownedTrajectoryHitMarkerMaterial == null)
+            if (trajectoryHitMarkerRenderer.sharedMaterial == null && trajectoryHitMarkerFallbackMaterial != null)
             {
-                Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
-
-                if (shader == null)
-                    shader = Shader.Find("Standard");
-
-                if (shader != null)
-                {
-                    ownedTrajectoryHitMarkerMaterial = new Material(shader);
-                }
+                trajectoryHitMarkerRenderer.sharedMaterial = trajectoryHitMarkerFallbackMaterial;
             }
 
-            if (ownedTrajectoryHitMarkerMaterial != null)
-            {
-                ownedTrajectoryHitMarkerMaterial.color = trajectoryHitMarkerColor;
-                trajectoryHitMarkerRenderer.sharedMaterial = ownedTrajectoryHitMarkerMaterial;
-            }
+            trajectoryHitMarkerPropertyBlock ??= new MaterialPropertyBlock();
+            trajectoryHitMarkerRenderer.GetPropertyBlock(trajectoryHitMarkerPropertyBlock);
+            trajectoryHitMarkerPropertyBlock.SetColor(BaseColorShaderPropertyId, trajectoryHitMarkerColor);
+            trajectoryHitMarkerPropertyBlock.SetColor(ColorShaderPropertyId, trajectoryHitMarkerColor);
+            trajectoryHitMarkerRenderer.SetPropertyBlock(trajectoryHitMarkerPropertyBlock);
         }
 
         // 着地点マーカーを表示する。

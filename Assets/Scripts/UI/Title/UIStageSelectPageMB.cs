@@ -2,7 +2,9 @@ using System.Collections.Generic;
 using System.Threading;
 using BC.Audio;
 using BC.Base;
+using BC.Rendering.Transition;
 using BC.Stage;
+using BC.UI.Effect;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -28,12 +30,11 @@ namespace BC.UI.Title
         [SerializeField] private RectTransform page1Container;
         [Tooltip("Page2 の RectTransform。")]
         [SerializeField] private RectTransform page2Container;
-        [SerializeField, Min(0f)] private float pageSlideWidth    = 1920f;
+        [SerializeField, Min(0f)] private float pageSlideWidth = 1920f;
         [SerializeField, Min(0f)] private float pageSlideDuration = 0.35f;
 
         [Header("Background")]
-        [SerializeField] private Image backgroundImageA;
-        [SerializeField] private Image backgroundImageB;
+        [SerializeField] private UIScreenTransitionImageMB backgroundTransitionImage;
         [SerializeField, Min(0f)] private float bgCrossFadeDuration = 0.4f;
 
         [Header("Stage Detail")]
@@ -49,6 +50,9 @@ namespace BC.UI.Title
         [Header("Stage Registry")]
         [SerializeField] private StageRegistrySO stageRegistry;
 
+        [Header("Screen Transition")]
+        [SerializeField] private ScreenTransitionProfileSO stageLoadTransitionProfile;
+
         [Header("Navigation")]
         [SerializeField] private UIStageSelectNavigationMB navigationMB;
 
@@ -59,8 +63,13 @@ namespace BC.UI.Title
         [Header("Back Button")]
         [SerializeField] private Button backButton;
 
+        [Header("Button Outlines")]
+        [SerializeField] private UINoiseOutlineMB prevPageButtonOutline;
+        [SerializeField] private UINoiseOutlineMB nextPageButtonOutline;
+        [SerializeField] private UINoiseOutlineMB backButtonOutline;
+
         [Header("Page Animation")]
-        [SerializeField, Min(0f)] private float pageInDuration  = 0.35f;
+        [SerializeField, Min(0f)] private float pageInDuration = 0.35f;
         [SerializeField, Min(0f)] private float pageOutDuration = 0.3f;
 
         [Header("Sound")]
@@ -70,26 +79,16 @@ namespace BC.UI.Title
         [SerializeField] private AudioDataSO navButtonClickSound;
 
         private CanvasGroup pageCanvasGroup;
-        private int         currentPageIndex;
-        private Image       activeBgImage;
-        private Image       inactiveBgImage;
-        private bool        isSwitchingPage;
-
-        // ---- Background transition ----
-        private Tween bgFadeInTween;
-        private Tween bgFadeOutTween;
+        private int currentPageIndex;
+        private bool isSwitchingPage;
+        private bool stageItemsBound;
+        private const int GameSceneBuildIndex = 1;
 
         private void Awake()
         {
             pageCanvasGroup = GetComponent<CanvasGroup>();
-            pageCanvasGroup.alpha        = 0f;
+            pageCanvasGroup.alpha = 0f;
             pageCanvasGroup.interactable = false;
-
-            activeBgImage   = backgroundImageA;
-            inactiveBgImage = backgroundImageB;
-
-            if (inactiveBgImage != null)
-                inactiveBgImage.color = Color.clear;
 
             ResetStageDetailPanel();
 
@@ -102,7 +101,18 @@ namespace BC.UI.Title
             // ボタンイベント
             if (prevPageButton != null) prevPageButton.onClick.AddListener(() => { PlayNavClickSound(); SwitchToPageAsync(currentPageIndex - 1, destroyCancellationToken).Forget(); });
             if (nextPageButton != null) nextPageButton.onClick.AddListener(() => { PlayNavClickSound(); SwitchToPageAsync(currentPageIndex + 1, destroyCancellationToken).Forget(); });
-            if (backButton     != null) backButton.onClick.AddListener(() => { PlayNavClickSound(); OnBackButtonClicked(); });
+            if (backButton != null) backButton.onClick.AddListener(() => { PlayNavClickSound(); OnBackButtonClicked(); });
+
+            if (prevPageButtonOutline == null && prevPageButton != null)
+                prevPageButtonOutline = prevPageButton.GetComponentInChildren<UINoiseOutlineMB>(true);
+            if (nextPageButtonOutline == null && nextPageButton != null)
+                nextPageButtonOutline = nextPageButton.GetComponentInChildren<UINoiseOutlineMB>(true);
+            if (backButtonOutline == null && backButton != null)
+                backButtonOutline = backButton.GetComponentInChildren<UINoiseOutlineMB>(true);
+
+            prevPageButtonOutline?.SetFocused(false);
+            nextPageButtonOutline?.SetFocused(false);
+            backButtonOutline?.SetFocused(false);
 
             // ナビゲーションボタンのフォーカス SE 登録
             RegisterNavButtonFocusSound(prevPageButton);
@@ -122,17 +132,32 @@ namespace BC.UI.Title
             trigger.triggers.Add(onSelect);
 
             var onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            onPointerEnter.callback.AddListener(_ => PlayNavFocusSound());
+            onPointerEnter.callback.AddListener(_ =>
+            {
+                PlayNavFocusSound();
+                SelectIfNeeded(button.gameObject);
+            });
             trigger.triggers.Add(onPointerEnter);
         }
 
-        private void PlayNavFocusSound()
+        private static void SelectIfNeeded(GameObject target)
+        {
+            if (target == null || EventSystem.current == null)
+                return;
+
+            if (EventSystem.current.currentSelectedGameObject == target)
+                return;
+
+            EventSystem.current.SetSelectedGameObject(target);
+        }
+
+        public void PlayNavFocusSound()
         {
             if (navButtonFocusSound != null)
                 AudioSystemMB.Instance?.PlaySE(navButtonFocusSound);
         }
 
-        private void PlayNavClickSound()
+        public void PlayNavClickSound()
         {
             if (navButtonClickSound != null)
                 AudioSystemMB.Instance?.PlaySE(navButtonClickSound);
@@ -141,7 +166,6 @@ namespace BC.UI.Title
         private void SetupStageItems()
         {
             if (stageRegistry == null) return;
-            TitleStageProgressServiceMB progress = TitleStageProgressServiceMB.Instance;
             List<StageData> stages = stageRegistry.StageData;
 
             // navigationMB に全アイテムを渡す
@@ -153,15 +177,20 @@ namespace BC.UI.Title
                 UIStageSelectItemMB item = stageItems[i];
                 if (item == null) continue;
 
-                StageData data      = (i < stages.Count) ? stages[i] : null;
-                bool      unlocked  = (progress != null) ? progress.IsUnlocked(i) : (i == 0);
-                TitleStageProgressServiceMB.StageProgressData stageProgress =
-                    (progress != null) ? progress.GetStageProgress(i) : TitleStageProgressServiceMB.GetStageProgressPersisted(i);
+                StageData data = (i < stages.Count) ? stages[i] : null;
+                bool unlocked = TitleStageProgressServiceMB.IsUnlockedPersisted(i);
+                TitleStageProgressServiceMB.StageProgressData stageProgress = TitleStageProgressServiceMB.GetStageProgressPersisted(i);
 
                 item.Setup(data, i, unlocked, stageProgress.TotalStarCount);
-                item.OnFocused  += OnItemFocused;
-                item.OnSelected += OnItemSelected;
+
+                if (!stageItemsBound)
+                {
+                    item.OnFocused += OnItemFocused;
+                    item.OnSelected += OnItemSelected;
+                }
             }
+
+            stageItemsBound = true;
         }
 
         private void SetupPageContainers()
@@ -179,6 +208,7 @@ namespace BC.UI.Title
             gameObject.SetActive(true);
             currentPageIndex = 0;
             SetupPageContainers();
+            SetupStageItems();
 
             // ページ1の最初の解放済みアイテムにフォーカス
             if (navigationMB != null)
@@ -193,6 +223,7 @@ namespace BC.UI.Title
                     }
                 }
                 navigationMB.SetFocus(firstUnlocked);
+                SetInitialBackgroundForItem(firstUnlocked);
             }
 
             await pageCanvasGroup
@@ -203,6 +234,7 @@ namespace BC.UI.Title
 
             pageCanvasGroup.interactable = true;
             UpdateArrowButtons();
+            RefreshNavButtonOutlines();
         }
 
         public override async UniTask HideAsync(CancellationToken ct)
@@ -220,6 +252,14 @@ namespace BC.UI.Title
             gameObject.SetActive(false);
         }
 
+        private void Update()
+        {
+            if (!IsShowing)
+                return;
+
+            RefreshNavButtonOutlines();
+        }
+
         /// <summary>指定ページインデックスにスライドアニメーションで切り替える。</summary>
         public async UniTask SwitchToPageAsync(int targetPage, CancellationToken ct)
         {
@@ -233,7 +273,7 @@ namespace BC.UI.Title
             float direction = (targetPage > currentPageIndex) ? -1f : 1f;
 
             RectTransform current = (currentPageIndex == 0) ? page1Container : page2Container;
-            RectTransform next    = (targetPage       == 0) ? page1Container : page2Container;
+            RectTransform next = (targetPage == 0) ? page1Container : page2Container;
 
             // next コンテナを画面外に配置してからスライドイン
             if (next != null)
@@ -252,7 +292,7 @@ namespace BC.UI.Title
             await UniTask.WhenAll(slideOut, slideIn);
 
             currentPageIndex = targetPage;
-            isSwitchingPage  = false;
+            isSwitchingPage = false;
             pageCanvasGroup.interactable = true;
             UpdateArrowButtons();
         }
@@ -272,11 +312,21 @@ namespace BC.UI.Title
         {
             pageCanvasGroup.interactable = false;
 
+            ApplicationKernelMB appKernelMB = ApplicationKernelMB.Instance;
+            KernelValueStoreService kernelStore = appKernelMB != null ? appKernelMB.Kernel?.KernelValueStore : null;
+            kernelStore?.Set(ValueKeys.Kernel.Stage.SelectedStageIndex, Mathf.Max(0, stageIndex));
+
             // SceneManagerService 経由でロードシーンを表示してから遷移
             SceneManagerService sceneMgr = ApplicationKernelMB.Instance?.Kernel?.SceneManager;
             if (sceneMgr != null)
             {
-                await sceneMgr.LoadSceneAsync(stageIndex);
+                ScreenTransitionRequest transitionRequest = new(
+                    stageLoadTransitionProfile,
+                    overrideDuration: null,
+                    captureFromCurrentFrame: true,
+                    waitUntilToReady: true);
+
+                await sceneMgr.LoadSceneWithTransitionAsync(GameSceneBuildIndex, transitionRequest, LoadSceneMode.Single, destroyCancellationToken);
                 return;
             }
 
@@ -285,27 +335,37 @@ namespace BC.UI.Title
             if (loadingScene != null)
                 await loadingScene.ShowAsync();
 
-            SceneManager.LoadScene(stageIndex);
+            SceneManager.LoadScene(GameSceneBuildIndex);
         }
 
         private async UniTaskVoid CrossFadeBackground(Sprite newSprite)
         {
-            CancellationToken ct = destroyCancellationToken;
+            if (backgroundTransitionImage == null)
+                return;
 
-            bgFadeInTween?.Kill();
-            bgFadeOutTween?.Kill();
+            if (newSprite == null)
+                newSprite = backgroundTransitionImage.CurrentSprite;
 
-            inactiveBgImage.sprite = newSprite;
-            inactiveBgImage.color  = Color.clear;
+            if (newSprite == null)
+                return;
 
-            bgFadeInTween  = inactiveBgImage.DOColor(Color.white, bgCrossFadeDuration).SetUpdate(true);
-            bgFadeOutTween = activeBgImage.DOColor(Color.clear,   bgCrossFadeDuration).SetUpdate(true);
+            await backgroundTransitionImage.TransitionToSpriteAsync(
+                newSprite,
+                bgCrossFadeDuration,
+                null,
+                destroyCancellationToken);
+        }
 
-            await UniTask.WhenAll(
-                bgFadeInTween.WithCancellation(ct),
-                bgFadeOutTween.WithCancellation(ct));
+        private void SetInitialBackgroundForItem(int index)
+        {
+            if (backgroundTransitionImage == null || stageItems == null || index < 0 || index >= stageItems.Count)
+                return;
 
-            (activeBgImage, inactiveBgImage) = (inactiveBgImage, activeBgImage);
+            UIStageSelectItemMB item = stageItems[index];
+            if (item == null || item.StageData == null || item.StageData.backgroundSprite == null)
+                return;
+
+            backgroundTransitionImage.SetImmediateSprite(item.StageData.backgroundSprite);
         }
 
         private void UpdateArrowButtons()
@@ -314,9 +374,25 @@ namespace BC.UI.Title
             if (nextPageButton != null) nextPageButton.interactable = (currentPageIndex < 1);
         }
 
+        private void RefreshNavButtonOutlines()
+        {
+            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+
+            bool prevFocused = selected != null && prevPageButton != null &&
+                               (selected == prevPageButton.gameObject || selected.transform.IsChildOf(prevPageButton.transform));
+            bool nextFocused = selected != null && nextPageButton != null &&
+                               (selected == nextPageButton.gameObject || selected.transform.IsChildOf(nextPageButton.transform));
+            bool backFocused = selected != null && backButton != null &&
+                               (selected == backButton.gameObject || selected.transform.IsChildOf(backButton.transform));
+
+            prevPageButtonOutline?.SetFocused(prevFocused);
+            nextPageButtonOutline?.SetFocused(nextFocused);
+            backButtonOutline?.SetFocused(backFocused);
+        }
+
         private void OnBackButtonClicked()
         {
-            TitleSceneManagerMB.Instance?.GoToMainPageAsync(destroyCancellationToken).Forget();
+            TitleSceneManagerMB.Instance?.GoToMainPageAsync(false, destroyCancellationToken).Forget();
         }
 
         private void RefreshStageDetailPanel(UIStageSelectItemMB item)

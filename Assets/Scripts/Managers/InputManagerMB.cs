@@ -9,6 +9,11 @@ namespace BC.Manager
 {
     public sealed class InputManagerMB : MonoBehaviour
     {
+        private const float MouseDeltaThresholdSqr = 0.01f;
+        private const float ScrollThresholdSqr = 0.01f;
+        private const float GamepadStickThreshold = 0.25f;
+        private const float GamepadTriggerThreshold = 0.2f;
+
         public static InputManagerMB Instance { get; private set; }
 
         [Header("Cursor")]
@@ -175,7 +180,53 @@ namespace BC.Manager
                 return;
             }
 
+            if (!HasMeaningfulInput(device))
+            {
+                return;
+            }
+
             UpdateLastUsedPromptDeviceKind(device);
+        }
+
+        private static bool HasMeaningfulInput(InputDevice device)
+        {
+            switch (device)
+            {
+                case Keyboard keyboard:
+                    return keyboard.anyKey.isPressed;
+
+                case Mouse mouse:
+                    if (mouse.leftButton.isPressed || mouse.rightButton.isPressed || mouse.middleButton.isPressed)
+                        return true;
+
+                    if (mouse.delta.ReadValue().sqrMagnitude > MouseDeltaThresholdSqr)
+                        return true;
+
+                    return mouse.scroll.ReadValue().sqrMagnitude > ScrollThresholdSqr;
+
+                case Gamepad gamepad:
+                    if (gamepad.buttonSouth.isPressed || gamepad.buttonNorth.isPressed ||
+                        gamepad.buttonEast.isPressed || gamepad.buttonWest.isPressed ||
+                        gamepad.startButton.isPressed || gamepad.selectButton.isPressed ||
+                        gamepad.leftShoulder.isPressed || gamepad.rightShoulder.isPressed ||
+                        gamepad.leftStickButton.isPressed || gamepad.rightStickButton.isPressed ||
+                        gamepad.dpad.up.isPressed || gamepad.dpad.down.isPressed ||
+                        gamepad.dpad.left.isPressed || gamepad.dpad.right.isPressed)
+                    {
+                        return true;
+                    }
+
+                    if (gamepad.leftTrigger.ReadValue() > GamepadTriggerThreshold ||
+                        gamepad.rightTrigger.ReadValue() > GamepadTriggerThreshold)
+                    {
+                        return true;
+                    }
+
+                    return gamepad.leftStick.ReadValue().sqrMagnitude > GamepadStickThreshold * GamepadStickThreshold ||
+                           gamepad.rightStick.ReadValue().sqrMagnitude > GamepadStickThreshold * GamepadStickThreshold;
+            }
+
+            return false;
         }
 
         private void UpdateLastUsedPromptDeviceKind(InputDevice device)

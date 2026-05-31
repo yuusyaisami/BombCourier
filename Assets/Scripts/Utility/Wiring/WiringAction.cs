@@ -168,25 +168,25 @@ namespace BC.Base
             switch (kind)
             {
                 case WiringActionKind.KernelStoreSet:
-                    return ExecuteStoreSet(context.SceneKernel?.KernelValueStore, kernelValueKey);
+                    return ExecuteStoreSet(ApplicationKernelMB.Instance?.Kernel?.KernelValueStore, kernelValueKey);
 
                 case WiringActionKind.KernelStoreAdd:
-                    return ExecuteStoreAdd(context.SceneKernel?.KernelValueStore, kernelValueKey);
+                    return ExecuteStoreAdd(ApplicationKernelMB.Instance?.Kernel?.KernelValueStore, kernelValueKey);
 
                 case WiringActionKind.KernelStoreMul:
-                    return ExecuteStoreMul(context.SceneKernel?.KernelValueStore, kernelValueKey);
+                    return ExecuteStoreMul(ApplicationKernelMB.Instance?.Kernel?.KernelValueStore, kernelValueKey);
 
                 case WiringActionKind.KernelStoreBoolModifier:
-                    return ExecuteStoreBoolModifier(context.SceneKernel?.KernelValueStore, kernelValueKey);
+                    return ExecuteStoreBoolModifier(ApplicationKernelMB.Instance?.Kernel?.KernelValueStore, kernelValueKey);
 
                 case WiringActionKind.KernelStoreRemoveAdd:
-                    return ExecuteStoreRemoveAdd(context.SceneKernel?.KernelValueStore, kernelValueKey);
+                    return ExecuteStoreRemoveAdd(ApplicationKernelMB.Instance?.Kernel?.KernelValueStore, kernelValueKey);
 
                 case WiringActionKind.KernelStoreRemoveMul:
-                    return ExecuteStoreRemoveMul(context.SceneKernel?.KernelValueStore, kernelValueKey);
+                    return ExecuteStoreRemoveMul(ApplicationKernelMB.Instance?.Kernel?.KernelValueStore, kernelValueKey);
 
                 case WiringActionKind.KernelStoreRemoveBoolModifier:
-                    return ExecuteStoreRemoveBoolModifier(context.SceneKernel?.KernelValueStore, kernelValueKey);
+                    return ExecuteStoreRemoveBoolModifier(ApplicationKernelMB.Instance?.Kernel?.KernelValueStore, kernelValueKey);
 
                 case WiringActionKind.EntityStoreSet:
                     return ExecuteForTargets(capturedContext, entity => ExecuteEntityStoreSet(capturedContext, entity));

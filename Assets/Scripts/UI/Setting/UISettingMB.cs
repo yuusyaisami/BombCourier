@@ -3,28 +3,44 @@ using System.Threading;
 using BC.Audio;
 using BC.Base;
 using BC.Manager;
+using BC.UI.Title;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using BC.UI.Effect;
 
 namespace BC.UI
 {
     // ゲームの設定画面を管理するクラス。
     // InputActionReference で指定されたキーでトグル表示し、
-    // 開いた際は Time.timeScale = 0 でゲームを一時停止する。
+    // 設定を開いたときにゲーム時間を止めるかどうかは Inspector で切り替えられる。
     // 設定値は ApplicationKernel.KernelValueStore (ValueKeys.AppSettings) を唯一の真実源とする。
     [DisallowMultipleComponent]
     public class UISettingMB : MonoBehaviour
     {
+        private static readonly ValueModifierTagId SettingsInputLockTag = new ValueModifierTagId(14001);
+        private const string KeyMusicVolume = "Settings.MusicVolume";
+        private const string KeySFXVolume = "Settings.SFXVolume";
+        private const string KeyCameraSensitivity = "Settings.CameraSensitivity";
+        private const string KeyInvertYAxis = "Settings.InvertYAxis";
+
         [Header("Open/Close Input")]
         [SerializeField] private InputActionReference openSettingAction;
+        [SerializeField] private bool applyOpenSettingActionEnabled = true;
 
         [Header("General")]
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
+        [SerializeField] private Selectable defaultSelectedOnOpen;
+        [Tooltip("設定画面を開いたときに Time.timeScale を 0 にするかどうかを切り替えます。")]
+        [SerializeField] private bool pauseTimeScaleOnOpen = true;
+        [SerializeField] private Button closeButton;
+        [SerializeField] private UINoiseOutlineMB closeButtonOutline;
 
         [Header("Sound")]
         [Tooltip("設定画面を開いたときに再生するサウンドです。")]
@@ -49,6 +65,11 @@ namespace BC.UI
 
         private bool isShowing = false;
         private bool isInitializing = false;
+        private bool gameplayInputLockedBySettings;
+        private bool hasLoggedMissingAppKernelStore;
+        private bool hasLoggedBlockedByGameState;
+        private bool hasStoredTimeScale;
+        private float previousTimeScale = 1f;
         private CancellationTokenSource toggleCts;
         // resolutionDropdown に表示している解像度の実リストを保持する。
         private readonly List<Resolution> availableResolutions = new();
@@ -66,32 +87,44 @@ namespace BC.UI
 
             BuildResolutionDropdown();
             BuildQualityDropdown();
+            EnsureCloseButtonOutline();
         }
 
         private void Start()
         {
             isInitializing = true;
-            LoadSettingsToUI();
+            LoadSettingsToUI(logMissingStore: false);
             isInitializing = false;
 
             RegisterListeners();
-
-            if (openSettingAction != null)
-                openSettingAction.action?.Enable();
+            RegisterCloseButton();
+            ApplyOpenSettingActionEnabled();
         }
 
         private void Update()
         {
+            if (isShowing && IsBlockedByCurrentGameState())
+            {
+                HidePanelAsync().Forget();
+                return;
+            }
+
             if (openSettingAction?.action?.WasPressedThisFrame() == true)
                 ToggleSettingAsync().Forget();
+
+            RefreshCloseButtonOutline();
         }
 
         private void OnDestroy()
         {
             UnregisterListeners();
+            UnregisterCloseButton();
             toggleCts?.Cancel();
             toggleCts?.Dispose();
             toggleCts = null;
+            if (pauseTimeScaleOnOpen && hasStoredTimeScale)
+                Time.timeScale = previousTimeScale;
+            ApplyGameplayInputLock(false);
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -110,7 +143,15 @@ namespace BC.UI
         {
             if (isShowing)
                 return;
+
+            if (IsBlockedByCurrentGameState())
+                return;
+
             isShowing = true;
+
+            EnsureEventSystem();
+            EnsureCanvasRaycaster();
+            transform.SetAsLastSibling();
 
             if (openSound != null && openSound.Clip != null)
                 AudioSystemMB.Instance?.PlaySE(openSound);
@@ -121,14 +162,23 @@ namespace BC.UI
             toggleCts = new CancellationTokenSource();
             CancellationToken ct = toggleCts.Token;
 
-            Time.timeScale = 0f;
+            if (pauseTimeScaleOnOpen)
+            {
+                previousTimeScale = Time.timeScale;
+                hasStoredTimeScale = true;
+                Time.timeScale = 0f;
+            }
             InputManagerMB.EnsureInstance().UnlockCursor();
+            ApplyGameplayInputLock(true);
 
             if (canvasGroup == null)
                 return;
 
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
+
+            if (defaultSelectedOnOpen != null && EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(defaultSelectedOnOpen.gameObject);
 
             if (fadeDuration > 0f)
                 await canvasGroup.DOFade(1f, fadeDuration).SetUpdate(true).AsyncWaitForCompletion().AsUniTask()
@@ -160,26 +210,47 @@ namespace BC.UI
                     canvasGroup.alpha = 0f;
             }
 
-            Time.timeScale = 1f;
+            if (pauseTimeScaleOnOpen && hasStoredTimeScale)
+            {
+                Time.timeScale = previousTimeScale;
+                hasStoredTimeScale = false;
+            }
             InputManagerMB.EnsureInstance().LockCursor();
+            ApplyGameplayInputLock(false);
+        }
+
+        public void ClosePanel()
+        {
+            ClosePanelAndReturnAsync().Forget();
+        }
+
+        private async UniTaskVoid ClosePanelAndReturnAsync()
+        {
+            await HidePanelAsync();
+
+            TitleSceneManagerMB titleSceneManager = TitleSceneManagerMB.Instance;
+            if (titleSceneManager == null)
+                return;
+
+            await titleSceneManager.ReturnToTitleMainFromSettingsAsync(destroyCancellationToken);
         }
 
         // ─────────────────────────────────────────────────────────────────
         // 設定値の読み込み → UI への反映
         // ─────────────────────────────────────────────────────────────────
 
-        private void LoadSettingsToUI()
+        private void LoadSettingsToUI(bool logMissingStore = true)
         {
-            KernelValueStoreService store = ApplicationKernelMB.Instance?.Kernel?.KernelValueStore;
+            TryResolveAppKernelValueStore(out KernelValueStoreService store, logMissingStore);
 
             float musicVolume = store?.Get(ValueKeys.AppSettings.MusicVolume)
-                                ?? ValueKeys.AppSettings.MusicVolume.DefaultValue;
+                                                                ?? PlayerPrefs.GetFloat(KeyMusicVolume, ValueKeys.AppSettings.MusicVolume.DefaultValue);
             float sfxVolume = store?.Get(ValueKeys.AppSettings.SFXVolume)
-                              ?? ValueKeys.AppSettings.SFXVolume.DefaultValue;
+                                                            ?? PlayerPrefs.GetFloat(KeySFXVolume, ValueKeys.AppSettings.SFXVolume.DefaultValue);
             float sensitivity = store?.Get(ValueKeys.AppSettings.CameraSensitivity)
-                                ?? ValueKeys.AppSettings.CameraSensitivity.DefaultValue;
+                                                                ?? PlayerPrefs.GetFloat(KeyCameraSensitivity, ValueKeys.AppSettings.CameraSensitivity.DefaultValue);
             bool invertY = store?.Get(ValueKeys.AppSettings.InvertYAxis)
-                           ?? ValueKeys.AppSettings.InvertYAxis.DefaultValue;
+                                                     ?? (PlayerPrefs.GetInt(KeyInvertYAxis, ValueKeys.AppSettings.InvertYAxis.DefaultValue ? 1 : 0) == 1);
 
             if (musicVolumeSlider != null)
                 musicVolumeSlider.value = musicVolume;
@@ -246,6 +317,73 @@ namespace BC.UI
                 resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
         }
 
+        private void RegisterCloseButton()
+        {
+            if (closeButton == null)
+                return;
+
+            closeButton.onClick.RemoveListener(ClosePanel);
+            closeButton.onClick.AddListener(ClosePanel);
+
+            EventTrigger trigger = closeButton.GetComponent<EventTrigger>();
+            if (trigger == null)
+                trigger = closeButton.gameObject.AddComponent<EventTrigger>();
+
+            var onSelect = new EventTrigger.Entry { eventID = EventTriggerType.Select };
+            onSelect.callback.AddListener(_ => { });
+            trigger.triggers.Add(onSelect);
+
+            var onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            onPointerEnter.callback.AddListener(_ => SelectIfNeeded(closeButton.gameObject));
+            trigger.triggers.Add(onPointerEnter);
+        }
+
+        private void UnregisterCloseButton()
+        {
+            if (closeButton != null)
+                closeButton.onClick.RemoveListener(ClosePanel);
+        }
+
+        private void EnsureCloseButtonOutline()
+        {
+            if (closeButtonOutline == null && closeButton != null)
+                closeButtonOutline = closeButton.GetComponentInChildren<UINoiseOutlineMB>(true);
+
+            closeButtonOutline?.SetFocused(false);
+        }
+
+        private void RefreshCloseButtonOutline()
+        {
+            if (closeButtonOutline == null || closeButton == null || EventSystem.current == null)
+                return;
+
+            GameObject selected = EventSystem.current.currentSelectedGameObject;
+            bool focused = selected != null && (selected == closeButton.gameObject || selected.transform.IsChildOf(closeButton.transform));
+            closeButtonOutline.SetFocused(focused);
+        }
+
+        private static void SelectIfNeeded(GameObject target)
+        {
+            if (target == null || EventSystem.current == null)
+                return;
+
+            if (EventSystem.current.currentSelectedGameObject == target)
+                return;
+
+            EventSystem.current.SetSelectedGameObject(target);
+        }
+
+        private void ApplyOpenSettingActionEnabled()
+        {
+            if (openSettingAction == null || openSettingAction.action == null)
+                return;
+
+            if (applyOpenSettingActionEnabled)
+                openSettingAction.action.Enable();
+            else
+                openSettingAction.action.Disable();
+        }
+
         // ─────────────────────────────────────────────────────────────────
         // 音声・カメラ設定 → KernelValueStore
         // ─────────────────────────────────────────────────────────────────
@@ -253,30 +391,37 @@ namespace BC.UI
         private void OnMusicVolumeSliderChanged(float value)
         {
             if (isInitializing) return;
-            ApplicationKernelMB.Instance?.Kernel?.KernelValueStore
-                .Set(ValueKeys.AppSettings.MusicVolume, Mathf.Clamp01(value));
+            float clamped = Mathf.Clamp01(value);
+            if (TryResolveAppKernelValueStore(out KernelValueStoreService store))
+                store.Set(ValueKeys.AppSettings.MusicVolume, clamped);
+            PlayerPrefs.SetFloat(KeyMusicVolume, clamped);
         }
 
         private void OnSFXVolumeSliderChanged(float value)
         {
             if (isInitializing) return;
-            ApplicationKernelMB.Instance?.Kernel?.KernelValueStore
-                .Set(ValueKeys.AppSettings.SFXVolume, Mathf.Clamp01(value));
+            float clamped = Mathf.Clamp01(value);
+            if (TryResolveAppKernelValueStore(out KernelValueStoreService store))
+                store.Set(ValueKeys.AppSettings.SFXVolume, clamped);
+            PlayerPrefs.SetFloat(KeySFXVolume, clamped);
         }
 
         private void OnCameraSensitivitySliderChanged(float value)
         {
             if (isInitializing) return;
-            ApplicationKernelMB.Instance?.Kernel?.KernelValueStore
-                .Set(ValueKeys.AppSettings.CameraSensitivity, Mathf.Max(0.001f, value));
-            UpdateCameraSensitivityValueText(value);
+            float clamped = Mathf.Max(0.001f, value);
+            if (TryResolveAppKernelValueStore(out KernelValueStoreService store))
+                store.Set(ValueKeys.AppSettings.CameraSensitivity, clamped);
+            PlayerPrefs.SetFloat(KeyCameraSensitivity, clamped);
+            UpdateCameraSensitivityValueText(clamped);
         }
 
         private void OnInvertYAxisToggleChanged(bool isOn)
         {
             if (isInitializing) return;
-            ApplicationKernelMB.Instance?.Kernel?.KernelValueStore
-                .Set(ValueKeys.AppSettings.InvertYAxis, isOn);
+            if (TryResolveAppKernelValueStore(out KernelValueStoreService store))
+                store.Set(ValueKeys.AppSettings.InvertYAxis, isOn);
+            PlayerPrefs.SetInt(KeyInvertYAxis, isOn ? 1 : 0);
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -366,5 +511,126 @@ namespace BC.UI
             if (cameraSensitivityValueText != null)
                 cameraSensitivityValueText.text = value.ToString("0.000");
         }
+
+        private void ApplyGameplayInputLock(bool locked)
+        {
+            GameLogicManagerMB gameLogicManager = GameLogicManagerMB.Instance;
+            PlayerMB player = gameLogicManager != null ? gameLogicManager.PlayerInstance : null;
+            if (player == null)
+            {
+                gameplayInputLockedBySettings = false;
+                return;
+            }
+
+            EntityMB entityMB = player.GetComponent<EntityMB>();
+            SceneKernelMB sceneKernelMB = player.GetComponentInParent<SceneKernelMB>();
+
+            if (entityMB == null || !entityMB.HasEntity || sceneKernelMB?.Kernel?.ValueStore == null)
+                return;
+
+            ValueStoreService store = sceneKernelMB.Kernel.ValueStore;
+            EntityRef playerEntity = entityMB.Entity;
+
+            if (locked)
+            {
+                store.SetBoolModifier(playerEntity, ValueKeys.Move.CanMoveByInput, SettingsInputLockTag, false);
+                store.SetBoolModifier(playerEntity, ValueKeys.Camera.CanLookByInput, SettingsInputLockTag, false);
+                store.SetBoolModifier(playerEntity, ValueKeys.Interaction.CanInteract, SettingsInputLockTag, false);
+                gameplayInputLockedBySettings = true;
+            }
+            else if (gameplayInputLockedBySettings)
+            {
+                store.RemoveBoolModifier(playerEntity, ValueKeys.Move.CanMoveByInput, SettingsInputLockTag);
+                store.RemoveBoolModifier(playerEntity, ValueKeys.Camera.CanLookByInput, SettingsInputLockTag);
+                store.RemoveBoolModifier(playerEntity, ValueKeys.Interaction.CanInteract, SettingsInputLockTag);
+                gameplayInputLockedBySettings = false;
+            }
+        }
+
+        private static void EnsureEventSystem()
+        {
+            EventSystem eventSystem = EventSystem.current;
+
+            if (eventSystem == null)
+            {
+                GameObject eventSystemObject = new GameObject("EventSystem");
+                eventSystem = eventSystemObject.AddComponent<EventSystem>();
+            }
+
+            eventSystem.sendNavigationEvents = true;
+
+            // Input System UI の入力モジュールがなければ追加する。
+            InputSystemUIInputModule uiInputModule = eventSystem.GetComponent<InputSystemUIInputModule>();
+            if (uiInputModule == null)
+                uiInputModule = eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
+
+            if (uiInputModule.actionsAsset == null)
+                uiInputModule.AssignDefaultActions();
+
+            if (!uiInputModule.enabled)
+                uiInputModule.enabled = true;
+        }
+
+        private void EnsureCanvasRaycaster()
+        {
+            Canvas targetCanvas = GetComponentInParent<Canvas>();
+            if (targetCanvas == null)
+                return;
+
+            if (targetCanvas.GetComponent<GraphicRaycaster>() == null)
+                targetCanvas.gameObject.AddComponent<GraphicRaycaster>();
+        }
+
+        private bool TryResolveAppKernelValueStore(out KernelValueStoreService store, bool logIfMissing = true)
+        {
+            ApplicationKernelMB appKernelMB = ApplicationKernelMB.Instance;
+
+            if (appKernelMB == null)
+                appKernelMB = UnityEngine.Object.FindAnyObjectByType<ApplicationKernelMB>();
+
+            store = appKernelMB != null ? appKernelMB.Kernel?.KernelValueStore : null;
+            if (store != null)
+                return true;
+
+            if (logIfMissing && !hasLoggedMissingAppKernelStore)
+            {
+                Debug.LogWarning($"{nameof(UISettingMB)}: ApplicationKernel.KernelValueStore is not available yet. Check ApplicationKernelMB bootstrap and targetObjects wiring if this persists.", this);
+                hasLoggedMissingAppKernelStore = true;
+            }
+
+            return false;
+        }
+
+        private bool IsBlockedByCurrentGameState()
+        {
+            GameStateManagerMB stateManager = GameStateManagerMB.Instance;
+            if (stateManager == null)
+            {
+                hasLoggedBlockedByGameState = false;
+                return false;
+            }
+
+            bool blocked = stateManager.CurrentState == GameState.Loading ||
+                           stateManager.CurrentState == GameState.Starting ||
+                           stateManager.CurrentState == GameState.Intro ||
+                           stateManager.CurrentState == GameState.Goaling ||
+                           stateManager.CurrentState == GameState.NextStage ||
+                           stateManager.CurrentState == GameState.ReturnToTitle;
+
+            if (!blocked)
+            {
+                hasLoggedBlockedByGameState = false;
+                return false;
+            }
+
+            if (!hasLoggedBlockedByGameState)
+            {
+                Debug.Log($"{nameof(UISettingMB)}: blocked opening settings while state is {stateManager.CurrentState}.", this);
+                hasLoggedBlockedByGameState = true;
+            }
+
+            return true;
+        }
+
     }
 }

@@ -264,7 +264,11 @@ namespace BC.ActionSystem
 
         public static bool IsKernelPath(string path)
         {
-            return !string.IsNullOrWhiteSpace(path) && path.StartsWith("Kernel.", StringComparison.Ordinal);
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            return path.StartsWith("Kernel.", StringComparison.Ordinal) ||
+                   path.StartsWith("GameLogic.", StringComparison.Ordinal);
         }
 
         public static bool IsLocalPath(string path)

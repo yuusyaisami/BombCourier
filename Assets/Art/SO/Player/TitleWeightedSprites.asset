@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a072c0ef9d5ea1d49b57ca0516bc0b47, type: 3}
+  m_Name: TitleWeightedSprites
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.TitleWeightedSpriteSO
+  entries:
+  - sprite: {fileID: 21300000, guid: afca999f71d6238408a00114651b34ff, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: 5adf8e991bf52b24081e76671cefb452, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: d15e3bf59d1ad6943a1e8c02117f4ad6, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: d8903752c5658f44681774ff6ca86367, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: cc0c736c61e2f4d469d4b26c4e41d068, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: d00b066ceea8fee419c5bf09fd0852e9, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: 4d7d6918683ed4d49af3e931ccdfb3ae, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: 599dcb3a88daa9a498f1abb7bd118b13, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: 24d1e355ac889ee448e9f9a4ca007f00, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: 836b52b07ad242c4085b77616724c728, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: 36f50160bd2efc348a102250af0bcf74, type: 3}
+    weight: 1
+  - sprite: {fileID: 21300000, guid: df89dca2776cf764299575dfd9d12f94, type: 3}
+    weight: 1

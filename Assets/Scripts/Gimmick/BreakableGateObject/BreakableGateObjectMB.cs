@@ -5,6 +5,7 @@ using BC.Bomb;
 using BC.Manager;
 using Sirenix.OdinInspector;
 using UnityEngine;
+
 namespace BC.Gimmick
 {
     // このクラスは、外部からBombなどの衝撃を一定以上受けると、自身の子オブジェクトのRigidbodyにBombの衝撃に加え、設定された力を加えて破壊するギミックの実装です。
@@ -29,67 +30,36 @@ namespace BC.Gimmick
         [Header("Sound")]
         [Tooltip("ゲートが破壊されたときに再生するサウンドです。")]
         [SerializeField] private AudioDataSO breakSound;
+
         [Header("Goal Gate Settings")]
         [SerializeField] private bool isGoalGate = false;
         [SerializeField, ShowIf("isGoalGate")] private EntityTriggerObjectMB goalTriggerObject; // ゴールルームのトリガーオブジェクト
-
         [SerializeField, ShowIf("isGoalGate")] private GoalData goalData; // ゴールルームのデータ。ゴールカメラやゴールの位置などを管理するために使用する。
 
         private bool isBroken = false;
-        private bool pendingInitialPhysicsSync;
         private readonly List<PartStabilizeState> activeBrokenParts = new List<PartStabilizeState>(16);
+
         public bool IsBroken => isBroken;
         public GoalData GoalData => goalData;
         public bool IsGoalGate => isGoalGate;
         public Transform BreakForceOrigin => breakForceOrigin;
         public Vector3 BreakForceDirection => breakForceDirection;
         public Vector3 TargetPoint => isGoalGate && goalData != null ? goalData.Target : transform.position;
+
         private void Awake()
         {
-            CollectBreakablePartsIfNeeded();
-            InitializeBreakableParts();
-            pendingInitialPhysicsSync = true;
-
+            InitializeAuthoringState();
             if (isGoalGate && goalData != null)
-            {
                 goalData.goalTransform = this.transform;
-            }
         }
 
         private void OnEnable()
         {
-            if (isBroken)
-                return;
-
-            CollectBreakablePartsIfNeeded();
-            InitializeBreakableParts();
-            pendingInitialPhysicsSync = true;
-        }
-
-        private void Start()
-        {
             if (!isBroken)
-            {
-                CollectBreakablePartsIfNeeded();
-                InitializeBreakableParts();
-                pendingInitialPhysicsSync = true;
-            }
+                InitializeAuthoringState();
 
-            // event登録
             if (isGoalGate && goalTriggerObject != null)
-            {
                 goalTriggerObject.OnTrigger += OnGoalTriggered;
-            }
-        }
-
-        private void LateUpdate()
-        {
-            if (!pendingInitialPhysicsSync || isBroken)
-                return;
-
-            // 初期フレームで他コンポーネントに上書きされても、最後に固定状態へ戻す。
-            InitializeBreakableParts();
-            pendingInitialPhysicsSync = false;
         }
 
         private void FixedUpdate()
@@ -121,14 +91,13 @@ namespace BC.Gimmick
                     part.angularVelocity = Vector3.ClampMagnitude(part.angularVelocity, maxPartAngularSpeed);
             }
         }
-        private void OnDestroy()
+
+        private void OnDisable()
         {
-            // event解除
             if (isGoalGate && goalTriggerObject != null)
-            {
                 goalTriggerObject.OnTrigger -= OnGoalTriggered;
-            }
         }
+
         private void OnGoalTriggered()
         {
             GameStateManagerMB.Instance.ChangeState(GameState.Goaling);
@@ -136,13 +105,11 @@ namespace BC.Gimmick
 
         public void OnBombImpactReceived(Vector3 direction, float impactForce)
         {
-            if (isBroken) return; // 既に壊れている場合は何もしない
-            Debug.Log("BreakableGateObjectMB: Bomb impact received. Force: " + impactForce);
+            if (isBroken)
+                return;
 
             if (impactForce >= breakForceThreshold)
-            {
                 BreakGate(direction, impactForce);
-            }
         }
 
         public void OnExplosionImpactReceived(Vector3 direction, float impactForce)
@@ -156,21 +123,13 @@ namespace BC.Gimmick
 
             // 先にゲート本体の当たり判定を消して、破片が内側で押し出されるのを防ぐ。
             if (gateCollider != null)
-            {
                 gateCollider.enabled = false;
-            }
 
-            // 破壊サウンドの再生
-            if (breakSound != null && breakSound.Clip != null)
-                AudioSource.PlayClipAtPoint(breakSound.Clip, transform.position, breakSound.BaseVolume);
+            TryPlayBreakSound();
 
-            // 破壊エフェクトの生成
             if (breakEffectPrefab != null)
-            {
-                Instantiate(breakEffectPrefab, transform.position, Quaternion.identity);
-            }
+                SpawnTransientParticleEffect(breakEffectPrefab, transform.position, Quaternion.identity);
 
-            // 子オブジェクトのRigidbodyに力を加える
             int activePartCount = 0;
             for (int i = 0; i < breakableParts.Count; i++)
             {
@@ -178,37 +137,32 @@ namespace BC.Gimmick
                     break;
 
                 Rigidbody part = breakableParts[i];
-                if (part != null)
-                {
-                    Vector3 normalizedImpactDirection = impactDirection.sqrMagnitude > 0.0001f
-                        ? impactDirection.normalized
-                        : transform.forward;
+                if (part == null)
+                    continue;
 
-                    // 爆発方向と演出用固定方向を合成して、破片の飛散方向を安定させる。
-                    float maxSumImpact = impactForce * 0.25f + explosionForce;
-                    Vector3 forceDirection = normalizedImpactDirection * (impactForce / maxSumImpact) + breakForceDirection.normalized * (explosionForce / maxSumImpact);
-                    Vector3 launchImpulse = forceDirection.normalized * explosionForce;
-                    ActivateBrokenPart(part, launchImpulse);
-                    activePartCount++;
-                }
-            }
+                Vector3 normalizedImpactDirection = impactDirection.sqrMagnitude > 0.0001f
+                    ? impactDirection.normalized
+                    : transform.forward;
 
-            // ゴールゲート
-            if (isGoalGate)
-            {
+                Vector3 directionalBias = ResolveDirectionalBias(part);
+                Vector3 forceDirection = normalizedImpactDirection + directionalBias;
+                if (forceDirection.sqrMagnitude <= 0.0001f)
+                    forceDirection = normalizedImpactDirection;
 
+                float launchMagnitude = Mathf.Max(0f, explosionForce) + Mathf.Max(0f, impactForce * 0.25f);
+                Vector3 launchImpulse = forceDirection.normalized * launchMagnitude;
+                ActivateBrokenPart(part, launchImpulse);
+                activePartCount++;
             }
         }
 
-# if UNITY_EDITOR
+#if UNITY_EDITOR
         private void OnValidate()
         {
             if (isGoalGate && goalData != null)
-            {
                 goalData.goalTransform = this.transform;
-            }
         }
-# endif
+#endif
 
         private void CollectBreakablePartsIfNeeded()
         {
@@ -222,10 +176,8 @@ namespace BC.Gimmick
                 if (rb == null || rb.transform == transform)
                     continue;
 
-                if (rb != null && !breakableParts.Contains(rb))
-                {
+                if (!breakableParts.Contains(rb))
                     breakableParts.Add(rb);
-                }
             }
         }
 
@@ -248,16 +200,20 @@ namespace BC.Gimmick
 
             if (!enabled)
             {
+                // kinematic のまま速度を書き込むと warning が出るため、一時的に dynamic にしてからゼロ化する。
+                if (part.isKinematic)
+                    part.isKinematic = false;
+
                 part.linearVelocity = Vector3.zero;
                 part.angularVelocity = Vector3.zero;
+
+                part.isKinematic = true;
                 part.Sleep();
             }
 
             Collider[] colliders = part.GetComponentsInChildren<Collider>(true);
             for (int i = 0; i < colliders.Length; i++)
-            {
                 colliders[i].enabled = enabled;
-            }
         }
 
         private void ActivateBrokenPart(Rigidbody part, Vector3 launchImpulse)
@@ -281,14 +237,54 @@ namespace BC.Gimmick
 
             Collider[] colliders = part.GetComponentsInChildren<Collider>(true);
             for (int i = 0; i < colliders.Length; i++)
-            {
                 colliders[i].enabled = false;
-            }
 
             if (breakStabilizeDuration > 0f)
                 activeBrokenParts.Add(new PartStabilizeState(part, Time.time + breakStabilizeDuration));
 
             StartCoroutine(EnablePartCollisionsAfterDelay(part, colliders));
+        }
+
+        private void InitializeAuthoringState()
+        {
+            CollectBreakablePartsIfNeeded();
+            InitializeBreakableParts();
+        }
+
+        private void TryPlayBreakSound()
+        {
+            if (breakSound == null || breakSound.Clip == null)
+                return;
+
+            if (AudioSystemMB.Instance == null)
+            {
+                Debug.LogWarning($"{nameof(BreakableGateObjectMB)}: Break sound is configured but {nameof(AudioSystemMB)} is unavailable.", this);
+                return;
+            }
+
+            if (!AudioSystemMB.Instance.TryPlaySE(breakSound))
+            {
+                Debug.LogWarning($"{nameof(BreakableGateObjectMB)}: Failed to play configured break sound '{breakSound.Clip.name}'.", this);
+            }
+        }
+
+        private Vector3 ResolveDirectionalBias(Rigidbody part)
+        {
+            Vector3 authoringDirection = breakForceDirection.sqrMagnitude > 0.0001f
+                ? breakForceDirection.normalized
+                : Vector3.zero;
+
+            if (breakForceOrigin == null || part == null)
+                return authoringDirection;
+
+            Vector3 radialDirection = part.worldCenterOfMass - breakForceOrigin.position;
+            if (radialDirection.sqrMagnitude <= 0.0001f)
+                return authoringDirection;
+
+            radialDirection.Normalize();
+            return authoringDirection.sqrMagnitude > 0.0001f
+                ? (radialDirection + authoringDirection)
+                : radialDirection;
         }
 
         private IEnumerator EnablePartCollisionsAfterDelay(Rigidbody part, Collider[] colliders)
@@ -322,5 +318,30 @@ namespace BC.Gimmick
             public float StabilizeUntil { get; }
         }
 
+        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation)
+        {
+            if (effectPrefab == null)
+                return;
+
+            ParticleSystem instance = Instantiate(effectPrefab, position, rotation);
+            if (instance == null)
+                return;
+
+            ParticleSystem[] systems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            float maxLifetime = 0.5f;
+
+            for (int i = 0; i < systems.Length; i++)
+            {
+                ParticleSystem system = systems[i];
+                ParticleSystem.MainModule main = system.main;
+                float startLifetimeMax = main.startLifetime.mode == ParticleSystemCurveMode.TwoConstants
+                    ? main.startLifetime.constantMax
+                    : main.startLifetime.constant;
+                maxLifetime = Mathf.Max(maxLifetime, main.duration + startLifetimeMax + 0.5f);
+            }
+
+            instance.Play(true);
+            Destroy(instance.gameObject, maxLifetime);
+        }
     }
 }

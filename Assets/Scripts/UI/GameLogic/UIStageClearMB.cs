@@ -8,6 +8,7 @@ using DG.Tweening;
 using Febucci.TextAnimatorForUnity;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace BC.UI
@@ -247,9 +248,9 @@ namespace BC.UI
             clearStar.sprite = clearStarSprite;
             clearStarTooltipTarget.TooltipText = "やりきることが大事！";
             ExecuteInlineAction(onClearStarAction);
+            stageClearPanel.DOShakePosition(0.5f, shakeStrength).ToUniTask().Forget();
             await clearStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
             // 画面をシェイク
-            await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
             await UniTask.Delay(300, cancellationToken: _cts.Token); // 0.3秒待機
             // 3つ目の星は早くクリアするともらえます(スピード賞)
 
@@ -261,8 +262,8 @@ namespace BC.UI
                 bonusItemStar.sprite = bonusItemStarSprite;
                 bonusItemStarTooltipTarget.TooltipText = "ボーナスアイテムをゲット！";
                 ExecuteInlineAction(onBonusItemStarAction);
+                stageClearPanel.DOShakePosition(0.5f, shakeStrength).ToUniTask().Forget();
                 await bonusItemStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
-                await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
                 await UniTask.Delay(300, cancellationToken: _cts.Token); // 0.3秒待機
             }
             else
@@ -286,8 +287,8 @@ namespace BC.UI
                 // 詳細な条件は ValueStore から取得してツールチップに反映する
                 fastClearStarTooltipTarget.TooltipText = "爆弾のFuseタイムが短いともらえるスターです！\n今回のクリアタイム: " + clearTime.ToString("F2") + "秒\n早いクリアの条件: " + fastClearThreshold.ToString("F2") + "秒以下";
                 ExecuteInlineAction(onFastClearStarAction);
+                stageClearPanel.DOShakePosition(0.5f, shakeStrength).ToUniTask().Forget();
                 await fastClearStar.transform.DOScale(new Vector3(1f, 1f, 1f), 0.5f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
-                await stageClearPanel.DOShakePosition(0.5f, shakeStrength).AsyncWaitForCompletion();
                 await UniTask.Delay(300, cancellationToken: _cts.Token); // 0.3秒待機
             }
             else
@@ -309,6 +310,11 @@ namespace BC.UI
             transform.localScale = Vector3.one;
             returnToTitleButton.interactable = true;
             nextStageButton.interactable = true;
+
+            ConfigureButtonNavigation();
+            EnsureEventSystemForNavigation();
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(nextStageButton.gameObject);
         }
         private async UniTaskVoid HideAsync()
         {
@@ -364,6 +370,50 @@ namespace BC.UI
             bonusItemStarTooltipTarget.TooltipText = "";
             fastClearStar.sprite = TransparentSprite;
             fastClearStarTooltipTarget.TooltipText = "";
+        }
+
+        private void ConfigureButtonNavigation()
+        {
+            if (returnToTitleButton == null || nextStageButton == null)
+                return;
+
+            Navigation returnNavigation = returnToTitleButton.navigation;
+            returnNavigation.mode = Navigation.Mode.Explicit;
+            returnNavigation.selectOnRight = nextStageButton;
+            returnNavigation.selectOnLeft = nextStageButton;
+            returnNavigation.selectOnUp = nextStageButton;
+            returnNavigation.selectOnDown = nextStageButton;
+            returnToTitleButton.navigation = returnNavigation;
+
+            Navigation nextNavigation = nextStageButton.navigation;
+            nextNavigation.mode = Navigation.Mode.Explicit;
+            nextNavigation.selectOnRight = returnToTitleButton;
+            nextNavigation.selectOnLeft = returnToTitleButton;
+            nextNavigation.selectOnUp = returnToTitleButton;
+            nextNavigation.selectOnDown = returnToTitleButton;
+            nextStageButton.navigation = nextNavigation;
+        }
+
+        private static void EnsureEventSystemForNavigation()
+        {
+            EventSystem eventSystem = EventSystem.current;
+            if (eventSystem == null)
+            {
+                GameObject eventSystemObject = new GameObject("EventSystem");
+                eventSystem = eventSystemObject.AddComponent<EventSystem>();
+            }
+
+            eventSystem.sendNavigationEvents = true;
+
+            InputSystemUIInputModule uiInputModule = eventSystem.GetComponent<InputSystemUIInputModule>();
+            if (uiInputModule == null)
+                uiInputModule = eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
+
+            if (uiInputModule.actionsAsset == null)
+                uiInputModule.AssignDefaultActions();
+
+            if (!uiInputModule.enabled)
+                uiInputModule.enabled = true;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BC.Base;
 using BC.Gimmick.Cushion;
 using BC.Item;
+using BC.Stage;
 using UnityEngine;
 
 namespace BC.Bomb
@@ -10,7 +11,7 @@ namespace BC.Bomb
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class ChainExplosiveMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IExplosionImpactDetector, ICarryReleaseOwnerCollisionGuard
+    public sealed class ChainExplosiveMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IExplosionImpactDetector, ICarryReleaseOwnerCollisionGuard, IStageCheckpointParticipant
     {
         public event Action<ChainExplosiveMB> Exploded;
         public event Action<ChainExplosiveMB> StartedFuse;
@@ -160,6 +161,29 @@ namespace BC.Bomb
             ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
         }
 
+        public object CaptureCheckpointState()
+        {
+            return new ChainExplosiveCheckpointState(isHandled, fuseStarted, exploded, remainingFuseTime, LastReceivedExplosionForce);
+        }
+
+        public void RestoreCheckpointState(object state)
+        {
+            if (state is not ChainExplosiveCheckpointState checkpoint)
+                return;
+
+            ignoreOwnerCollisionUntilTime = 0f;
+            ClearIgnoredHolderCollisions();
+
+            isHandled = checkpoint.IsHandled;
+            fuseStarted = checkpoint.FuseStarted;
+            exploded = checkpoint.Exploded;
+            remainingFuseTime = checkpoint.RemainingFuseTime;
+            LastReceivedExplosionForce = checkpoint.LastReceivedExplosionForce;
+
+            if (isHandled && transform.parent != null)
+                ConfigureHeldHolderCollisionIgnore(transform.parent);
+        }
+
         private void TickReleaseOwnerCollisionIgnore()
         {
             if (ignoreOwnerCollisionUntilTime <= 0f)
@@ -235,7 +259,7 @@ namespace BC.Bomb
             ClearIgnoredHolderCollisions();
 
             if (explosionEffectPrefab != null)
-                Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity).Play();
+                SpawnTransientParticleEffect(explosionEffectPrefab, transform.position, Quaternion.identity);
 
             ExplosionImpactDispatcher.ApplyExplosionImpact(
                 transform,
@@ -317,6 +341,55 @@ namespace BC.Bomb
                 return entityMB.Tag;
 
             return EntityTags.Item.Bomb.Id;
+        }
+
+        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation)
+        {
+            if (effectPrefab == null)
+                return;
+
+            ParticleSystem instance = Instantiate(effectPrefab, position, rotation);
+            if (instance == null)
+                return;
+
+            ParticleSystem[] systems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            float maxLifetime = 0.5f;
+
+            for (int i = 0; i < systems.Length; i++)
+            {
+                ParticleSystem system = systems[i];
+                ParticleSystem.MainModule main = system.main;
+                float startLifetimeMax = main.startLifetime.mode == ParticleSystemCurveMode.TwoConstants
+                    ? main.startLifetime.constantMax
+                    : main.startLifetime.constant;
+                maxLifetime = Mathf.Max(maxLifetime, main.duration + startLifetimeMax + 0.5f);
+            }
+
+            instance.Play(true);
+            Destroy(instance.gameObject, maxLifetime);
+        }
+
+        private sealed class ChainExplosiveCheckpointState
+        {
+            public ChainExplosiveCheckpointState(
+                bool isHandled,
+                bool fuseStarted,
+                bool exploded,
+                float remainingFuseTime,
+                float lastReceivedExplosionForce)
+            {
+                IsHandled = isHandled;
+                FuseStarted = fuseStarted;
+                Exploded = exploded;
+                RemainingFuseTime = remainingFuseTime;
+                LastReceivedExplosionForce = lastReceivedExplosionForce;
+            }
+
+            public bool IsHandled { get; }
+            public bool FuseStarted { get; }
+            public bool Exploded { get; }
+            public float RemainingFuseTime { get; }
+            public float LastReceivedExplosionForce { get; }
         }
     }
 }

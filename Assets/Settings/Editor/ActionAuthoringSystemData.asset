@@ -29,5 +29,13 @@ MonoBehaviour:
       Culture=neutral, PublicKeyToken=null
     lastSelectedUtcTicks: 639157481641354528
     selectedCount: 6
+  - stepTypeName: BC.ActionSystem.PlaySEStepAuthoring, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    lastSelectedUtcTicks: 639157658528541616
+    selectedCount: 9
+  - stepTypeName: BC.ActionSystem.HideTalkStepAuthoring, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    lastSelectedUtcTicks: 639157840665711242
+    selectedCount: 6
   inlineActionSettings:
     reserved: 0

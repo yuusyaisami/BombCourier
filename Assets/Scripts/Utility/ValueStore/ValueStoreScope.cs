@@ -28,9 +28,24 @@ namespace BC.Base
         {
             if (typeof(T) == typeof(float))
             {
-                var slot = GetOrCreateFloatSlot(UnsafeCastKey<float, T>(key));
-                object result = slot.Get();
-                return (T)result;
+                ValueKey<float> floatKey = UnsafeCastKey<float, T>(key);
+
+                if (floatKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawFloatSlot = GetOrCreateRawSlot(floatKey);
+                    object rawResult = rawFloatSlot.Get();
+                    return (T)rawResult;
+                }
+
+                if (floatKey.CompositionMode == ValueCompositionMode.NumericAddMul)
+                {
+                    var slot = GetOrCreateFloatSlot(floatKey);
+                    object result = slot.Get();
+                    return (T)result;
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw} or {ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
             }
 
             if (typeof(T) == typeof(int))
@@ -57,9 +72,25 @@ namespace BC.Base
 
             if (typeof(T) == typeof(bool))
             {
-                var slot = GetOrCreateBoolSlot(UnsafeCastKey<bool, T>(key));
-                object result = slot.Get();
-                return (T)result;
+                ValueKey<bool> boolKey = UnsafeCastKey<bool, T>(key);
+
+                if (boolKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawBoolSlot = GetOrCreateRawSlot(boolKey);
+                    object rawResult = rawBoolSlot.Get();
+                    return (T)rawResult;
+                }
+
+                if (boolKey.CompositionMode == ValueCompositionMode.BoolAnd ||
+                    boolKey.CompositionMode == ValueCompositionMode.BoolOr)
+                {
+                    var slot = GetOrCreateBoolSlot(boolKey);
+                    object result = slot.Get();
+                    return (T)result;
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw}, {ValueCompositionMode.BoolAnd} or {ValueCompositionMode.BoolOr}, Actual={key.CompositionMode}");
             }
 
             var raw = GetOrCreateRawSlot(key);
@@ -75,7 +106,21 @@ namespace BC.Base
         {
             if (typeof(T) == typeof(float))
             {
-                return CreateFloatHandle<T>(UnsafeCastKey<float, T>(key));
+                ValueKey<float> floatKey = UnsafeCastKey<float, T>(key);
+
+                if (floatKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawFloatSlot = GetOrCreateRawSlot(floatKey);
+                    return (ValueWatchHandle<T>)(object)new ValueWatchHandle<float>(GetOrCreateWatchNode(floatKey, rawFloatSlot.Get));
+                }
+
+                if (floatKey.CompositionMode == ValueCompositionMode.NumericAddMul)
+                {
+                    return CreateFloatHandle<T>(floatKey);
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw} or {ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
             }
 
             if (typeof(T) == typeof(int))
@@ -99,7 +144,22 @@ namespace BC.Base
 
             if (typeof(T) == typeof(bool))
             {
-                return CreateBoolHandle<T>(UnsafeCastKey<bool, T>(key));
+                ValueKey<bool> boolKey = UnsafeCastKey<bool, T>(key);
+
+                if (boolKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawBoolSlot = GetOrCreateRawSlot(boolKey);
+                    return (ValueWatchHandle<T>)(object)new ValueWatchHandle<bool>(GetOrCreateWatchNode(boolKey, rawBoolSlot.Get));
+                }
+
+                if (boolKey.CompositionMode == ValueCompositionMode.BoolAnd ||
+                    boolKey.CompositionMode == ValueCompositionMode.BoolOr)
+                {
+                    return CreateBoolHandle<T>(boolKey);
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw}, {ValueCompositionMode.BoolAnd} or {ValueCompositionMode.BoolOr}, Actual={key.CompositionMode}");
             }
 
             var rawSlot = GetOrCreateRawSlot(key);
@@ -115,10 +175,27 @@ namespace BC.Base
         {
             if (typeof(T) == typeof(float))
             {
-                var slot = GetOrCreateFloatSlot(UnsafeCastKey<float, T>(key));
-                bool changed = slot.SetBase((float)(object)value);
-                NotifyWatchNodeChanged(key.Id, changed);
-                return changed;
+                ValueKey<float> floatKey = UnsafeCastKey<float, T>(key);
+                float floatValue = (float)(object)value;
+
+                if (floatKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawFloatSlot = GetOrCreateRawSlot(floatKey);
+                    bool rawChanged = rawFloatSlot.Set(floatValue);
+                    NotifyWatchNodeChanged(key.Id, rawChanged);
+                    return rawChanged;
+                }
+
+                if (floatKey.CompositionMode == ValueCompositionMode.NumericAddMul)
+                {
+                    var slot = GetOrCreateFloatSlot(floatKey);
+                    bool changed = slot.SetBase(floatValue);
+                    NotifyWatchNodeChanged(key.Id, changed);
+                    return changed;
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw} or {ValueCompositionMode.NumericAddMul}, Actual={key.CompositionMode}");
             }
 
             if (typeof(T) == typeof(int))
@@ -148,16 +225,34 @@ namespace BC.Base
 
             if (typeof(T) == typeof(bool))
             {
-                var slot = GetOrCreateBoolSlot(UnsafeCastKey<bool, T>(key));
-                bool changed = slot.SetBase((bool)(object)value);
-                NotifyWatchNodeChanged(key.Id, changed);
-                return changed;
+                ValueKey<bool> boolKey = UnsafeCastKey<bool, T>(key);
+                bool boolValue = (bool)(object)value;
+
+                if (boolKey.CompositionMode == ValueCompositionMode.Raw)
+                {
+                    var rawBoolSlot = GetOrCreateRawSlot(boolKey);
+                    bool rawChanged = rawBoolSlot.Set(boolValue);
+                    NotifyWatchNodeChanged(key.Id, rawChanged);
+                    return rawChanged;
+                }
+
+                if (boolKey.CompositionMode == ValueCompositionMode.BoolAnd ||
+                    boolKey.CompositionMode == ValueCompositionMode.BoolOr)
+                {
+                    var slot = GetOrCreateBoolSlot(boolKey);
+                    bool changed = slot.SetBase(boolValue);
+                    NotifyWatchNodeChanged(key.Id, changed);
+                    return changed;
+                }
+
+                throw new InvalidOperationException(
+                    $"Value key composition mode mismatch. Path={key.Path}, Key={key.Id}, Expected={ValueCompositionMode.Raw}, {ValueCompositionMode.BoolAnd} or {ValueCompositionMode.BoolOr}, Actual={key.CompositionMode}");
             }
 
             var fallbackRawSlot = GetOrCreateRawSlot(key);
-            bool rawChanged = fallbackRawSlot.Set(value);
-            NotifyWatchNodeChanged(key.Id, rawChanged);
-            return rawChanged;
+            bool fallbackRawChanged = fallbackRawSlot.Set(value);
+            NotifyWatchNodeChanged(key.Id, fallbackRawChanged);
+            return fallbackRawChanged;
         }
 
         public bool SetBoolModifier(ValueKeyReference key, ValueModifierTagId tag, bool value)

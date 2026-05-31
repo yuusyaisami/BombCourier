@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 namespace BC.Stage
@@ -24,7 +25,7 @@ namespace BC.Stage
 
         public StageCheckpointSnapshot CaptureSnapshot()
         {
-            StageSaveMarkMB[] marks = Root.GetComponentsInChildren<StageSaveMarkMB>(true);
+            StageSaveMarkMB[] marks = CollectMarksInScene();
             var snapshotEntries = new List<StageObjectSnapshot>(marks.Length);
 
             for (int i = 0; i < marks.Length; i++)
@@ -38,6 +39,32 @@ namespace BC.Stage
             }
 
             return new StageCheckpointSnapshot(snapshotEntries.ToArray());
+        }
+
+        private StageSaveMarkMB[] CollectMarksInScene()
+        {
+            Scene targetScene = Root.gameObject.scene;
+            if (!targetScene.IsValid())
+                return System.Array.Empty<StageSaveMarkMB>();
+
+            GameObject[] rootObjects = targetScene.GetRootGameObjects();
+            var marks = new List<StageSaveMarkMB>(32);
+            var seen = new HashSet<StageSaveMarkMB>();
+
+            for (int rootIndex = 0; rootIndex < rootObjects.Length; rootIndex++)
+            {
+                StageSaveMarkMB[] rootMarks = rootObjects[rootIndex].GetComponentsInChildren<StageSaveMarkMB>(true);
+                for (int markIndex = 0; markIndex < rootMarks.Length; markIndex++)
+                {
+                    StageSaveMarkMB mark = rootMarks[markIndex];
+                    if (mark == null || !seen.Add(mark))
+                        continue;
+
+                    marks.Add(mark);
+                }
+            }
+
+            return marks.ToArray();
         }
 
         public void Restore()

@@ -75,7 +75,7 @@ namespace BC.Base
                 actionContext.SceneKernel,
                 actionContext.ActorEntity,
                 actionContext.TriggerEntity,
-                actionContext.SceneKernel?.KernelValueStore,
+                null,
                 ApplicationKernelMB.Instance?.Kernel,
                 ApplicationKernelMB.Instance?.Kernel?.KernelValueStore)
         {
@@ -87,7 +87,7 @@ namespace BC.Base
         {
             return scope switch
             {
-                ReactiveKernelValueStoreScope.SceneKernel => KernelValueStore,
+                ReactiveKernelValueStoreScope.SceneKernel => null,
                 ReactiveKernelValueStoreScope.ApplicationKernel => ApplicationKernelValueStore,
                 _ => null,
             };

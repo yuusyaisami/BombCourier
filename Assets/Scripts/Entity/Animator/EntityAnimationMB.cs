@@ -34,6 +34,7 @@ namespace BC.Animation
         private readonly HashSet<string> missingParameterWarnings = new();
         private readonly HashSet<string> missingLayerWarnings = new();
         private readonly HashSet<string> parameterTypeWarnings = new();
+        private bool missingRuntimeControllerWarningLogged;
 
         public Animator Animator => animator;
         public bool IsReady => initialized && animator != null;
@@ -69,36 +70,54 @@ namespace BC.Animation
 
         public void SetFloat(string parameterName, float value)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return;
+
             if (TryGetParameterHash(parameterName, AnimatorControllerParameterType.Float, out int parameterHash))
                 animator.SetFloat(parameterHash, value);
         }
 
         public void SetFloat(string parameterName, float value, float dampTime, float deltaTime)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return;
+
             if (TryGetParameterHash(parameterName, AnimatorControllerParameterType.Float, out int parameterHash))
                 animator.SetFloat(parameterHash, value, dampTime, deltaTime);
         }
 
         public void SetBool(string parameterName, bool value)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return;
+
             if (TryGetParameterHash(parameterName, AnimatorControllerParameterType.Bool, out int parameterHash))
                 animator.SetBool(parameterHash, value);
         }
 
         public void SetInteger(string parameterName, int value)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return;
+
             if (TryGetParameterHash(parameterName, AnimatorControllerParameterType.Int, out int parameterHash))
                 animator.SetInteger(parameterHash, value);
         }
 
         public void SetTrigger(string parameterName)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return;
+
             if (TryGetParameterHash(parameterName, AnimatorControllerParameterType.Trigger, out int parameterHash))
                 animator.SetTrigger(parameterHash);
         }
 
         public void ResetTrigger(string parameterName)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return;
+
             if (TryGetParameterHash(parameterName, AnimatorControllerParameterType.Trigger, out int parameterHash))
                 animator.ResetTrigger(parameterHash);
         }
@@ -170,6 +189,9 @@ namespace BC.Animation
 
         private bool TryApplyBool(string parameterName, bool value)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return false;
+
             if (!TryGetParameterHash(parameterName, AnimatorControllerParameterType.Bool, out int parameterHash))
                 return false;
 
@@ -179,6 +201,9 @@ namespace BC.Animation
 
         private bool TryApplyFloat(string parameterName, float value)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return false;
+
             if (!TryGetParameterHash(parameterName, AnimatorControllerParameterType.Float, out int parameterHash))
                 return false;
 
@@ -188,6 +213,9 @@ namespace BC.Animation
 
         private bool TryApplyInteger(string parameterName, int value)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return false;
+
             if (!TryGetParameterHash(parameterName, AnimatorControllerParameterType.Int, out int parameterHash))
                 return false;
 
@@ -197,6 +225,9 @@ namespace BC.Animation
 
         private bool TryApplyTrigger(string parameterName)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return false;
+
             if (!TryGetParameterHash(parameterName, AnimatorControllerParameterType.Trigger, out int parameterHash))
                 return false;
 
@@ -206,6 +237,9 @@ namespace BC.Animation
 
         private bool TryResetTrigger(string parameterName)
         {
+            if (!EnsureRuntimeAnimatorController())
+                return false;
+
             if (!TryGetParameterHash(parameterName, AnimatorControllerParameterType.Trigger, out int parameterHash))
                 return false;
 
@@ -299,6 +333,29 @@ namespace BC.Animation
                 Debug.LogWarning(
                     $"{nameof(EntityAnimationMB)}: Animator layer '{layerName}' was not found.",
                     this);
+            }
+
+            return false;
+        }
+
+        private bool EnsureRuntimeAnimatorController()
+        {
+            if (!IsReady)
+                Initialize();
+
+            if (!IsReady || animator == null)
+                return false;
+
+            if (animator.runtimeAnimatorController != null)
+            {
+                missingRuntimeControllerWarningLogged = false;
+                return true;
+            }
+
+            if (!missingRuntimeControllerWarningLogged)
+            {
+                Debug.LogWarning($"{nameof(EntityAnimationMB)}: Animator is not playing an AnimatorController", this);
+                missingRuntimeControllerWarningLogged = true;
             }
 
             return false;

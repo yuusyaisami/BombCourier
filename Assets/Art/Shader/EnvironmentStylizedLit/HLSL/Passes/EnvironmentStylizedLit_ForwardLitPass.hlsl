@@ -50,8 +50,12 @@ struct ESL_Varyings
 // 端末回転プリトランスフォーム時も正しい正規化画面UVを返します。
 float2 ESL_GetNormalizedScreenSpaceUV(float4 positionHCS)
 {
+	float4 safePositionHCS = positionHCS;
+	float safeW = abs(safePositionHCS.w) < 1e-5 ? 1e-5 : abs(safePositionHCS.w);
+	safePositionHCS.w = safePositionHCS.w < 0.0 ? -safeW : safeW;
+
     #if defined(UNITY_PRETRANSFORM_TO_DISPLAY_ORIENTATION)
-    float2 preRotatedScreenSpaceUV = GetNormalizedScreenSpaceUV(positionHCS);
+    float2 preRotatedScreenSpaceUV = GetNormalizedScreenSpaceUV(safePositionHCS);
 
     switch (UNITY_DISPLAY_ORIENTATION_PRETRANSFORM)
     {
@@ -66,7 +70,7 @@ float2 ESL_GetNormalizedScreenSpaceUV(float4 positionHCS)
             return float2(preRotatedScreenSpaceUV.y, 1.0 - preRotatedScreenSpaceUV.x);
     }
     #else
-    return GetNormalizedScreenSpaceUV(positionHCS);
+    return GetNormalizedScreenSpaceUV(safePositionHCS);
     #endif
 }
 

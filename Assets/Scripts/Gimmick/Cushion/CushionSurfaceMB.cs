@@ -63,6 +63,12 @@ namespace BC.Gimmick.Cushion
         [ShowIf(nameof(ShowCustomBounceDirection))]
         [Tooltip("BounceDirectionMode が CustomLocalDirection の時に使うローカル方向です。")]
         [SerializeField] private Vector3 customLocalDirection = Vector3.up;
+        [ShowIf(nameof(ShowBounceSettings))]
+        [Tooltip("有効時、Bounce Direction 以外の入力速度成分を bounce へ加算します。")]
+        [SerializeField] private bool enableIncomingLateralBoost;
+        [ShowIf(nameof(ShowIncomingLateralBoostSettings))]
+        [Tooltip("Direction 以外の入力速度成分に掛ける倍率です。0=Direction強制、1=そのまま、>1=ブースト。")]
+        [SerializeField, Min(0.0f)] private float incomingLateralBoostMultiplier = 1.0f;
         [Tooltip("停止時に対象をこのクッションへ貼り付けるかを指定します。爆弾は有効でも貼り付けず吸収します。")]
         [SerializeField] private bool attachWhenStopped;
         [ShowIf(nameof(ShowStopDampenSettings))]
@@ -71,6 +77,10 @@ namespace BC.Gimmick.Cushion
         [ShowIf(nameof(ShowStopDampenSettings))]
         [Tooltip("タグごとに停止時の減速率を上書きします。")]
         [SerializeField] private CushionStopDampenRule[] stopDampenRules = Array.Empty<CushionStopDampenRule>();
+        [ShowIf(nameof(ShowStopDampenSettings))]
+        [Tooltip("Bounce=0 の時、Player の下向き衝撃がこの値未満なら通常歩行接触として無視します。")]
+        [SerializeField, FormerlySerializedAs("minStopImpactSpeedToApply"), Min(0.0f)]
+        private float minPlayerDownwardImpactSpeedToApplyStopResponse = 3.5f;
         [Tooltip("停止時の貼り付け先に使う Transform です。未指定ならこのオブジェクト自身を使います。")]
         [SerializeField] private Transform attachPoint;
 
@@ -113,6 +123,14 @@ namespace BC.Gimmick.Cushion
             // Bounce率0は「受け止める」。0より大きい時だけ指定方向へ跳ね返す。
             if (bounceRate <= 0.0001f)
             {
+                if (ShouldSkipStopResponseForPlayerWalk(impactData, out float playerDownwardImpactSpeed))
+                {
+                    LogDebug(
+                        $"Skip stop response source={GetSourceName(impactData)} playerDownwardImpactSpeed={playerDownwardImpactSpeed:F3} min={minPlayerDownwardImpactSpeedToApplyStopResponse:F3}",
+                        impactData.SourceGameObject);
+                    return false;
+                }
+
                 result = BuildStopResult(impactData);
                 LogEvaluation(impactData, result, Vector3.zero, 0.0f);
                 PlayContactSound(impactData.Point);
@@ -130,9 +148,15 @@ namespace BC.Gimmick.Cushion
                 return true;
             }
 
-            result = CushionImpactResult.Bounce(
-                direction * bounceVelocityMagnitude,
+            Vector3 baseBounceVelocity = direction * bounceVelocityMagnitude;
+            Vector3 resolvedBounceVelocity = ResolveBoostedBounceVelocity(impactData, direction, baseBounceVelocity);
+            float bounceSpeedLimit = Mathf.Max(
                 ResolveBounceSpeedLimit(bounceVelocityMagnitude),
+                resolvedBounceVelocity.magnitude);
+
+            result = CushionImpactResult.Bounce(
+                resolvedBounceVelocity,
+                bounceSpeedLimit,
                 highJumpSpeedMultiplier);
             LogEvaluation(impactData, result, direction, bounceVelocityMagnitude);
             PlayContactSound(impactData.Point);
@@ -219,6 +243,37 @@ namespace BC.Gimmick.Cushion
             return Mathf.Max(0f, convergedSpeed);
         }
 
+        private Vector3 ResolveBoostedBounceVelocity(in CushionImpactData impactData, Vector3 bounceDirection, Vector3 baseBounceVelocity)
+        {
+            if (!enableIncomingLateralBoost)
+                return baseBounceVelocity;
+
+            Vector3 lateralIncomingVelocity = ResolveLateralBoostVelocity(impactData, bounceDirection);
+            float multiplier = Mathf.Max(0.0f, incomingLateralBoostMultiplier);
+            return baseBounceVelocity + (lateralIncomingVelocity * multiplier);
+        }
+
+        private static Vector3 ResolveLateralBoostVelocity(in CushionImpactData impactData, Vector3 bounceDirection)
+        {
+            Vector3 relativeLateralVelocity = Vector3.ProjectOnPlane(impactData.IncomingVelocity, bounceDirection);
+
+            if (impactData.SourceRigidbody == null)
+                return relativeLateralVelocity;
+
+            Vector3 sourceLateralVelocity = Vector3.ProjectOnPlane(impactData.SourceRigidbody.linearVelocity, bounceDirection);
+            if (sourceLateralVelocity.sqrMagnitude <= 0.0001f)
+                return relativeLateralVelocity;
+
+            if (relativeLateralVelocity.sqrMagnitude <= 0.0001f)
+                return sourceLateralVelocity;
+
+            // 相対速度は接触押し返しや相手剛体側の速度を含むため、source 自身の実速度と逆向きなら信用しない。
+            if (Vector3.Dot(relativeLateralVelocity, sourceLateralVelocity) < 0.0f)
+                return sourceLateralVelocity;
+
+            return sourceLateralVelocity;
+        }
+
         private void ResolveBounceBounds(out float resolvedMinSpeed, out float resolvedMaxSpeed, out bool hasMinSpeed, out bool hasMaxSpeed)
         {
             resolvedMinSpeed = Mathf.Max(0.0f, minBounceSpeed);
@@ -240,6 +295,26 @@ namespace BC.Gimmick.Cushion
             return Mathf.Max(0f, resolvedBounceSpeed);
         }
 
+        private static float ResolveStopImpactSpeed(in CushionImpactData impactData)
+        {
+            Vector3 normal = impactData.Normal.sqrMagnitude > 0.0001f
+                ? impactData.Normal.normalized
+                : Vector3.up;
+
+            return Mathf.Max(0.0f, Vector3.Dot(-impactData.IncomingVelocity, normal));
+        }
+
+        private bool ShouldSkipStopResponseForPlayerWalk(in CushionImpactData impactData, out float playerDownwardImpactSpeed)
+        {
+            playerDownwardImpactSpeed = 0.0f;
+
+            if (!impactData.SourceTag.Equals(EntityTags.Actor.Player.Id))
+                return false;
+
+            playerDownwardImpactSpeed = Mathf.Max(0.0f, Vector3.Dot(-impactData.IncomingVelocity, Vector3.up));
+            return playerDownwardImpactSpeed < Mathf.Max(0.0f, minPlayerDownwardImpactSpeedToApplyStopResponse);
+        }
+
         private bool MatchesTargetTag(EntityTagId sourceTag)
         {
             return MatchesTag(sourceTag, acceptAnyTag, targetTags);
@@ -247,6 +322,7 @@ namespace BC.Gimmick.Cushion
 
         private bool ShowBounceSettings => bounceRate > 0.0001f;
         private bool ShowCustomBounceDirection => ShowBounceSettings && bounceDirectionMode == CushionBounceDirectionMode.CustomLocalDirection;
+        private bool ShowIncomingLateralBoostSettings => ShowBounceSettings && enableIncomingLateralBoost;
 
         private bool ShowStopDampenSettings => !attachWhenStopped;
 
@@ -295,7 +371,7 @@ namespace BC.Gimmick.Cushion
                 return;
 
             LogDebug(
-                $"Evaluate source={GetSourceName(impactData)} tag={impactData.SourceTag} incoming={impactData.IncomingVelocity} response={result.ResponseKind} bounceVelocity={result.BounceVelocity} resolvedDirection={direction} resolvedSpeed={resolvedSpeed:F3} bounceRate={bounceRate:F3} min={minBounceSpeed:F3} max={maxBounceSpeed:F3}",
+                $"Evaluate source={GetSourceName(impactData)} tag={impactData.SourceTag} incoming={impactData.IncomingVelocity} response={result.ResponseKind} bounceVelocity={result.BounceVelocity} resolvedDirection={direction} resolvedSpeed={resolvedSpeed:F3} bounceRate={bounceRate:F3} min={minBounceSpeed:F3} max={maxBounceSpeed:F3} lateralBoostEnabled={enableIncomingLateralBoost} lateralBoostMultiplier={incomingLateralBoostMultiplier:F3}",
                 impactData.SourceGameObject);
         }
 

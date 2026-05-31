@@ -27,12 +27,18 @@ namespace BC.UI
         [Header("Input")]
         [SerializeField] private InputActionReference nextTalkInputAction; // 次の会話に進む入力アクション
         [SerializeField] private bool advanceOnSkipInput = true; // 文字送り中の入力で全文表示したあと、同じ入力で次stepへ進むか。
+
+        [Header("Character Voice")]
+        [SerializeField] private bool muteInsideHalfWidthParentheses = true; // 半角 () 内の文字SEを無音化する。
+        [SerializeField] private bool muteInsideFullWidthParentheses = true; // 全角 （）内の文字SEを無音化する。
+
         private bool isShowingTalk; // 会話UIが表示されているかどうかのフラグ
         private bool bodyTextCompleted; // 本文の表示完了状態。Typewriterイベントで更新する。
         private AudioDataSO currentTalkCharacterSound; // 現在の話者の文字江サウンド。
         private string currentDialogueText = string.Empty;
         private int fallbackVisibleCharIndex;
         private bool isMuteWithinParentheses;
+        private bool waitForAdvanceRelease;
 
         private static readonly string[] CharacterDataCharMemberNames = { "character", "Character", "c", "char" };
         private static MemberInfo cachedCharacterDataCharMember;
@@ -185,12 +191,12 @@ namespace BC.UI
 
             // 直前の台詞で使った submit が同一フレームに持ち越されると、
             // 次の台詞を即時確定して二重に進んだように見えるため、解除まで待機する。
-            bool waitForSubmitRelease = IsSubmitActuated();
+            waitForAdvanceRelease = IsSubmitActuated();
 
             // 本文アニメーション中の入力は skip に使い、表示完了後の入力で次へ進む。
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (waitForSubmitRelease)
+                if (waitForAdvanceRelease)
                 {
                     if (IsSubmitActuated())
                     {
@@ -198,7 +204,7 @@ namespace BC.UI
                         continue;
                     }
 
-                    waitForSubmitRelease = false;
+                    waitForAdvanceRelease = false;
                 }
 
                 if (bodyTextCompleted)
@@ -208,20 +214,7 @@ namespace BC.UI
 
                 if (WasAdvancePressedThisFrame())
                 {
-                    if (!bodyTextCompleted)
-                    {
-                        // 文字送り中の入力は本文を即時表示し、会話制御上は完了扱いにする。
-                        bodyTypewriter.SkipTypewriter();
-                        bodyTextCompleted = true;
-                        PlayNextIndicator();
-
-                        // 1回入力で skip と同時に次stepへ進めるかどうかは既存フラグで制御する。
-                        if (advanceOnSkipInput)
-                        {
-                            break;
-                        }
-                    }
-                    else
+                    if (ConsumeAdvancePressed())
                     {
                         break;
                     }
@@ -316,6 +309,7 @@ namespace BC.UI
             currentDialogueText = string.Empty;
             fallbackVisibleCharIndex = 0;
             isMuteWithinParentheses = false;
+            waitForAdvanceRelease = false;
 
             if (canvasGroup != null)
             {
@@ -360,25 +354,74 @@ namespace BC.UI
             nextIndicatorAnimator.Stop();
         }
 
+        private bool ConsumeAdvancePressed()
+        {
+            if (bodyTextCompleted)
+                return true;
+
+            // 会話中の skip 入力は必ずこの行で消費する。
+            // 同一押下で次の会話まで進めると、UI 表示と actor presentation の reset が同一フレームで競合する。
+            if (advanceOnSkipInput)
+            {
+                // 旧設定の serialized 値は残すが、same-press advance 自体は明示的に禁止する。
+            }
+
+            bodyTypewriter?.SkipTypewriter();
+            bodyTextCompleted = true;
+            waitForAdvanceRelease = true;
+            PlayNextIndicator();
+            return false;
+        }
+
         private bool ShouldMuteCharacterSound(CharacterData characterData)
         {
             if (!TryResolveVisibleCharacter(characterData, out char visibleChar))
                 return isMuteWithinParentheses;
 
-            if (visibleChar == '(')
+            if (IsOpeningParenthesis(visibleChar))
             {
-                isMuteWithinParentheses = true;
-                return true;
+                if (ShouldMuteByParenthesisKind(visibleChar))
+                {
+                    isMuteWithinParentheses = true;
+                    return true;
+                }
+
+                return isMuteWithinParentheses;
             }
 
-            if (visibleChar == ')')
+            if (IsClosingParenthesis(visibleChar))
             {
+                if (!ShouldMuteByParenthesisKind(visibleChar))
+                    return isMuteWithinParentheses;
+
                 bool wasMute = isMuteWithinParentheses;
                 isMuteWithinParentheses = false;
                 return wasMute;
             }
 
             return isMuteWithinParentheses;
+        }
+
+        private bool ShouldMuteByParenthesisKind(char bracket)
+        {
+            return bracket switch
+            {
+                '(' => muteInsideHalfWidthParentheses,
+                ')' => muteInsideHalfWidthParentheses,
+                '（' => muteInsideFullWidthParentheses,
+                '）' => muteInsideFullWidthParentheses,
+                _ => false,
+            };
+        }
+
+        private static bool IsOpeningParenthesis(char c)
+        {
+            return c == '(' || c == '（';
+        }
+
+        private static bool IsClosingParenthesis(char c)
+        {
+            return c == ')' || c == '）';
         }
 
         private bool TryResolveVisibleCharacter(CharacterData characterData, out char visibleChar)

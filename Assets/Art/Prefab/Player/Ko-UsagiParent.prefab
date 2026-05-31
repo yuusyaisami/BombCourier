@@ -105,10 +105,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.InteractionVisualTargetMB
   renderers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 9156893783937640775}
+  - {fileID: 5557834088715639866}
+  - {fileID: 2382022923420113296}
+  - {fileID: 3119182787206066778}
 --- !u!114 &3487397158024839956
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,7 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e49a1fec2a155641b83b301fc53c6a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Character.MeshUvRectRemapperMB
-  skinnedMeshRenderer: {fileID: 0}
+  skinnedMeshRenderer: {fileID: 2382022923420113296}
   meshFilter: {fileID: 0}
 --- !u!114 &1236832310485659635
 MonoBehaviour:
@@ -187,8 +187,8 @@ MonoBehaviour:
   entityAnimation: {fileID: 3904174564077437625}
   sceneKernelMB: {fileID: 0}
   characterId:
-    id: 2001
-    path: Npc.Vanilla
+    id: 2002
+    path: Npc.Mondo
   defaultIdleTalkState: 10
   statePresentations:
   - talkStateId: 10
@@ -327,7 +327,7 @@ MonoBehaviour:
     applyNonTalkingShapeExpression: 1
     nonTalkingShapeExpressionId: 10
     restoreStateShapeExpressionOnStop: 1
-  talkCharacterSound: {fileID: 0}
+  talkCharacterSound: {fileID: 11400000, guid: 988e04784f83aad46820ff97cb3e4576, type: 2}
 --- !u!136 &2584835043207313473
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -371,7 +371,7 @@ MonoBehaviour:
   suspendWhileNpcInteractionActive: 1
   maxTrackingDistance: 4
   maxTrackingAngle: 75
-  targetWorldOffset: {x: 0, y: 1.25, z: 0}
+  targetWorldOffset: {x: 0, y: 0.8, z: 0}
   turnSharpness: 10
   maxYawAngle: 40
   upPitchAngle: 25
@@ -881,6 +881,21 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 4747462012298440768}
   m_SourcePrefab: {fileID: 100100000, guid: d2269b07580d71940b9b56aaf919fe9c, type: 3}
+--- !u!137 &2382022923420113296 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 5241284212654878085, guid: d2269b07580d71940b9b56aaf919fe9c, type: 3}
+  m_PrefabInstance: {fileID: 7616269778338133013}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3119182787206066778 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -4396642182433536433, guid: d2269b07580d71940b9b56aaf919fe9c, type: 3}
+  m_PrefabInstance: {fileID: 7616269778338133013}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &5557834088715639866 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 2635460834990549039, guid: d2269b07580d71940b9b56aaf919fe9c, type: 3}
+  m_PrefabInstance: {fileID: 7616269778338133013}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &7310191926038104388 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d2269b07580d71940b9b56aaf919fe9c, type: 3}
@@ -916,5 +931,10 @@ Transform:
 --- !u!4 &8067378748036982864 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 452465768997887045, guid: d2269b07580d71940b9b56aaf919fe9c, type: 3}
+  m_PrefabInstance: {fileID: 7616269778338133013}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &9156893783937640775 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1630794972795428178, guid: d2269b07580d71940b9b56aaf919fe9c, type: 3}
   m_PrefabInstance: {fileID: 7616269778338133013}
   m_PrefabAsset: {fileID: 0}

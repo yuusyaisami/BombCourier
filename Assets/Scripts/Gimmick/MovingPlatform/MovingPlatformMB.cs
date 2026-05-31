@@ -15,25 +15,39 @@ namespace BC.Gimmick.MovingPlatform
 
         [Header("Shared Rails")]
         [Tooltip("共有レールのノード一覧です。各レイヤーのルートはこのノードを共通参照します。")]
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private MovingPlatformRailNode[] railNodes = Array.Empty<MovingPlatformRailNode>();
 
         [Tooltip("共有レール上の接続一覧です。停止中の最短経路探索や、接続点でのレイヤー切り替えに使います。")]
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private MovingPlatformRailConnection[] railConnections = Array.Empty<MovingPlatformRailConnection>();
 
         [Header("Layers")]
         [LabelText("Layers")]
         [ListDrawerSettings(ShowFoldout = true, DefaultExpandedState = true, ShowIndexLabels = true, ListElementLabelName = "LayerName")]
         [Tooltip("足場の挙動レイヤー一覧です。優先度が最も高い有効レイヤーが再生されます。")]
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private MovingPlatformLayer[] layers = Array.Empty<MovingPlatformLayer>();
+
+        [Header("Tree Authoring")]
+        [SerializeField, HideInInspector]
+        private MovingPlatformTreeAuthoring treeAuthoring = new();
 
         [Header("Motion")]
         [Tooltip("実際に移動させる Rigidbody 群です。先頭要素を基準に、残りは初期相対オフセットを保って同時に移動します。")]
         [SerializeField] private Rigidbody[] motionTargets = Array.Empty<Rigidbody>();
         [Tooltip("motionTargets が空の時、子階層の Rigidbody を自動収集します。")]
         [SerializeField] private bool autoCollectChildRigidbodies = true;
+        [Tooltip("SharedRails ノード座標のスケール変換に platform Transform のスケールを使います。Cushion など移動対象側の個別スケールで経路が伸びる場合に有効です。")]
+        [SerializeField] private bool usePlatformTransformScaleForRail = true;
+        [Tooltip("Dynamic Rigidbody を移動対象に使う場合の位置追従最大速度です。瞬間移動を避けるため、目標との差分速度をこの値で制限します。")]
+        [SerializeField, Min(0.1f)] private float dynamicTargetMaxLinearSpeed = 14.0f;
+        [Tooltip("通常のレイヤールート移動で許容する最大速度です。distance/duration がこれを超える場合、内部的に duration を延長して速度暴走を防ぎます。")]
+        [SerializeField, Min(0.1f)] private float maxRouteLinearSpeed = 6.0f;
+        [Tooltip("レイヤー切替時のブリッジ移動で許容する最大速度です。")]
+        [SerializeField, Min(0.1f)] private float maxTransferLinearSpeed = 4.0f;
+        [Tooltip("SupportMotion として外部に公開する移動速度上限です。上に乗っている物体の吹き飛び抑制に使います。")]
+        [SerializeField, Min(0.1f)] private float maxReportedSupportSpeed = 8.0f;
 
         [Header("Signals")]
         [Tooltip("レイヤー切り替えやシーケンス完了時に Kernel Signal を送るかを指定します。")]
@@ -107,16 +121,17 @@ namespace BC.Gimmick.MovingPlatform
         [Tooltip("診断ログの最小出力間隔です。")]
         [SerializeField, Min(0.2f)] private float layerDebugLogInterval = 1.0f;
         private MovingPlatformLayerRuntime[] runtimes;
-        private MovingPlatformRailLayerRoute[] railRoutes;
         private MotionTargetBinding[] motionTargetBindings = Array.Empty<MotionTargetBinding>();
         private MovingPlatformBasePose basePose;
+        private MovingPlatformBasePose railBasePose;
         private SceneKernel sceneKernel;
         private EntityMB selfEntityMB;
         private EventSubscription signalSubscription;
         private int selectedLayerIndex = -1;
-        private MovingPlatformRailGraph railGraph;
-        private MovingPlatformRailController railController;
         private bool useRailRouting;
+        private MovingPlatformTreeRuntime treeRuntime;
+        private MovingPlatformTraversalController traversalController;
+        private readonly List<MovingPlatformTraversalEvent> traversalEvents = new();
 
         private Vector3 accumulatedPositionDelta;
         private Quaternion accumulatedRotationDelta = Quaternion.identity;
@@ -155,6 +170,7 @@ namespace BC.Gimmick.MovingPlatform
         private void OnValidate()
         {
             NormalizeRailNodeAuthoring();
+            NormalizeTreeAuthoring();
 
             if (!autoCollectChildRigidbodies || (motionTargets != null && motionTargets.Length > 0))
                 return;
@@ -184,6 +200,8 @@ namespace BC.Gimmick.MovingPlatform
 
             Transform motion = MotionTransform;
             basePose = new MovingPlatformBasePose(motion.position, motion.rotation, motion.localScale);
+            railBasePose = BuildRailBasePose(motion);
+            EnsureTreeAuthoringReady(persistChanges: false);
             BuildLayerRuntimes();
             BuildRailRouting();
             WarnAuthoringSetup();
@@ -279,15 +297,6 @@ namespace BC.Gimmick.MovingPlatform
                 }
             }
 
-            if (layers == null)
-                return;
-
-            for (int i = 0; i < layers.Length; i++)
-            {
-                MovingPlatformLayer layer = layers[i];
-                if (layer == null || !layer.UseReactiveCondition)
-                    continue;
-            }
         }
 
         private static bool HasChildComponentExcludingRoot<T>(Transform root) where T : Component
@@ -343,23 +352,23 @@ namespace BC.Gimmick.MovingPlatform
             railConnectionsData?.Clear();
             railNodesData?.Clear();
 
-            if (!showPathInEditor || layers == null || layers.Length == 0)
+            MovingPlatformTreeRuntime visualizationTreeRuntime = GetVisualizationTreeRuntime();
+            if (!showPathInEditor || visualizationTreeRuntime == null || !visualizationTreeRuntime.IsValid)
                 return false;
 
             MovingPlatformBasePose visualizationBasePose = GetVisualizationBasePose();
-            MovingPlatformRailGraph visualizationRailGraph = GetVisualizationRailGraph();
-            if (visualizationRailGraph == null)
-                return false;
+            CollectSharedRailGraphGizmoData(visualizationBasePose, visualizationTreeRuntime, railConnectionsData, railNodesData);
 
-            CollectSharedRailGraphGizmoData(visualizationBasePose, visualizationRailGraph, railConnectionsData, railNodesData);
-
-            for (int i = 0; i < layers.Length; i++)
+            for (int i = 0; i < visualizationTreeRuntime.SelectorCount; i++)
             {
-                if (!TryBuildLayerPreviewPoints(i, visualizationRailGraph, visualizationBasePose, pathVisualizationPoints))
+                if (!TryBuildLayerPreviewPoints(i, visualizationTreeRuntime, visualizationBasePose, pathVisualizationPoints))
                     continue;
 
+                MovingPlatformSelectorNodeAuthoring selector = treeAuthoring != null && i < treeAuthoring.Selectors.Count
+                    ? treeAuthoring.Selectors[i]
+                    : null;
                 layerPaths?.Add(new MovingPlatformEditorLayerPathData(
-                    ResolveLayerVisualizationColor(layers[i], i),
+                    ResolveLayerVisualizationColor(selector, i),
                     CopyPoints(pathVisualizationPoints),
                     Mathf.Max(0.01f, pathVisualizationPointRadius)));
             }
@@ -375,28 +384,21 @@ namespace BC.Gimmick.MovingPlatform
                 return false;
 
             handleNodes.Clear();
-            if (railNodes == null || railNodes.Length == 0)
+            if (treeAuthoring == null || !treeAuthoring.HasAuthoringData)
+                return false;
+
+            MovingPlatformTreeRuntime visualizationTreeRuntime = GetVisualizationTreeRuntime();
+            if (visualizationTreeRuntime == null || !visualizationTreeRuntime.IsValid)
                 return false;
 
             MovingPlatformBasePose visualizationBasePose = GetVisualizationBasePose();
-            MovingPlatformRailGraph visualizationRailGraph = GetVisualizationRailGraph();
-            if (visualizationRailGraph == null)
-                return false;
-
-            for (int i = 0; i < railNodes.Length; i++)
+            for (int i = 0; i < visualizationTreeRuntime.RailNodeCount; i++)
             {
-                MovingPlatformRailNode railNode = railNodes[i];
-                if (railNode == null)
-                    continue;
-
-                if (!visualizationRailGraph.TryGetNodeIndex(railNode.NodePath, out int nodeIndex))
-                    continue;
-
-                bool isLiteralPosition = TryResolveLiteralLocalPosition(railNode, out Vector3 localPosition);
-                Vector3 worldPosition = visualizationRailGraph.GetWorldPosition(visualizationBasePose, nodeIndex);
+                bool isLiteralPosition = visualizationTreeRuntime.TryResolveLiteralLocalPosition(i, out Vector3 localPosition);
+                Vector3 worldPosition = visualizationTreeRuntime.GetWorldPosition(visualizationBasePose, i);
                 handleNodes.Add(new MovingPlatformEditorRailNodeHandleData(
                     i,
-                    railNode.NodePath,
+                    visualizationTreeRuntime.GetRailNodeId(i),
                     localPosition,
                     worldPosition,
                     isLiteralPosition));
@@ -423,6 +425,40 @@ namespace BC.Gimmick.MovingPlatform
             return motionTransform != null;
         }
 
+        public MovingPlatformTreeAuthoring TreeAuthoring => treeAuthoring;
+
+        public int EffectiveTreeRailNodeCount => GetEffectiveTreeAuthoring()?.RailNodes?.Count ?? 0;
+
+        public int EffectiveTreeSelectorCount => GetEffectiveTreeAuthoring()?.Selectors?.Count ?? 0;
+
+        public IReadOnlyList<MovingPlatformTreeValidationIssue> ValidateTreeAuthoring()
+        {
+            MovingPlatformTreeRuntime validationRuntime = MovingPlatformTreeRuntime.Build(
+                GetEffectiveTreeAuthoring(),
+                sceneKernel?.ReactiveValues,
+                BuildReactiveEvalContext());
+            return validationRuntime != null
+                ? validationRuntime.Issues
+                : Array.Empty<MovingPlatformTreeValidationIssue>();
+        }
+
+        public bool TryApplyLegacyMigration(out string failureReason)
+        {
+            MovingPlatformTreeMigrationResult migrationResult = MovingPlatformTreeMigration.TryMigrate(railNodes, railConnections, layers);
+            if (!migrationResult.Success || migrationResult.TreeAuthoring == null)
+            {
+                failureReason = migrationResult.FailureReason;
+                return false;
+            }
+
+            treeAuthoring = migrationResult.TreeAuthoring;
+            NormalizeTreeAuthoring();
+            BuildLayerRuntimes();
+            BuildRailRouting();
+            failureReason = string.Empty;
+            return true;
+        }
+
         public bool TryGetSupportMotion(Vector3 passengerWorldPosition, float deltaTime, out SupportMotionSnapshot motion)
         {
             if (!hasAccumulatedMotion || deltaTime <= 0.0f)
@@ -444,17 +480,22 @@ namespace BC.Gimmick.MovingPlatform
 
         private void BuildLayerRuntimes()
         {
-            if (layers == null || layers.Length == 0)
+            MovingPlatformTreeAuthoring effectiveTreeAuthoring = GetEffectiveTreeAuthoring();
+            IReadOnlyList<MovingPlatformSelectorNodeAuthoring> selectors = effectiveTreeAuthoring != null
+                ? effectiveTreeAuthoring.Selectors
+                : Array.Empty<MovingPlatformSelectorNodeAuthoring>();
+
+            if (selectors == null || selectors.Count == 0)
             {
                 runtimes = Array.Empty<MovingPlatformLayerRuntime>();
                 return;
             }
 
             EntityRef actorEntity = ResolveSelfEntity();
-            runtimes = new MovingPlatformLayerRuntime[layers.Length];
-            for (int i = 0; i < layers.Length; i++)
+            runtimes = new MovingPlatformLayerRuntime[selectors.Count];
+            for (int i = 0; i < selectors.Count; i++)
             {
-                runtimes[i] = new MovingPlatformLayerRuntime(layers[i]);
+                runtimes[i] = new MovingPlatformLayerRuntime(selectors[i]);
                 runtimes[i].Initialize(sceneKernel, actorEntity);
             }
         }
@@ -470,37 +511,43 @@ namespace BC.Gimmick.MovingPlatform
 
         private void BuildRailRouting()
         {
-            railGraph = MovingPlatformRailGraph.Build(
-                transform,
-                railNodes,
-                railConnections,
+            MovingPlatformTreeAuthoring effectiveTreeAuthoring = GetEffectiveTreeAuthoring();
+            treeRuntime = MovingPlatformTreeRuntime.Build(
+                effectiveTreeAuthoring,
                 sceneKernel?.ReactiveValues,
                 BuildReactiveEvalContext());
 
-            if (layers == null || layers.Length == 0)
-            {
-                railRoutes = Array.Empty<MovingPlatformRailLayerRoute>();
-            }
-            else
-            {
-                railRoutes = new MovingPlatformRailLayerRoute[layers.Length];
-                for (int i = 0; i < layers.Length; i++)
-                    railRoutes[i] = new MovingPlatformRailLayerRoute(layers[i], railGraph);
-            }
-
-            railController = railGraph != null ? new MovingPlatformRailController(railGraph, railRoutes) : null;
-            useRailRouting = railController != null && railController.IsValid;
+            traversalController = treeRuntime != null
+                ? new MovingPlatformTraversalController(
+                    treeRuntime,
+                    Mathf.Max(0.1f, maxRouteLinearSpeed),
+                    Mathf.Max(0.1f, maxTransferLinearSpeed))
+                : null;
+            useRailRouting = traversalController != null && traversalController.IsValid;
             if (useRailRouting)
-                railController.Reset(basePose, MotionTransform.position);
+                traversalController.Reset(railBasePose, MotionTransform.position);
         }
 
         private MovingPlatformBasePose GetVisualizationBasePose()
         {
             if (Application.isPlaying)
-                return basePose;
+                return railBasePose;
 
             Transform motion = MotionTransform;
-            return new MovingPlatformBasePose(motion.position, motion.rotation, motion.localScale);
+            return BuildRailBasePose(motion);
+        }
+
+        private MovingPlatformBasePose BuildRailBasePose(Transform motion)
+        {
+            if (motion == null)
+                return new MovingPlatformBasePose(transform.position, transform.rotation, Vector3.one);
+
+            Vector3 railScale = usePlatformTransformScaleForRail
+                ? transform.lossyScale
+                : motion.localScale;
+
+            railScale = SanitizeScale(railScale);
+            return new MovingPlatformBasePose(motion.position, motion.rotation, railScale);
         }
 
         private ReactiveEvalContext BuildReactiveEvalContext()
@@ -513,6 +560,109 @@ namespace BC.Gimmick.MovingPlatform
             return selfEntityMB != null && selfEntityMB.HasEntity
                 ? selfEntityMB.Entity
                 : default;
+        }
+
+        private void EnsureTreeAuthoringReady(bool persistChanges)
+        {
+            NormalizeTreeAuthoring();
+            if (treeAuthoring != null && treeAuthoring.HasAuthoringData)
+                return;
+
+            MovingPlatformTreeMigrationResult migrationResult = MovingPlatformTreeMigration.TryMigrate(railNodes, railConnections, layers);
+            if (!migrationResult.Success || migrationResult.TreeAuthoring == null)
+                return;
+
+            if (persistChanges)
+            {
+                treeAuthoring = migrationResult.TreeAuthoring;
+                NormalizeTreeAuthoring();
+            }
+        }
+
+        private MovingPlatformTreeAuthoring GetEffectiveTreeAuthoring()
+        {
+            NormalizeTreeAuthoring();
+            if (treeAuthoring != null && treeAuthoring.HasAuthoringData)
+                return treeAuthoring;
+
+            MovingPlatformTreeMigrationResult migrationResult = MovingPlatformTreeMigration.TryMigrate(railNodes, railConnections, layers);
+            return migrationResult.Success && migrationResult.TreeAuthoring != null
+                ? migrationResult.TreeAuthoring
+                : treeAuthoring;
+        }
+
+        private void NormalizeTreeAuthoring()
+        {
+            if (treeAuthoring == null)
+                treeAuthoring = new MovingPlatformTreeAuthoring();
+
+            List<MovingPlatformRailNodeAuthoring> treeRailNodes = treeAuthoring.MutableRailNodes;
+            var usedRailIds = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = 0; i < treeRailNodes.Count; i++)
+            {
+                MovingPlatformRailNodeAuthoring railNode = treeRailNodes[i];
+                if (railNode == null)
+                    continue;
+
+                string stableId = railNode.StableId;
+                if (string.IsNullOrWhiteSpace(stableId) || !usedRailIds.Add(stableId))
+                {
+                    string generatedId = GenerateUniqueTreeId("rail", usedRailIds, i + 1);
+                    railNode.SetStableId(generatedId);
+                    stableId = generatedId;
+                }
+
+                if (string.IsNullOrWhiteSpace(railNode.Label))
+                    railNode.SetLabel(stableId);
+            }
+
+            if (treeRailNodes.Count > 0 && string.IsNullOrWhiteSpace(treeAuthoring.RootRailNodeId))
+                treeAuthoring.SetRootRailNodeId(treeRailNodes[0].StableId);
+
+            List<MovingPlatformSelectorNodeAuthoring> selectors = treeAuthoring.MutableSelectors;
+            var usedSelectorIds = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = 0; i < selectors.Count; i++)
+            {
+                MovingPlatformSelectorNodeAuthoring selector = selectors[i];
+                if (selector == null)
+                    continue;
+
+                string selectorId = selector.StableId;
+                if (string.IsNullOrWhiteSpace(selectorId) || !usedSelectorIds.Add(selectorId))
+                    selector.SetStableId(GenerateUniqueTreeId("selector", usedSelectorIds, i + 1));
+
+                if (string.IsNullOrWhiteSpace(selector.Label))
+                    selector.SetLabel($"Selector {i + 1}");
+
+                List<MovingPlatformControlNodeAuthoring> steps = selector.MutableOrderedChildren;
+                var usedStepIds = new HashSet<string>(StringComparer.Ordinal);
+                for (int stepIndex = 0; stepIndex < steps.Count; stepIndex++)
+                {
+                    MovingPlatformControlNodeAuthoring step = steps[stepIndex];
+                    if (step == null)
+                        continue;
+
+                    string stepId = step.StableId;
+                    if (string.IsNullOrWhiteSpace(stepId) || !usedStepIds.Add(stepId))
+                        step.SetStableId(GenerateUniqueTreeId("step", usedStepIds, stepIndex + 1));
+
+                    if (string.IsNullOrWhiteSpace(step.Label))
+                        step.SetLabel(step.GetType().Name);
+                }
+            }
+        }
+
+        private static string GenerateUniqueTreeId(string prefix, HashSet<string> usedIds, int seed)
+        {
+            int counter = Mathf.Max(1, seed);
+            while (true)
+            {
+                string candidate = $"{prefix}.{counter}";
+                if (usedIds.Add(candidate))
+                    return candidate;
+
+                counter++;
+            }
         }
 
         private void NormalizeRailNodeAuthoring()
@@ -570,50 +720,27 @@ namespace BC.Gimmick.MovingPlatform
 
         private bool TryBuildLayerPathPoints(
             int layerIndex,
-            MovingPlatformRailGraph visualizationRailGraph,
+            MovingPlatformTreeRuntime visualizationTreeRuntime,
             in MovingPlatformBasePose visualizationBasePose,
             List<Vector3> points)
         {
             points.Clear();
-            if (!TryGetVisualizationRoute(layerIndex, visualizationRailGraph, out MovingPlatformRailLayerRoute route))
+            if (!TryGetVisualizationRoute(layerIndex, visualizationTreeRuntime, out MovingPlatformSelectorRoute route))
                 return false;
 
-            for (int i = 0; i < route.NodeCount; i++)
-                AddUniquePoint(points, visualizationRailGraph.GetWorldPosition(visualizationBasePose, route.GetNodeIndexAt(i)));
+            for (int i = 0; i < route.RouteRailCount; i++)
+                AddUniquePoint(points, visualizationTreeRuntime.GetWorldPosition(visualizationBasePose, route.GetRouteRailIndexAt(i)));
 
             return points.Count > 0;
         }
 
         private bool TryBuildLayerPreviewPoints(
             int layerIndex,
-            MovingPlatformRailGraph visualizationRailGraph,
+            MovingPlatformTreeRuntime visualizationTreeRuntime,
             in MovingPlatformBasePose visualizationBasePose,
             List<Vector3> points)
         {
-            points.Clear();
-            if (layers == null || layerIndex < 0 || layerIndex >= layers.Length || visualizationRailGraph == null)
-                return false;
-
-            MovingPlatformLayer layer = layers[layerIndex];
-            if (layer == null || !layer.UsesRailRoute || !visualizationRailGraph.TryGetNodeIndex(layer.StartNodePath, out int startNodeIndex))
-                return false;
-
-            AddUniquePoint(points, visualizationRailGraph.GetWorldPosition(visualizationBasePose, startNodeIndex));
-
-            // Editor 上では接続の配線がまだ終わっていなくても、authoring した node 列そのものを先に確認できるようにする。
-            for (int i = 0; i < layer.RouteSegmentCount; i++)
-            {
-                if (!layer.TryGetRouteSegment(i, out MovingPlatformRailRouteSegment segment) ||
-                    string.IsNullOrWhiteSpace(segment.TargetNodePath) ||
-                    !visualizationRailGraph.TryGetNodeIndex(segment.TargetNodePath, out int targetNodeIndex))
-                {
-                    break;
-                }
-
-                AddUniquePoint(points, visualizationRailGraph.GetWorldPosition(visualizationBasePose, targetNodeIndex));
-            }
-
-            return points.Count > 1;
+            return TryBuildLayerPathPoints(layerIndex, visualizationTreeRuntime, visualizationBasePose, points);
         }
 
         private static Vector3[] CopyPoints(List<Vector3> points)
@@ -626,20 +753,6 @@ namespace BC.Gimmick.MovingPlatform
                 copied[i] = points[i];
 
             return copied;
-        }
-
-        private static bool TryResolveLiteralLocalPosition(MovingPlatformRailNode railNode, out Vector3 localPosition)
-        {
-            localPosition = default;
-            if (railNode == null)
-                return false;
-
-            ReactiveVector3 reactiveLocalPosition = railNode.LocalPosition;
-            if (reactiveLocalPosition.SourceKind != ReactiveVector3SourceKind.Literal)
-                return false;
-
-            localPosition = reactiveLocalPosition.Literal;
-            return true;
         }
 
         private static Color GetAutoLayerColor(int layerIndex)
@@ -659,11 +772,11 @@ namespace BC.Gimmick.MovingPlatform
                 points.Add(point);
         }
 
-        private Color ResolveLayerVisualizationColor(MovingPlatformLayer layer, int layerIndex)
+        private Color ResolveLayerVisualizationColor(MovingPlatformSelectorNodeAuthoring selector, int layerIndex)
         {
-            if (layer != null && layer.VisualizationColor.a > 0.001f)
+            if (selector != null && selector.Rule.VisualizationColor.a > 0.001f)
             {
-                Color color = layer.VisualizationColor;
+                Color color = selector.Rule.VisualizationColor;
                 color.a = Mathf.Clamp01(color.a);
                 return color;
             }
@@ -685,36 +798,38 @@ namespace BC.Gimmick.MovingPlatform
         }
 
         private Color GetRailConnectionVisualizationColor(
-            MovingPlatformRailGraph visualizationRailGraph,
+            MovingPlatformTreeRuntime visualizationTreeRuntime,
             int fromNodeIndex,
             int toNodeIndex)
         {
             Color accumulatedColor = Color.clear;
             int contributionCount = 0;
 
-            for (int i = 0; i < layers.Length; i++)
+            IReadOnlyList<MovingPlatformSelectorNodeAuthoring> selectors = GetEffectiveTreeAuthoring()?.Selectors;
+            for (int i = 0; selectors != null && i < selectors.Count; i++)
             {
-                if (!LayerUsesRailConnection(i, visualizationRailGraph, fromNodeIndex, toNodeIndex))
+                if (!LayerUsesRailConnection(i, visualizationTreeRuntime, fromNodeIndex, toNodeIndex))
                     continue;
 
-                accumulatedColor += ResolveLayerVisualizationColor(layers[i], i);
+                accumulatedColor += ResolveLayerVisualizationColor(selectors[i], i);
                 contributionCount++;
             }
 
             return ComposeLayerColors(contributionCount, accumulatedColor, new Color(0.24f, 0.28f, 0.34f, 0.55f));
         }
 
-        private Color GetRailNodeVisualizationColor(MovingPlatformRailGraph visualizationRailGraph, int nodeIndex)
+        private Color GetRailNodeVisualizationColor(MovingPlatformTreeRuntime visualizationTreeRuntime, int nodeIndex)
         {
             Color accumulatedColor = Color.clear;
             int contributionCount = 0;
 
-            for (int i = 0; i < layers.Length; i++)
+            IReadOnlyList<MovingPlatformSelectorNodeAuthoring> selectors = GetEffectiveTreeAuthoring()?.Selectors;
+            for (int i = 0; selectors != null && i < selectors.Count; i++)
             {
-                if (!LayerUsesRailNode(i, visualizationRailGraph, nodeIndex))
+                if (!LayerUsesRailNode(i, visualizationTreeRuntime, nodeIndex))
                     continue;
 
-                accumulatedColor += ResolveLayerVisualizationColor(layers[i], i);
+                accumulatedColor += ResolveLayerVisualizationColor(selectors[i], i);
                 contributionCount++;
             }
 
@@ -723,17 +838,17 @@ namespace BC.Gimmick.MovingPlatform
 
         private bool LayerUsesRailConnection(
             int layerIndex,
-            MovingPlatformRailGraph visualizationRailGraph,
+            MovingPlatformTreeRuntime visualizationTreeRuntime,
             int fromNodeIndex,
             int toNodeIndex)
         {
-            if (!TryGetVisualizationRoute(layerIndex, visualizationRailGraph, out MovingPlatformRailLayerRoute route))
+            if (!TryGetVisualizationRoute(layerIndex, visualizationTreeRuntime, out MovingPlatformSelectorRoute route))
                 return false;
 
-            for (int i = 0; i < route.NodeCount - 1; i++)
+            for (int i = 0; i < route.RouteRailCount - 1; i++)
             {
-                int routeFromIndex = route.GetNodeIndexAt(i);
-                int routeToIndex = route.GetNodeIndexAt(i + 1);
+                int routeFromIndex = route.GetRouteRailIndexAt(i);
+                int routeToIndex = route.GetRouteRailIndexAt(i + 1);
                 if ((routeFromIndex == fromNodeIndex && routeToIndex == toNodeIndex) ||
                     (routeFromIndex == toNodeIndex && routeToIndex == fromNodeIndex))
                 {
@@ -744,99 +859,73 @@ namespace BC.Gimmick.MovingPlatform
             return false;
         }
 
-        private bool LayerUsesRailNode(int layerIndex, MovingPlatformRailGraph visualizationRailGraph, int nodeIndex)
+        private bool LayerUsesRailNode(int layerIndex, MovingPlatformTreeRuntime visualizationTreeRuntime, int nodeIndex)
         {
-            if (!TryGetVisualizationRoute(layerIndex, visualizationRailGraph, out MovingPlatformRailLayerRoute route))
+            if (!TryGetVisualizationRoute(layerIndex, visualizationTreeRuntime, out MovingPlatformSelectorRoute route))
                 return false;
 
-            return route.ContainsNode(nodeIndex);
+            return route.ContainsRailIndex(nodeIndex);
         }
 
-        private MovingPlatformRailGraph GetVisualizationRailGraph()
+        private MovingPlatformTreeRuntime GetVisualizationTreeRuntime()
         {
             if (Application.isPlaying)
             {
-                if (railGraph != null)
-                    return railGraph;
-
-                return sceneKernel != null
-                    ? MovingPlatformRailGraph.Build(transform, railNodes, railConnections, sceneKernel.ReactiveValues, BuildReactiveEvalContext())
-                    : MovingPlatformRailGraph.Build(transform, railNodes, railConnections);
+                if (treeRuntime != null && treeRuntime.IsValid)
+                    return treeRuntime;
             }
 
-            return MovingPlatformRailGraph.Build(transform, railNodes, railConnections);
+            return MovingPlatformTreeRuntime.Build(
+                GetEffectiveTreeAuthoring(),
+                sceneKernel?.ReactiveValues,
+                BuildReactiveEvalContext());
         }
 
         private bool TryGetVisualizationRoute(
             int layerIndex,
-            MovingPlatformRailGraph visualizationRailGraph,
-            out MovingPlatformRailLayerRoute route)
+            MovingPlatformTreeRuntime visualizationTreeRuntime,
+            out MovingPlatformSelectorRoute route)
         {
             route = null;
-            if (layers == null || layerIndex < 0 || layerIndex >= layers.Length || layers[layerIndex] == null || visualizationRailGraph == null)
+            if (visualizationTreeRuntime == null || !visualizationTreeRuntime.IsValid)
                 return false;
 
-            if (Application.isPlaying && railRoutes != null && layerIndex < railRoutes.Length && railRoutes[layerIndex] != null)
-            {
-                route = railRoutes[layerIndex];
-                return route.IsValid;
-            }
-
-            route = new MovingPlatformRailLayerRoute(layers[layerIndex], visualizationRailGraph);
-            return route.IsValid;
+            return visualizationTreeRuntime.TryGetSelectorRoute(layerIndex, out route);
         }
 
         private void CollectSharedRailGraphGizmoData(
             in MovingPlatformBasePose visualizationBasePose,
-            MovingPlatformRailGraph visualizationRailGraph,
+            MovingPlatformTreeRuntime visualizationTreeRuntime,
             List<MovingPlatformEditorRailConnectionData> railConnectionsData,
             List<MovingPlatformEditorRailNodeData> railNodesData)
         {
-            if (visualizationRailGraph == null)
+            if (visualizationTreeRuntime == null || !visualizationTreeRuntime.IsValid)
                 return;
 
             float pointRadius = Mathf.Max(0.01f, pathVisualizationPointRadius) * 0.65f;
 
-            if (railConnections != null)
+            for (int nodeIndex = 0; nodeIndex < visualizationTreeRuntime.RailNodeCount; nodeIndex++)
             {
-                for (int i = 0; i < railConnections.Length; i++)
+                int parentIndex = visualizationTreeRuntime.GetRailNodeParentIndex(nodeIndex);
+                if (parentIndex >= 0)
                 {
-                    MovingPlatformRailConnection connection = railConnections[i];
-                    if (connection == null ||
-                        !visualizationRailGraph.TryGetNodeIndex(connection.FromNodePath, out int fromNodeIndex) ||
-                        !visualizationRailGraph.TryGetNodeIndex(connection.ToNodePath, out int toNodeIndex))
-                    {
-                        continue;
-                    }
-
-                    Vector3 fromWorld = visualizationRailGraph.GetWorldPosition(visualizationBasePose, fromNodeIndex);
-                    Vector3 toWorld = visualizationRailGraph.GetWorldPosition(visualizationBasePose, toNodeIndex);
-
+                    Vector3 fromWorld = visualizationTreeRuntime.GetWorldPosition(visualizationBasePose, parentIndex);
+                    Vector3 toWorld = visualizationTreeRuntime.GetWorldPosition(visualizationBasePose, nodeIndex);
                     railConnectionsData?.Add(new MovingPlatformEditorRailConnectionData(
                         fromWorld,
                         toWorld,
-                        GetRailConnectionVisualizationColor(visualizationRailGraph, fromNodeIndex, toNodeIndex)));
+                        GetRailConnectionVisualizationColor(visualizationTreeRuntime, parentIndex, nodeIndex)));
                 }
-            }
 
-            if (railNodes != null)
-            {
-                for (int i = 0; i < railNodes.Length; i++)
-                {
-                    MovingPlatformRailNode railNode = railNodes[i];
-                    if (railNode == null || !visualizationRailGraph.TryGetNodeIndex(railNode.NodePath, out int nodeIndex))
-                        continue;
+                Color fillColor = GetRailNodeVisualizationColor(visualizationTreeRuntime, nodeIndex);
+                Color wireColor = Color.Lerp(fillColor, Color.white, 0.55f);
+                wireColor.a = 1.0f;
 
-                    Color fillColor = GetRailNodeVisualizationColor(visualizationRailGraph, nodeIndex);
-                    Color wireColor = Color.Lerp(fillColor, Color.white, 0.55f);
-                    wireColor.a = 1.0f;
-
-                    railNodesData?.Add(new MovingPlatformEditorRailNodeData(
-                        visualizationRailGraph.GetWorldPosition(visualizationBasePose, nodeIndex),
-                        fillColor,
-                        wireColor,
-                        pointRadius));
-                }
+                railNodesData?.Add(new MovingPlatformEditorRailNodeData(
+                    visualizationTreeRuntime.GetWorldPosition(visualizationBasePose, nodeIndex),
+                    fillColor,
+                    wireColor,
+                    pointRadius));
             }
         }
 
@@ -848,7 +937,7 @@ namespace BC.Gimmick.MovingPlatform
                 return;
             }
 
-            if (layers == null || layers.Length == 0 || railGraph == null)
+            if (treeRuntime == null || !treeRuntime.IsValid)
             {
                 HideRuntimePathVisualization();
                 return;
@@ -858,14 +947,18 @@ namespace BC.Gimmick.MovingPlatform
             if (runtimePathVisualizerRegistry == null)
                 return;
 
-            runtimePathVisualizerRegistry.EnsureLayerCount(layers.Length);
-            for (int layerIndex = 0; layerIndex < layers.Length; layerIndex++)
+            IReadOnlyList<MovingPlatformSelectorNodeAuthoring> selectors = GetEffectiveTreeAuthoring()?.Selectors;
+            runtimePathVisualizerRegistry.EnsureLayerCount(treeRuntime.SelectorCount);
+            for (int layerIndex = 0; layerIndex < treeRuntime.SelectorCount; layerIndex++)
             {
-                Color lineColor = ResolveLayerVisualizationColor(layers[layerIndex], layerIndex);
+                MovingPlatformSelectorNodeAuthoring selector = selectors != null && layerIndex < selectors.Count
+                    ? selectors[layerIndex]
+                    : null;
+                Color lineColor = ResolveLayerVisualizationColor(selector, layerIndex);
                 lineColor.a = Mathf.Clamp01(runtimePathColor.a);
 
-                RuntimePathEmissionSettings emissionSettings = ResolveRuntimePathEmissionSettings(layers[layerIndex], lineColor);
-                if (!TryBuildLayerPathPoints(layerIndex, railGraph, basePose, pathVisualizationPoints))
+                RuntimePathEmissionSettings emissionSettings = ResolveRuntimePathEmissionSettings(selector, lineColor);
+                if (!TryBuildLayerPathPoints(layerIndex, treeRuntime, railBasePose, pathVisualizationPoints))
                 {
                     runtimePathVisualizerRegistry.ApplyLayer(
                         layerIndex,
@@ -891,7 +984,7 @@ namespace BC.Gimmick.MovingPlatform
             runtimePathVisualizerRegistry ??= new MovingPlatformRuntimePathVisualizerRegistry(transform);
         }
 
-        private RuntimePathEmissionSettings ResolveRuntimePathEmissionSettings(MovingPlatformLayer layer, Color lineColor)
+        private RuntimePathEmissionSettings ResolveRuntimePathEmissionSettings(MovingPlatformSelectorNodeAuthoring selector, Color lineColor)
         {
             Color visualizationEmissionColor = ResolveVisualizationEmissionColor(lineColor);
 
@@ -906,23 +999,23 @@ namespace BC.Gimmick.MovingPlatform
                 dimInactiveRuntimePath,
                 runtimePathInactiveAlphaMultiplier);
 
-            if (layer == null || !layer.OverrideRuntimePathEmission)
+            if (selector == null || !selector.Rule.OverrideRuntimePathEmission)
                 return defaultSettings;
 
-            Color overrideEmissionColor = layer.UseVisualizationColorForRuntimePathEmission
+            Color overrideEmissionColor = selector.Rule.UseVisualizationColorForRuntimePathEmission
                 ? visualizationEmissionColor
-                : ResolveExplicitEmissionColor(layer.RuntimePathEmissionColor, visualizationEmissionColor);
+                : ResolveExplicitEmissionColor(selector.Rule.RuntimePathEmissionColor, visualizationEmissionColor);
 
             return new RuntimePathEmissionSettings(
                 enableEmission: true,
                 emissionColor: overrideEmissionColor,
-                activeEmissionStrength: layer.RuntimePathActiveEmissionStrength,
-                inactiveEmissionStrength: layer.RuntimePathInactiveEmissionStrength,
-                syncSimpleBoost: layer.SyncRuntimePathSimpleBoost,
-                activeSimpleBoostIntensity: layer.RuntimePathActiveSimpleBoostIntensity,
-                inactiveSimpleBoostIntensity: layer.RuntimePathInactiveSimpleBoostIntensity,
-                dimInactive: layer.DimRuntimePathWhenInactive,
-                inactiveAlphaMultiplier: layer.RuntimePathInactiveAlphaMultiplier);
+                activeEmissionStrength: selector.Rule.RuntimePathActiveEmissionStrength,
+                inactiveEmissionStrength: selector.Rule.RuntimePathInactiveEmissionStrength,
+                syncSimpleBoost: selector.Rule.SyncRuntimePathSimpleBoost,
+                activeSimpleBoostIntensity: selector.Rule.RuntimePathActiveSimpleBoostIntensity,
+                inactiveSimpleBoostIntensity: selector.Rule.RuntimePathInactiveSimpleBoostIntensity,
+                dimInactive: selector.Rule.DimRuntimePathWhenInactive,
+                inactiveAlphaMultiplier: selector.Rule.RuntimePathInactiveAlphaMultiplier);
         }
 
         private Color ResolveVisualizationEmissionColor(Color lineColor)
@@ -960,21 +1053,21 @@ namespace BC.Gimmick.MovingPlatform
             if (nextSelectedLayerIndex != selectedLayerIndex)
                 ChangeSelectedLayer(nextSelectedLayerIndex);
 
-            if (selectedLayerIndex < 0 || !useRailRouting || railController == null)
+            if (selectedLayerIndex < 0 || !useRailRouting || traversalController == null)
                 return;
 
             bool sequenceCompleted = false;
             Transform motion = MotionTransform;
-            MovingPlatformPose pose = railController.Tick(
+            MovingPlatformPose pose = traversalController.Tick(
                 deltaTime,
                 selectedLayerIndex,
-                basePose,
+                railBasePose,
                 motion.position,
                 motion.rotation,
                 motion.localScale,
                 out sequenceCompleted);
             ApplyPose(pose);
-            railController.DrainTransitionEvents(railTransitionEvents);
+            traversalController.DrainEvents(traversalEvents);
             ExecuteRailTransitionEvents(wiringContext);
 
             if (sequenceCompleted && publishLayerSignals)
@@ -1007,22 +1100,10 @@ namespace BC.Gimmick.MovingPlatform
 
         private bool IsLayerPlayable(int layerIndex)
         {
-            if (layerIndex < 0 || layers == null || layerIndex >= layers.Length || layers[layerIndex] == null)
+            if (layerIndex < 0 || treeRuntime == null || !treeRuntime.IsValid)
                 return false;
 
-            bool routeValid = railRoutes != null &&
-                              layerIndex < railRoutes.Length &&
-                              railRoutes[layerIndex] != null &&
-                              railRoutes[layerIndex].IsValid;
-
-            // Rail-only 実装なので、Layer がルートを使う場合は route 有効化を必須にする。
-            if (layers[layerIndex].UsesRailRoute)
-                return routeValid;
-
-            if (!useRailRouting)
-                return true;
-
-            return routeValid;
+            return treeRuntime.TryGetSelectorRoute(layerIndex, out MovingPlatformSelectorRoute route) && route.IsValid;
         }
 
         private void LogLayerDiagnostics(int nextSelectedLayerIndex)
@@ -1039,8 +1120,11 @@ namespace BC.Gimmick.MovingPlatform
             lastLoggedLayerSelection = nextSelectedLayerIndex;
             nextLayerDebugLogTime = now + Mathf.Max(0.2f, layerDebugLogInterval);
 
-            string selectedLayerName = nextSelectedLayerIndex >= 0 && layers != null && nextSelectedLayerIndex < layers.Length && layers[nextSelectedLayerIndex] != null
-                ? layers[nextSelectedLayerIndex].LayerName
+            string selectedLayerName = nextSelectedLayerIndex >= 0 &&
+                                       treeAuthoring != null &&
+                                       nextSelectedLayerIndex < treeAuthoring.Selectors.Count &&
+                                       treeAuthoring.Selectors[nextSelectedLayerIndex] != null
+                ? treeAuthoring.Selectors[nextSelectedLayerIndex].Label
                 : "None";
 
             Debug.Log(
@@ -1056,7 +1140,7 @@ namespace BC.Gimmick.MovingPlatform
 
                 bool playable = IsLayerPlayable(i);
                 bool active = runtime.RefreshActive();
-                bool routeValid = railRoutes != null && i < railRoutes.Length && railRoutes[i] != null && railRoutes[i].IsValid;
+                bool routeValid = treeRuntime != null && treeRuntime.TryGetSelectorRoute(i, out MovingPlatformSelectorRoute route) && route.IsValid;
                 string routeIssue = ResolveLayerRouteIssue(i);
                 float routeDistance = ResolveLayerApproxRouteDistance(i);
                 string conditionCurrentValueText = runtime.TryGetConditionCurrentValue(out bool conditionCurrentValue)
@@ -1075,19 +1159,20 @@ namespace BC.Gimmick.MovingPlatform
 
         private float ResolveLayerApproxRouteDistance(int layerIndex)
         {
-            if (railGraph == null || railRoutes == null || layerIndex < 0 || layerIndex >= railRoutes.Length)
+            if (treeRuntime == null || !treeRuntime.IsValid || !treeRuntime.TryGetSelectorRoute(layerIndex, out MovingPlatformSelectorRoute route))
                 return 0f;
 
-            MovingPlatformRailLayerRoute route = railRoutes[layerIndex];
-            if (route == null || !route.IsValid || route.NodeCount < 2)
+            if (!route.IsValid || route.RouteRailCount < 2)
                 return 0f;
 
             float distance = 0f;
-            for (int i = 0; i < route.NodeCount - 1; i++)
+            for (int i = 0; i < route.RouteRailCount - 1; i++)
             {
-                int fromNode = route.GetNodeIndexAt(i);
-                int toNode = route.GetNodeIndexAt(i + 1);
-                distance += railGraph.GetApproxDistance(fromNode, toNode);
+                int fromNode = route.GetRouteRailIndexAt(i);
+                int toNode = route.GetRouteRailIndexAt(i + 1);
+                Vector3 fromWorld = treeRuntime.GetWorldPosition(railBasePose, fromNode);
+                Vector3 toWorld = treeRuntime.GetWorldPosition(railBasePose, toNode);
+                distance += Vector3.Distance(fromWorld, toWorld);
             }
 
             return distance;
@@ -1095,52 +1180,15 @@ namespace BC.Gimmick.MovingPlatform
 
         private string ResolveLayerRouteIssue(int layerIndex)
         {
-            if (layers == null || layerIndex < 0 || layerIndex >= layers.Length)
+            if (treeRuntime == null || !treeRuntime.IsValid)
+                return "tree-runtime-invalid";
+
+            if (layerIndex < 0 || treeAuthoring == null || layerIndex >= treeAuthoring.Selectors.Count)
                 return "layer-out-of-range";
 
-            MovingPlatformLayer layer = layers[layerIndex];
-            if (layer == null)
-                return "layer-null";
-
-            if (!layer.UsesRailRoute)
-                return "uses-rail-route=false";
-
-            if (railGraph == null)
-                return "rail-graph-null";
-
-            if (string.IsNullOrWhiteSpace(layer.StartNodePath))
-                return "start-node-empty";
-
-            if (!railGraph.TryGetNodeIndex(layer.StartNodePath, out int currentNodeIndex))
-                return $"start-node-missing:{layer.StartNodePath}";
-
-            IReadOnlyList<MovingPlatformLayerSegment> segments = layer.Segments;
-            for (int i = 0; i < segments.Count; i++)
-            {
-                if (!layer.TryGetSegment(i, out MovingPlatformLayerSegment segment) || segment == null)
-                    return $"segment-null:{i}";
-
-                if (segment is MovingPlatformRailRouteSegment moveSegment)
-                {
-                    if (string.IsNullOrWhiteSpace(moveSegment.TargetNodePath))
-                        return $"segment-target-empty:{i}";
-
-                    if (!railGraph.TryGetNodeIndex(moveSegment.TargetNodePath, out int targetNodeIndex))
-                        return $"segment-target-missing:{i}:{moveSegment.TargetNodePath}";
-
-                    currentNodeIndex = targetNodeIndex;
-                    continue;
-                }
-
-                if (segment is MovingPlatformWaitSegment waitSegment &&
-                    waitSegment.WaitMode == MovingPlatformWaitMode.Signal &&
-                    !waitSegment.Signal.TryResolve(out _))
-                {
-                    return $"wait-signal-unresolved:{i}";
-                }
-            }
-
-            return "none";
+            return treeRuntime.TryGetSelectorRoute(layerIndex, out MovingPlatformSelectorRoute route) && route.IsValid
+                ? "none"
+                : "selector-route-invalid";
         }
 
         private static string BuildInactiveReason(MovingPlatformLayerRuntime runtime, bool playable, bool routeValid)
@@ -1168,6 +1216,25 @@ namespace BC.Gimmick.MovingPlatform
 
         private void ChangeSelectedLayer(int nextSelectedLayerIndex)
         {
+            if (nextSelectedLayerIndex == selectedLayerIndex)
+                return;
+
+            if (nextSelectedLayerIndex >= 0 &&
+                useRailRouting &&
+                traversalController != null &&
+                treeRuntime != null &&
+                treeRuntime.TryGetSelectorRoute(nextSelectedLayerIndex, out MovingPlatformSelectorRoute nextRoute))
+            {
+                bool transitionReady = traversalController.BeginSelectorTransition(
+                    nextSelectedLayerIndex,
+                    railBasePose,
+                    MotionTransform.position,
+                    nextRoute.Rule.ResetWhenSelected);
+
+                if (!transitionReady)
+                    return;
+            }
+
             if (publishLayerSignals && selectedLayerIndex >= 0)
                 sceneKernel.KernelEvents.RaiseSignal(layerDisabledSignal);
 
@@ -1175,49 +1242,35 @@ namespace BC.Gimmick.MovingPlatform
             if (selectedLayerIndex < 0)
                 return;
 
-            if (useRailRouting && railController != null &&
-                layers != null &&
-                selectedLayerIndex < layers.Length &&
-                layers[selectedLayerIndex] != null &&
-                layers[selectedLayerIndex].ResetWhenSelected)
-            {
-                railController.SnapToRouteStart(selectedLayerIndex, basePose);
-
-                if (TryBuildRouteStartPose(selectedLayerIndex, out MovingPlatformPose routeStartPose))
-                    ApplyPose(routeStartPose);
-            }
-
             if (publishLayerSignals)
                 sceneKernel.KernelEvents.RaiseSignal(layerEnabledSignal);
         }
 
         private void ExecuteRailTransitionEvents(in WiringActionContext wiringContext)
         {
-            if (railTransitionEvents.Count <= 0 || railRoutes == null)
+            if (traversalEvents.Count <= 0 || treeRuntime == null || !treeRuntime.IsValid)
                 return;
 
-            for (int i = 0; i < railTransitionEvents.Count; i++)
+            for (int i = 0; i < traversalEvents.Count; i++)
             {
-                MovingPlatformRailTransitionEvent transitionEvent = railTransitionEvents[i];
-                if (transitionEvent.LayerIndex < 0 || transitionEvent.LayerIndex >= railRoutes.Length)
+                MovingPlatformTraversalEvent transitionEvent = traversalEvents[i];
+                if (transitionEvent.SelectorIndex < 0)
                     continue;
 
-                MovingPlatformRailLayerRoute route = railRoutes[transitionEvent.LayerIndex];
-                if (route == null)
+                if (!treeRuntime.TryGetSelectorRoute(transitionEvent.SelectorIndex, out MovingPlatformSelectorRoute route) || route == null)
                     continue;
 
-                if (transitionEvent.Kind == MovingPlatformRailTransitionEventKind.SegmentEnter)
-                    route.ExecuteSegmentEnter(transitionEvent.SegmentIndex, wiringContext);
+                if (transitionEvent.Enter)
+                    route.ExecuteStepEnter(transitionEvent.StepIndex, wiringContext);
                 else
-                    route.ExecuteSegmentExit(transitionEvent.SegmentIndex, wiringContext);
+                    route.ExecuteStepExit(transitionEvent.StepIndex, wiringContext);
             }
 
-            railTransitionEvents.Clear();
+            traversalEvents.Clear();
         }
 
         private void ApplyPose(in MovingPlatformPose pose)
         {
-            const float DynamicSnapDistanceSqr = 1.5f * 1.5f;
             const float DynamicMaxAngularSpeed = 10.0f;
             const float DeltaFallbackThresholdSqr = 0.000001f;
             const float RotationFallbackAngleThreshold = 0.01f;
@@ -1267,26 +1320,17 @@ namespace BC.Gimmick.MovingPlatform
                 }
                 else
                 {
-                    // Dynamic Rigidbody を毎フレーム直接テレポートすると接触解決で押しのけが発生しやすいため、
-                    // 基本は速度追従にし、大きな乖離時だけスナップで復帰させます。
+                    // Dynamic Rigidbody は座標スナップを行わず、速度追従だけで移動させる。
+                    // これによりレイヤー切替時の見た目の瞬間移動と上載せ物の取り残しを抑える。
                     Vector3 currentPosition = target.position;
                     Quaternion currentRotation = target.rotation;
                     Vector3 positionError = targetPosition - currentPosition;
                     Quaternion rotationError = targetRotation * Quaternion.Inverse(currentRotation);
 
-                    if (positionError.sqrMagnitude > DynamicSnapDistanceSqr)
-                    {
-                        target.position = targetPosition;
-                        target.rotation = targetRotation;
-                        target.linearVelocity = Vector3.zero;
-                        target.angularVelocity = Vector3.zero;
-                    }
-                    else
-                    {
-                        target.linearVelocity = positionError / deltaTime;
-                        Vector3 targetAngularVelocity = SupportMotionUtility.CalculateAngularVelocity(rotationError, deltaTime);
-                        target.angularVelocity = Vector3.ClampMagnitude(targetAngularVelocity, DynamicMaxAngularSpeed);
-                    }
+                    Vector3 targetLinearVelocity = positionError / deltaTime;
+                    target.linearVelocity = Vector3.ClampMagnitude(targetLinearVelocity, Mathf.Max(0.1f, dynamicTargetMaxLinearSpeed));
+                    Vector3 targetAngularVelocity = SupportMotionUtility.CalculateAngularVelocity(rotationError, deltaTime);
+                    target.angularVelocity = Vector3.ClampMagnitude(targetAngularVelocity, DynamicMaxAngularSpeed);
                 }
 
                 targetTransform.localScale = targetLocalScale;
@@ -1318,6 +1362,9 @@ namespace BC.Gimmick.MovingPlatform
                 }
             }
 
+            float maxDelta = Mathf.Max(0.001f, maxReportedSupportSpeed) * deltaTime;
+            positionDelta = Vector3.ClampMagnitude(positionDelta, maxDelta);
+
             if (!hasAccumulatedMotion)
                 accumulatedMotionOrigin = previousPosition;
 
@@ -1331,14 +1378,14 @@ namespace BC.Gimmick.MovingPlatform
         private bool TryBuildRouteStartPose(int layerIndex, out MovingPlatformPose pose)
         {
             pose = default;
-            if (railGraph == null || railController == null || !railController.TryGetRoute(layerIndex, out MovingPlatformRailLayerRoute route) ||
-                route == null || !route.IsValid || route.NodeCount <= 0)
+            if (treeRuntime == null || !treeRuntime.IsValid || !treeRuntime.TryGetSelectorRoute(layerIndex, out MovingPlatformSelectorRoute route) ||
+                route == null || !route.IsValid || route.RouteRailCount <= 0)
             {
                 return false;
             }
 
-            int startNodeIndex = route.GetNodeIndexAt(0);
-            Vector3 startWorldPosition = railGraph.GetWorldPosition(basePose, startNodeIndex);
+            int startNodeIndex = route.GetRouteRailIndexAt(0);
+            Vector3 startWorldPosition = treeRuntime.GetWorldPosition(railBasePose, startNodeIndex);
             Transform motion = MotionTransform;
             pose = new MovingPlatformPose(startWorldPosition, motion.rotation, motion.localScale);
             return true;
@@ -1355,7 +1402,7 @@ namespace BC.Gimmick.MovingPlatform
 
         private void OnKernelSignalRaised(KernelSignalRaisedEvent signalEvent)
         {
-            railController?.NotifySignal(signalEvent.Signal);
+            traversalController?.NotifySignal(signalEvent.Signal);
 
             if (runtimes == null)
                 return;
@@ -1391,51 +1438,51 @@ namespace BC.Gimmick.MovingPlatform
 
         private sealed class MovingPlatformLayerRuntime : IDisposable
         {
-            private readonly MovingPlatformLayer layer;
+            private readonly MovingPlatformSelectorNodeAuthoring selector;
             private ReactiveWatchedBoolBinding activeConditionBinding;
             private bool signalGateActive;
             private bool conditionReadSucceeded;
             private bool isConditionSatisfied = true;
 
-            public int Priority => layer != null ? layer.Priority : int.MinValue;
-            public string LayerName => layer != null ? layer.LayerName : "Layer";
-            public bool ActiveOnStart => layer != null && layer.ActiveOnStart;
-            public bool UseSignalGate => layer != null && layer.UseSignalGate;
+            public int Priority => selector != null ? selector.Rule.Priority : int.MinValue;
+            public string LayerName => selector != null ? selector.Label : "Selector";
+            public bool ActiveOnStart => selector != null && selector.Rule.ActiveOnStart;
+            public bool UseSignalGate => selector != null && selector.Rule.UseSignalGate;
             public bool SignalGateActive => signalGateActive;
-            public bool UseReactiveCondition => layer != null && layer.UseReactiveCondition;
+            public bool UseReactiveCondition => selector != null && selector.Rule.UseReactiveCondition;
             public bool ConditionBindingReady => activeConditionBinding != null;
             public bool ConditionReadSucceeded => conditionReadSucceeded;
             public bool IsConditionSatisfied => !UseReactiveCondition || isConditionSatisfied;
 
-            public MovingPlatformLayerRuntime(MovingPlatformLayer layer)
+            public MovingPlatformLayerRuntime(MovingPlatformSelectorNodeAuthoring selector)
             {
-                this.layer = layer;
+                this.selector = selector;
             }
 
             public void Initialize(SceneKernel sceneKernel, EntityRef actorEntity)
             {
-                signalGateActive = layer != null && layer.ActiveOnStart;
+                signalGateActive = selector != null && selector.Rule.ActiveOnStart;
                 conditionReadSucceeded = !UseReactiveCondition;
                 isConditionSatisfied = true;
 
-                if (layer == null || !layer.UseReactiveCondition || sceneKernel?.ReactiveValues == null)
+                if (selector == null || !selector.Rule.UseReactiveCondition || sceneKernel?.ReactiveValues == null)
                     return;
 
                 activeConditionBinding = new ReactiveWatchedBoolBinding(
                     sceneKernel.ReactiveValues,
                     new ReactiveEvalContext(sceneKernel, actorEntity, default),
-                    layer.ActiveCondition);
+                    selector.Rule.ActiveCondition);
             }
 
             public bool RefreshActive()
             {
-                if (layer == null)
+                if (selector == null)
                     return false;
 
-                if (layer.UseSignalGate && !signalGateActive)
+                if (selector.Rule.UseSignalGate && !signalGateActive)
                     return false;
 
-                if (layer.UseReactiveCondition)
+                if (selector.Rule.UseReactiveCondition)
                 {
                     if (activeConditionBinding == null)
                     {
@@ -1491,13 +1538,13 @@ namespace BC.Gimmick.MovingPlatform
 
             public void HandleSignal(SignalId signalId)
             {
-                if (layer == null || !layer.UseSignalGate)
+                if (selector == null || !selector.Rule.UseSignalGate)
                     return;
 
-                if (layer.MatchesActivateSignal(signalId))
+                if (selector.Rule.ActivateSignal.TryResolve(out Signal activateSignal) && activateSignal.Id.Equals(signalId))
                     signalGateActive = true;
 
-                if (layer.MatchesDeactivateSignal(signalId))
+                if (selector.Rule.DeactivateSignal.TryResolve(out Signal deactivateSignal) && deactivateSignal.Id.Equals(signalId))
                     signalGateActive = false;
             }
         }

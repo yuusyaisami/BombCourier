@@ -29,6 +29,8 @@ namespace BC.Character
         private float blinkEndTime = float.PositiveInfinity;
         private bool isBlinkActive;
         private bool started;
+        private bool hasLoggedMissingValueStore;
+        private bool hasLoggedMissingEntity;
 
         public FaceExpressionId CurrentBaseExpression => baseExpression;
         public FaceExpressionId CurrentDisplayedExpression => displayedExpression;
@@ -179,10 +181,15 @@ namespace BC.Character
 
             if (kernelMB == null || kernelMB.Kernel == null || kernelMB.Kernel.EntityValueStore == null)
             {
-                Debug.LogError($"{nameof(FaceExpressionUvControllerMB)}: ValueStore is not found.", this);
-                enabled = false;
+                if (!hasLoggedMissingValueStore)
+                {
+                    Debug.LogWarning($"{nameof(FaceExpressionUvControllerMB)}: ValueStore is not found yet.", this);
+                    hasLoggedMissingValueStore = true;
+                }
                 return false;
             }
+
+            hasLoggedMissingValueStore = false;
 
             valueStore = kernelMB.Kernel.EntityValueStore;
 
@@ -190,10 +197,15 @@ namespace BC.Character
 
             if (entityMB == null || !entityMB.HasEntity)
             {
-                Debug.LogError($"{nameof(FaceExpressionUvControllerMB)}: EntityMB is not found or not bound.", this);
-                enabled = false;
+                if (!hasLoggedMissingEntity)
+                {
+                    Debug.LogWarning($"{nameof(FaceExpressionUvControllerMB)}: EntityMB is not found or not bound yet.", this);
+                    hasLoggedMissingEntity = true;
+                }
                 return false;
             }
+
+            hasLoggedMissingEntity = false;
 
             entityRef = entityMB.Entity;
             return true;

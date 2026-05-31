@@ -369,6 +369,17 @@ namespace BC.Base
                     );
 
             }
+
+            public static class Stage
+            {
+                public static readonly ValueKey<int> SelectedStageIndex =
+                    new ValueKey<int>(
+                        new ValueKeyId(11005),
+                        "Kernel.Stage.SelectedStageIndex",
+                        0,
+                        ValueCompositionMode.Raw
+                    );
+            }
         }
 
         public static class Local
@@ -557,7 +568,7 @@ namespace BC.Base
                 new ValueKey<float>(
                     new ValueKeyId(20001),
                     "AppSettings.MusicVolume",
-                    1f,
+                    0.8f,
                     ValueCompositionMode.Raw
                 );
 
@@ -565,7 +576,7 @@ namespace BC.Base
                 new ValueKey<float>(
                     new ValueKeyId(20002),
                     "AppSettings.SFXVolume",
-                    1f,
+                    0.8f,
                     ValueCompositionMode.Raw
                 );
 

@@ -14,10 +14,26 @@ namespace BC.Base
         {
             KernelBuilder kernelBuilder = new KernelBuilder();
             kernel = kernelBuilder.Build<SceneKernel>(targetObjects.ToArray());
+            EnsureCoreServices();
 
             // 最初からシーン内に存在するEntityを登録するためのブートストラッパーを作成して実行
             var bootstrapper = new SceneEntityBootstrapper(kernel, transform);
             bootstrapper.RegisterSceneEntities();
+        }
+
+        private void EnsureCoreServices()
+        {
+            if (kernel == null)
+            {
+                Debug.LogError($"{nameof(SceneKernelMB)}: failed to build {nameof(SceneKernel)}.", this);
+                return;
+            }
+
+            if (kernel.EntityValueStore == null)
+            {
+                kernel.EntityValueStore = new ValueStoreService();
+                Debug.LogWarning($"{nameof(SceneKernelMB)}: {nameof(SceneKernel.EntityValueStore)} was not installed. Auto-created fallback store. Add {nameof(ValueStoreMB)} to targetObjects for explicit wiring.", this);
+            }
         }
 
         // SceneKernel はここから毎フレーム tick される。

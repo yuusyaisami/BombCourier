@@ -34,11 +34,12 @@ namespace BC.Gimmick.ConditionDrivenColliderObject
 
         private MaterialPropertyBlock propertyBlock;
         private ReactiveBoolBinding conditionBinding;
-        private ReactiveValueResolverService fallbackReactiveResolver;
+        private ReactiveValueResolverService reactiveResolver;
         private SceneKernel sceneKernel;
         private EntityMB selfEntityMB;
         private Color[] rendererBaseColors = Array.Empty<Color>();
         private bool hasAppliedState;
+        private bool hasLoggedConditionReadFailure;
 
         public bool ConditionReadSucceeded => conditionReadSucceeded;
         public bool CurrentConditionValue => currentConditionValue;
@@ -122,20 +123,17 @@ namespace BC.Gimmick.ConditionDrivenColliderObject
 
             if (selfEntityMB == null)
                 selfEntityMB = GetComponentInParent<EntityMB>();
-
-            fallbackReactiveResolver ??= new ReactiveValueResolverService(null);
         }
 
         private void RebuildConditionBinding()
         {
             DisposeConditionBinding();
-
-            ReactiveValueResolverService resolver = sceneKernel != null && sceneKernel.ReactiveValues != null
+            reactiveResolver = sceneKernel != null && sceneKernel.ReactiveValues != null
                 ? sceneKernel.ReactiveValues
-                : fallbackReactiveResolver;
+                : new ReactiveValueResolverService(sceneKernel);
 
             conditionBinding = new ReactiveBoolBinding(
-                resolver,
+                reactiveResolver,
                 BuildReactiveEvalContext(),
                 condition,
                 ResolveEvaluationMode(),
@@ -147,6 +145,7 @@ namespace BC.Gimmick.ConditionDrivenColliderObject
             if (conditionBinding == null)
             {
                 conditionReadSucceeded = false;
+                ApplyConditionReadFailure(force);
                 return;
             }
 
@@ -154,12 +153,38 @@ namespace BC.Gimmick.ConditionDrivenColliderObject
             conditionReadSucceeded = result.Success;
 
             if (!result.Success)
+            {
+                ApplyConditionReadFailure(force, result.Error.Message);
                 return;
+            }
+
+            hasLoggedConditionReadFailure = false;
 
             currentConditionValue = result.Value;
             bool nextColliderEnabled = enableColliderWhenConditionTrue
                 ? currentConditionValue
                 : !currentConditionValue;
+
+            if (!force && hasAppliedState && currentColliderEnabled == nextColliderEnabled)
+                return;
+
+            currentColliderEnabled = nextColliderEnabled;
+            ApplyColliderState(currentColliderEnabled);
+            ApplyVisualState(currentColliderEnabled);
+            hasAppliedState = true;
+        }
+
+        private void ApplyConditionReadFailure(bool force, string failureReason = null)
+        {
+            currentConditionValue = false;
+            bool nextColliderEnabled = false;
+
+            if (!hasLoggedConditionReadFailure)
+            {
+                string reason = string.IsNullOrWhiteSpace(failureReason) ? "Condition read failed." : failureReason;
+                Debug.LogError($"{nameof(ConditionDrivenColliderObjectMB)}: {reason}", this);
+                hasLoggedConditionReadFailure = true;
+            }
 
             if (!force && hasAppliedState && currentColliderEnabled == nextColliderEnabled)
                 return;

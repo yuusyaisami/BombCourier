@@ -4,6 +4,7 @@ using BC.ActionSystem;
 using BC.Audio;
 using BC.Base;
 using BC.Bomb;
+using BC.Stage;
 using BC.Utility;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace BC.Gimmick.ExplosionResponseObject
     }
 
     [DisallowMultipleComponent]
-    public sealed class ExplosionResponseObjectMB : MonoBehaviour, IExplosionImpactReceiver, IBombImpactReceiver
+    public sealed class ExplosionResponseObjectMB : MonoBehaviour, IExplosionImpactReceiver, IBombImpactReceiver, IStageCheckpointParticipant
     {
         [Header("Impact")]
         [Tooltip("この値以上の爆風を受けた時だけ反応します。")]
@@ -58,6 +59,9 @@ namespace BC.Gimmick.ExplosionResponseObject
         private MaterialPropertyBlock propertyBlock;
         private EntityMB selfEntityMB;
         private Coroutine timerCoroutine;
+        private float timerEndTime;
+        private float pendingRestoreTimerRemaining;
+        private bool suppressNextEnableReset;
 
         public bool IsActive => isActive;
         public float LastImpactForce => lastImpactForce;
@@ -84,6 +88,19 @@ namespace BC.Gimmick.ExplosionResponseObject
                 return;
 
             ResolveReferences();
+
+            if (suppressNextEnableReset)
+            {
+                suppressNextEnableReset = false;
+                ApplyVisual();
+
+                if (pendingRestoreTimerRemaining > 0f && UsesTimerMode && isActive)
+                    StartTimerWithDuration(pendingRestoreTimerRemaining);
+
+                pendingRestoreTimerRemaining = 0f;
+                return;
+            }
+
             ResetRuntimeState();
         }
 
@@ -117,8 +134,7 @@ namespace BC.Gimmick.ExplosionResponseObject
             if (lastImpactForce < minimumImpactForce)
                 return;
 
-            if (explosionDetectedSound != null && explosionDetectedSound.Clip != null)
-                AudioSource.PlayClipAtPoint(explosionDetectedSound.Clip, transform.position, explosionDetectedSound.BaseVolume);
+            TryPlayExplosionDetectedSound();
 
             HandleImpact();
         }
@@ -157,6 +173,8 @@ namespace BC.Gimmick.ExplosionResponseObject
             StopTimer();
             isActive = false;
             lastImpactForce = 0f;
+            pendingRestoreTimerRemaining = 0f;
+            suppressNextEnableReset = false;
             ApplyVisual();
         }
 
@@ -165,34 +183,47 @@ namespace BC.Gimmick.ExplosionResponseObject
             if (isActive == nextActive)
                 return;
 
+            InlineAction inlineAction = nextActive ? onActivatedInlineAction : onDeactivatedInlineAction;
+            if (invokeActions && !CanExecuteInlineAction(inlineAction, nextActive, out string failureReason))
+            {
+                Debug.LogError($"{nameof(ExplosionResponseObjectMB)}: {failureReason}", this);
+                return;
+            }
+
             isActive = nextActive;
             ApplyVisual();
 
             if (!invokeActions)
                 return;
 
-            ExecuteInlineAction(isActive ? onActivatedInlineAction : onDeactivatedInlineAction);
+            ExecuteInlineAction(inlineAction, nextActive);
         }
 
         private void RestartTimer()
         {
-            StopTimer();
-            timerCoroutine = StartCoroutine(DeactivateAfterDelayCoroutine());
+            StartTimerWithDuration(activeDuration);
         }
 
         private void StopTimer()
         {
             if (timerCoroutine == null)
+            {
+                timerEndTime = 0f;
                 return;
+            }
 
             StopCoroutine(timerCoroutine);
             timerCoroutine = null;
+            timerEndTime = 0f;
         }
 
         private IEnumerator DeactivateAfterDelayCoroutine()
         {
-            yield return new WaitForSeconds(Mathf.Max(0.01f, activeDuration));
+            while (Time.time < timerEndTime)
+                yield return null;
+
             timerCoroutine = null;
+            timerEndTime = 0f;
             SetActiveState(false, invokeActions: true);
         }
 
@@ -220,30 +251,141 @@ namespace BC.Gimmick.ExplosionResponseObject
             }
         }
 
-        private void ExecuteInlineAction(InlineAction inlineAction)
+        private bool CanExecuteInlineAction(InlineAction inlineAction, bool nextActive, out string failureReason)
         {
+            failureReason = null;
             if (inlineAction == null)
-                return;
+                return true;
 
             ResolveReferences();
 
             if (selfEntityMB == null || !selfEntityMB.HasEntity)
             {
-                Debug.LogWarning($"{nameof(ExplosionResponseObjectMB)}: InlineAction was skipped because self Entity is not available.", this);
-                return;
+                failureReason = $"State transition to {(nextActive ? "On" : "Off")} requires a valid self Entity because an InlineAction is configured.";
+                return false;
             }
+
+            if (!InlineActionExecutionUtility.TryResolveSceneKernel(this, out SceneKernel resolvedKernel) || resolvedKernel.Actions == null)
+            {
+                failureReason = $"State transition to {(nextActive ? "On" : "Off")} requires SceneKernel.Actions, but it was not available.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ExecuteInlineAction(InlineAction inlineAction, bool nextActive)
+        {
+            if (inlineAction == null)
+                return;
 
             InlineActionExecutionUtility.ExecuteAndForget(
                 this,
                 selfEntityMB.Entity,
                 inlineAction,
                 default,
-                $"{nameof(ExplosionResponseObjectMB)}.{(isActive ? "On" : "Off")}");
+                $"{nameof(ExplosionResponseObjectMB)}.{(nextActive ? "On" : "Off")}");
+        }
+
+        private void TryPlayExplosionDetectedSound()
+        {
+            if (explosionDetectedSound == null || explosionDetectedSound.Clip == null)
+                return;
+
+            if (AudioSystemMB.Instance == null)
+            {
+                Debug.LogWarning($"{nameof(ExplosionResponseObjectMB)}: Explosion detected sound is configured but {nameof(AudioSystemMB)} is unavailable.", this);
+                return;
+            }
+
+            if (!AudioSystemMB.Instance.TryPlaySE(explosionDetectedSound))
+            {
+                Debug.LogWarning($"{nameof(ExplosionResponseObjectMB)}: Failed to play configured explosion detected sound '{explosionDetectedSound.Clip.name}'.", this);
+            }
         }
 
         private void EnsurePropertyBlock()
         {
             propertyBlock ??= new MaterialPropertyBlock();
+        }
+
+        public object CaptureCheckpointState()
+        {
+            return new ExplosionResponseCheckpointState(
+                isActive,
+                lastImpactForce,
+                UsesTimerMode ? GetRemainingTimerSeconds() : 0f);
+        }
+
+        public void RestoreCheckpointState(object state)
+        {
+            if (state is not ExplosionResponseCheckpointState checkpoint)
+                return;
+
+            StopTimer();
+
+            bool restoredActive = checkpoint.IsActive;
+            float restoredTimerRemaining = 0f;
+
+            if (UsesTimerMode)
+            {
+                restoredTimerRemaining = Mathf.Max(0f, checkpoint.TimerRemainingSeconds);
+                restoredActive = restoredActive && restoredTimerRemaining > 0f;
+            }
+
+            isActive = restoredActive;
+            lastImpactForce = Mathf.Max(0f, checkpoint.LastImpactForce);
+            ApplyVisual();
+
+            if (UsesTimerMode && restoredActive)
+            {
+                if (isActiveAndEnabled)
+                {
+                    StartTimerWithDuration(restoredTimerRemaining);
+                }
+                else
+                {
+                    suppressNextEnableReset = true;
+                    pendingRestoreTimerRemaining = restoredTimerRemaining;
+                }
+            }
+            else if (!isActiveAndEnabled)
+            {
+                suppressNextEnableReset = true;
+                pendingRestoreTimerRemaining = 0f;
+            }
+        }
+
+        private void StartTimerWithDuration(float duration)
+        {
+            StopTimer();
+
+            float clampedDuration = Mathf.Max(0.01f, duration);
+            timerEndTime = Time.time + clampedDuration;
+            timerCoroutine = StartCoroutine(DeactivateAfterDelayCoroutine());
+        }
+
+        private float GetRemainingTimerSeconds()
+        {
+            if (timerCoroutine == null || timerEndTime <= 0f)
+                return 0f;
+
+            return Mathf.Max(0f, timerEndTime - Time.time);
+        }
+
+        [Serializable]
+        private sealed class ExplosionResponseCheckpointState
+        {
+            public ExplosionResponseCheckpointState(bool isActive, float lastImpactForce, float timerRemainingSeconds)
+            {
+                IsActive = isActive;
+                LastImpactForce = lastImpactForce;
+                TimerRemainingSeconds = timerRemainingSeconds;
+            }
+
+            public bool IsActive { get; }
+            public float LastImpactForce { get; }
+            public float TimerRemainingSeconds { get; }
         }
     }
 }

@@ -106,6 +106,9 @@ namespace BC.Base
                 case CushionResponseKind.Stop:
                 case CushionResponseKind.StopAndAttach:
                 case CushionResponseKind.Dampen:
+                    if (!ShouldApplyStopLikeResponse(runtimeState))
+                        return default;
+
                     ApplyStop(runtimeState, groundedStickVelocity);
                     return new CushionApplyResult(true, false, false, Vector3.zero);
 
@@ -223,6 +226,15 @@ namespace BC.Base
             channels.Vertical = groundedStickVelocity;
             runtimeState.Velocity = channels;
             LogDebug($"ApplyStop vertical={channels.Vertical:F3} external={channels.External}");
+        }
+
+        private static bool ShouldApplyStopLikeResponse(EntityMoveRuntimeState runtimeState)
+        {
+            if (runtimeState == null)
+                return false;
+
+            // Stop/Dampen は着地遷移フレームだけに限定し、接地維持中の連続減速を防ぐ。
+            return runtimeState.IsGrounded && !runtimeState.WasGrounded;
         }
 
         private static void MarkBounceLaunchState(EntityMoveRuntimeState runtimeState, float currentTime, float coyoteTime)

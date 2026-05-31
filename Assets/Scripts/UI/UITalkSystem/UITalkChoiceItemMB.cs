@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using BC.UI.Effect;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -11,7 +12,7 @@ namespace BC.UI
     {
         [SerializeField] private Image backgroundImage;
         [SerializeField] private TextMeshProUGUI choiceText;
-        [SerializeField] private UIOutlineSystemMB outlineSystem;
+        [SerializeField] private UINoiseOutlineMB noiseOutline;
         [SerializeField, Range(0.1f, 1.0f)] private float unselectedBackgroundAlphaMultiplier = 0.55f;
 
         private RectTransform rectTransform;
@@ -54,9 +55,10 @@ namespace BC.UI
             ResolveReferences();
             EnsureRuntimeTemplateStructure(itemMinHeight);
 
-            if (outlineSystem != null)
+            if (noiseOutline != null)
             {
-                outlineSystem.Configure(backgroundImage, outlineColor, outlineDistance);
+                float outlineWidth = Mathf.Clamp(Mathf.Max(Mathf.Abs(outlineDistance.x), Mathf.Abs(outlineDistance.y)) * 0.01f, 0.01f, 0.12f);
+                noiseOutline.SetStyle(outlineColor, outlineWidth);
             }
 
             RefreshBasePresentation();
@@ -69,6 +71,7 @@ namespace BC.UI
 
             if (choiceText != null)
             {
+                NormalizeChoiceTextRectTransform();
                 choiceText.text = text ?? string.Empty;
             }
         }
@@ -82,9 +85,9 @@ namespace BC.UI
                 RefreshBasePresentation();
             }
 
-            if (outlineSystem != null)
+            if (noiseOutline != null)
             {
-                outlineSystem.SetHighlighted(isSelected);
+                noiseOutline.SetFocused(isSelected);
             }
 
             if (backgroundImage != null)
@@ -141,7 +144,11 @@ namespace BC.UI
             layoutElement ??= GetComponent<LayoutElement>();
             backgroundImage ??= GetComponent<Image>();
             choiceText ??= GetComponentInChildren<TextMeshProUGUI>(true);
-            outlineSystem ??= GetComponent<UIOutlineSystemMB>();
+            noiseOutline ??= GetComponent<UINoiseOutlineMB>();
+
+            UIOutlineSystemMB legacyOutline = GetComponent<UIOutlineSystemMB>();
+            if (legacyOutline != null)
+                legacyOutline.enabled = false;
         }
 
         private void RefreshBasePresentation()
@@ -188,11 +195,7 @@ namespace BC.UI
                 choiceText = textObject.GetComponent<TextMeshProUGUI>();
             }
 
-            RectTransform textRect = choiceText.rectTransform;
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(18f, 8f);
-            textRect.offsetMax = new Vector2(-18f, -8f);
+            NormalizeChoiceTextRectTransform();
 
             choiceText.fontSize = 28f;
             choiceText.alignment = TextAlignmentOptions.MidlineLeft;
@@ -201,10 +204,32 @@ namespace BC.UI
             choiceText.color = Color.white;
             choiceText.raycastTarget = false;
 
-            if (outlineSystem == null)
+            if (noiseOutline == null)
             {
-                outlineSystem = gameObject.GetComponent<UIOutlineSystemMB>() ?? gameObject.AddComponent<UIOutlineSystemMB>();
+                noiseOutline = gameObject.GetComponent<UINoiseOutlineMB>() ?? gameObject.AddComponent<UINoiseOutlineMB>();
             }
+        }
+
+        private void NormalizeChoiceTextRectTransform()
+        {
+            if (choiceText == null)
+                return;
+
+            ContentSizeFitter textFitter = choiceText.GetComponent<ContentSizeFitter>();
+            if (textFitter != null)
+                textFitter.enabled = false;
+
+            LayoutElement textLayout = choiceText.GetComponent<LayoutElement>();
+            if (textLayout != null)
+                textLayout.ignoreLayout = true;
+
+            RectTransform textRect = choiceText.rectTransform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.pivot = new Vector2(0.5f, 0.5f);
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+            textRect.localScale = Vector3.one;
         }
     }
 }

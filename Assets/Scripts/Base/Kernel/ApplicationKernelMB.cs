@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace BC.Base
 {
+    [DefaultExecutionOrder(-10000)]
     public class ApplicationKernelMB : MonoBehaviour
     {
         public static ApplicationKernelMB Instance { get; private set; }
@@ -21,6 +22,7 @@ namespace BC.Base
 
             KernelBuilder kernelBuilder = new KernelBuilder();
             kernel = kernelBuilder.Build<ApplicationKernel>(targetObjects.ToArray());
+            EnsureCoreServices();
         }
 
         private void Update()
@@ -35,6 +37,21 @@ namespace BC.Base
 
             if (Instance == this)
                 Instance = null;
+        }
+
+        private void EnsureCoreServices()
+        {
+            if (kernel == null)
+            {
+                Debug.LogError($"{nameof(ApplicationKernelMB)}: failed to build {nameof(ApplicationKernel)}.", this);
+                return;
+            }
+
+            if (kernel.KernelValueStore == null)
+            {
+                kernel.KernelValueStore = new KernelValueStoreService();
+                Debug.LogWarning($"{nameof(ApplicationKernelMB)}: {nameof(ApplicationKernel.KernelValueStore)} was not installed. Auto-created fallback store. Add {nameof(ValueStoreMB)} to targetObjects for explicit wiring.", this);
+            }
         }
     }
 }

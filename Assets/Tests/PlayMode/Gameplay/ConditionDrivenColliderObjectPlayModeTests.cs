@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -79,6 +80,29 @@ namespace BC.Gameplay.PlayModeTests
             AssertPropertyBlockAlpha(renderer, 0.3f);
         }
 
+        [Test]
+        public void MissingKernelForKernelValueCondition_FailsClosed()
+        {
+            GameObject gameObject = CreateCube("ConditionColliderKernelFailure");
+            Collider collider = gameObject.GetComponent<Collider>();
+            Renderer renderer = gameObject.GetComponent<Renderer>();
+            Component target = gameObject.AddComponent(FindRuntimeType(ConditionDrivenColliderObjectTypeName));
+
+            SetPrivateField(target, "targetColliders", new[] { collider });
+            SetPrivateField(target, "targetRenderers", new[] { renderer });
+            SetPrivateField(target, "condition", BuildKernelReactiveBool());
+            SetPrivateField(target, "enableColliderWhenConditionTrue", true);
+            SetPrivateField(target, "enabledAlpha", 1f);
+            SetPrivateField(target, "disabledAlpha", 0.2f);
+
+            LogAssert.Expect(LogType.Error, new Regex("ConditionDrivenColliderObjectMB"));
+            InvokeMethod(target, "OnValidate");
+
+            Assert.IsFalse(collider.enabled, "Kernel-backed condition without SceneKernel should fail closed.");
+            Assert.IsFalse(GetPropertyValue<bool>(target, "ConditionReadSucceeded"), "Condition read should be reported as failed.");
+            AssertPropertyBlockAlpha(renderer, 0.2f);
+        }
+
         private void ConfigureTarget(
             Component target,
             Collider collider,
@@ -101,6 +125,14 @@ namespace BC.Gameplay.PlayModeTests
         {
             object evaluationMode = ParseEnumValue(ReactiveEvaluationModeTypeName, "Snapshot");
             return InvokeStaticMethod(ReactiveBoolTypeName, "LiteralValue", value, evaluationMode);
+        }
+
+        private static object BuildKernelReactiveBool()
+        {
+            object boolKey = GetStaticFieldValue("BC.Base.ValueKeys+Kernel+Gimmick", "GlobalEnabled");
+            object keyReference = InvokeGenericStaticMethod("BC.Base.ValueKeyReference", "From", typeof(bool), boolKey);
+            object evaluationMode = ParseEnumValue(ReactiveEvaluationModeTypeName, "Watched");
+            return InvokeStaticMethod(ReactiveBoolTypeName, "KernelValueStore", keyReference, evaluationMode);
         }
 
         private GameObject CreateCube(string name)
@@ -152,12 +184,45 @@ namespace BC.Gameplay.PlayModeTests
             method.Invoke(target, args);
         }
 
+        private static T GetPropertyValue<T>(object target, string propertyName)
+        {
+            PropertyInfo property = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(property, $"Expected property on {target.GetType().Name}: {propertyName}");
+            return (T)property.GetValue(target);
+        }
+
+        private static object GetStaticFieldValue(string fullTypeName, string fieldName)
+        {
+            Type type = FindRuntimeType(fullTypeName);
+            FieldInfo field = type.GetField(fieldName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, $"Expected static field: {fullTypeName}.{fieldName}");
+            return field.GetValue(null);
+        }
+
         private static object InvokeStaticMethod(string fullTypeName, string methodName, params object[] args)
         {
             Type type = FindRuntimeType(fullTypeName);
             MethodInfo method = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.IsNotNull(method, $"Expected static method: {fullTypeName}.{methodName}");
             return method.Invoke(null, args);
+        }
+
+        private static object InvokeGenericStaticMethod(string fullTypeName, string methodName, Type genericType, params object[] args)
+        {
+            Type type = FindRuntimeType(fullTypeName);
+            MethodInfo[] methods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            for (int i = 0; i < methods.Length; i++)
+            {
+                MethodInfo method = methods[i];
+                if (method.Name != methodName || !method.IsGenericMethodDefinition)
+                    continue;
+
+                MethodInfo closedMethod = method.MakeGenericMethod(genericType);
+                return closedMethod.Invoke(null, args);
+            }
+
+            Assert.Fail($"Expected generic static method: {fullTypeName}.{methodName}<{genericType.Name}>");
+            return null;
         }
     }
 }

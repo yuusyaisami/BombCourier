@@ -19,9 +19,8 @@ namespace BC.Base
             if (kernel is SceneKernel sceneKernel)
             {
                 entityValueStore = new ValueStoreService();
-                kernelValueStore = new KernelValueStoreService();
                 sceneKernel.EntityValueStore = entityValueStore;
-                sceneKernel.KernelValueStore = kernelValueStore;
+                kernelValueStore = null;
             }
             else if (kernel is ApplicationKernel applicationKernel)
             {

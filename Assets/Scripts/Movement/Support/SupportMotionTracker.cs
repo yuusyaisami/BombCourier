@@ -4,6 +4,8 @@ namespace BC.Base
 {
     public sealed class SupportMotionTracker
     {
+        private const float MinSupportDeltaSqr = 0.00000025f;
+
         private Transform currentPlatform;
         private Vector3 lastPlatformPosition;
         private Quaternion lastPlatformRotation;
@@ -74,6 +76,8 @@ namespace BC.Base
                 if (Quaternion.Angle(supportMotion.SourceRotationDelta, Quaternion.identity) <= platformCarryRotationDeadZoneDegrees)
                     stabilizedDelta = supportMotion.SourcePositionDelta;
 
+                stabilizedDelta = SanitizeSupportDelta(stabilizedDelta);
+
                 PlatformDelta = stabilizedDelta;
                 if (dt > 0.0f)
                     runtimeState.PlatformVelocity = stabilizedDelta / dt;
@@ -92,7 +96,7 @@ namespace BC.Base
                 Vector3 rotatedOffset = rotationDelta * playerOffsetFromPlatform;
                 Vector3 rotationMovementDelta = rotatedOffset - playerOffsetFromPlatform;
 
-                PlatformDelta = positionDelta + rotationMovementDelta;
+                PlatformDelta = SanitizeSupportDelta(positionDelta + rotationMovementDelta);
 
                 if (dt > 0.0f)
                     runtimeState.PlatformVelocity = PlatformDelta / dt;
@@ -195,6 +199,14 @@ namespace BC.Base
             support.LastPlatformRotation = lastPlatformRotation;
 
             runtimeState.Support = support;
+        }
+
+        private static Vector3 SanitizeSupportDelta(Vector3 delta)
+        {
+            if (!float.IsFinite(delta.x) || !float.IsFinite(delta.y) || !float.IsFinite(delta.z))
+                return Vector3.zero;
+
+            return delta.sqrMagnitude >= MinSupportDeltaSqr ? delta : Vector3.zero;
         }
     }
 }

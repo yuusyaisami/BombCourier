@@ -2,6 +2,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 namespace BC.UI.Title
 {
@@ -23,7 +24,7 @@ namespace BC.UI.Title
         // Page1: items[0..7], Page2: items[8..11]
         // 外部から UIStageSelectPageMB が設定する。
         private UIStageSelectItemMB[] items;
-        private int                   focusedIndex = 0;
+        private int focusedIndex = 0;
 
         // Navigate アクション参照
         private InputAction navigateAction;
@@ -38,17 +39,25 @@ namespace BC.UI.Title
         private void OnEnable()
         {
             navigateAction = InputSystem.actions?.FindAction("UI/Navigate");
-            submitAction   = InputSystem.actions?.FindAction("UI/Submit");
-            cancelAction   = InputSystem.actions?.FindAction("UI/Cancel");
+            submitAction = InputSystem.actions?.FindAction("UI/Submit");
+            cancelAction = InputSystem.actions?.FindAction("UI/Cancel");
 
             if (navigateAction != null) navigateAction.performed += OnNavigate;
-            if (cancelAction   != null) cancelAction.performed   += OnCancel;
+            if (cancelAction != null) cancelAction.performed += OnCancel;
         }
 
         private void OnDisable()
         {
             if (navigateAction != null) navigateAction.performed -= OnNavigate;
-            if (cancelAction   != null) cancelAction.performed   -= OnCancel;
+            if (cancelAction != null) cancelAction.performed -= OnCancel;
+        }
+
+        private void Update()
+        {
+            if (stageSelectPage == null || !stageSelectPage.IsShowing)
+                return;
+
+            SyncFocusWithEventSystemSelection();
         }
 
         /// <summary>外部からフォーカスを設定する（ページ切り替え時など）。</summary>
@@ -56,11 +65,24 @@ namespace BC.UI.Title
         {
             if (items == null || index < 0 || index >= items.Length) return;
 
-            if (focusedIndex >= 0 && focusedIndex < items.Length)
-                items[focusedIndex]?.SetFocused(false);
+            if (items[index] == null || !items[index].CanReceiveNavigationFocus())
+                return;
 
             focusedIndex = index;
-            items[focusedIndex]?.SetFocused(true);
+
+            // 常に 1 件だけ focused を有効にして、表示ズレを自己修復する。
+            for (int i = 0; i < items.Length; i++)
+            {
+                UIStageSelectItemMB item = items[i];
+                if (item == null)
+                    continue;
+
+                item.SetFocused(i == focusedIndex);
+            }
+
+            GameObject selectionObject = items[focusedIndex].GetSelectionObject();
+            if (selectionObject != null && EventSystem.current != null && EventSystem.current.currentSelectedGameObject != selectionObject)
+                EventSystem.current?.SetSelectedGameObject(selectionObject);
         }
 
         private void OnNavigate(InputAction.CallbackContext ctx)
@@ -71,10 +93,10 @@ namespace BC.UI.Title
 
             int dx = 0;
             int dy = 0;
-            if (dir.x >  0.5f) dx =  1;
+            if (dir.x > 0.5f) dx = 1;
             if (dir.x < -0.5f) dx = -1;
-            if (dir.y >  0.5f) dy = -1; // UI では Y 軸反転 (上=前の行)
-            if (dir.y < -0.5f) dy =  1;
+            if (dir.y > 0.5f) dy = -1; // UI では Y 軸反転 (上=前の行)
+            if (dir.y < -0.5f) dy = 1;
 
             if (dx == 0 && dy == 0) return;
 
@@ -84,16 +106,16 @@ namespace BC.UI.Title
         private void OnCancel(InputAction.CallbackContext ctx)
         {
             if (stageSelectPage == null || !stageSelectPage.IsShowing) return;
-            TitleSceneManagerMB.Instance?.GoToMainPageAsync(stageSelectPage.destroyCancellationToken).Forget();
+            TitleSceneManagerMB.Instance?.GoToMainPageAsync(false, stageSelectPage.destroyCancellationToken).Forget();
         }
 
         private void MoveFocus(int dx, int dy)
         {
             if (items == null || items.Length == 0) return;
 
-            int current   = focusedIndex;
+            int current = focusedIndex;
             int page1Count = 8; // Page1 は index 0-7
-            int rowSize    = 4; // 1 行あたり 4 ステージ
+            int rowSize = 4; // 1 行あたり 4 ステージ
 
             int next = current;
 
@@ -110,9 +132,12 @@ namespace BC.UI.Title
 
             if (next == current) return;
 
+            if (items[next] == null || !items[next].CanReceiveNavigationFocus())
+                return;
+
             // ページをまたぐかどうか
             int currentPage = (current < page1Count) ? 0 : 1;
-            int nextPage    = (next    < page1Count) ? 0 : 1;
+            int nextPage = (next < page1Count) ? 0 : 1;
 
             if (nextPage != currentPage)
             {
@@ -141,16 +166,16 @@ namespace BC.UI.Title
             // Page1 下段 (4-7)
             if (current < page1Count)
             {
-                int rowIndex  = current - rowSize; // 0-3
+                int rowIndex = current - rowSize; // 0-3
                 int candidate = rowIndex + dx;
                 if (candidate >= 0 && candidate < rowSize) return current - rowSize + (rowIndex + dx); // 同行内
                 if (dx > 0 && rowIndex == rowSize - 1) return page1Count; // 下段右端 → Page2 先頭 (8)
-                if (dx < 0 && rowIndex == 0)           return current - rowSize; // 下段左端 → 上段右端 (3)
+                if (dx < 0 && rowIndex == 0) return current - rowSize; // 下段左端 → 上段右端 (3)
                 return current;
             }
             // Page2 (8-11): 1 行 4 ステージ
             {
-                int rowIndex  = current - page1Count; // 0-3
+                int rowIndex = current - page1Count; // 0-3
                 int candidate = rowIndex + dx;
                 if (candidate >= 0 && candidate < rowSize)
                     return page1Count + candidate;
@@ -171,6 +196,35 @@ namespace BC.UI.Title
                 return current - rowSize;
 
             return current; // Page2 は 1 行のみなので縦移動なし
+        }
+
+        private void SyncFocusWithEventSystemSelection()
+        {
+            if (items == null || items.Length == 0)
+                return;
+
+            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            if (selected == null)
+                return;
+
+            int selectedIndex = -1;
+            for (int i = 0; i < items.Length; i++)
+            {
+                UIStageSelectItemMB item = items[i];
+                if (item == null)
+                    continue;
+
+                if (item.IsSelectionTarget(selected))
+                {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+
+            if (selectedIndex < 0 || selectedIndex == focusedIndex)
+                return;
+
+            SetFocus(selectedIndex);
         }
     }
 }

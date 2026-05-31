@@ -41,8 +41,18 @@ namespace BC.UI.Title
         /// <summary>インデックス <paramref name="stageIndex"/> が遊べる状態かどうかを返す。</summary>
         public bool IsUnlocked(int stageIndex)
         {
-            if (stageIndex <= 0) return true;
-            return IsCleared(stageIndex - 1);
+            return IsUnlockedPersisted(stageIndex);
+        }
+
+        public static bool IsUnlockedPersisted(int stageIndex)
+        {
+            if (stageIndex <= 0)
+                return true;
+
+            if (IsClearedPersisted(stageIndex))
+                return true;
+
+            return IsClearedPersisted(stageIndex - 1);
         }
 
         /// <summary>インデックス <paramref name="stageIndex"/> をクリア済みとしてマークする。</summary>

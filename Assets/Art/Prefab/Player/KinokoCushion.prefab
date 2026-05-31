@@ -144,6 +144,7 @@ GameObject:
   - component: {fileID: 2469909993995623199}
   - component: {fileID: 2873683816355028704}
   - component: {fileID: 2912906091872981857}
+  - component: {fileID: 1861436779119421875}
   m_Layer: 6
   m_Name: KinokoCushion
   m_TagString: Untagged
@@ -265,13 +266,15 @@ MonoBehaviour:
   - id: 1001
     path: Actor.Player
   bounceRate: 1
-  minBounceSpeed: 6
-  maxBounceSpeed: 15
+  minBounceSpeed: 8
+  maxBounceSpeed: 21
   convergenceBounceSpeed: 8
   minBounceOutputSpeedToApply: 0.1
-  highJumpSpeedMultiplier: 1.5
+  highJumpSpeedMultiplier: 1.25
   bounceDirectionMode: 4
   customLocalDirection: {x: 0, y: 1, z: 0}
+  enableIncomingLateralBoost: 1
+  incomingLateralBoostMultiplier: 1.25
   attachWhenStopped: 0
   defaultRetainedVelocityRate: 0
   stopDampenRules: []
@@ -281,6 +284,7 @@ MonoBehaviour:
   hardLandingTargetTags:
   - id: 1001
     path: Actor.Player
+  contactSound: {fileID: 0}
   enableDebugLog: 1
 --- !u!114 &2469909993995623199
 MonoBehaviour:
@@ -343,6 +347,22 @@ MonoBehaviour:
   carryVelocityRate: 1
   maxCarryCorrectionSpeed: 30
   maxSupportVelocity: 30
+--- !u!114 &1861436779119421875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9025351276914114289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95d106de869059f46ba96319f276b075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageSaveMarkMB
+  excludeFromCheckpoint: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
 --- !u!1001 &7242170216207396790
 PrefabInstance:
   m_ObjectHideFlags: 0

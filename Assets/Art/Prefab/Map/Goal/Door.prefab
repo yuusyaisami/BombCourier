@@ -80,16 +80,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   breakEffectPrefab: {fileID: 4989894487266487057, guid: 09269a72c9595864a9157f15df20b2fb, type: 3}
   breakableParts: []
-  breakForceThreshold: 75
-  explosionForce: 75
+  autoCollectChildRigidbodies: 0
+  maxBreakablePartsToActivate: -1
+  breakForceThreshold: 8
+  explosionForce: 50
+  partCollisionEnableDelay: 0.08
+  breakStabilizeDuration: 0.75
+  maxPartLinearSpeed: 8
+  maxPartAngularSpeed: 20
+  maxPartDepenetrationVelocity: 2
   breakForceDirection: {x: 0, y: 0, z: -1}
   breakForceOrigin: {fileID: 7655586845378971903}
   gateCollider: {fileID: 5153736989679382581}
+  breakSound: {fileID: 0}
   isGoalGate: 1
   goalTriggerObject: {fileID: 0}
   goalData:
     goalCamera: {fileID: 0}
     playerTargetPoint: {x: 0, y: 0.24, z: -12.29}
+    isFinalGoal: 0
     goalTransform: {fileID: 5618781822411319641}
 --- !u!1 &1194373109275258776
 GameObject:

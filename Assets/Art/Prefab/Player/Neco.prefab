@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d1fa00a87f2e25418c6fa8688bd5951, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Animation.EntityAnimationMB
-  animator: {fileID: 0}
+  animator: {fileID: 4803211242956961869}
 --- !u!114 &1442804711417625640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,8 +183,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fccd8195db1499247b59d788972164d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Managers.TalkAdapterMB
-  entityMB: {fileID: 5365470571069668383, guid: d363be833c43a174582360160d17b393, type: 3}
-  entityAnimation: {fileID: 3904174564077437625, guid: d363be833c43a174582360160d17b393, type: 3}
+  entityMB: {fileID: 5365470571069668383}
+  entityAnimation: {fileID: 3904174564077437625}
   sceneKernelMB: {fileID: 0}
   characterId:
     id: 2004
@@ -327,6 +327,7 @@ MonoBehaviour:
     applyNonTalkingShapeExpression: 1
     nonTalkingShapeExpressionId: 10
     restoreStateShapeExpressionOnStop: 1
+  talkCharacterSound: {fileID: 11400000, guid: f9bbef9750f9d984c8665f1f73565088, type: 2}
 --- !u!136 &2584835043207313473
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -370,7 +371,7 @@ MonoBehaviour:
   suspendWhileNpcInteractionActive: 1
   maxTrackingDistance: 4
   maxTrackingAngle: 75
-  targetWorldOffset: {x: 0, y: 1.25, z: 0}
+  targetWorldOffset: {x: 0, y: 0.8, z: 0}
   turnSharpness: 10
   maxYawAngle: 40
   upPitchAngle: 25
@@ -806,6 +807,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 0983e0b68f8c4ab4585d4b2e2777e36e, type: 2}
+    - target: {fileID: 5866666021909216657, guid: d6b408579f512184b8ea767f1ad620b0, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: b940037412fbcfc469dfff548f9d2809, type: 2}
     - target: {fileID: 6095549738645645947, guid: d6b408579f512184b8ea767f1ad620b0, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -832,6 +837,11 @@ Transform:
 --- !u!4 &1550788293509552537 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 452465768997887045, guid: d6b408579f512184b8ea767f1ad620b0, type: 3}
+  m_PrefabInstance: {fileID: 1423975880104609244}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &4803211242956961869 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: d6b408579f512184b8ea767f1ad620b0, type: 3}
   m_PrefabInstance: {fileID: 1423975880104609244}
   m_PrefabAsset: {fileID: 0}
 --- !u!137 &5140090096660180903 stripped

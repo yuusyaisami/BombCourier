@@ -17,8 +17,17 @@ namespace BC.Gameplay.PlayModeTests
         private const string StageCheckpointServiceTypeName = "BC.Stage.StageCheckpointServiceMB";
         private const string StageSaveMarkTypeName = "BC.Stage.StageSaveMarkMB";
         private const string PlayerTypeName = "BC.Base.PlayerMB";
+        private const string EntityTypeName = "BC.Base.EntityMB";
+        private const string EntityMoveMotorTypeName = "BC.Base.EntityMoveMotorMB";
+        private const string PlayerMoveControllerTypeName = "BC.Base.PlayerMoveController";
+        private const string PlayerItemHandleStateTypeName = "BC.Player.PlayerItemHandleStateMB";
         private const string BombTypeName = "BC.Bomb.BombMB";
+        private const string CarryableObjectTypeName = "BC.Item.CarryableObjectMB";
         private const string GameStateTypeName = "BC.Manager.GameState";
+        private const string SceneKernelTypeName = "BC.Base.SceneKernel";
+        private const string ValueStoreServiceTypeName = "BC.Base.ValueStoreService";
+        private const string EntityRefTypeName = "BC.Base.EntityRef";
+        private const string ManualSnapshotBlockReasonTypeName = "BC.Manager.ManualSnapshotBlockReason";
 
         private readonly List<UnityEngine.Object> createdObjects = new();
 
@@ -108,6 +117,88 @@ namespace BC.Gameplay.PlayModeTests
             Assert.AreEqual("Reload", GetPropertyValue<object>(fixture.GameStateManager, "CurrentState").ToString());
         }
 
+        [UnityTest]
+        public IEnumerator ManualSnapshot_StacksBelowBombPickupRetry_AndIsConsumedByReload()
+        {
+            RetryFixture fixture = CreateFixture();
+            SetGameState(fixture.GameStateManager, "SetupPlaying");
+
+            fixture.Player.transform.position = new Vector3(10f, 0f, 0f);
+            bool manualCaptureSucceeded = (bool)InvokeMethod(fixture.GameLogicManager, "TryCaptureManualSnapshot");
+            Assert.IsTrue(manualCaptureSucceeded, "Manual snapshot should capture in stable SetupPlaying state.");
+            Assert.IsTrue(GetPropertyValue<bool>(fixture.GameLogicManager, "HasManualSnapshotBase"));
+
+            fixture.Player.transform.position = new Vector3(20f, 0f, 0f);
+            InvokeMethod(fixture.GameLogicManager, "CaptureRetryCheckpointBeforeBombPickup", fixture.BombB);
+
+            fixture.Player.transform.position = new Vector3(99f, 0f, 0f);
+            InvokeMethod(fixture.GameLogicManager, "OnStageChanged", ParseGameState("Reload"));
+            yield return null;
+
+            Assert.AreEqual(new Vector3(20f, 0f, 0f), fixture.Player.transform.position, "Latest bomb-pickup retry should be restored first.");
+            Assert.AreSame(fixture.BombB, GetPropertyValue<object>(fixture.GameLogicManager, "CurrentBomb"));
+            Assert.IsTrue(GetPropertyValue<bool>(fixture.GameLogicManager, "HasManualSnapshotBase"), "Manual base snapshot should remain after the upper retry entry is consumed.");
+
+            fixture.Player.transform.position = new Vector3(77f, 0f, 0f);
+            InvokeMethod(fixture.GameLogicManager, "OnStageChanged", ParseGameState("Reload"));
+            yield return null;
+
+            Assert.AreEqual(new Vector3(10f, 0f, 0f), fixture.Player.transform.position, "Second reload should return to the manual snapshot base.");
+            Assert.AreEqual("ResetStage", GetPropertyValue<object>(fixture.GameLogicManager, "CurrentRetryActionMode").ToString());
+            Assert.IsFalse(GetPropertyValue<bool>(fixture.GameLogicManager, "HasManualSnapshotBase"), "Manual base snapshot should also be pop-consumed after reload.");
+        }
+
+        [UnityTest]
+        public IEnumerator ManualSnapshot_RecaptureClearsExistingRetryHistory()
+        {
+            RetryFixture fixture = CreateFixture();
+            SetGameState(fixture.GameStateManager, "SetupPlaying");
+
+            fixture.Player.transform.position = new Vector3(1f, 0f, 0f);
+            Assert.IsTrue((bool)InvokeMethod(fixture.GameLogicManager, "TryCaptureManualSnapshot"));
+
+            fixture.Player.transform.position = new Vector3(2f, 0f, 0f);
+            InvokeMethod(fixture.GameLogicManager, "CaptureRetryCheckpointBeforeBombPickup", fixture.BombB);
+
+            fixture.Player.transform.position = new Vector3(3f, 0f, 0f);
+            Assert.IsTrue((bool)InvokeMethod(fixture.GameLogicManager, "TryCaptureManualSnapshot"), "Recapturing the manual snapshot should replace the existing retry stack.");
+
+            fixture.Player.transform.position = new Vector3(88f, 0f, 0f);
+            InvokeMethod(fixture.GameLogicManager, "OnStageChanged", ParseGameState("Reload"));
+            yield return null;
+
+            Assert.AreEqual(new Vector3(3f, 0f, 0f), fixture.Player.transform.position, "Recaptured manual snapshot should become the only remaining retry base.");
+            Assert.AreEqual("ResetStage", GetPropertyValue<object>(fixture.GameLogicManager, "CurrentRetryActionMode").ToString());
+            Assert.IsFalse(GetPropertyValue<bool>(fixture.GameLogicManager, "HasManualSnapshotBase"));
+        }
+
+        [Test]
+        public void ManualSnapshotAvailability_BlocksHoldingItemAndBombHistory()
+        {
+            RetryFixture fixture = CreateFixture();
+            SetGameState(fixture.GameStateManager, "SetupPlaying");
+
+            object availability = InvokeMethod(fixture.GameLogicManager, "EvaluateManualSnapshotAvailability");
+            Assert.IsTrue(GetPropertyValue<bool>(availability, "CanCapture"));
+            Assert.IsTrue(GetPropertyValue<bool>(availability, "ShouldShowUi"));
+
+            Component carryable = CreateCarryable("HeldBox", fixture.StageRoot.transform, new Vector3(0f, 0.25f, 0f));
+            SetPrivateField(fixture.PlayerItemHandleState, "currentlyHandledItem", carryable);
+
+            availability = InvokeMethod(fixture.GameLogicManager, "EvaluateManualSnapshotAvailability");
+            Assert.IsFalse(GetPropertyValue<bool>(availability, "CanCapture"));
+            Assert.IsTrue(HasFlag(GetPropertyValue<object>(availability, "BlockReasons"), "HoldingItem"));
+            Assert.IsTrue(GetPropertyValue<bool>(availability, "ShouldShowUnavailableOverlay"));
+
+            SetPrivateField<object>(fixture.PlayerItemHandleState, "currentlyHandledItem", null);
+            SetPrivateField(fixture.GameLogicManager, "hasStartedAnyBombFuseThisStage", true);
+
+            availability = InvokeMethod(fixture.GameLogicManager, "EvaluateManualSnapshotAvailability");
+            Assert.IsFalse(GetPropertyValue<bool>(availability, "CanCapture"));
+            Assert.IsTrue(HasFlag(GetPropertyValue<object>(availability, "BlockReasons"), "BombStateDirty"));
+            Assert.IsTrue(GetPropertyValue<bool>(availability, "ShouldShowUnavailableOverlay"));
+        }
+
         [Test]
         public void AllSceneBombsExploded_EnablesResetRetryAction()
         {
@@ -153,12 +244,32 @@ namespace BC.Gameplay.PlayModeTests
 
             Component gameLogicManager = gameLogicObject.AddComponent(FindRuntimeType(GameLogicManagerTypeName));
             ForceSingletonInstance(gameLogicManager.GetType(), gameLogicManager);
+            Component gameLogicEntity = gameLogicObject.AddComponent(FindRuntimeType(EntityTypeName));
+            object gameLogicEntityRef = CreateEntityRef(100u);
+            InvokeMethod(gameLogicEntity, "Bind", gameLogicEntityRef);
+            SetPrivateField(gameLogicManager, "sceneKernel", CreateSceneKernel());
+            SetPrivateField(gameLogicManager, "gameLogicManagerRef", gameLogicEntityRef);
 
             GameObject playerObject = new GameObject("Player");
             playerObject.transform.SetParent(gameLogicObject.transform, false);
             createdObjects.Add(playerObject);
 
+            playerObject.AddComponent<Rigidbody>();
+            playerObject.AddComponent<CapsuleCollider>();
+            Component playerEntity = playerObject.AddComponent(FindRuntimeType(EntityTypeName));
+            object playerEntityRef = CreateEntityRef(200u);
+            InvokeMethod(playerEntity, "Bind", playerEntityRef);
+            Component moveMotor = playerObject.AddComponent(FindRuntimeType(EntityMoveMotorTypeName));
+            SetPrivateField(moveMotor, "currentCanMoveByInput", true);
+            Component playerMoveController = playerObject.AddComponent(FindRuntimeType(PlayerMoveControllerTypeName));
+            SetPrivateField(playerMoveController, "moveMotor", moveMotor);
+            Component playerItemHandleState = CreatePlayerItemHandleState(playerObject);
             Component player = playerObject.AddComponent(FindRuntimeType(PlayerTypeName));
+            SetPrivateField(player, "moveController", moveMotor);
+            SetPrivateField(player, "playerMoveController", playerMoveController);
+
+            SetPrivateField(gameLogicManager, "playerInstance", player);
+            SetPrivateField(gameLogicManager, "playerRef", playerEntityRef);
 
             Component bombA = CreateBomb("BombA", stageRootObject.transform, new Vector3(-1f, 0.5f, 0f));
             Component bombB = CreateBomb("BombB", stageRootObject.transform, new Vector3(1f, 0.5f, 0f));
@@ -166,13 +277,16 @@ namespace BC.Gameplay.PlayModeTests
 
             SetPrivateField(mapRuntime, "bombs", CreateTypedList(FindRuntimeType(BombTypeName), bombA, bombB));
             SetPrivateField(gameLogicManager, "currentMapRuntime", mapRuntime);
+            SetPrivateField(gameLogicManager, "currentBomb", bombA);
 
             return new RetryFixture
             {
                 GameLogicManager = gameLogicManager,
                 GameStateManager = gameStateManager,
                 StageManager = stageManager,
+                StageRoot = stageRootObject,
                 Player = (Component)player,
+                PlayerItemHandleState = playerItemHandleState,
                 BombA = bombA,
                 BombB = bombB,
             };
@@ -196,6 +310,56 @@ namespace BC.Gameplay.PlayModeTests
             bombObject.AddComponent(FindRuntimeType(StageSaveMarkTypeName));
             SetPrivateField(bomb, "startFuseOnHandle", false);
             return bomb;
+        }
+
+        private Component CreateCarryable(string name, Transform parent, Vector3 localPosition)
+        {
+            GameObject carryableObject = new GameObject(name);
+            carryableObject.transform.SetParent(parent, false);
+            carryableObject.transform.localPosition = localPosition;
+            createdObjects.Add(carryableObject);
+
+            carryableObject.AddComponent<BoxCollider>();
+            carryableObject.AddComponent<Rigidbody>();
+            return carryableObject.AddComponent(FindRuntimeType(CarryableObjectTypeName));
+        }
+
+        private Component CreatePlayerItemHandleState(GameObject playerObject)
+        {
+            GameObject handlePointObject = new GameObject("HandlePoint");
+            handlePointObject.transform.SetParent(playerObject.transform, false);
+            createdObjects.Add(handlePointObject);
+
+            GameObject playerModelObject = new GameObject("PlayerModel");
+            playerModelObject.transform.SetParent(playerObject.transform, false);
+            createdObjects.Add(playerModelObject);
+
+            Component handleState = playerObject.AddComponent(FindRuntimeType(PlayerItemHandleStateTypeName));
+            SetPrivateField(handleState, "handleItemPoint", handlePointObject.transform);
+            SetPrivateField(handleState, "playerModel", playerModelObject);
+            SetPrivateField(handleState, "currentCanInteract", true);
+            return handleState;
+        }
+
+        private static object CreateEntityRef(uint entityId)
+        {
+            return Activator.CreateInstance(FindRuntimeType(EntityRefTypeName), entityId, 1);
+        }
+
+        private static object CreateSceneKernel()
+        {
+            object sceneKernel = Activator.CreateInstance(FindRuntimeType(SceneKernelTypeName));
+            object valueStore = Activator.CreateInstance(FindRuntimeType(ValueStoreServiceTypeName));
+            PropertyInfo property = sceneKernel.GetType().GetProperty("ValueStore", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(property, "Expected SceneKernel.ValueStore property.");
+            property.SetValue(sceneKernel, valueStore);
+            return sceneKernel;
+        }
+
+        private static bool HasFlag(object enumValue, string flagName)
+        {
+            object parsedValue = Enum.Parse(FindRuntimeType(ManualSnapshotBlockReasonTypeName), flagName, ignoreCase: false);
+            return ((Enum)enumValue).HasFlag((Enum)parsedValue);
         }
 
         private static object ParseGameState(string stateName)
@@ -261,11 +425,11 @@ namespace BC.Gameplay.PlayModeTests
             return list;
         }
 
-        private static void InvokeMethod(object target, string methodName, params object[] args)
+        private static object InvokeMethod(object target, string methodName, params object[] args)
         {
             MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.IsNotNull(method, $"Expected method on {target.GetType().Name}: {methodName}");
-            method.Invoke(target, args);
+            return method.Invoke(target, args);
         }
 
         private sealed class RetryFixture
@@ -273,7 +437,9 @@ namespace BC.Gameplay.PlayModeTests
             public Component GameLogicManager { get; set; }
             public Component GameStateManager { get; set; }
             public Component StageManager { get; set; }
+            public GameObject StageRoot { get; set; }
             public Component Player { get; set; }
+            public Component PlayerItemHandleState { get; set; }
             public Component BombA { get; set; }
             public Component BombB { get; set; }
         }

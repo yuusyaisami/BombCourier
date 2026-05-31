@@ -171,6 +171,7 @@ namespace BC.Base
 
         private Vector3 preservedVelocityWhenLocked;
         private float nextCushionImpactTime;
+        private float lastHighJumpInputTime = -999.0f;
         private ValueModifierTagId? activeDeadMoveLockTag;
 
         public Vector3 PlanarVelocity => GetVelocityChannels().InputPlanar;
@@ -319,6 +320,7 @@ namespace BC.Base
 
                 if (jumpPressedThisFrame)
                 {
+                    lastHighJumpInputTime = Time.time;
                     runtimeState.JumpBufferCounter = jumpBufferTime;
                     return;
                 }
@@ -337,6 +339,7 @@ namespace BC.Base
             currentIntent.Clear();
             runtimeState.JumpBufferCounter = 0.0f;
             cushionHighJumpBuffer.Clear();
+            lastHighJumpInputTime = -999.0f;
         }
 
         // 通常時の移動更新。接地、足場、水平移動、垂直移動を順に処理する。
@@ -1227,7 +1230,13 @@ namespace BC.Base
         // 高跳びに使えるジャンプ入力が残っているか確認する。
         private bool HasBufferedHighJumpInput()
         {
-            return currentIntent.JumpHeld || runtimeState.JumpBufferCounter > 0.0f;
+            // 押しっぱなし(JumpHeld)だけでは高跳びを成立させない。
+            // 通常ジャンプ直後に同じ押しっぱなし入力で高跳びが重なる経路を防ぐため、
+            // 押下バッファが残っているときだけ有効とする。
+            if (runtimeState.JumpBufferCounter > 0.0f)
+                return true;
+
+            return Time.time - lastHighJumpInputTime <= jumpBufferTime;
         }
 
         // 高跳び用の入力を消費し、ジャンプ遷移へ進める。
@@ -1237,6 +1246,7 @@ namespace BC.Base
             runtimeState.JumpBufferCounter = 0.0f;
             runtimeState.LastGroundedTime = -999.0f;
             cushionHighJumpBuffer.Clear();
+            lastHighJumpInputTime = -999.0f;
             StateMachine.ChangeState(EntityMoveState.Jumping);
         }
 
@@ -1360,7 +1370,7 @@ namespace BC.Base
             RefreshMoveGateDebugValues();
             runtimeState.MoveState = MoveState;
 
-            if (!IsRuntimeReady || SceneKernel.ValueStore == null)
+            if (!IsRuntimeReady || SceneKernel == null || SceneKernel.ValueStore == null)
                 return;
 
             SceneKernel.ValueStore.Set(Entity, ValueKeys.Runtime.MoveState, MoveState);

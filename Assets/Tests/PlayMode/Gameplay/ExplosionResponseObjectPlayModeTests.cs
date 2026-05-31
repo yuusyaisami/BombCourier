@@ -12,6 +12,12 @@ namespace BC.Gameplay.PlayModeTests
     {
         private const string ExplosionResponseObjectTypeName = "BC.Gimmick.ExplosionResponseObject.ExplosionResponseObjectMB";
         private const string ExplosionResponseModeTypeName = "BC.Gimmick.ExplosionResponseObject.ExplosionResponseMode";
+        private const string ValueStoreServiceTypeName = "BC.Base.ValueStoreService";
+        private const string EntityIdAllocatorTypeName = "BC.Base.EntityIdAllocator";
+        private const string GameLogicSnapshotUtilityTypeName = "BC.Base.GameLogicValueStoreSnapshotUtility";
+        private const string ValueKeysGameLogicTalkTypeName = "BC.Base.ValueKeys+GameLogic+Talk";
+        private const string ValueKeysGameLogicInteractionTypeName = "BC.Base.ValueKeys+GameLogic+Interaction";
+        private const string ValueKeysRuntimeTypeName = "BC.Base.ValueKeys+Runtime";
 
         private readonly List<GameObject> createdObjects = new();
 
@@ -78,6 +84,58 @@ namespace BC.Gameplay.PlayModeTests
             Assert.AreEqual(1.0f, GetPropertyValue<float>(responseObject, "LastImpactForce"), 0.0001f, "LastImpactForce should still reflect the received explosion strength.");
         }
 
+        [UnityTest]
+        public IEnumerator CheckpointRestore_ReappliesActiveTimerState()
+        {
+            Component responseObject = CreateResponseObject("CheckpointResponse", "Timer", 0.12f, 0.0f);
+
+            InvokeMethod(responseObject, "OnExplosionImpactReceived", Vector3.forward, 1.0f);
+            object checkpoint = InvokeMethodWithResult(responseObject, "CaptureCheckpointState");
+
+            Assert.IsTrue(GetPropertyValue<bool>(responseObject, "IsActive"), "Timer mode should be active immediately after impact.");
+
+            yield return WaitUntilOrTimeout(
+                () => !GetPropertyValue<bool>(responseObject, "IsActive"),
+                0.3f,
+                "Timer mode did not switch off before checkpoint restore.");
+
+            InvokeMethod(responseObject, "RestoreCheckpointState", checkpoint);
+            Assert.IsTrue(GetPropertyValue<bool>(responseObject, "IsActive"), "Checkpoint restore should reactivate the saved Timer state.");
+
+            yield return WaitUntilOrTimeout(
+                () => !GetPropertyValue<bool>(responseObject, "IsActive"),
+                0.3f,
+                "Restored Timer state did not expire after the saved remaining duration.");
+        }
+
+        [Test]
+        public void GameLogicSnapshot_RestoresOnlyGameLogicKeys()
+        {
+            object store = Activator.CreateInstance(FindRuntimeType(ValueStoreServiceTypeName));
+            object allocator = Activator.CreateInstance(FindRuntimeType(EntityIdAllocatorTypeName));
+            object entity = InvokeMethodWithResult(allocator, "Allocate");
+            object talkCountKey = GetStaticFieldValue(ValueKeysGameLogicTalkTypeName, "TalkCount");
+            object isStateRedKey = GetStaticFieldValue(ValueKeysGameLogicInteractionTypeName, "IsStateRed");
+            object isDeadKey = GetStaticFieldValue(ValueKeysRuntimeTypeName, "IsDead");
+            Type snapshotUtilityType = FindRuntimeType(GameLogicSnapshotUtilityTypeName);
+
+            InvokeGenericMethod(store, "Set", typeof(int), entity, talkCountKey, 7);
+            InvokeGenericMethod(store, "Set", typeof(bool), entity, isStateRedKey, true);
+            InvokeGenericMethod(store, "Set", typeof(bool), entity, isDeadKey, false);
+
+            object snapshot = InvokeStaticMethodWithResult(snapshotUtilityType, "Capture", store, entity);
+
+            InvokeGenericMethod(store, "Set", typeof(int), entity, talkCountKey, 99);
+            InvokeGenericMethod(store, "Set", typeof(bool), entity, isStateRedKey, false);
+            InvokeGenericMethod(store, "Set", typeof(bool), entity, isDeadKey, true);
+
+            InvokeStaticMethod(snapshotUtilityType, "Restore", store, entity, snapshot);
+
+            Assert.AreEqual(7, InvokeGenericMethodWithResult(store, "Get", typeof(int), entity, talkCountKey), "GameLogic int values should be restored from the checkpoint snapshot.");
+            Assert.AreEqual(true, InvokeGenericMethodWithResult(store, "Get", typeof(bool), entity, isStateRedKey), "GameLogic bool values should be restored from the checkpoint snapshot.");
+            Assert.AreEqual(true, InvokeGenericMethodWithResult(store, "Get", typeof(bool), entity, isDeadKey), "Non-GameLogic values must not be overwritten by the snapshot restore.");
+        }
+
         private Component CreateResponseObject(string name, string modeName, float activeDuration, float minimumImpactForce)
         {
             GameObject gameObject = new GameObject(name);
@@ -130,6 +188,89 @@ namespace BC.Gameplay.PlayModeTests
             MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.IsNotNull(method, $"Expected method on {target.GetType().Name}: {methodName}");
             method.Invoke(target, args);
+        }
+
+        private static object InvokeMethodWithResult(object target, string methodName, params object[] args)
+        {
+            MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(method, $"Expected method on {target.GetType().Name}: {methodName}");
+            return method.Invoke(target, args);
+        }
+
+        private static void InvokeGenericMethod(object target, string methodName, Type genericType, params object[] args)
+        {
+            MethodInfo method = FindGenericMethod(target.GetType(), methodName, genericType, args);
+            Assert.IsNotNull(method, $"Expected generic method on {target.GetType().Name}: {methodName}<{genericType.Name}>");
+            method.Invoke(target, args);
+        }
+
+        private static object InvokeGenericMethodWithResult(object target, string methodName, Type genericType, params object[] args)
+        {
+            MethodInfo method = FindGenericMethod(target.GetType(), methodName, genericType, args);
+            Assert.IsNotNull(method, $"Expected generic method on {target.GetType().Name}: {methodName}<{genericType.Name}>");
+            return method.Invoke(target, args);
+        }
+
+        private static MethodInfo FindGenericMethod(Type targetType, string methodName, Type genericType, object[] args)
+        {
+            MethodInfo[] methods = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            for (int i = 0; i < methods.Length; i++)
+            {
+                MethodInfo method = methods[i];
+                if (method.Name != methodName || !method.IsGenericMethodDefinition)
+                    continue;
+
+                Type[] genericArgs = method.GetGenericArguments();
+                if (genericArgs.Length != 1)
+                    continue;
+
+                MethodInfo closedMethod = method.MakeGenericMethod(genericType);
+                ParameterInfo[] parameters = closedMethod.GetParameters();
+                if (parameters.Length != args.Length)
+                    continue;
+
+                bool matches = true;
+                for (int parameterIndex = 0; parameterIndex < parameters.Length; parameterIndex++)
+                {
+                    object argument = args[parameterIndex];
+                    if (argument == null)
+                        continue;
+
+                    if (!parameters[parameterIndex].ParameterType.IsInstanceOfType(argument))
+                    {
+                        matches = false;
+                        break;
+                    }
+                }
+
+                if (matches)
+                    return closedMethod;
+            }
+
+            return null;
+        }
+
+        private static object GetStaticFieldValue(string fullTypeName, string fieldName)
+        {
+            Type type = FindRuntimeType(fullTypeName);
+            FieldInfo field = type.GetField(fieldName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, $"Expected static field on {fullTypeName}: {fieldName}");
+            return field.GetValue(null);
+        }
+
+        private static void InvokeStaticMethod(Type targetType, string methodName, params object[] args)
+        {
+            MethodInfo method = targetType.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(method, $"Expected static method on {targetType.FullName}: {methodName}");
+            method.Invoke(null, args);
+        }
+
+        private static object InvokeStaticMethodWithResult(Type targetType, string methodName, params object[] args)
+        {
+            MethodInfo method = targetType.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(method, $"Expected static method on {targetType.FullName}: {methodName}");
+            return method.Invoke(null, args);
         }
 
         private static IEnumerator WaitUntilOrTimeout(Func<bool> condition, float timeoutSeconds, string timeoutMessage)

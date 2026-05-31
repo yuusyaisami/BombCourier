@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Threading;
 using BC.Animation;
+using BC.Audio;
 using BC.Base;
 using BC.Bomb;
 using BC.Camera;
@@ -10,6 +11,7 @@ using BC.Gimmick;
 using BC.Item;
 using BC.Managers;
 using BC.Player;
+using BC.Rendering.Transition;
 using BC.Stage;
 using BC.UI;
 using BC.UI.Title;
@@ -49,8 +51,16 @@ namespace BC.Manager
         [SerializeField] private EntityMB playerPrefab; // スポーン用プレイヤー prefab。
         [Header("Return To Title")]
         [SerializeField, Min(0)] private int titleSceneBuildIndex = 0; // クリア後に戻る title scene の build index。
+        [SerializeField] private ScreenTransitionProfileSO returnToTitleTransitionProfile;
+        [SerializeField, Min(0f)] private float returnToTitleBgmFadeOutDuration = 0.35f;
+        [Header("Final Ending")]
+        [SerializeField, Min(0f)] private float finalStagePostFadeHoldDuration = 0.6f;
+        [SerializeField, Range(0f, 1f)] private float finalStageLetterboxAmount = 0.2f;
+
         [Header("Debug")][SerializeField] private Transform debugStageInstance; // デバッグ用に直接参照する stage instance。
         [SerializeField, Min(0)] private int debugStartStageIndex = 0; // 起動時にロードする stage index。
+
+
         // 現在のゲーム進行にぶら下がる主要参照群。
         private BombMB currentBomb;
 
@@ -88,6 +98,7 @@ namespace BC.Manager
         public int CurrentStageIndex => currentGameStage;
         public RetryActionMode CurrentRetryActionMode => ResolveRetryActionMode();
         public bool HasRetryCheckpoint => retryCheckpointStack.Count > 0;
+        public bool HasManualSnapshotBase => ContainsRetryCheckpointSource(RetryCheckpointSourceKind.Manual);
         public bool HasStartedAnyBombFuseThisStage => hasStartedAnyBombFuseThisStage || HasAnySceneBombFuseStartedOrExploded();
 
         // 既存 UI 互換: ステージ内の爆弾がすべて爆発済みかを返す。
@@ -161,7 +172,7 @@ namespace BC.Manager
             if (retryCheckpointStack.Count > 0)
                 return RetryActionMode.ReloadCheckpoint;
 
-            return resetArmed ? RetryActionMode.ResetStage : RetryActionMode.None;
+            return RetryActionMode.ResetStage;
         }
 
         // リトライを許可するゲーム状態かを判断する。
@@ -174,6 +185,96 @@ namespace BC.Manager
             return stateManager.CurrentState == GameState.SetupPlaying ||
                    stateManager.CurrentState == GameState.FusePlaying ||
                    stateManager.CurrentState == GameState.Exploded;
+        }
+
+        public ManualSnapshotAvailability EvaluateManualSnapshotAvailability()
+        {
+            ManualSnapshotBlockReason blockReasons = ManualSnapshotBlockReason.None;
+
+            if (IsDestroyedOrShuttingDown())
+                blockReasons |= ManualSnapshotBlockReason.ShuttingDown;
+
+            GameStateManagerMB stateManager = GameStateManagerMB.Instance;
+            if (stateManager == null)
+            {
+                blockReasons |= ManualSnapshotBlockReason.MissingGameStateManager;
+            }
+            else if (stateManager.CurrentState != GameState.SetupPlaying)
+            {
+                blockReasons |= ManualSnapshotBlockReason.GameStateNotSetupPlaying;
+            }
+
+            if (StageManagerMB.Instance == null)
+                blockReasons |= ManualSnapshotBlockReason.MissingStageManager;
+
+            if (!TryResolveGameLogicValueStoreContext(out _, out _))
+                blockReasons |= ManualSnapshotBlockReason.MissingSceneKernel;
+
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            if (resolvedPlayer == null)
+            {
+                blockReasons |= ManualSnapshotBlockReason.MissingPlayer;
+                return new ManualSnapshotAvailability(blockReasons);
+            }
+
+            PlayerMoveController moveController = resolvedPlayer.PlayerMoveController;
+            if (moveController == null || !moveController.CanMoveByInput)
+                blockReasons |= ManualSnapshotBlockReason.PlayerCannotMoveByInput;
+
+            PlayerItemHandleStateMB itemHandleState = resolvedPlayer.GetComponent<PlayerItemHandleStateMB>();
+            if (itemHandleState == null || !itemHandleState.CanInteract)
+                blockReasons |= ManualSnapshotBlockReason.PlayerCannotInteract;
+
+            if (itemHandleState != null && itemHandleState.CurrentHandledItem != null)
+                blockReasons |= ManualSnapshotBlockReason.HoldingItem;
+
+            if (HasStartedAnyBombFuseThisStage)
+                blockReasons |= ManualSnapshotBlockReason.BombStateDirty;
+
+            return new ManualSnapshotAvailability(blockReasons);
+        }
+
+        public bool TryCaptureManualSnapshot()
+        {
+            ManualSnapshotAvailability availability = EvaluateManualSnapshotAvailability();
+            if (!availability.CanCapture)
+                return false;
+
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            StageManagerMB stageManager = StageManagerMB.Instance;
+
+            if (resolvedPlayer == null || stageManager == null)
+            {
+                Debug.LogError($"{nameof(GameLogicManagerMB)}: manual snapshot capture prerequisites are missing.", this);
+                return false;
+            }
+
+            StageCheckpointSnapshot stageCheckpoint = stageManager.CaptureStageCheckpointSnapshot();
+            if (!stageCheckpoint.IsValid)
+            {
+                Debug.LogError($"{nameof(GameLogicManagerMB)}: manual snapshot stage checkpoint capture failed.", this);
+                return false;
+            }
+
+            GameLogicValueStoreSnapshot gameLogicSnapshot = CaptureGameLogicValueSnapshot();
+            if (!gameLogicSnapshot.IsValid)
+            {
+                Debug.LogError($"{nameof(GameLogicManagerMB)}: manual snapshot GameLogic value snapshot capture failed.", this);
+                return false;
+            }
+
+            retryCheckpointStack.Clear();
+            retryCheckpointStack.Push(new RetryCheckpointSnapshot(
+                RetryCheckpointSourceKind.Manual,
+                stageCheckpoint,
+                resolvedPlayer.transform.position,
+                resolvedPlayer.transform.rotation,
+                currentBomb,
+                null,
+                gameLogicSnapshot));
+
+            resetArmed = false;
+            return true;
         }
 
         // UI などからリトライを要求されたときの入口。
@@ -200,6 +301,12 @@ namespace BC.Manager
                 Debug.LogError($"{nameof(GameLogicManagerMB)}: retry checkpoint capture prerequisites are missing.", this);
                 return;
             }
+
+            // 既に fuse 開始済みの爆弾は「掴む前へ戻る」対象として不適切なので、
+            // 再取得時に checkpoint を追加しない。
+            if (targetBomb.FuseStarted || targetBomb.HasExploded)
+                return;
+
             // リトライチェックポイントをキャプチャしてスタックに積む。これには、ステージの状態、プレイヤーの位置と回転、そしてターゲットとなる爆弾の参照が含まれる。
             StageCheckpointSnapshot stageCheckpoint = stageManager.CaptureStageCheckpointSnapshot();
             if (!stageCheckpoint.IsValid)
@@ -209,11 +316,13 @@ namespace BC.Manager
             }
 
             retryCheckpointStack.Push(new RetryCheckpointSnapshot(
+                RetryCheckpointSourceKind.BombPickup,
                 stageCheckpoint,
                 resolvedPlayer.transform.position,
                 resolvedPlayer.transform.rotation,
                 targetBomb,
-                targetBomb.CaptureRetryCheckpointState()));
+                targetBomb.CaptureRetryCheckpointState(),
+                CaptureGameLogicValueSnapshot()));
 
             resetArmed = false;
             SetCurrentBomb(targetBomb);
@@ -357,7 +466,9 @@ namespace BC.Manager
         {
             if (newState == GameState.Starting)
             {
-                LoadStageAsync(debugStartStageIndex).Forget(); // 起動 stage をロードする
+                int startStageIndex = ResolveInitialStageIndex();
+                GameBGMManagerMB.Instance?.PlayGameplayBGM();
+                LoadStageAsync(startStageIndex).Forget(); // 起動 stage をロードする
             }
             else if (newState == GameState.Intro)
             {
@@ -369,7 +480,7 @@ namespace BC.Manager
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, true);
-                GameBGMManagerMB.Instance?.PlayGameplayBGM();
+                //GameBGMManagerMB.Instance?.PlayGameplayBGM();
             }
             else if (newState == GameState.FusePlaying)
             {
@@ -404,14 +515,34 @@ namespace BC.Manager
                 // ゲームオーバーになったときの処理
             }
         }
+
+        private int ResolveInitialStageIndex()
+        {
+            ApplicationKernelMB appKernelMB = ApplicationKernelMB.Instance;
+            KernelValueStoreService kernelStore = appKernelMB != null ? appKernelMB.Kernel?.KernelValueStore : null;
+
+            if (kernelStore != null)
+                return Mathf.Max(0, kernelStore.Get(ValueKeys.Kernel.Stage.SelectedStageIndex));
+
+            return Mathf.Max(0, debugStartStageIndex);
+        }
+
         public async UniTask GoalAsync()
         {
             if (IsDestroyedOrShuttingDown())
                 return;
 
-            if (currentGoalData == null) return;
+            GoalData goalData = currentGoalData;
+            if (goalData == null)
+                return;
 
-            if (currentGoalData.GoalCamera == null)
+            if (!TryResolveGameLogicValueStoreContext(out ValueStoreService valueStore, out EntityRef selfEntity))
+            {
+                Debug.LogError("GameLogicManagerMB: failed to resolve ValueStore context in GoalAsync.", this);
+                return;
+            }
+
+            if (goalData.GoalCamera == null)
             {
                 Debug.LogError("GameLogicManagerMB: currentGoalData.GoalCamera is not assigned.", this);
                 return;
@@ -420,17 +551,14 @@ namespace BC.Manager
             // 評価データは SelfEntityRef (gameLogicManagerRef) に書き込む。
             // UIStageClearMB は GameLogicManagerMB.Instance.SelfEntityRef でこれを読むため、
             // playerRef に書くと読み取り先が合わず評価星が正しく表示されない。
-            if (sceneKernel != null && gameLogicManagerRef.IsValid)
-            {
-                sceneKernel.ValueStore.Set<float>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.CountdownTime, timeSinceStartBomb);
-                sceneKernel.ValueStore.Set<float>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.FastClearThreshold, currentClearTimeThreshold);
-            }
+            valueStore.Set<float>(selfEntity, ValueKeys.Kernel.Evaluation.CountdownTime, timeSinceStartBomb);
+            valueStore.Set<float>(selfEntity, ValueKeys.Kernel.Evaluation.FastClearThreshold, currentClearTimeThreshold);
             // スコア計算を行う
             bool isFastClear = timeSinceStartBomb <= currentClearTimeThreshold;
-            sceneKernel.ValueStore.Set<bool>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.IsFastClear, isFastClear);
+            valueStore.Set<bool>(selfEntity, ValueKeys.Kernel.Evaluation.IsFastClear, isFastClear);
             // アイテム取得はできたかどうか
             bool isBonusItem = currentBonusObject != null && currentBonusObject.IsCollected;
-            sceneKernel.ValueStore.Set<bool>(gameLogicManagerRef, ValueKeys.Kernel.Evaluation.IsBonusItem, isBonusItem);
+            valueStore.Set<bool>(selfEntity, ValueKeys.Kernel.Evaluation.IsBonusItem, isBonusItem);
 
             // タイトル画面の解放状態とステージ報酬を永続化する。
             TitleStageProgressServiceMB.SaveStageResultPersisted(currentGameStage, isBonusItem, isFastClear);
@@ -456,14 +584,14 @@ namespace BC.Manager
             }
 
             // ゴール演出中のカメラ切り替えは scene camera service に一本化する。
-            sceneKernel.Cameras?.ShowPresentationCamera(currentGoalData.GoalCamera, playerRef);
+            sceneKernel?.Cameras?.ShowPresentationCamera(goalData.GoalCamera, playerRef);
 
             // UIを非表示にする
-            uiGameSceneManagerMB.ShowTopPanel(false); // ゲームシーンのUIを非表示にする
-            uiGameSceneManagerMB.ShowBottomPanel(false); // ゲームシーンのUIを非表示にする
+            uiGameSceneManagerMB?.ShowTopPanel(false); // ゲームシーンのUIを非表示にする
+            uiGameSceneManagerMB?.ShowBottomPanel(false); // ゲームシーンのUIを非表示にする
 
             // Playerを止める
-            await moveController.MoveToAsync(currentGoalData.Target, 0.1f);
+            await moveController.MoveToAsync(goalData.Target, 0.1f);
 
             if (IsDestroyedOrShuttingDown())
                 return;
@@ -476,7 +604,7 @@ namespace BC.Manager
             }
 
             // ファイナルステージじゃないなら、godhandをゴールの位置に移動させる
-            if (!currentGoalData.IsFinalGoal)
+            if (!goalData.IsFinalGoal)
             {
                 if (currentGodHand != null)
                 {
@@ -488,13 +616,21 @@ namespace BC.Manager
         }
         private async UniTask NextStageAsync()
         {
-            if (IsDestroyedOrShuttingDown() || playerInstance == null || currentGoalData == null || currentGodHand == null)
+            if (IsDestroyedOrShuttingDown() || playerInstance == null || currentGoalData == null)
                 return;
+
             if (currentGoalData.IsFinalGoal)
             {
                 await FinalStageGoalAsync();
                 return;
             }
+
+            if (currentGodHand == null)
+            {
+                Debug.LogError("GameLogicManagerMB: currentGodHand is not resolved for non-final next stage flow.", this);
+                return;
+            }
+
             PlayerAnimationMB playerAnimationController = playerInstance.GetComponentInChildren<PlayerAnimationMB>();
             playerAnimationController?.SetNextStageActive(true); // プレイヤーのアニメーションパラメーターを更新して、次のステージに進むためのアニメーションを再生する
             currentGodHand.Catch(playerInstance); // プレイヤーをGodHandにつかまらせる
@@ -532,7 +668,30 @@ namespace BC.Manager
             GameBGMManagerMB.Instance?.PlayEndingBGM();
 
             await UniTask.Delay(1000); // ゴール到達後の演出のために少し待つ
-            await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードアウトさせる
+            if (uiFadeEffectMB != null)
+            {
+                uiFadeEffectMB.EnsureVisibleHierarchy();
+                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードアウトさせる
+            }
+            else
+            {
+                Debug.LogWarning("GameLogicManagerMB: UIFadeEffectMB is not assigned. Skipping final fade-out.", this);
+            }
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate); // 黒画面を1フレーム表示してから map を破棄する
+
+            UnloadCurrentMapAfterFinalFade();
+
+            if (finalStagePostFadeHoldDuration > 0f)
+            {
+                await UniTask.Delay(
+                    TimeSpan.FromSeconds(finalStagePostFadeHoldDuration),
+                    DelayType.UnscaledDeltaTime,
+                    PlayerLoopTiming.Update,
+                    destroyCancellationToken);
+            }
+
+            if (uiFadeEffectMB != null)
+                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, finalStageLetterboxAmount, 0.35f);
 
             var gameEndUI = UIManagerMB.Instance != null ? UIManagerMB.Instance.GameEndUI : null;
             if (gameEndUI == null)
@@ -550,6 +709,27 @@ namespace BC.Manager
 
             if (GameStateManagerMB.Instance != null)
                 GameStateManagerMB.Instance.ChangeState(GameState.ReturnToTitle);
+        }
+
+        private void UnloadCurrentMapAfterFinalFade()
+        {
+            if (stageInstance != null)
+            {
+                UnregisterStageEntities(stageInstance);
+                Destroy(stageInstance);
+                stageInstance = null;
+            }
+
+            currentMapRuntime = null;
+            currentGoalData = null;
+            currentStageName = string.Empty;
+            currentCameraPath = null;
+            currentGodHand = null;
+            currentBonusObject = null;
+            SetCurrentBomb(null);
+
+            sceneKernel?.Cameras?.ClearPresentationCamera();
+            CameraManager.Instance?.ClearThirdPersonTarget();
         }
         private async UniTask LookAtAsync(Transform origin, Vector3 targetPosition, float duration = 1f)
         {
@@ -589,27 +769,48 @@ namespace BC.Manager
             if (IsDestroyedOrShuttingDown())
                 return;
 
+            GameBGMManagerMB.Instance?.StopBGM(returnToTitleBgmFadeOutDuration);
+
             if (uiGameSceneManagerMB != null)
             {
                 uiGameSceneManagerMB.ShowTopPanel(false, 0f);
                 uiGameSceneManagerMB.ShowBottomPanel(false, 0f);
             }
 
-            if (uiFadeEffectMB != null)
-            {
-                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f);
-            }
-
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-
-            if (IsDestroyedOrShuttingDown())
-                return;
-
             if (titleSceneBuildIndex < 0)
             {
                 Debug.LogError("GameLogicManagerMB: titleSceneBuildIndex is invalid.", this);
                 return;
             }
+
+            if (IsDestroyedOrShuttingDown())
+                return;
+
+            SceneManagerService sceneManagerService = ApplicationKernelMB.Instance?.Kernel?.SceneManager;
+            if (sceneManagerService != null)
+            {
+                ScreenTransitionRequest request = new(
+                    returnToTitleTransitionProfile,
+                    overrideDuration: null,
+                    captureFromCurrentFrame: true,
+                    waitUntilToReady: true);
+
+                await sceneManagerService.LoadSceneWithTransitionAsync(
+                    titleSceneBuildIndex,
+                    request,
+                    LoadSceneMode.Single,
+                    destroyCancellationToken);
+                return;
+            }
+
+            // フォールバック: 旧経路。ApplicationKernel の SceneManagerService が未初期化なら直接ロードする。
+            if (uiFadeEffectMB != null)
+                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f);
+
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+
+            if (IsDestroyedOrShuttingDown())
+                return;
 
             AsyncOperation loadOperation = SceneManager.LoadSceneAsync(titleSceneBuildIndex, LoadSceneMode.Single);
             if (loadOperation == null)
@@ -697,8 +898,8 @@ namespace BC.Manager
                 if (IsDestroyedOrShuttingDown())
                     return;
 
-                // Skip 経路では PlayPath 完了 callback が走らない場合があるため、ここで黒フェードを保証する。
-                if (introPathSkipRequested && uiFadeEffectMB != null)
+                // PlayPath 完了 callback が走らない経路があるため、ここで黒フェードを保証する。
+                if (uiFadeEffectMB != null)
                 {
                     await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f);
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
@@ -718,6 +919,8 @@ namespace BC.Manager
 
                 if (IsDestroyedOrShuttingDown())
                     return;
+
+                await UniTask.Delay(700);
 
                 await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 0f, 0.5f); // フェードインさせる
                 await showPlayerTask; // プレイヤーを表示する
@@ -794,10 +997,7 @@ namespace BC.Manager
 
             if (retryCheckpointStack.Count == 0)
             {
-                if (resetArmed)
-                    GameStateManagerMB.Instance?.ChangeState(GameState.ResetStage);
-                else
-                    GameStateManagerMB.Instance?.ChangeState(GameState.SetupPlaying);
+                GameStateManagerMB.Instance?.ChangeState(GameState.ResetStage);
 
                 return;
             }
@@ -828,6 +1028,8 @@ namespace BC.Manager
 
                 retryCheckpoint.Bomb.RestoreCheckpointState(retryCheckpoint.BombRetryState);
             }
+
+            RestoreGameLogicValueSnapshot(retryCheckpoint.GameLogicSnapshot);
 
             if (resolvedPlayer != null)
             {
@@ -1122,6 +1324,17 @@ namespace BC.Manager
             return false;
         }
 
+        private bool ContainsRetryCheckpointSource(RetryCheckpointSourceKind sourceKind)
+        {
+            foreach (RetryCheckpointSnapshot snapshot in retryCheckpointStack)
+            {
+                if (snapshot.SourceKind == sourceKind)
+                    return true;
+            }
+
+            return false;
+        }
+
         // ゲーム内にプレイヤーがいた場合はTeleportのみ、いない場合はSpawnしてからTeleportする
         public void SpawnAndTeleportPlayer(EntityMB player, Vector3 position = default, Quaternion rotation = default)
         {
@@ -1189,6 +1402,35 @@ namespace BC.Manager
             sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateYellow, EntityMoveMotorMB.GameLogicTag, false);
         }
 
+        private GameLogicValueStoreSnapshot CaptureGameLogicValueSnapshot()
+        {
+            TryResolveGameLogicValueStoreContext(out ValueStoreService valueStore, out EntityRef selfEntity);
+            return GameLogicValueStoreSnapshotUtility.Capture(valueStore, selfEntity);
+        }
+
+        private void RestoreGameLogicValueSnapshot(in GameLogicValueStoreSnapshot snapshot)
+        {
+            TryResolveGameLogicValueStoreContext(out ValueStoreService valueStore, out EntityRef selfEntity);
+            GameLogicValueStoreSnapshotUtility.Restore(valueStore, selfEntity, snapshot);
+        }
+
+        private bool TryResolveGameLogicValueStoreContext(out ValueStoreService valueStore, out EntityRef selfEntity)
+        {
+            if (sceneKernel == null)
+                sceneKernel = GetComponentInChildren<SceneKernelMB>()?.Kernel;
+
+            if (!gameLogicManagerRef.IsValid)
+            {
+                EntityMB entityMB = GetComponent<EntityMB>();
+                if (entityMB != null && entityMB.HasEntity)
+                    gameLogicManagerRef = entityMB.Entity;
+            }
+
+            valueStore = sceneKernel?.ValueStore;
+            selfEntity = gameLogicManagerRef;
+            return valueStore != null && selfEntity.IsValid;
+        }
+
 
 
     }
@@ -1196,23 +1438,29 @@ namespace BC.Manager
     internal readonly struct RetryCheckpointSnapshot
     {
         public RetryCheckpointSnapshot(
+            RetryCheckpointSourceKind sourceKind,
             StageCheckpointSnapshot stageCheckpoint,
             Vector3 playerPosition,
             Quaternion playerRotation,
             BombMB bomb,
-            object bombRetryState)
+            object bombRetryState,
+            GameLogicValueStoreSnapshot gameLogicSnapshot)
         {
+            SourceKind = sourceKind;
             StageCheckpoint = stageCheckpoint;
             PlayerPosition = playerPosition;
             PlayerRotation = playerRotation;
             Bomb = bomb;
             BombRetryState = bombRetryState;
+            GameLogicSnapshot = gameLogicSnapshot;
         }
 
+        public RetryCheckpointSourceKind SourceKind { get; }
         public StageCheckpointSnapshot StageCheckpoint { get; }
         public Vector3 PlayerPosition { get; }
         public Quaternion PlayerRotation { get; }
         public BombMB Bomb { get; }
         public object BombRetryState { get; }
+        public GameLogicValueStoreSnapshot GameLogicSnapshot { get; }
     }
 }

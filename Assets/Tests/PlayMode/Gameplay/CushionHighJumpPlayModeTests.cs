@@ -306,6 +306,55 @@ namespace BC.Gameplay.PlayModeTests
         }
 
         [Test]
+        public void CushionSurface_LateralBoost_UsesSourceVelocityWhenRelativeVelocityIsReversed()
+        {
+            DestroyToastManagerInstance();
+
+            GameObject surfaceObject = new GameObject("CushionSurface");
+            createdObjects.Add(surfaceObject);
+
+            Component surface = surfaceObject.AddComponent(FindRuntimeType(CushionSurfaceTypeName));
+            SetPrivateField(surface, "acceptAnyTag", true);
+            SetPrivateField(surface, "bounceRate", 1.0f);
+            SetPrivateField(surface, "minBounceSpeed", 5.0f);
+            SetPrivateField(surface, "maxBounceSpeed", 0.0f);
+            SetPrivateField(surface, "convergenceBounceSpeed", 5.0f);
+            SetPrivateField(surface, "enableIncomingLateralBoost", true);
+            SetPrivateField(surface, "incomingLateralBoostMultiplier", 1.0f);
+
+            GameObject sourceObject = new GameObject("Source");
+            createdObjects.Add(sourceObject);
+            Rigidbody sourceBody = sourceObject.AddComponent<Rigidbody>();
+            sourceBody.linearVelocity = new Vector3(4f, -5f, 0f);
+
+            object impactData = Activator.CreateInstance(
+                FindRuntimeType(CushionImpactDataTypeName),
+                sourceObject,
+                sourceObject.transform,
+                null,
+                Activator.CreateInstance(FindRuntimeType(EntityTagIdTypeName)),
+                sourceBody,
+                null,
+                Vector3.zero,
+                Vector3.up,
+                new Vector3(-4f, -5f, 0f),
+                6.4f);
+
+            MethodInfo tryEvaluateMethod = surface.GetType().GetMethod("TryEvaluate", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(tryEvaluateMethod);
+
+            object[] args = { impactData, null };
+            bool handled = (bool)tryEvaluateMethod.Invoke(surface, args);
+            object result = args[1];
+            Vector3 bounceVelocity = (Vector3)GetPropertyValue<object>(result, "BounceVelocity");
+
+            Assert.IsTrue(handled);
+            Assert.AreEqual("Bounce", GetPropertyValue<object>(result, "ResponseKind").ToString());
+            Assert.That(bounceVelocity.x, Is.GreaterThan(0.0f), "Reversed relative velocity should not flip the lateral boost direction.");
+            Assert.That(bounceVelocity.y, Is.EqualTo(5.0f).Within(0.001f));
+        }
+
+        [Test]
         public void CushionImpactHandler_HighJumpBuilder_UsesBufferedInputAndCapsSpeed()
         {
             MethodInfo method = FindRuntimeType(CushionImpactHandlerTypeName).GetMethod(

@@ -67,7 +67,7 @@ namespace BC.Base
             if (sceneKernel == null || sceneKernel.ReactiveValues == null)
                 return false;
 
-            if (sceneKernel.EntityValueStore == null || sceneKernel.KernelValueStore == null)
+            if (sceneKernel.EntityValueStore == null)
                 return false;
 
             if (entityMB != null && !entityMB.HasEntity)
@@ -159,7 +159,9 @@ namespace BC.Base
                 return false;
             }
 
-            if (!ValueStoreWriteScopeUtility.IsKeyCompatible(write.StoreScope, descriptor))
+            ValueStoreWriteStoreScope effectiveScope = ResolveEffectiveStoreScope(write.StoreScope, descriptor);
+
+            if (!ValueStoreWriteScopeUtility.IsKeyCompatible(effectiveScope, descriptor))
             {
                 Debug.LogWarning(
                     $"{nameof(ValueStoreStartupWriterMB)}: Store scope '{write.StoreScope}' does not match key '{descriptor.Path}'.",
@@ -278,7 +280,11 @@ namespace BC.Base
                 if (context.SceneKernel?.EntityValueStore == null)
                     return false;
 
-                int count = ValueStoreWriteScopeUtility.ResolveTargets(context, write.StoreScope, write.Target, resolvedTargets);
+                ValueStoreWriteStoreScope effectiveScope = ResolveEffectiveStoreScope(write.StoreScope, key);
+                if (effectiveScope == ValueStoreWriteStoreScope.Local)
+                    return false;
+
+                int count = ValueStoreWriteScopeUtility.ResolveTargets(context, effectiveScope, write.Target, resolvedTargets);
 
                 if (count == 0)
                 {
@@ -298,6 +304,33 @@ namespace BC.Base
                 Debug.LogWarning($"{nameof(ValueStoreStartupWriterMB)} failed to write '{key.Path}'. {exception.Message}", this);
                 return false;
             }
+        }
+
+        private static ValueStoreWriteStoreScope ResolveEffectiveStoreScope(ValueStoreWriteStoreScope authoredScope, in ValueKeyDescriptor descriptor)
+        {
+            if (authoredScope != ValueStoreWriteStoreScope.Entity)
+                return authoredScope;
+
+            if (string.IsNullOrWhiteSpace(descriptor.Path))
+                return authoredScope;
+
+            // Legacy scenes may author GameLogic.* as Entity scope even though it is shared scene state.
+            return descriptor.Path.StartsWith("GameLogic.", StringComparison.Ordinal)
+                ? ValueStoreWriteStoreScope.SceneKernel
+                : authoredScope;
+        }
+
+        private static ValueStoreWriteStoreScope ResolveEffectiveStoreScope<T>(ValueStoreWriteStoreScope authoredScope, in ValueKey<T> key)
+        {
+            if (authoredScope != ValueStoreWriteStoreScope.Entity)
+                return authoredScope;
+
+            if (string.IsNullOrWhiteSpace(key.Path))
+                return authoredScope;
+
+            return key.Path.StartsWith("GameLogic.", StringComparison.Ordinal)
+                ? ValueStoreWriteStoreScope.SceneKernel
+                : authoredScope;
         }
 
         private void ResolveReferences()

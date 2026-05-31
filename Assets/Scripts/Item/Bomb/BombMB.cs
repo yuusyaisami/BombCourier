@@ -192,6 +192,7 @@ namespace BC.Bomb
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
+    [RequireComponent(typeof(RigidbodySupportRiderMB))]
     public sealed class BombMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IBombImpactDetector, IExplosionImpactDetector, IInteractionPromptDetailTextProvider, IStageCheckpointParticipant, ICarryReleaseOwnerCollisionGuard
     {
         public event Action<BombMB> Exploded;
@@ -424,7 +425,7 @@ namespace BC.Bomb
 
         private void FixedUpdate()
         {
-            if (!isHandled || exploded || rb == null || bombCollider == null)
+            if (!isHandled || exploded || rb == null || bombCollider == null || !bombCollider.enabled)
             {
                 hasPreviousHeldPosition = false;
                 return;
@@ -544,14 +545,15 @@ namespace BC.Bomb
                 if (fuseAudioSource == null)
                 {
                     fuseAudioSource = gameObject.AddComponent<AudioSource>();
-                    fuseAudioSource.spatialBlend = 1f;
-                    fuseAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+                    // 重要な警告音なので、距離減衰で消えない 2D 再生に固定する。
+                    fuseAudioSource.spatialBlend = 0f;
+                    fuseAudioSource.rolloffMode = AudioRolloffMode.Linear;
                     fuseAudioSource.minDistance = 1f;
-                    fuseAudioSource.maxDistance = 20f;
+                    fuseAudioSource.maxDistance = 9999f;
                     fuseAudioSource.playOnAwake = false;
                 }
                 fuseAudioSource.clip = fuseLoopSound.Clip;
-                fuseAudioSource.volume = fuseLoopSound.BaseVolume;
+                fuseAudioSource.volume = Mathf.Max(0.05f, fuseLoopSound.BaseVolume);
                 fuseAudioSource.pitch = fuseLoopSound.Pitch;
                 fuseAudioSource.loop = true;
                 fuseAudioSource.Play();
@@ -734,7 +736,14 @@ namespace BC.Bomb
 
             // 爆発サウンドを 3D 位置から再生する。
             if (explosionSound != null && explosionSound.Clip != null)
-                AudioSource.PlayClipAtPoint(explosionSound.Clip, transform.position, explosionSound.BaseVolume);
+            {
+                bool playedByAudioSystem = BC.Audio.AudioSystemMB.Instance != null &&
+                                           BC.Audio.AudioSystemMB.Instance.TryPlaySE(explosionSound.Clip);
+
+                // 重要 SE なので、AudioSystem のプール枯渇時は必ず 2D ワンショットで鳴らす。
+                if (!playedByAudioSystem)
+                    PlayOneShot2D(explosionSound.Clip, Mathf.Max(0.05f, explosionSound.BaseVolume), explosionSound.Pitch);
+            }
             LogBombDebug(
                 $"Explode scene={gameObject.scene.name} frame={Time.frameCount} position={transform.position} lastImpactForce={LastImpactForce:F3} threshold={lastImpactThreshold:F3} " +
                 $"isHandled={isHandled} fuseStarted={fuseStarted} remainingFuseTime={remainingFuseTime:F3} ignoredPlayerColliders={ignoredPlayerColliders.Count}");
@@ -742,9 +751,7 @@ namespace BC.Bomb
             hasPreviousHeldPosition = false;
 
             if (explosionEffectPrefab != null)
-            {
-                Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity).Play();
-            }
+                SpawnTransientParticleEffect(explosionEffectPrefab, transform.position, Quaternion.identity);
 
             ApplyExplosionImpact();
 
@@ -766,6 +773,51 @@ namespace BC.Bomb
                 GameLogicManagerMB.Instance.SetCurrentBomb(null); // 爆弾が爆発したらGameLogicManagerに通知する
 
             Destroy(gameObject);
+        }
+
+        private static void PlayOneShot2D(AudioClip clip, float volume, float pitch)
+        {
+            if (clip == null)
+                return;
+
+            GameObject oneShotObject = new GameObject("BombExplosionSE_OneShot");
+            AudioSource audioSource = oneShotObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f;
+            audioSource.loop = false;
+            audioSource.clip = clip;
+            audioSource.volume = Mathf.Clamp01(volume);
+            audioSource.pitch = Mathf.Clamp(pitch, 0.1f, 3f);
+            audioSource.Play();
+
+            float duration = clip.length / Mathf.Max(0.1f, Mathf.Abs(audioSource.pitch));
+            Destroy(oneShotObject, duration + 0.1f);
+        }
+
+        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation)
+        {
+            if (effectPrefab == null)
+                return;
+
+            ParticleSystem instance = Instantiate(effectPrefab, position, rotation);
+            if (instance == null)
+                return;
+
+            ParticleSystem[] systems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            float maxLifetime = 0.5f;
+
+            for (int i = 0; i < systems.Length; i++)
+            {
+                ParticleSystem system = systems[i];
+                ParticleSystem.MainModule main = system.main;
+                float startLifetimeMax = main.startLifetime.mode == ParticleSystemCurveMode.TwoConstants
+                    ? main.startLifetime.constantMax
+                    : main.startLifetime.constant;
+                maxLifetime = Mathf.Max(maxLifetime, main.duration + startLifetimeMax + 0.5f);
+            }
+
+            instance.Play(true);
+            Destroy(instance.gameObject, maxLifetime);
         }
 
         private bool TryHandleCheckpointableExplosion()

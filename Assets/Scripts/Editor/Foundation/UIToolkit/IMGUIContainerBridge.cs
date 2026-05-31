@@ -68,6 +68,7 @@ namespace BC.Editor.Foundation.UIToolkit
 
                 if (autoExpandOnNextDraw)
                 {
+                    property.isExpanded = true;
                     AutoExpandArrayElements(property);
                     autoExpandOnNextDraw = false;
                 }

@@ -44,6 +44,8 @@ namespace BC.Base
         [SerializeField, Min(0.0f)] private float reactionCooldown = 0.2f;
         [Tooltip("クッション面が抑制対象なら hard landing リアクションを無効化します。")]
         [SerializeField] private bool suppressReactionOnCushion = true;
+        [Tooltip("GroundTransform からクッションを解決できない時に使う、着地地点周辺の補助探索半径です。")]
+        [SerializeField, Min(0.0f)] private float cushionSuppressionProbeRadius = 0.35f;
 
         [Header("Ragdoll Reaction")]
         [Tooltip("hard landing 時にラグドール化リアクションを使うかを指定します。")]
@@ -102,6 +104,7 @@ namespace BC.Base
         private float nextReactionTime;
         private CancellationTokenSource activePenaltyCancellationTokenSource;
         private CancellationTokenSource activeRagdollRecoveryCancellationTokenSource;
+        private readonly Collider[] cushionProbeHits = new Collider[8];
 
         // Inspector 再設定時に依存参照を補完する。
         private void Reset()
@@ -142,6 +145,7 @@ namespace BC.Base
             minimumDownwardImpactSpeed = Mathf.Max(0.0f, minimumDownwardImpactSpeed);
             minimumFallDistance = Mathf.Max(0.0f, minimumFallDistance);
             reactionCooldown = Mathf.Max(0.0f, reactionCooldown);
+            cushionSuppressionProbeRadius = Mathf.Max(0.0f, cushionSuppressionProbeRadius);
             ragdollHorizontalImpulseMultiplier = Mathf.Max(0.0f, ragdollHorizontalImpulseMultiplier);
             ragdollRecoveryDelay = Mathf.Max(0.0f, ragdollRecoveryDelay);
             moveSpeedMultiplier = Mathf.Clamp01(moveSpeedMultiplier);
@@ -260,15 +264,57 @@ namespace BC.Base
         // 接地中のクッション面が hard landing 抑制対象かを判定する。
         private bool IsHardLandingSuppressedByCushion()
         {
+            if (moveMotor == null)
+                return false;
+
+            if (TryResolveCushionSurfaceFromGround(out CushionSurfaceMB surface))
+                return surface.TryEvaluateHardLandingSuppression(moveMotor.CushionImpactTag, transform);
+
+            if (TryResolveCushionSurfaceByProbe(out surface))
+                return surface.TryEvaluateHardLandingSuppression(moveMotor.CushionImpactTag, transform);
+
+            return false;
+        }
+
+        private bool TryResolveCushionSurfaceFromGround(out CushionSurfaceMB surface)
+        {
+            surface = null;
+
             if (moveMotor == null || moveMotor.GroundTransform == null)
                 return false;
 
-            CushionSurfaceMB surface = moveMotor.GroundTransform.GetComponentInParent<CushionSurfaceMB>();
+            surface = moveMotor.GroundTransform.GetComponentInParent<CushionSurfaceMB>();
+            return surface != null;
+        }
 
-            if (surface == null)
+        private bool TryResolveCushionSurfaceByProbe(out CushionSurfaceMB surface)
+        {
+            surface = null;
+
+            float probeRadius = Mathf.Max(0.0f, cushionSuppressionProbeRadius);
+            if (probeRadius <= 0.0f)
                 return false;
 
-            return surface.TryEvaluateHardLandingSuppression(moveMotor.CushionImpactTag, transform);
+            Vector3 probeCenter = moveMotor != null ? moveMotor.GroundPoint : transform.position;
+            int hitCount = Physics.OverlapSphereNonAlloc(
+                probeCenter,
+                probeRadius,
+                cushionProbeHits,
+                ~0,
+                QueryTriggerInteraction.Ignore);
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider hit = cushionProbeHits[i];
+                if (hit == null)
+                    continue;
+
+                surface = hit.GetComponentInParent<CushionSurfaceMB>();
+                if (surface != null)
+                    return true;
+            }
+
+            return false;
         }
 
         // hard landing 専用の速度で所持アイテムを強制リリースする。

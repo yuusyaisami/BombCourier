@@ -29,6 +29,10 @@ namespace BC.Base
         private ValueWatchHandle<float> moveBaseSpeedHandle;
         private ValueWatchHandle<float> sprintMultiplierHandle;
         private ValueWatchHandle<float> jumpHeightMultiplierHandle;
+        private bool hasLoggedMissingKernel;
+        private bool hasLoggedMissingEntity;
+        private bool hasLoggedUnboundEntity;
+        private bool hasLoggedMissingEntityValueStore;
 
         public EntityMoveState MoveState => StateMachine.CurrentState;
         public bool IsRuntimeReady { get; private set; }
@@ -46,26 +50,41 @@ namespace BC.Base
 
             if (kernelMB == null)
             {
-                Debug.LogError($"{nameof(EntityMoveController)}: SceneKernelMB was not found.", this);
-                enabled = false;
+                if (!hasLoggedMissingKernel)
+                {
+                    Debug.LogWarning($"{nameof(EntityMoveController)}: SceneKernelMB was not found yet.", this);
+                    hasLoggedMissingKernel = true;
+                }
                 return;
             }
+
+            hasLoggedMissingKernel = false;
 
             EntityMB entityMB = GetComponentInParent<EntityMB>();
 
             if (entityMB == null)
             {
-                Debug.LogError($"{nameof(EntityMoveController)}: EntityMB was not found.", this);
-                enabled = false;
+                if (!hasLoggedMissingEntity)
+                {
+                    Debug.LogWarning($"{nameof(EntityMoveController)}: EntityMB was not found yet.", this);
+                    hasLoggedMissingEntity = true;
+                }
                 return;
             }
 
+            hasLoggedMissingEntity = false;
+
             if (!entityMB.HasEntity)
             {
-                Debug.LogError($"{nameof(EntityMoveController)}: EntityMB is not bound yet.", this);
-                enabled = false;
+                if (!hasLoggedUnboundEntity)
+                {
+                    Debug.LogWarning($"{nameof(EntityMoveController)}: EntityMB is not bound yet.", this);
+                    hasLoggedUnboundEntity = true;
+                }
                 return;
             }
+
+            hasLoggedUnboundEntity = false;
 
             SceneKernel = kernelMB.Kernel;
             Entity = entityMB.Entity;
@@ -76,6 +95,9 @@ namespace BC.Base
 
         protected bool CanReceiveMoveInput()
         {
+            if (!IsRuntimeReady)
+                InitializeRuntimeReferences();
+
             if (!IsRuntimeReady)
                 return false;
 
@@ -89,6 +111,9 @@ namespace BC.Base
 
         protected bool CanApplySystemMovement()
         {
+            if (!IsRuntimeReady)
+                InitializeRuntimeReferences();
+
             if (!IsRuntimeReady)
                 return false;
 
@@ -137,9 +162,15 @@ namespace BC.Base
 
             if (SceneKernel == null || SceneKernel.EntityValueStore == null)
             {
-                Debug.LogError($"{nameof(EntityMoveController)}: SceneKernel.EntityValueStore is null.", this);
+                if (!hasLoggedMissingEntityValueStore)
+                {
+                    Debug.LogWarning($"{nameof(EntityMoveController)}: SceneKernel.EntityValueStore is null.", this);
+                    hasLoggedMissingEntityValueStore = true;
+                }
                 return false;
             }
+
+            hasLoggedMissingEntityValueStore = false;
 
             canMoveByInputHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.CanMoveByInput);
             canMoveBySystemHandle = SceneKernel.EntityValueStore.GetHandle(Entity, ValueKeys.Move.CanMoveBySystem);

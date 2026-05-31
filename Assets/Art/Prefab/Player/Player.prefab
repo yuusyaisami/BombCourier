@@ -409,7 +409,6 @@ GameObject:
   - component: {fileID: 1469540994083200100}
   - component: {fileID: 9190420324000731801}
   - component: {fileID: -1993309423423878992}
-  - component: {fileID: 1607328629353800611}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -589,10 +588,17 @@ MonoBehaviour:
   onRaiseBodyParameter: OnRaiseBody
   upperBodyLayerName: UpperBody
   onJumpAction:
-    _steps: []
+    _steps:
+    - rid: 30533034660856816
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 30533034660856816
+      type: {class: PlaySEStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        audioData: {fileID: 11400000, guid: b6729115554f81741ae67910192086c1, type: 2}
+        loopCount: 1
 --- !u!114 &4490053635938583149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -641,10 +647,12 @@ MonoBehaviour:
   trajectoryProbeRadius: 0.45
   trajectoryLineWidth: 0.04
   trajectoryColor: {r: 1, g: 0.62, b: 0.08, a: 0.9}
+  trajectoryLineFallbackMaterial: {fileID: 0}
   includeTriggerCollidersInTrajectory: 1
   trajectoryHitMarkerMinDistance: 1
   trajectoryHitMarkerDiameter: 0.24
   trajectoryHitMarkerColor: {r: 1, g: 0.82, b: 0.24, a: 0.95}
+  trajectoryHitMarkerFallbackMaterial: {fileID: 2100000, guid: 062ef08004a423747b51a393b6af217e, type: 2}
   currentCanInteract: 1
   isHandlingItem: 0
 --- !u!114 &8542647148484008848
@@ -811,7 +819,7 @@ MonoBehaviour:
   airAcceleration: 12
   airDeceleration: 4
   maxAirHorizontalSpeed: 8
-  jumpHeight: 2
+  jumpHeight: 2.5
   gravity: -28
   groundedStickVelocity: -3
   coyoteTime: 0.12
@@ -869,7 +877,7 @@ MonoBehaviour:
   contactCeilingBand: 0.08
   currentCanMoveByInput: 0
   currentCanMoveBySystem: 0
-  enableCushionDebugLog: 1
+  enableCushionDebugLog: 0
 --- !u!114 &1469540994083200100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -890,10 +898,11 @@ MonoBehaviour:
   animatorControllerSource: {fileID: 8616279206525780107}
   playerItemHandleState: {fileID: 4490053635938583149}
   facingController: {fileID: 0}
-  minimumDownwardImpactSpeed: 12
+  minimumDownwardImpactSpeed: 18
   minimumFallDistance: 3
   reactionCooldown: 0.2
   suppressReactionOnCushion: 1
+  cushionSuppressionProbeRadius: 0.35
   enableRagdollReaction: 0
   ragdollHorizontalImpulseMultiplier: 0.15
   ragdollRecoveryDelay: 2
@@ -904,11 +913,11 @@ MonoBehaviour:
   moveSpeedMultiplier: 0.45
   applyJumpPenalty: 1
   jumpHeightMultiplier: 0.65
-  penaltyDuration: 1
+  penaltyDuration: 0.6
   dropHeldItemOnHardLanding: 1
   additionalDropVelocityLocal: {x: 0, y: 0, z: 0}
   hardLandingDropForwardSpeed: 4
-  hardLandingDropUpwardSpeed: 2
+  hardLandingDropUpwardSpeed: 4.68
   hardLandingCarrierPlanarVelocityFactor: 0.448
   lastLandingDownwardSpeed: 0
   lastLandingFallDistance: 0
@@ -959,7 +968,55 @@ MonoBehaviour:
     id: 2003
     path: Npc.Nezumi
   defaultIdleTalkState: 10
-  statePresentations: []
+  statePresentations:
+  - talkStateId: 10
+    applyFaceExpression: 0
+    faceExpressionId: 0
+    applyShapeExpression: 0
+    shapeExpressionId: 10
+    parameterWrites:
+    - writeMode: 0
+      parameterName: isNormalTalk
+      applyAutoReset: 1
+      autoResetInitialized: 1
+      boolValue: 1
+      floatValue: 0
+      intValue: 0
+      resetBoolValue: 0
+      resetFloatValue: 0
+      resetIntValue: 0
+  - talkStateId: 20
+    applyFaceExpression: 0
+    faceExpressionId: 0
+    applyShapeExpression: 0
+    shapeExpressionId: 10
+    parameterWrites:
+    - writeMode: 0
+      parameterName: isSurprised
+      applyAutoReset: 1
+      autoResetInitialized: 1
+      boolValue: 1
+      floatValue: 0
+      intValue: 0
+      resetBoolValue: 0
+      resetFloatValue: 0
+      resetIntValue: 0
+  - talkStateId: 30
+    applyFaceExpression: 0
+    faceExpressionId: 0
+    applyShapeExpression: 0
+    shapeExpressionId: 10
+    parameterWrites:
+    - writeMode: 0
+      parameterName: isSurprised
+      applyAutoReset: 1
+      autoResetInitialized: 1
+      boolValue: 1
+      floatValue: 0
+      intValue: 0
+      resetBoolValue: 0
+      resetFloatValue: 0
+      resetIntValue: 0
   activityPresentation:
     talkingBoolParameterNames: []
     applyTalkingShapeExpression: 0
@@ -968,24 +1025,6 @@ MonoBehaviour:
     nonTalkingShapeExpressionId: 0
     restoreStateShapeExpressionOnStop: 0
   talkCharacterSound: {fileID: 11400000, guid: 95a29e9408f873b4c934277b9b13a533, type: 2}
---- !u!114 &1607328629353800611
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7982850033400161385}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49d12306ebf9adf4ba39296e77c429bb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Player.PlayerFootstepMB
-  walkClips:
-  - {fileID: 11400000, guid: 4bda91532c055804e86c2573fe9bffa6, type: 2}
-  runClips: []
-  isSpeedSplitEnabled: 0
-  speedSplitThreshold: 0.7
-  playerAnimation: {fileID: 7130468073425802841}
 --- !u!1 &8098859386636133588
 GameObject:
   m_ObjectHideFlags: 0
@@ -1192,6 +1231,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 37d3f477e8a1d2e4aaf97c7600ed03b4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3328987866849961292}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 37d3f477e8a1d2e4aaf97c7600ed03b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3539725298720715679}
     - targetCorrespondingSourceObject: {fileID: 3756685517343138223, guid: 37d3f477e8a1d2e4aaf97c7600ed03b4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 387994680632199285}
@@ -1813,6 +1855,24 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3539725298720715679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4370208975399309320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49d12306ebf9adf4ba39296e77c429bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Player.PlayerFootstepMB
+  walkClips:
+  - {fileID: 11400000, guid: 4bda91532c055804e86c2573fe9bffa6, type: 2}
+  runClips: []
+  isSpeedSplitEnabled: 0
+  speedSplitThreshold: 0.7
+  playerAnimation: {fileID: 7130468073425802841}
 --- !u!137 &6476567141834429245 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 7603786706384944740, guid: 37d3f477e8a1d2e4aaf97c7600ed03b4, type: 3}

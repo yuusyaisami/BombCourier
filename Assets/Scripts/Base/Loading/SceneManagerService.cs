@@ -1,3 +1,6 @@
+using System;
+using System.Threading;
+using BC.Rendering.Transition;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -54,9 +57,136 @@ namespace BC.Base
             }
         }
 
+        public async UniTask LoadSceneWithTransitionAsync(
+            string sceneName,
+            ScreenTransitionRequest transitionRequest,
+            LoadSceneMode loadSceneMode = LoadSceneMode.Single,
+            CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                Debug.LogError("SceneManagerService: sceneName is null or empty.");
+                return;
+            }
+
+            ScreenTransitionServiceMB transitionService = ScreenTransitionServiceMB.Instance;
+            if (transitionService == null)
+            {
+                await LoadSceneAsync(sceneName, loadSceneMode);
+                return;
+            }
+
+            ScreenTransitionRequest runtimeRequest = new(
+                transitionRequest.Profile,
+                transitionRequest.ExplicitToTexture,
+                transitionRequest.OverrideDuration,
+                captureFromCurrentFrame: transitionRequest.CaptureFromCurrentFrame,
+                waitUntilToReady: true);
+
+            UniTask transitionTask = transitionService.PlayAsync(runtimeRequest, ct);
+
+            try
+            {
+                if (LoadingScene != null)
+                    await LoadingScene.ShowAsync();
+
+                AsyncOperation loadOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, loadSceneMode);
+                if (loadOperation == null)
+                {
+                    Debug.LogError($"SceneManagerService: failed to create AsyncOperation for scene '{sceneName}'.");
+                    transitionService.CancelCurrentTransition(ScreenTransitionCancelMode.HoldCurrentVisual);
+
+                    if (LoadingScene != null)
+                        await LoadingScene.HideAsync();
+
+                    return;
+                }
+
+                while (!loadOperation.isDone)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    await UniTask.Yield(PlayerLoopTiming.Update, ct);
+                }
+
+                if (LoadingScene != null)
+                    await LoadingScene.HideAsync();
+
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, ct);
+                transitionService.SetToReady(true);
+
+                await transitionTask;
+            }
+            catch (OperationCanceledException)
+            {
+                transitionService.CancelCurrentTransition(ScreenTransitionCancelMode.HoldCurrentVisual);
+                throw;
+            }
+        }
+
         public UniTask LoadSceneAsync(int buildIndex, LoadSceneMode loadSceneMode = LoadSceneMode.Single)
         {
             return LoadSceneAsync(SceneUtility.GetScenePathByBuildIndex(buildIndex), loadSceneMode, buildIndex);
+        }
+
+        public async UniTask LoadSceneWithTransitionAsync(
+            int buildIndex,
+            ScreenTransitionRequest transitionRequest,
+            LoadSceneMode loadSceneMode = LoadSceneMode.Single,
+            CancellationToken ct = default)
+        {
+            ScreenTransitionServiceMB transitionService = ScreenTransitionServiceMB.Instance;
+            if (transitionService == null)
+            {
+                await LoadSceneAsync(buildIndex, loadSceneMode);
+                return;
+            }
+
+            string sceneIdentifier = SceneUtility.GetScenePathByBuildIndex(buildIndex);
+            ScreenTransitionRequest runtimeRequest = new(
+                transitionRequest.Profile,
+                transitionRequest.ExplicitToTexture,
+                transitionRequest.OverrideDuration,
+                captureFromCurrentFrame: transitionRequest.CaptureFromCurrentFrame,
+                waitUntilToReady: true);
+
+            UniTask transitionTask = transitionService.PlayAsync(runtimeRequest, ct);
+
+            try
+            {
+                if (LoadingScene != null)
+                    await LoadingScene.ShowAsync();
+
+                AsyncOperation loadOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(buildIndex, loadSceneMode);
+                if (loadOperation == null)
+                {
+                    Debug.LogError($"SceneManagerService: failed to create AsyncOperation for buildIndex {buildIndex} ({sceneIdentifier}).");
+                    transitionService.CancelCurrentTransition(ScreenTransitionCancelMode.HoldCurrentVisual);
+
+                    if (LoadingScene != null)
+                        await LoadingScene.HideAsync();
+
+                    return;
+                }
+
+                while (!loadOperation.isDone)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    await UniTask.Yield(PlayerLoopTiming.Update, ct);
+                }
+
+                if (LoadingScene != null)
+                    await LoadingScene.HideAsync();
+
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, ct);
+                transitionService.SetToReady(true);
+
+                await transitionTask;
+            }
+            catch (OperationCanceledException)
+            {
+                transitionService.CancelCurrentTransition(ScreenTransitionCancelMode.HoldCurrentVisual);
+                throw;
+            }
         }
 
         public UniTask ReloadActiveSceneAsync(LoadSceneMode loadSceneMode = LoadSceneMode.Single)

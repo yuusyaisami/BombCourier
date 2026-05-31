@@ -1,5 +1,7 @@
 using System.Threading;
 using BC.Audio;
+using BC.Rendering.Transition;
+using BC.UI.Effect;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -22,14 +24,16 @@ namespace BC.UI.Title
         [SerializeField] private CanvasGroup buttonsCanvasGroup;
         [SerializeField] private Button playButton;
         [SerializeField] private Button settingsButton;
+        [SerializeField] private UINoiseOutlineMB playButtonOutline;
+        [SerializeField] private UINoiseOutlineMB settingsButtonOutline;
         [SerializeField, Min(0f)] private float buttonsFadeDuration = 0.4f;
 
         [Header("Right Panel")]
-        [SerializeField] private Image rightPanelImageA;
-        [SerializeField] private Image rightPanelImageB;
+        [SerializeField] private UIScreenTransitionImageMB rightPanelTransitionImage;
         [SerializeField] private TitleWeightedSpriteSO titleWeightedSprites;
         [SerializeField] private Sprite settingsPanelSprite;
         [SerializeField, Min(0f)] private float rightPanelCrossFadeDuration = 0.3f;
+        [SerializeField] private ScreenTransitionProfileSO rightPanelTransitionProfile;
 
         [Header("Page Animation")]
         [SerializeField, Min(0f)] private float pageInDuration = 0.35f;
@@ -40,10 +44,10 @@ namespace BC.UI.Title
         [SerializeField] private AudioDataSO buttonFocusSound;
         [Tooltip("ボタンをクリックしたときの SE です。")]
         [SerializeField] private AudioDataSO buttonClickSound;
+        [Tooltip("ロゴを回転させるときの SE です。")]
+        [SerializeField] private AudioDataSO logoSpinSound;
 
         private CanvasGroup pageCanvasGroup;
-        private Image activeRightPanel;
-        private Image inactiveRightPanel;
         private bool settingsFocused;
 
         private void Awake()
@@ -64,8 +68,17 @@ namespace BC.UI.Title
                 logoTransform.localEulerAngles = Vector3.zero;
             }
 
-            activeRightPanel = rightPanelImageA;
-            inactiveRightPanel = rightPanelImageB;
+            if (rightPanelTransitionImage != null)
+                rightPanelTransitionImage.SetDefaultProfile(rightPanelTransitionProfile);
+
+            if (playButtonOutline == null && playButton != null)
+                playButtonOutline = playButton.GetComponentInChildren<UINoiseOutlineMB>(true);
+
+            if (settingsButtonOutline == null && settingsButton != null)
+                settingsButtonOutline = settingsButton.GetComponentInChildren<UINoiseOutlineMB>(true);
+
+            playButtonOutline?.SetFocused(false);
+            settingsButtonOutline?.SetFocused(false);
 
             // ボタンイベント登録
             if (playButton != null) playButton.onClick.AddListener(OnPlayButtonClicked);
@@ -112,6 +125,8 @@ namespace BC.UI.Title
 
             // ロゴアニメーション ("ぐるぐるバン！")
             await PlayLogoIntroAsync(ct);
+            if (logoSpinSound != null)
+                AudioSystemMB.Instance?.PlaySE(logoSpinSound);
 
             // ボタンをフェードイン
             if (buttonsCanvasGroup != null)
@@ -130,6 +145,8 @@ namespace BC.UI.Title
             // ゲームプレイボタンに初期フォーカスを当てる
             if (playButton != null)
                 EventSystem.current?.SetSelectedGameObject(playButton.gameObject);
+
+            RefreshButtonOutlines();
         }
 
         public override async UniTask HideAsync(CancellationToken ct)
@@ -146,6 +163,48 @@ namespace BC.UI.Title
 
             IsShowing = false;
             gameObject.SetActive(false);
+        }
+
+        public async UniTask RestoreFromSettingsAsync(CancellationToken ct)
+        {
+            IsShowing = true;
+            gameObject.SetActive(true);
+            pageCanvasGroup.alpha = 0f;
+
+            await pageCanvasGroup
+                .DOFade(1f, pageInDuration)
+                .SetEase(Ease.OutQuad)
+                .SetUpdate(true)
+                .WithCancellation(ct);
+
+            SetInitialRightPanelSprite();
+
+            if (buttonsCanvasGroup != null)
+            {
+                buttonsCanvasGroup.alpha = 0f;
+                await buttonsCanvasGroup
+                    .DOFade(1f, buttonsFadeDuration)
+                    .SetEase(Ease.OutQuad)
+                    .SetUpdate(true)
+                    .WithCancellation(ct);
+
+                buttonsCanvasGroup.interactable = true;
+            }
+
+            pageCanvasGroup.interactable = true;
+
+            if (playButton != null)
+                EventSystem.current?.SetSelectedGameObject(playButton.gameObject);
+
+            RefreshButtonOutlines();
+        }
+
+        private void Update()
+        {
+            if (!IsShowing)
+                return;
+
+            RefreshButtonOutlines();
         }
 
         private async UniTask PlayLogoIntroAsync(CancellationToken ct)
@@ -179,8 +238,8 @@ namespace BC.UI.Title
                 ? titleWeightedSprites.PickRandom()
                 : null;
 
-            if (activeRightPanel != null) { activeRightPanel.sprite = sprite; activeRightPanel.color = Color.white; }
-            if (inactiveRightPanel != null) { inactiveRightPanel.sprite = null; inactiveRightPanel.color = Color.clear; }
+            if (sprite != null && rightPanelTransitionImage != null)
+                rightPanelTransitionImage.SetImmediateSprite(sprite);
         }
 
         private void SetSettingsFocus(bool focused)
@@ -191,24 +250,38 @@ namespace BC.UI.Title
             Sprite targetSprite = focused ? settingsPanelSprite
                 : (titleWeightedSprites != null ? titleWeightedSprites.PickRandom() : null);
 
-            CrossFadeRightPanel(targetSprite).Forget();
+            TransitionRightPanelAsync(targetSprite).Forget();
         }
 
-        private async UniTaskVoid CrossFadeRightPanel(Sprite newSprite)
+        private async UniTaskVoid TransitionRightPanelAsync(Sprite newSprite)
         {
-            CancellationToken ct = destroyCancellationToken;
+            if (rightPanelTransitionImage == null)
+                return;
 
-            // inactivePanel に新しい画像をセットしてフェードイン、activePanel はフェードアウト
-            inactiveRightPanel.sprite = newSprite;
-            inactiveRightPanel.color = Color.clear;
+            if (newSprite == null)
+                newSprite = rightPanelTransitionImage.CurrentSprite;
 
-            UniTask fadeIn = inactiveRightPanel.DOColor(Color.white, rightPanelCrossFadeDuration).SetUpdate(true).WithCancellation(ct);
-            UniTask fadeOut = activeRightPanel.DOColor(Color.clear, rightPanelCrossFadeDuration).SetUpdate(true).WithCancellation(ct);
+            if (newSprite == null)
+                return;
 
-            await UniTask.WhenAll(fadeIn, fadeOut);
+            await rightPanelTransitionImage.TransitionToSpriteAsync(
+                newSprite,
+                rightPanelCrossFadeDuration,
+                rightPanelTransitionProfile,
+                destroyCancellationToken);
+        }
 
-            // A/B を入れ替える
-            (activeRightPanel, inactiveRightPanel) = (inactiveRightPanel, activeRightPanel);
+        private void RefreshButtonOutlines()
+        {
+            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+
+            bool playFocused = selected != null && playButton != null &&
+                               (selected == playButton.gameObject || selected.transform.IsChildOf(playButton.transform));
+            bool settingsFocusedNow = selected != null && settingsButton != null &&
+                                      (selected == settingsButton.gameObject || selected.transform.IsChildOf(settingsButton.transform));
+
+            playButtonOutline?.SetFocused(playFocused);
+            settingsButtonOutline?.SetFocused(settingsFocusedNow);
         }
 
         private void OnPlayButtonClicked()
@@ -239,8 +312,23 @@ namespace BC.UI.Title
             trigger.triggers.Add(onSelect);
 
             var onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            onPointerEnter.callback.AddListener(_ => PlayFocusSound());
+            onPointerEnter.callback.AddListener(_ =>
+            {
+                PlayFocusSound();
+                SelectIfNeeded(button.gameObject);
+            });
             trigger.triggers.Add(onPointerEnter);
+        }
+
+        private static void SelectIfNeeded(GameObject target)
+        {
+            if (target == null || EventSystem.current == null)
+                return;
+
+            if (EventSystem.current.currentSelectedGameObject == target)
+                return;
+
+            EventSystem.current.SetSelectedGameObject(target);
         }
 
         private void PlayFocusSound()

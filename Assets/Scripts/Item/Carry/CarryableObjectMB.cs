@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BC.Base;
 using BC.Player;
+using BC.Stage;
 using UnityEngine;
 
 namespace BC.Item
@@ -8,7 +9,7 @@ namespace BC.Item
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class CarryableObjectMB : MonoBehaviour, ICarryableItem, ICarryReleaseOwnerCollisionGuard, IInteractionPromptDetailTextProvider
+    public sealed class CarryableObjectMB : MonoBehaviour, ICarryableItem, ICarryReleaseOwnerCollisionGuard, IInteractionPromptDetailTextProvider, IStageCheckpointParticipant
     {
         [Header("Carry")]
         [Tooltip("このオブジェクトを持ち運び可能にするかを指定します。")]
@@ -101,6 +102,24 @@ namespace BC.Item
             ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
         }
 
+        public object CaptureCheckpointState()
+        {
+            return new CarryableCheckpointState(isHandled);
+        }
+
+        public void RestoreCheckpointState(object state)
+        {
+            if (state is not CarryableCheckpointState checkpoint)
+                return;
+
+            ignoreOwnerCollisionUntilTime = 0f;
+            ClearIgnoredHolderCollisions();
+            isHandled = checkpoint.IsHandled;
+
+            if (isHandled && transform.parent != null)
+                ConfigureHeldHolderCollisionIgnore(transform.parent);
+        }
+
         private void ConfigureHeldHolderCollisionIgnore(Transform handlePoint)
         {
             ClearIgnoredHolderCollisions();
@@ -158,6 +177,16 @@ namespace BC.Item
             }
 
             ignoredHolderColliders.Clear();
+        }
+
+        private sealed class CarryableCheckpointState
+        {
+            public CarryableCheckpointState(bool isHandled)
+            {
+                IsHandled = isHandled;
+            }
+
+            public bool IsHandled { get; }
         }
     }
 }

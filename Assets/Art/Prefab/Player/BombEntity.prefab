@@ -122,7 +122,7 @@ MonoBehaviour:
   startFuseOnHandle: 1
   carryJumpHeightMultiplier: 0.511
   explosionThreshold: 8
-  explosionRadius: 25
+  explosionRadius: 4
   explosionForce: 25
   explosionEffectPrefab: {fileID: 4989894487266487057, guid: 8d06544832701e147836a1587c93280c, type: 3}
   startFuseEffect: {fileID: 7749647205861049833}
@@ -137,8 +137,8 @@ MonoBehaviour:
   impactExplosionGraceTime: 0.2
   heldImpactExplosionSpeed: 2
   heldCollisionProbePadding: 0.02
-  explosionSound: {fileID: 0}
-  fuseLoopSound: {fileID: 0}
+  explosionSound: {fileID: 11400000, guid: 7e81c50c635b4f74781af3e678f7b681, type: 2}
+  fuseLoopSound: {fileID: 11400000, guid: 2c1075ebec413884389308acdae7bef2, type: 2}
 --- !u!114 &7921931051376064983
 MonoBehaviour:
   m_ObjectHideFlags: 0

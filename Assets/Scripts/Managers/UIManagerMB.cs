@@ -14,6 +14,7 @@ namespace BC.Managers
         [SerializeField] private UIFadeEffectMB fadeEffect;
         [SerializeField] private UIGameSceneManagerMB gameSceneManager;
         [SerializeField] private UIIntroPathSkipMB introPathSkipUI;
+        [SerializeField] private UIManualSnapshotMB manualSnapshotUI;
         [SerializeField] private UIGameEndMB gameEndUI;
         [SerializeField] private UIToastStackMB toastStackUI;
         [SerializeField] private UITalkSystemMB talkSystemUI;
@@ -22,6 +23,7 @@ namespace BC.Managers
         public UIFadeEffectMB FadeEffect => fadeEffect;
         public UIGameSceneManagerMB GameSceneManager => gameSceneManager;
         public UIIntroPathSkipMB IntroPathSkipUI => introPathSkipUI;
+        public UIManualSnapshotMB ManualSnapshotUI => manualSnapshotUI;
         public UIGameEndMB GameEndUI => gameEndUI;
         public UIToastStackMB ToastStackUI => toastStackUI;
         public UITalkSystemMB TalkSystemUI => talkSystemUI;
@@ -55,6 +57,7 @@ namespace BC.Managers
             fadeEffect ??= GetComponentInChildren<UIFadeEffectMB>(true);
             gameSceneManager ??= GetComponentInChildren<UIGameSceneManagerMB>(true);
             introPathSkipUI ??= GetComponentInChildren<UIIntroPathSkipMB>(true);
+            manualSnapshotUI ??= GetComponentInChildren<UIManualSnapshotMB>(true);
             gameEndUI ??= GetComponentInChildren<UIGameEndMB>(true);
             toastStackUI ??= GetComponentInChildren<UIToastStackMB>(true);
             talkSystemUI ??= GetComponentInChildren<UITalkSystemMB>(true);

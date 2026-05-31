@@ -14,9 +14,8 @@ namespace BC.Base
         public EventService Events { get; set; }
         public EntityLifecycleService EntityLifecycle { get; set; }
 
-        // EntityValueStore は個別 Entity の状態、KernelValueStore は Scene 全体の共有状態を扱う。
+        // EntityValueStore は個別 Entity の状態を扱う。
         public ValueStoreService EntityValueStore { get; set; }
-        public KernelValueStoreService KernelValueStore { get; set; }
         // scene 内の生成・解決・反応値・action・camera をまとめて持つ。
         public EntitySpawnerService Spawner { get; set; }
         public EntityComponentResolverService EntityComponents { get; set; }
@@ -25,7 +24,7 @@ namespace BC.Base
         public CameraPathPlayerService CameraPaths { get; set; }
         public SceneCameraService Cameras { get; set; }
 
-        // 旧コード互換の alias。新規コードでは EntityValueStore / KernelValueStore を直接使う。
+        // 旧コード互換の alias。新規コードでは EntityValueStore を直接使う。
         public ValueStoreService ValueStore
         {
             get => EntityValueStore;
@@ -61,7 +60,6 @@ namespace BC.Base
             ReactiveValues?.Clear();
             EntityComponents?.Clear();
             EntityValueStore?.Clear();
-            KernelValueStore?.Clear();
             Events?.Clear();
         }
     }

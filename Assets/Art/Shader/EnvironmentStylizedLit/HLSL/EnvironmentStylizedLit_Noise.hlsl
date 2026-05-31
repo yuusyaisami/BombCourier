@@ -169,12 +169,18 @@ float ESL_EvaluateObjectSpaceNoise(float3 positionWS)
 
 float ESL_EvaluateNoiseBySpace(float3 positionWS, float noiseScale, float noiseStrength, int noiseSpace)
 {
+	float selectedNoise = 0.0;
+
 	if (noiseSpace == ESL_NOISE_SPACE_OBJECT)
 	{
-		return ESL_EvaluateScaledObjectSpaceNoise(positionWS, noiseScale, noiseStrength);
+		selectedNoise = ESL_EvaluateScaledObjectSpaceNoise(positionWS, noiseScale, noiseStrength);
+	}
+	else
+	{
+		selectedNoise = ESL_EvaluateScaledWorldNoise(positionWS, noiseScale, noiseStrength);
 	}
 
-	return ESL_EvaluateScaledWorldNoise(positionWS, noiseScale, noiseStrength);
+	return selectedNoise;
 }
 
 // ベース色へ掛けるサーフェスノイズ。

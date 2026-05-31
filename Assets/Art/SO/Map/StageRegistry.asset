@@ -18,48 +18,82 @@ MonoBehaviour:
     stageDifficulty: 0
     clearTimeThreshold: 6
     stagePrefab: {fileID: 2650056577534689671, guid: b04adfd443287f54daee122c974b5e03, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: afca999f71d6238408a00114651b34ff, type: 3}
+    previewSprite: {fileID: 21300000, guid: afca999f71d6238408a00114651b34ff, type: 3}
   - stageName: "\u9AD8\u4F4E\u5DEE"
     stageDescription: 
     stageDifficulty: 0
     clearTimeThreshold: 6
     stagePrefab: {fileID: 2650056577534689671, guid: e97e7e98249d8774095aa548b72fdc46, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: 5adf8e991bf52b24081e76671cefb452, type: 3}
+    previewSprite: {fileID: 21300000, guid: 5adf8e991bf52b24081e76671cefb452, type: 3}
   - stageName: "\u6163\u6027"
     stageDescription: 
     stageDifficulty: 0
-    clearTimeThreshold: 4
+    clearTimeThreshold: 6
     stagePrefab: {fileID: 2650056577534689671, guid: 6a346da4e6837e648bdd3b31d88639ac, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: d15e3bf59d1ad6943a1e8c02117f4ad6, type: 3}
+    previewSprite: {fileID: 21300000, guid: d15e3bf59d1ad6943a1e8c02117f4ad6, type: 3}
   - stageName: "\u6E96\u5099"
     stageDescription: 
     stageDifficulty: 0
-    clearTimeThreshold: 0
+    clearTimeThreshold: 6
     stagePrefab: {fileID: 2650056577534689671, guid: 17be5cab470d72c49a2643903b378470, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: d8903752c5658f44681774ff6ca86367, type: 3}
+    previewSprite: {fileID: 21300000, guid: d8903752c5658f44681774ff6ca86367, type: 3}
   - stageName: "\u30AD\u30CE\u30B3"
     stageDescription: 
     stageDifficulty: 0
-    clearTimeThreshold: 0
+    clearTimeThreshold: 8
     stagePrefab: {fileID: 2650056577534689671, guid: c730ccdafe447b34a96eaefaec09d5ff, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: cc0c736c61e2f4d469d4b26c4e41d068, type: 3}
+    previewSprite: {fileID: 21300000, guid: cc0c736c61e2f4d469d4b26c4e41d068, type: 3}
   - stageName: "\u30EC\u30D0\u30FC"
     stageDescription: 
     stageDifficulty: 0
-    clearTimeThreshold: 0
+    clearTimeThreshold: 12
     stagePrefab: {fileID: 2650056577534689671, guid: 5c0e9538913a6ea48aa1a6f5785abc69, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: d00b066ceea8fee419c5bf09fd0852e9, type: 3}
+    previewSprite: {fileID: 21300000, guid: d00b066ceea8fee419c5bf09fd0852e9, type: 3}
   - stageName: "\u9060\u6295"
     stageDescription: 
     stageDifficulty: 0
-    clearTimeThreshold: 0
+    clearTimeThreshold: 15
     stagePrefab: {fileID: 2650056577534689671, guid: cdc68c8115aeffd4e8d56953e4f3f9ba, type: 3}
-  - stageName: 
+    backgroundSprite: {fileID: 21300000, guid: 4d7d6918683ed4d49af3e931ccdfb3ae, type: 3}
+    previewSprite: {fileID: 21300000, guid: 4d7d6918683ed4d49af3e931ccdfb3ae, type: 3}
+  - stageName: "\u507D\u308A"
     stageDescription: 
     stageDifficulty: 0
-    clearTimeThreshold: 0
+    clearTimeThreshold: 8
     stagePrefab: {fileID: 2650056577534689671, guid: abeca943bba43e8459581b2f3e0997c2, type: 3}
-  - stageName: "\u3069\u3063\u3061\uFF1F"
+    backgroundSprite: {fileID: 21300000, guid: 599dcb3a88daa9a498f1abb7bd118b13, type: 3}
+    previewSprite: {fileID: 21300000, guid: 599dcb3a88daa9a498f1abb7bd118b13, type: 3}
+  - stageName: "\u5148\u8AAD\u307F"
     stageDescription: 
     stageDifficulty: 0
-    clearTimeThreshold: 0
+    clearTimeThreshold: 12
     stagePrefab: {fileID: 2650056577534689671, guid: 3e34256d2c7a1304b8e842ed6343acf7, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: 24d1e355ac889ee448e9f9a4ca007f00, type: 3}
+    previewSprite: {fileID: 21300000, guid: 24d1e355ac889ee448e9f9a4ca007f00, type: 3}
   - stageName: "\u5B9F\u8DF5"
     stageDescription: 
     stageDifficulty: 0
-    clearTimeThreshold: 0
+    clearTimeThreshold: 12
     stagePrefab: {fileID: 2650056577534689671, guid: 8d558f1e2382cec4c9e671e5bde07a88, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: 836b52b07ad242c4085b77616724c728, type: 3}
+    previewSprite: {fileID: 21300000, guid: 836b52b07ad242c4085b77616724c728, type: 3}
+  - stageName: "\u30E9\u30D3\u30EA\u30F3\u30B9"
+    stageDescription: 
+    stageDifficulty: 0
+    clearTimeThreshold: 15
+    stagePrefab: {fileID: 2650056577534689671, guid: 93dae7a983659834081db8411c8255df, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: 36f50160bd2efc348a102250af0bcf74, type: 3}
+    previewSprite: {fileID: 21300000, guid: 36f50160bd2efc348a102250af0bcf74, type: 3}
+  - stageName: "\u76E3\u8996\u5854"
+    stageDescription: 
+    stageDifficulty: 0
+    clearTimeThreshold: 15
+    stagePrefab: {fileID: 2650056577534689671, guid: 79b2be2ba680f3246a55b86d5ba4b4c2, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: df89dca2776cf764299575dfd9d12f94, type: 3}
+    previewSprite: {fileID: 21300000, guid: df89dca2776cf764299575dfd9d12f94, type: 3}

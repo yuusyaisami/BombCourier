@@ -1,5 +1,6 @@
 using System.Threading;
 using BC.Audio;
+using BC.Manager;
 using BC.Managers;
 using BC.UI;
 using Cysharp.Threading.Tasks;
@@ -58,16 +59,19 @@ namespace BC.UI.Title
         private async UniTaskVoid ShowGameRootAsync(CancellationToken ct)
         {
             if (gameRootPage == null) return;
+            InputManagerMB.EnsureInstance().UnlockCursor();
             await gameRootPage.ShowAsync(ct);
         }
 
         /// <summary>GameRoot → TitleMain へ遷移する。</summary>
-        public async UniTask GoToMainPageAsync(CancellationToken ct)
+        public async UniTask GoToMainPageAsync(bool resetBGM, CancellationToken ct)
         {
             if (!TryLockTransition()) return;
 
             try
             {
+                InputManagerMB.EnsureInstance().UnlockCursor();
+
                 if (gameRootPage != null && gameRootPage.IsShowing)
                     await gameRootPage.HideAsync(ct);
 
@@ -75,7 +79,10 @@ namespace BC.UI.Title
                     await stageSelectPage.HideAsync(ct);
 
                 // タイトルメインページ表示と同時にタイトル BGM を再生する。
-                GameBGMManagerMB.Instance?.PlayTitleBGM();
+                if (resetBGM)
+                {
+                    GameBGMManagerMB.Instance?.PlayTitleBGM();
+                }
 
                 if (titleMainPage != null)
                     await titleMainPage.ShowAsync(ct);
@@ -93,6 +100,8 @@ namespace BC.UI.Title
 
             try
             {
+                InputManagerMB.EnsureInstance().UnlockCursor();
+
                 if (titleMainPage != null && titleMainPage.IsShowing)
                     await titleMainPage.HideAsync(ct);
 
@@ -105,18 +114,58 @@ namespace BC.UI.Title
             }
         }
 
-        /// <summary>設定パネルを開く（オーバーレイ表示）。</summary>
+        /// <summary>設定パネルを開く。TitleMain は閉じてから表示する。</summary>
         public async UniTask OpenSettingsAsync(CancellationToken ct)
         {
+            if (!TryLockTransition()) return;
+
             if (settingPanel == null)
             {
                 Debug.LogWarning($"[{nameof(TitleSceneManagerMB)}] settingPanel is not assigned.", this);
                 return;
             }
 
-            // TitleMain は非表示にせず上に重ねる
-            settingPanel.gameObject.SetActive(true);
-            await settingPanel.ShowPanelAsync().AttachExternalCancellation(ct).SuppressCancellationThrow();
+            try
+            {
+                InputManagerMB.EnsureInstance().UnlockCursor();
+
+                if (titleMainPage != null && titleMainPage.IsShowing)
+                    await titleMainPage.HideAsync(ct);
+
+                settingPanel.gameObject.SetActive(true);
+                await settingPanel.ShowPanelAsync().AttachExternalCancellation(ct).SuppressCancellationThrow();
+            }
+            finally
+            {
+                UnlockTransition();
+            }
+        }
+
+        /// <summary>設定を閉じたあとに TitleMain を復帰させる。</summary>
+        public async UniTask ReturnToTitleMainFromSettingsAsync(CancellationToken ct)
+        {
+            if (!TryLockTransition()) return;
+
+            try
+            {
+                InputManagerMB.EnsureInstance().UnlockCursor();
+
+                if (settingPanel != null && settingPanel.gameObject.activeSelf)
+                    settingPanel.gameObject.SetActive(true);
+
+                if (gameRootPage != null && gameRootPage.IsShowing)
+                    await gameRootPage.HideAsync(ct);
+
+                if (stageSelectPage != null && stageSelectPage.IsShowing)
+                    await stageSelectPage.HideAsync(ct);
+
+                if (titleMainPage != null)
+                    await titleMainPage.RestoreFromSettingsAsync(ct);
+            }
+            finally
+            {
+                UnlockTransition();
+            }
         }
 
         // ----------------------------------------------------------------

@@ -13,8 +13,6 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
     [CustomEditor(typeof(MovingPlatformMB), true)]
     public sealed class MovingPlatformAuthoringEditor : OdinEditor
     {
-        private static int selectedRailNodeIndex = -1;
-
         private readonly MovingPlatformSceneHandleController sceneHandleController = new();
 
         private MovingPlatformMB TypedTarget => target as MovingPlatformMB;
@@ -22,11 +20,13 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
         public override void OnInspectorGUI()
         {
             serializedObject.UpdateIfRequiredOrScript();
-            base.OnInspectorGUI();
+            DrawSummary();
+            DrawActions();
+            DrawRuntimeSettings();
             EditorGUILayout.Space();
-
-            // CameraPath と同様に、Inspector から選択した要素を Scene ハンドル編集へ直結する。
+            int selectedRailNodeIndex = MovingPlatformTreeEditorSelection.SelectedRailNodeIndex;
             MovingPlatformSceneHandleController.DrawInspectorNodeSelector(TypedTarget, ref selectedRailNodeIndex, RepaintSceneView);
+            MovingPlatformTreeEditorSelection.SelectedRailNodeIndex = selectedRailNodeIndex;
 
             UndoApplyUtility.ApplyModifiedProperties(serializedObject);
         }
@@ -38,7 +38,9 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                 return;
 
             serializedObject.UpdateIfRequiredOrScript();
+            int selectedRailNodeIndex = MovingPlatformTreeEditorSelection.SelectedRailNodeIndex;
             sceneHandleController.DrawSceneHandles(movingPlatform, serializedObject, ref selectedRailNodeIndex, RepaintSceneView);
+            MovingPlatformTreeEditorSelection.SelectedRailNodeIndex = selectedRailNodeIndex;
             UndoApplyUtility.ApplyModifiedProperties(serializedObject);
         }
 
@@ -47,10 +49,135 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
             SceneView.RepaintAll();
             Repaint();
         }
+
+        private void DrawSummary()
+        {
+            MovingPlatformMB movingPlatform = TypedTarget;
+            if (movingPlatform == null)
+                return;
+
+            IReadOnlyList<MovingPlatformTreeValidationIssue> issues = movingPlatform.ValidateTreeAuthoring();
+            int errorCount = 0;
+            int warningCount = 0;
+            for (int i = 0; i < issues.Count; i++)
+            {
+                if (issues[i].Severity == MovingPlatformTreeValidationSeverity.Error)
+                    errorCount++;
+                else if (issues[i].Severity == MovingPlatformTreeValidationSeverity.Warning)
+                    warningCount++;
+            }
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("MovingPlatform Tree", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("Rail Nodes", movingPlatform.EffectiveTreeRailNodeCount.ToString());
+                EditorGUILayout.LabelField("Selectors", movingPlatform.EffectiveTreeSelectorCount.ToString());
+                EditorGUILayout.LabelField("Validation", $"Errors: {errorCount}  Warnings: {warningCount}");
+            }
+        }
+
+        private void DrawActions()
+        {
+            MovingPlatformMB movingPlatform = TypedTarget;
+            if (movingPlatform == null)
+                return;
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("Open Tree Editor"))
+                    MovingPlatformTreeWindow.Open(movingPlatform);
+
+                if (GUILayout.Button("Migrate Legacy Data"))
+                    TryRunMigration(movingPlatform);
+            }
+
+            if (GUILayout.Button("Refresh Validation"))
+                Repaint();
+        }
+
+        private void TryRunMigration(MovingPlatformMB movingPlatform)
+        {
+            Undo.RecordObject(movingPlatform, "Migrate MovingPlatform Tree");
+            if (!movingPlatform.TryApplyLegacyMigration(out string failureReason))
+            {
+                EditorUtility.DisplayDialog(
+                    "MovingPlatform Migration Failed",
+                    string.IsNullOrWhiteSpace(failureReason) ? "Migration failed." : failureReason,
+                    "Close");
+                return;
+            }
+
+            PrefabUtility.RecordPrefabInstancePropertyModifications(movingPlatform);
+            EditorUtility.SetDirty(movingPlatform);
+            serializedObject.UpdateIfRequiredOrScript();
+            RepaintSceneView();
+        }
+
+        private void DrawRuntimeSettings()
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Runtime Settings", EditorStyles.boldLabel);
+            DrawProperty("motionTargets");
+            DrawProperty("autoCollectChildRigidbodies");
+            DrawProperty("usePlatformTransformScaleForRail");
+            DrawProperty("dynamicTargetMaxLinearSpeed");
+            DrawProperty("maxRouteLinearSpeed");
+            DrawProperty("maxTransferLinearSpeed");
+            DrawProperty("maxReportedSupportSpeed");
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Signals", EditorStyles.boldLabel);
+            DrawProperty("publishLayerSignals");
+            SerializedProperty publishSignals = serializedObject.FindProperty("publishLayerSignals");
+            if (publishSignals != null && publishSignals.boolValue)
+            {
+                DrawProperty("layerEnabledSignal");
+                DrawProperty("layerDisabledSignal");
+                DrawProperty("sequenceCompletedSignal");
+            }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Path Visualization", EditorStyles.boldLabel);
+            DrawProperty("showPathInEditor");
+            DrawProperty("showPathInGame");
+            DrawProperty("pathVisualizationPointRadius");
+
+            SerializedProperty showPathInGame = serializedObject.FindProperty("showPathInGame");
+            if (showPathInGame != null && showPathInGame.boolValue)
+            {
+                DrawProperty("runtimePathLineWidth");
+                DrawProperty("runtimePathColor");
+                DrawProperty("runtimePathMaterial");
+                DrawProperty("enableRuntimePathEmission");
+                DrawProperty("runtimePathEmissionColor");
+                DrawProperty("runtimePathActiveEmissionStrength");
+                DrawProperty("runtimePathInactiveEmissionStrength");
+                DrawProperty("runtimePathSyncSimpleBoost");
+                DrawProperty("runtimePathActiveSimpleBoostIntensity");
+                DrawProperty("runtimePathInactiveSimpleBoostIntensity");
+                DrawProperty("dimInactiveRuntimePath");
+                DrawProperty("runtimePathInactiveAlphaMultiplier");
+            }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Debug", EditorStyles.boldLabel);
+            DrawProperty("enableLayerDebugLog");
+            SerializedProperty debugLog = serializedObject.FindProperty("enableLayerDebugLog");
+            if (debugLog != null && debugLog.boolValue)
+                DrawProperty("layerDebugLogInterval");
+        }
+
+        private void DrawProperty(string propertyName)
+        {
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            if (property != null)
+                EditorGUILayout.PropertyField(property, true);
+        }
     }
 
     public sealed class MovingPlatformSceneHandleController
     {
+        private const string TreeAuthoringFieldName = "treeAuthoring";
         private const string RailNodesFieldName = "railNodes";
         private const string LocalPositionFieldName = "localPosition";
         private const string SourceKindFieldName = "sourceKind";
@@ -172,7 +299,10 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
 
         private static bool TrySetNodeLiteralPosition(SerializedObject serializedObject, int railNodeIndex, Vector3 localPosition)
         {
-            SerializedProperty railNodesProperty = serializedObject.FindProperty(RailNodesFieldName);
+            SerializedProperty treeAuthoringProperty = serializedObject.FindProperty(TreeAuthoringFieldName);
+            SerializedProperty railNodesProperty = treeAuthoringProperty != null
+                ? treeAuthoringProperty.FindPropertyRelative(RailNodesFieldName)
+                : null;
             if (railNodesProperty == null || !railNodesProperty.isArray)
                 return false;
 

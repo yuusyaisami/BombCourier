@@ -722,6 +722,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1506801381519090931}
   - component: {fileID: 7067108101993753816}
+  - component: {fileID: 1818221325975524334}
+  - component: {fileID: -2564731540987235114}
+  - component: {fileID: 4727190523488949106}
   m_Layer: 0
   m_Name: MovableStair3Object1
   m_TagString: Ground
@@ -755,7 +758,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3027825722322984655}
   serializedVersion: 5
-  m_Mass: 0.25
+  m_Mass: 0.8
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -774,6 +777,59 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1818221325975524334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3027825722322984655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e835f99c29e6964bb5eb0764d32e3f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.EntityMB
+  tagReference:
+    id: 0
+    path: 
+  flags: 0
+  autoInstallRigidbodySupportRiders: 1
+--- !u!114 &-2564731540987235114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3027825722322984655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95d106de869059f46ba96319f276b075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageSaveMarkMB
+  excludeFromCheckpoint: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
+--- !u!114 &4727190523488949106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3027825722322984655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a2160c8625a4f9a9b8e4b16a84e9b0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Base.RigidbodySupportRiderMB
+  targetRigidbody: {fileID: 7067108101993753816}
+  maxSupportAngle: 55
+  ignoreWhenKinematic: 1
+  ignoreWhenParented: 1
+  carryPositionRate: 1
+  carryVelocityRate: 1
+  maxCarryCorrectionSpeed: 30
+  maxSupportVelocity: 30
 --- !u!1 &6660157296826772693
 GameObject:
   m_ObjectHideFlags: 0

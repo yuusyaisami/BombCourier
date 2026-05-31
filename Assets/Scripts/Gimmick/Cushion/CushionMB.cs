@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BC.Base;
 using BC.Item;
+using BC.Stage;
 using UnityEngine;
 
 namespace BC.Gimmick.Cushion
@@ -8,7 +9,7 @@ namespace BC.Gimmick.Cushion
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class CushionMB : MonoBehaviour, ICarryableItem, ICushionImpactSource, ICarryReleaseOwnerCollisionGuard
+    public sealed class CushionMB : MonoBehaviour, ICarryableItem, ICushionImpactSource, ICarryReleaseOwnerCollisionGuard, IStageCheckpointParticipant
     {
         [Header("Carry")]
         [Tooltip("このクッションを持ち運び可能にするかを指定します。")]
@@ -109,6 +110,24 @@ namespace BC.Gimmick.Cushion
             ConfigureHeldHolderCollisionIgnore(ownerRoot);
             ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
             LogCushionCarryDebug($"IgnoreOwnerCollisionAfterRelease owner={ownerRoot.name} duration={durationSeconds:F3} ignoredCount={ignoredHolderColliders.Count}");
+        }
+
+        public object CaptureCheckpointState()
+        {
+            return new CushionCheckpointState(isHandled);
+        }
+
+        public void RestoreCheckpointState(object state)
+        {
+            if (state is not CushionCheckpointState checkpoint)
+                return;
+
+            ignoreOwnerCollisionUntilTime = 0f;
+            ClearIgnoredHolderCollisions();
+            isHandled = checkpoint.IsHandled;
+
+            if (isHandled && transform.parent != null)
+                ConfigureHeldHolderCollisionIgnore(transform.parent);
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -218,6 +237,16 @@ namespace BC.Gimmick.Cushion
         private void LogCushionCarryDebug(string message)
         {
             Debug.Log($"[CushionCarry] {name} :: {message}", this);
+        }
+
+        private sealed class CushionCheckpointState
+        {
+            public CushionCheckpointState(bool isHandled)
+            {
+                IsHandled = isHandled;
+            }
+
+            public bool IsHandled { get; }
         }
     }
 }

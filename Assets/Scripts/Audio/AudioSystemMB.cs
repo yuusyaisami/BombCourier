@@ -84,31 +84,46 @@ namespace BC.Audio
         // loopCount: 1 = 単発, 2+ = 指定回数ループ, -1 = 無制限ループ
         public void PlaySE(AudioClip clip, int loopCount = 1)
         {
-            if (clip == null) return;
+            TryPlaySE(clip, loopCount);
+        }
+
+        // AudioDataSO を使った SE 再生。baseVolume と pitch を SO から読み取る。
+        public void PlaySE(AudioDataSO data, int loopCount = 1)
+        {
+            TryPlaySE(data, loopCount);
+        }
+
+        // 再生成功可否を返す SE API。重要 SE でフォールバック判定したいときに使う。
+        public bool TryPlaySE(AudioClip clip, int loopCount = 1)
+        {
+            if (clip == null)
+                return false;
 
             AudioObjectMB obj = GetFromPool();
             if (obj == null)
             {
                 Debug.LogWarning($"{nameof(AudioSystemMB)}: Pool exhausted. SE '{clip.name}' was not played.");
-                return;
+                return false;
             }
 
             float gameVolume = sfxVolumeHandle != null ? sfxVolumeHandle.CurrentValue : 1f;
             bool loop = loopCount < 0;
             obj.PlaySE(clip, gameVolume, loop, loopCount);
             activeSE.Add(obj);
+            return true;
         }
 
-        // AudioDataSO を使った SE 再生。baseVolume と pitch を SO から読み取る。
-        public void PlaySE(AudioDataSO data, int loopCount = 1)
+        // 再生成功可否を返す SE API。重要 SE でフォールバック判定したいときに使う。
+        public bool TryPlaySE(AudioDataSO data, int loopCount = 1)
         {
-            if (data == null || data.Clip == null) return;
+            if (data == null || data.Clip == null)
+                return false;
 
             AudioObjectMB obj = GetFromPool();
             if (obj == null)
             {
                 Debug.LogWarning($"{nameof(AudioSystemMB)}: Pool exhausted. SE '{data.Clip.name}' was not played.");
-                return;
+                return false;
             }
 
             float gameVolume = sfxVolumeHandle != null ? sfxVolumeHandle.CurrentValue : 1f;
@@ -116,6 +131,7 @@ namespace BC.Audio
             bool loop = loopCount < 0;
             obj.PlaySE(data.Clip, effectiveVolume, loop, loopCount, data.Pitch, data.BaseVolume);
             activeSE.Add(obj);
+            return true;
         }
 
         public void StopAllSE()

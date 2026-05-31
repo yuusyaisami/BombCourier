@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94e94c1c30b15f743920456ff08f61c4, type: 3}
   m_Name: Pickup
   m_EditorClassIdentifier: Assembly-CSharp::BC.Audio.AudioDataSO
-  clip: {fileID: 8300000, guid: 8626dc19807fb1d43a041a6c22f284e0, type: 3}
+  clip: {fileID: 8300000, guid: ff084fc0d9b907a4bbf3e6bf05c1e419, type: 3}
   baseVolume: 1
   pitch: 1

@@ -7,6 +7,7 @@ using BC.Base;
 using BC.Player;
 using BC.Rendering;
 using BC.Utility;
+using BC.Stage;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -153,7 +154,7 @@ namespace BC.Gimmick.LeverObject
     }
 
     [DisallowMultipleComponent]
-    public sealed class LeverObjectMB : MonoBehaviour, IInteractionTarget, IInteractionPromptProvider, IInteractionPromptDetailTextProvider
+    public sealed class LeverObjectMB : MonoBehaviour, IInteractionTarget, IInteractionPromptProvider, IInteractionPromptDetailTextProvider, IStageCheckpointParticipant
     {
         [Header("Interaction")]
         [Tooltip("インタラクト位置に使うワールド Transform です。未指定時は自身の Transform を使います。")]
@@ -296,6 +297,14 @@ namespace BC.Gimmick.LeverObject
                 nextMiddleStepTowardRight = currentState != LeverDirection.Right;
                 SyncPoseAndVisualImmediate();
             }
+        }
+
+        private void Start()
+        {
+            if (!Application.isPlaying)
+                return;
+
+            ApplyStateVariables(currentState, default);
         }
 
         private void OnDisable()
@@ -565,7 +574,7 @@ namespace BC.Gimmick.LeverObject
                 return;
             }
 
-            if (!ValueStoreWriteScopeUtility.IsKeyCompatible(scope, descriptor))
+            if (!IsScopeCompatibleForLeverWrite(scope, descriptor))
             {
                 Debug.LogWarning($"{nameof(LeverObjectMB)}: Scope '{scope}' does not match key '{descriptor.Path}'.", this);
                 return;
@@ -581,6 +590,20 @@ namespace BC.Gimmick.LeverObject
             ValueKey<bool> key = descriptor.GetKey<bool>();
             for (int i = 0; i < resolvedCount; i++)
                 sceneKernel.EntityValueStore.Set(entityTargetBuffer[i], key, value);
+        }
+
+        private static bool IsScopeCompatibleForLeverWrite(ValueStoreWriteStoreScope scope, in ValueKeyDescriptor descriptor)
+        {
+            if (ValueStoreWriteScopeUtility.IsKeyCompatible(scope, descriptor))
+                return true;
+
+            if (!ValueStoreWriteScopeUtility.IsKernelEntityScope(scope))
+                return false;
+
+            // Existing puzzle keys under GameLogic.* are authored as scene-shared state
+            // even though the path does not use the Kernel.* prefix.
+            return !string.IsNullOrWhiteSpace(descriptor.Path) &&
+                   descriptor.Path.StartsWith("GameLogic.", StringComparison.Ordinal);
         }
 
         private void ExecuteStateActions(LeverDirection state, InteractionEventData eventData)
@@ -675,6 +698,42 @@ namespace BC.Gimmick.LeverObject
                 return;
 
             AudioSource.PlayClipAtPoint(sound.Clip, transform.position, sound.BaseVolume);
+        }
+
+        public object CaptureCheckpointState()
+        {
+            return new LeverCheckpointState(currentState, nextMiddleStepTowardRight);
+        }
+
+        public void RestoreCheckpointState(object state)
+        {
+            if (state is not LeverCheckpointState checkpoint)
+                return;
+
+            if (transitionCoroutine != null)
+            {
+                StopCoroutine(transitionCoroutine);
+                transitionCoroutine = null;
+            }
+
+            isTransitioning = false;
+            currentState = NormalizeDirection(checkpoint.CurrentState);
+            nextMiddleStepTowardRight = checkpoint.NextMiddleStepTowardRight;
+            SyncPoseAndVisualImmediate();
+            ApplyStateVariables(currentState, default);
+        }
+
+        [Serializable]
+        private sealed class LeverCheckpointState
+        {
+            public LeverCheckpointState(LeverDirection currentState, bool nextMiddleStepTowardRight)
+            {
+                CurrentState = currentState;
+                NextMiddleStepTowardRight = nextMiddleStepTowardRight;
+            }
+
+            public LeverDirection CurrentState { get; }
+            public bool NextMiddleStepTowardRight { get; }
         }
     }
 }
