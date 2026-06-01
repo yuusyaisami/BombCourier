@@ -5,6 +5,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace BC.Editor.Tests
 {
@@ -81,6 +82,29 @@ namespace BC.Editor.Tests
             ApplyChanges();
 
             Assert.AreEqual("Happy | Guide: Line 1 Line 2", GetSummary(talkStep));
+
+            SerializedProperty dialogueStep = AddStep("BC.ActionSystem.ShowDialogueStepAuthoring");
+            dialogueStep.FindPropertyRelative("dialogueRequestData").FindPropertyRelative("speakerName").stringValue = "Narrator";
+            dialogueStep.FindPropertyRelative("dialogueRequestData").FindPropertyRelative("dialogueText").stringValue = "Read this first.";
+            ApplyChanges();
+
+            Assert.AreEqual("Narrator: Read this first.", GetSummary(dialogueStep));
+
+            SerializedProperty overlayStep = AddStep("BC.ActionSystem.ShowScreenOverlayStepAuthoring");
+            SerializedProperty overlayRequest = overlayStep.FindPropertyRelative("screenOverlayShowRequestData");
+            overlayRequest.FindPropertyRelative("displayId").FindPropertyRelative("value").stringValue = "tutorial.move";
+            overlayRequest.FindPropertyRelative("contentKind").enumValueIndex = 1;
+            overlayRequest.FindPropertyRelative("text").stringValue = "Move here.";
+            overlayRequest.FindPropertyRelative("fontSize").floatValue = 42f;
+            ApplyChanges();
+
+            Assert.AreEqual("tutorial.move | Move here. (42pt)", GetSummary(overlayStep));
+
+            SerializedProperty hideOverlayStep = AddStep("BC.ActionSystem.HideScreenOverlayStepAuthoring");
+            hideOverlayStep.FindPropertyRelative("screenOverlayHideRequestData").FindPropertyRelative("displayId").FindPropertyRelative("value").stringValue = "tutorial.move";
+            ApplyChanges();
+
+            Assert.AreEqual("Hide tutorial.move", GetSummary(hideOverlayStep));
 
             SerializedProperty hideTalkStep = AddStep("BC.ActionSystem.HideTalkStepAuthoring");
             SerializedProperty hideRequestProperty = hideTalkStep.FindPropertyRelative("requestData");
@@ -240,6 +264,159 @@ namespace BC.Editor.Tests
             serializedObject.Update();
 
             Assert.IsTrue(talkStep.FindPropertyRelative("talkRequestData").isExpanded);
+        }
+
+        [Test]
+        public void InlineActionDrawer_ExpandedShowDialogue_AutoExpandsDialogueRequestData()
+        {
+            SerializedProperty dialogueStep = AddStep("BC.ActionSystem.ShowDialogueStepAuthoring");
+            SerializedProperty dialogueRequestData = dialogueStep.FindPropertyRelative("dialogueRequestData");
+            dialogueRequestData.isExpanded = false;
+            ApplyChanges();
+
+            PropertyDrawer drawer = CreateDrawer("BC.Editor.ActionSystem.InlineActionDrawer");
+            SerializedProperty property = serializedObject.FindProperty("inlineAction");
+            drawer.OnGUI(new Rect(0f, 0f, 600f, drawer.GetPropertyHeight(property, GUIContent.none)), property, GUIContent.none);
+
+            Assert.IsTrue(dialogueStep.FindPropertyRelative("dialogueRequestData").isExpanded);
+        }
+
+        [Test]
+        public void InlineActionDrawer_ExpandedShowScreenOverlay_AutoExpandsRequestData()
+        {
+            SerializedProperty overlayStep = AddStep("BC.ActionSystem.ShowScreenOverlayStepAuthoring");
+            SerializedProperty requestProperty = overlayStep.FindPropertyRelative("screenOverlayShowRequestData");
+            requestProperty.isExpanded = false;
+            ApplyChanges();
+
+            PropertyDrawer drawer = CreateDrawer("BC.Editor.ActionSystem.InlineActionDrawer");
+            SerializedProperty property = serializedObject.FindProperty("inlineAction");
+            drawer.OnGUI(new Rect(0f, 0f, 600f, drawer.GetPropertyHeight(property, GUIContent.none)), property, GUIContent.none);
+
+            Assert.IsTrue(overlayStep.FindPropertyRelative("screenOverlayShowRequestData").isExpanded);
+        }
+
+        [Test]
+        public void ScreenOverlayLayer_ShowImageRequest_CreatesConfiguredEntry()
+        {
+            GameObject layerObject = new("OverlayLayer", typeof(RectTransform));
+            Texture2D texture = null;
+            Sprite sprite = null;
+
+            try
+            {
+                object layer = AddComponent(layerObject, "BC.UI.UIScreenOverlayLayerMB");
+                texture = new Texture2D(4, 4);
+                sprite = Sprite.Create(texture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f));
+
+                object request = CreateScreenOverlayShowRequest(
+                    displayId: "tutorial.image",
+                    contentKindIndex: 0,
+                    anchoredPosition: new Vector2(18f, -24f),
+                    size: new Vector2(128f, 64f),
+                    sprite: sprite,
+                    imageColor: Color.red);
+
+                Assert.IsTrue(InvokeScreenOverlayShow(layer, request));
+                Assert.AreEqual(1, GetPropertyValue<int>(layer, "ActiveDisplayCount"));
+
+                RectTransform root = GetOnlyOverlayRoot(layerObject);
+                Assert.AreEqual(new Vector2(18f, -24f), root.anchoredPosition);
+
+                object entry = root.GetComponent(GetTypeByFullName("BC.UI.UIScreenOverlayEntryMB"));
+                Assert.IsNotNull(entry);
+
+                Image imageGraphic = GetPropertyValue<Image>(entry, "ImageGraphic");
+                Component textGraphic = GetPropertyValue<Component>(entry, "TextGraphic");
+                Assert.AreEqual(sprite, imageGraphic.sprite);
+                Assert.AreEqual(Color.red, imageGraphic.color);
+                Assert.AreEqual(new Vector2(128f, 64f), imageGraphic.rectTransform.sizeDelta);
+                Assert.IsFalse(textGraphic.gameObject.activeSelf);
+            }
+            finally
+            {
+                if (sprite != null)
+                    UnityEngine.Object.DestroyImmediate(sprite);
+
+                if (texture != null)
+                    UnityEngine.Object.DestroyImmediate(texture);
+
+                UnityEngine.Object.DestroyImmediate(layerObject);
+            }
+        }
+
+        [Test]
+        public void ScreenOverlayLayer_ShowSameDisplayId_ReplacesExistingEntry()
+        {
+            GameObject layerObject = new("OverlayLayer", typeof(RectTransform));
+
+            try
+            {
+                object layer = AddComponent(layerObject, "BC.UI.UIScreenOverlayLayerMB");
+
+                object firstRequest = CreateScreenOverlayShowRequest(
+                    displayId: "tutorial.shared",
+                    contentKindIndex: 1,
+                    text: "First",
+                    fontSize: 24f);
+
+                object secondRequest = CreateScreenOverlayShowRequest(
+                    displayId: "tutorial.shared",
+                    contentKindIndex: 1,
+                    anchoredPosition: new Vector2(90f, 12f),
+                    text: "Second",
+                    fontSize: 30f);
+
+                Assert.IsTrue(InvokeScreenOverlayShow(layer, firstRequest));
+                RectTransform firstRoot = GetOnlyOverlayRoot(layerObject);
+
+                Assert.IsTrue(InvokeScreenOverlayShow(layer, secondRequest));
+                Assert.AreEqual(1, GetPropertyValue<int>(layer, "ActiveDisplayCount"));
+                RectTransform secondRoot = GetOnlyOverlayRoot(layerObject);
+                Assert.AreNotSame(firstRoot, secondRoot);
+                Assert.AreEqual(new Vector2(90f, 12f), secondRoot.anchoredPosition);
+
+                object entry = secondRoot.GetComponent(GetTypeByFullName("BC.UI.UIScreenOverlayEntryMB"));
+                Component textGraphic = GetPropertyValue<Component>(entry, "TextGraphic");
+                Assert.AreEqual("Second", GetPropertyValue<string>(textGraphic, "text"));
+                Assert.AreEqual(30f, GetPropertyValue<float>(textGraphic, "fontSize"));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(layerObject);
+            }
+        }
+
+        [Test]
+        public void ScreenOverlayLayer_HideUnknown_ReturnsFalse_AndPrefabShowCreatesHost()
+        {
+            GameObject layerObject = new("OverlayLayer", typeof(RectTransform));
+            GameObject prefabTemplate = new("OverlayPrefabTemplate", typeof(RectTransform), typeof(Image));
+
+            try
+            {
+                object layer = AddComponent(layerObject, "BC.UI.UIScreenOverlayLayerMB");
+                Assert.IsFalse(InvokeScreenOverlayHide(layer, "missing"));
+
+                object request = CreateScreenOverlayShowRequest(
+                    displayId: "tutorial.prefab",
+                    contentKindIndex: 2,
+                    anchoredPosition: new Vector2(-32f, 40f),
+                    prefab: prefabTemplate);
+
+                Assert.IsTrue(InvokeScreenOverlayShow(layer, request));
+                Assert.AreEqual(1, GetPropertyValue<int>(layer, "ActiveDisplayCount"));
+
+                RectTransform root = GetOnlyOverlayRoot(layerObject);
+                Assert.AreEqual(new Vector2(-32f, 40f), root.anchoredPosition);
+                Assert.AreEqual(1, root.childCount);
+                Assert.IsNotNull(root.GetChild(0).GetComponent<RectTransform>());
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(prefabTemplate);
+                UnityEngine.Object.DestroyImmediate(layerObject);
+            }
         }
 
         [Test]
@@ -616,6 +793,82 @@ namespace BC.Editor.Tests
             }
 
             return texts.ToArray();
+        }
+
+        private static object AddComponent(GameObject target, string typeName)
+        {
+            Type componentType = GetTypeByFullName(typeName);
+            Component component = target.AddComponent(componentType);
+            Assert.IsNotNull(component, $"Expected component '{typeName}'.");
+            return component;
+        }
+
+        private static object CreateScreenOverlayShowRequest(
+            string displayId,
+            int contentKindIndex,
+            Vector2? anchoredPosition = null,
+            Vector2? size = null,
+            Sprite sprite = null,
+            Color? imageColor = null,
+            string text = null,
+            float? fontSize = null,
+            GameObject prefab = null)
+        {
+            Type requestType = GetTypeByFullName("BC.Managers.ScreenOverlayShowRequestData");
+            object request = Activator.CreateInstance(requestType);
+
+            SetFieldValue(requestType, ref request, "displayId", CreateScreenOverlayDisplayId(displayId));
+            SetFieldValue(requestType, ref request, "contentKind", Enum.ToObject(GetTypeByFullName("BC.Managers.ScreenOverlayContentKind"), contentKindIndex));
+            SetFieldValue(requestType, ref request, "anchoredPosition", anchoredPosition ?? Vector2.zero);
+            SetFieldValue(requestType, ref request, "sortOrder", 0);
+            SetFieldValue(requestType, ref request, "size", size ?? Vector2.zero);
+            SetFieldValue(requestType, ref request, "sprite", sprite);
+            SetFieldValue(requestType, ref request, "imageColor", imageColor ?? default);
+            SetFieldValue(requestType, ref request, "text", text);
+            SetFieldValue(requestType, ref request, "fontSize", fontSize ?? 0f);
+            SetFieldValue(requestType, ref request, "prefab", prefab);
+            return request;
+        }
+
+        private static object CreateScreenOverlayDisplayId(string value)
+        {
+            Type displayIdType = GetTypeByFullName("BC.Managers.ScreenOverlayDisplayId");
+            return Activator.CreateInstance(displayIdType, value);
+        }
+
+        private static bool InvokeScreenOverlayShow(object layer, object request)
+        {
+            return (bool)InvokeDeclaredMethod(layer.GetType(), layer, "Show", request);
+        }
+
+        private static bool InvokeScreenOverlayHide(object layer, string displayId)
+        {
+            object displayIdValue = CreateScreenOverlayDisplayId(displayId);
+            return (bool)InvokeDeclaredMethod(layer.GetType(), layer, "Hide", displayIdValue);
+        }
+
+        private static RectTransform GetOnlyOverlayRoot(GameObject layerObject)
+        {
+            Assert.AreEqual(1, layerObject.transform.childCount, "Expected one overlay root.");
+            RectTransform root = layerObject.transform.GetChild(0) as RectTransform;
+            Assert.IsNotNull(root, "Expected RectTransform child.");
+            return root;
+        }
+
+        private static T GetPropertyValue<T>(object instance, string propertyName)
+        {
+            Assert.IsNotNull(instance, "Expected instance.");
+            PropertyInfo property = instance.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(property, $"Expected property '{propertyName}' on '{instance.GetType().FullName}'.");
+            return (T)property.GetValue(instance);
+        }
+
+        private static void SetFieldValue(Type declaringType, ref object instance, string fieldName, object value)
+        {
+            BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            FieldInfo field = declaringType.GetField(fieldName, flags);
+            Assert.IsNotNull(field, $"Expected field '{fieldName}' on '{declaringType.FullName}'.");
+            field.SetValue(instance, value);
         }
 
         private static string GetStepBranchKey(object model, string title)

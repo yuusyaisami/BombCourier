@@ -30,6 +30,128 @@ namespace BC.Managers
         }
     }
 
+    [Serializable]
+    public struct ScreenOverlayDisplayId : IEquatable<ScreenOverlayDisplayId>
+    {
+        [SerializeField] private string value;
+
+        public ScreenOverlayDisplayId(string value)
+        {
+            this.value = value ?? string.Empty;
+        }
+
+        public string Value => value ?? string.Empty;
+        public bool IsValid => !string.IsNullOrWhiteSpace(value);
+
+        public bool Equals(ScreenOverlayDisplayId other)
+        {
+            return string.Equals(Value, other.Value, StringComparison.Ordinal);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ScreenOverlayDisplayId other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.Ordinal.GetHashCode(Value);
+        }
+
+        public override string ToString()
+        {
+            return IsValid ? Value : "(None)";
+        }
+    }
+
+    public enum ScreenOverlayContentKind
+    {
+        Image = 0,
+        Text = 1,
+        Prefab = 2,
+    }
+
+    [Serializable]
+    public struct ScreenOverlayShowRequestData
+    {
+        private const int DefaultsVersionEnabled = 1;
+
+        public ScreenOverlayDisplayId displayId;
+        public ScreenOverlayContentKind contentKind;
+        public Vector2 anchoredPosition;
+        public int sortOrder;
+
+        public Sprite sprite;
+        public Vector2 size;
+        public Color imageColor;
+
+        [TextArea]
+        public string text;
+        [Min(0f)]
+        public float fontSize;
+        public Color textColor;
+
+        public GameObject prefab;
+
+        [SerializeField, HideInInspector] private int defaultsVersion;
+
+        public void EnsureDefaultsInitialized()
+        {
+            if (defaultsVersion >= DefaultsVersionEnabled)
+                return;
+
+            if (imageColor == default)
+                imageColor = Color.white;
+
+            if (textColor == default)
+                textColor = Color.white;
+
+            if (fontSize <= 0f)
+                fontSize = 36f;
+
+            if (size == Vector2.zero)
+                size = new Vector2(128f, 128f);
+
+            defaultsVersion = DefaultsVersionEnabled;
+        }
+
+        public bool HasVisibleContent =>
+            contentKind switch
+            {
+                ScreenOverlayContentKind.Image => sprite != null,
+                ScreenOverlayContentKind.Text => !string.IsNullOrWhiteSpace(text),
+                ScreenOverlayContentKind.Prefab => prefab != null,
+                _ => false,
+            };
+
+        public ScreenOverlayShowRequestData Sanitize()
+        {
+            EnsureDefaultsInitialized();
+
+            return new ScreenOverlayShowRequestData
+            {
+                displayId = displayId,
+                contentKind = contentKind,
+                anchoredPosition = anchoredPosition,
+                sortOrder = sortOrder,
+                sprite = sprite,
+                size = new Vector2(Mathf.Max(0f, size.x), Mathf.Max(0f, size.y)),
+                imageColor = imageColor,
+                text = text ?? string.Empty,
+                fontSize = Mathf.Max(1f, fontSize),
+                textColor = textColor,
+                prefab = prefab,
+                defaultsVersion = DefaultsVersionEnabled,
+            };
+        }
+    }
+
+    [Serializable]
+    public struct ScreenOverlayHideRequestData
+    {
+        public ScreenOverlayDisplayId displayId;
+    }
+
     [DisallowMultipleComponent]
     public sealed class ToastSystemManagerMB : MonoBehaviour
     {
@@ -183,4 +305,5 @@ namespace BC.Managers
             }
         }
     }
+
 }

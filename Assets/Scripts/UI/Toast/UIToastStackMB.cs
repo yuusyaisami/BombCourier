@@ -239,4 +239,5 @@ namespace BC.UI
             return runtimeToastItemTemplate;
         }
     }
+
 }

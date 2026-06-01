@@ -179,6 +179,20 @@ namespace BC.Camera
             SetLookAngles(targetYaw, pitch);
         }
 
+        // スポーン時など、3D のワールド向きから yaw と pitch を計算して camera を即時初期化する。
+        // カメラ上方向（y = 1）は minPitch でクランプされる。既存 SetLookAngles でクランプ済み。
+        public void SetLookDirection(Vector3 worldDirection)
+        {
+            if (worldDirection.sqrMagnitude <= 0.0001f)
+                return;
+
+            Vector3 dir = worldDirection.normalized;
+            float targetYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+            // Unity の pitch 正方向は下向きなので、仰角（y が正 = 上向き）は符号反転する。
+            float elevationDeg = Mathf.Asin(Mathf.Clamp(dir.y, -1f, 1f)) * Mathf.Rad2Deg;
+            SetLookAngles(targetYaw, -elevationDeg);
+        }
+
         private void ApplyCameraOrientation()
         {
             cameraTarget.rotation = Quaternion.Euler(pitch, yaw, 0f);

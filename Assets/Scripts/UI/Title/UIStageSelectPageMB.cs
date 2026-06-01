@@ -78,6 +78,10 @@ namespace BC.UI.Title
         [Tooltip("ページ切り替えボタン（prev/next/back）をクリックしたときの SE です。")]
         [SerializeField] private AudioDataSO navButtonClickSound;
 
+        [Header("Tutorial")]
+        [Tooltip("チュートリアル確認モーダル。null のとき対象ステージでもモーダルを表示しない。")]
+        [SerializeField] private UITutorialConfirmModalMB tutorialConfirmModal;
+
         private CanvasGroup pageCanvasGroup;
         private int currentPageIndex;
         private bool isSwitchingPage;
@@ -315,6 +319,14 @@ namespace BC.UI.Title
             ApplicationKernelMB appKernelMB = ApplicationKernelMB.Instance;
             KernelValueStoreService kernelStore = appKernelMB != null ? appKernelMB.Kernel?.KernelValueStore : null;
             kernelStore?.Set(ValueKeys.Kernel.Stage.SelectedStageIndex, Mathf.Max(0, stageIndex));
+
+            // チュートリアル確認：対象ステージなら「はい/いいえ」をユーザーに問い合わせる
+            bool isTutorial = false;
+            if (tutorialConfirmModal != null && tutorialConfirmModal.ShouldShowForStage(stageIndex))
+            {
+                isTutorial = await tutorialConfirmModal.ShowConfirmAsync(destroyCancellationToken);
+            }
+            kernelStore?.Set(ValueKeys.AppSettings.TutorialMode, isTutorial);
 
             // SceneManagerService 経由でロードシーンを表示してから遷移
             SceneManagerService sceneMgr = ApplicationKernelMB.Instance?.Kernel?.SceneManager;

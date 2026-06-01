@@ -41,10 +41,14 @@ namespace BC.UI
         [SerializeField] private bool pauseTimeScaleOnOpen = true;
         [SerializeField] private Button closeButton;
         [SerializeField] private UINoiseOutlineMB closeButtonOutline;
+        [SerializeField] private bool applyReturnToTitleButton = true;
+        [SerializeField] private Button returnToTitleButton;
 
         [Header("Sound")]
         [Tooltip("設定画面を開いたときに再生するサウンドです。")]
         [SerializeField] private AudioDataSO openSound;
+        [SerializeField] private AudioDataSO forcusChangeSound;
+        [SerializeField] private AudioDataSO clickSound;
 
         [Header("Mouse Settings")]
         [SerializeField] private Toggle invertYAxisToggle;
@@ -70,6 +74,8 @@ namespace BC.UI
         private bool hasLoggedBlockedByGameState;
         private bool hasStoredTimeScale;
         private float previousTimeScale = 1f;
+        private bool isLockScene;
+        private UINoiseOutlineMB returnToTitleButtonOutline;
         private CancellationTokenSource toggleCts;
         // resolutionDropdown に表示している解像度の実リストを保持する。
         private readonly List<Resolution> availableResolutions = new();
@@ -88,6 +94,9 @@ namespace BC.UI
             BuildResolutionDropdown();
             BuildQualityDropdown();
             EnsureCloseButtonOutline();
+
+            if (applyReturnToTitleButton)
+                EnsureReturnToTitleButton();
         }
 
         private void Start()
@@ -125,6 +134,53 @@ namespace BC.UI
             if (pauseTimeScaleOnOpen && hasStoredTimeScale)
                 Time.timeScale = previousTimeScale;
             ApplyGameplayInputLock(false);
+        }
+
+        private void EnsureReturnToTitleButton()
+        {
+            if (!applyReturnToTitleButton)
+            {
+                if (returnToTitleButton != null)
+                    returnToTitleButton.gameObject.SetActive(false);
+                return;
+            }
+
+            if (returnToTitleButton == null)
+                return;
+
+            returnToTitleButton.gameObject.SetActive(true);
+
+            EventTrigger trigger = returnToTitleButton.GetComponent<EventTrigger>();
+            if (trigger == null)
+                trigger = returnToTitleButton.gameObject.AddComponent<EventTrigger>();
+
+            var onSelect = new EventTrigger.Entry { eventID = EventTriggerType.Select };
+            onSelect.callback.AddListener(_ => { if (forcusChangeSound != null) AudioSystemMB.Instance?.PlaySE(forcusChangeSound); });
+            trigger.triggers.Add(onSelect);
+
+            var onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            onPointerEnter.callback.AddListener(_ => { SelectIfNeeded(returnToTitleButton.gameObject); if (forcusChangeSound != null) AudioSystemMB.Instance?.PlaySE(forcusChangeSound); });
+            trigger.triggers.Add(onPointerEnter);
+
+
+            isLockScene = false;
+            returnToTitleButton.onClick.RemoveListener(OnClickReturnToTitle);
+            returnToTitleButton.onClick.AddListener(OnClickReturnToTitle);
+
+            if (returnToTitleButtonOutline == null)
+                returnToTitleButtonOutline = returnToTitleButton.GetComponentInChildren<UINoiseOutlineMB>(true);
+
+            returnToTitleButtonOutline?.SetFocused(false);
+        }
+
+        private void OnClickReturnToTitle()
+        {
+            if (isLockScene)
+                return;
+            if (TryResolveAppKernelSceneManager(out SceneManagerService sceneManager))
+            {
+                sceneManager.LoadSceneAsync(0).Forget();
+            }
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -595,6 +651,25 @@ namespace BC.UI
             if (logIfMissing && !hasLoggedMissingAppKernelStore)
             {
                 Debug.LogWarning($"{nameof(UISettingMB)}: ApplicationKernel.KernelValueStore is not available yet. Check ApplicationKernelMB bootstrap and targetObjects wiring if this persists.", this);
+                hasLoggedMissingAppKernelStore = true;
+            }
+
+            return false;
+        }
+        private bool TryResolveAppKernelSceneManager(out SceneManagerService sceneManager, bool logIfMissing = true)
+        {
+            ApplicationKernelMB appKernelMB = ApplicationKernelMB.Instance;
+
+            if (appKernelMB == null)
+                appKernelMB = UnityEngine.Object.FindAnyObjectByType<ApplicationKernelMB>();
+
+            sceneManager = appKernelMB != null ? appKernelMB.Kernel?.SceneManager : null;
+            if (sceneManager != null)
+                return true;
+
+            if (logIfMissing && !hasLoggedMissingAppKernelStore)
+            {
+                Debug.LogWarning($"{nameof(UISettingMB)}: ApplicationKernel.SceneManager is not available yet. Check ApplicationKernelMB bootstrap and targetObjects wiring if this persists.", this);
                 hasLoggedMissingAppKernelStore = true;
             }
 

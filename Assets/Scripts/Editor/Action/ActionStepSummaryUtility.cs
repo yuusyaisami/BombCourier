@@ -42,12 +42,17 @@ namespace BC.Editor.ActionSystem
                 SubActionStepAuthoring => BuildSubActionSummary(stepProperty),
                 IfStepAuthoring => BuildIfSummary(stepProperty),
                 ShowToastStepAuthoring => BuildShowToastSummary(stepProperty),
+                ShowScreenOverlayStepAuthoring => BuildShowScreenOverlaySummary(stepProperty),
+                HideScreenOverlayStepAuthoring => BuildHideScreenOverlaySummary(stepProperty),
                 ShowTalkStepAuthoring => BuildShowTalkSummary(stepProperty),
+                ShowDialogueStepAuthoring => BuildShowDialogueSummary(stepProperty),
                 HideTalkStepAuthoring => BuildHideTalkSummary(stepProperty),
                 ShowTalkChoiceStepAuthoring => BuildShowTalkChoiceSummary(stepProperty),
                 SetValueStoreValueStepAuthoring => BuildValueStoreSummary(stepProperty),
-                SetSceneCameraStepAuthoring => BuildSetSceneCameraSummary(stepProperty),
-                ClearSceneCameraStepAuthoring => BuildClearSceneCameraSummary(stepProperty),
+                RegisterOverlayCameraStepAuthoring => BuildRegisterOverlayCameraSummary(stepProperty),
+                ActivateOverlayCameraStepAuthoring => BuildActivateOverlayCameraSummary(stepProperty),
+                DisableOverlayCameraStepAuthoring => BuildDisableOverlayCameraSummary(stepProperty),
+                PlayPathCameraStepAuthoring => BuildPlayPathCameraSummary(stepProperty),
                 SetEntityFacingTargetStepAuthoring => BuildSetEntityFacingTargetSummary(stepProperty),
                 ClearEntityFacingStepAuthoring => BuildClearEntityFacingSummary(stepProperty),
                 SetEntityAnimationParameterStepAuthoring => BuildSetEntityAnimationParameterSummary(stepProperty),
@@ -67,6 +72,9 @@ namespace BC.Editor.ActionSystem
 
             if (step is ShowTalkStepAuthoring)
                 return BuildShowTalkClipboardText(stepProperty);
+
+            if (step is ShowDialogueStepAuthoring)
+                return BuildShowDialogueClipboardText(stepProperty);
 
             return GetSummary(stepProperty);
         }
@@ -132,6 +140,75 @@ namespace BC.Editor.ActionSystem
             return hasIcon ? "Icon only" : "Empty toast";
         }
 
+        private static string BuildShowScreenOverlaySummary(SerializedProperty stepProperty)
+        {
+            SerializedProperty requestProperty = stepProperty.FindPropertyRelative("screenOverlayShowRequestData");
+            if (requestProperty == null)
+                return "Empty overlay";
+
+            string displayId = Normalize(requestProperty.FindPropertyRelative("displayId")?.FindPropertyRelative("value")?.stringValue);
+            SerializedProperty contentKindProperty = requestProperty.FindPropertyRelative("contentKind");
+            ScreenOverlayContentKind contentKind = contentKindProperty != null
+                ? (ScreenOverlayContentKind)contentKindProperty.enumValueIndex
+                : ScreenOverlayContentKind.Image;
+
+            string bodySummary = contentKind switch
+            {
+                ScreenOverlayContentKind.Image => BuildScreenOverlayImageSummary(requestProperty),
+                ScreenOverlayContentKind.Text => BuildScreenOverlayTextSummary(requestProperty),
+                ScreenOverlayContentKind.Prefab => BuildScreenOverlayPrefabSummary(requestProperty),
+                _ => "Unconfigured",
+            };
+
+            if (string.IsNullOrWhiteSpace(displayId))
+                return bodySummary;
+
+            return $"{displayId} | {bodySummary}";
+        }
+
+        private static string BuildHideScreenOverlaySummary(SerializedProperty stepProperty)
+        {
+            SerializedProperty requestProperty = stepProperty.FindPropertyRelative("screenOverlayHideRequestData");
+            string displayId = Normalize(requestProperty?.FindPropertyRelative("displayId")?.FindPropertyRelative("value")?.stringValue);
+            return string.IsNullOrWhiteSpace(displayId)
+                ? "Hide overlay"
+                : $"Hide {displayId}";
+        }
+
+        private static string BuildScreenOverlayImageSummary(SerializedProperty requestProperty)
+        {
+            SerializedProperty spriteProperty = requestProperty.FindPropertyRelative("sprite");
+            string spriteName = Normalize(spriteProperty?.objectReferenceValue?.name);
+            Vector2 size = requestProperty.FindPropertyRelative("size")?.vector2Value ?? Vector2.zero;
+
+            string sizeSummary = size.x > 0f && size.y > 0f
+                ? $"{FormatFloat(size.x)}x{FormatFloat(size.y)}"
+                : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(spriteName))
+                return string.IsNullOrWhiteSpace(sizeSummary) ? "Image" : $"Image {sizeSummary}";
+
+            return string.IsNullOrWhiteSpace(sizeSummary)
+                ? $"Image {spriteName}"
+                : $"Image {spriteName} {sizeSummary}";
+        }
+
+        private static string BuildScreenOverlayTextSummary(SerializedProperty requestProperty)
+        {
+            string text = BuildTextSnippet(requestProperty.FindPropertyRelative("text")?.stringValue, "Text");
+            float fontSize = requestProperty.FindPropertyRelative("fontSize")?.floatValue ?? 0f;
+
+            return fontSize > 0f
+                ? $"{text} ({FormatFloat(fontSize)}pt)"
+                : text;
+        }
+
+        private static string BuildScreenOverlayPrefabSummary(SerializedProperty requestProperty)
+        {
+            string prefabName = Normalize(requestProperty.FindPropertyRelative("prefab")?.objectReferenceValue?.name);
+            return string.IsNullOrWhiteSpace(prefabName) ? "Prefab" : $"Prefab {prefabName}";
+        }
+
         private static string BuildShowTalkSummary(SerializedProperty stepProperty)
         {
             SerializedProperty requestProperty = stepProperty.FindPropertyRelative("talkRequestData");
@@ -167,6 +244,51 @@ namespace BC.Editor.ActionSystem
         private static string BuildShowTalkClipboardText(SerializedProperty stepProperty)
         {
             SerializedProperty requestProperty = stepProperty.FindPropertyRelative("talkRequestData");
+
+            if (requestProperty == null)
+                return string.Empty;
+
+            string speaker = BuildSpeakerClipboardName(requestProperty);
+            string text = BuildTextSnippet(requestProperty.FindPropertyRelative("dialogueText")?.stringValue, string.Empty);
+
+            if (string.IsNullOrWhiteSpace(speaker))
+                return text;
+
+            if (string.IsNullOrWhiteSpace(text))
+                return speaker;
+
+            return $"{speaker}: {text}";
+        }
+
+        private static string BuildShowDialogueSummary(SerializedProperty stepProperty)
+        {
+            SerializedProperty requestProperty = stepProperty.FindPropertyRelative("dialogueRequestData");
+
+            if (requestProperty == null)
+                return "Empty dialogue";
+
+            string speaker = Normalize(requestProperty.FindPropertyRelative("speakerName")?.stringValue);
+
+            if (string.IsNullOrWhiteSpace(speaker))
+            {
+                SerializedProperty speakerCharacterProperty = requestProperty.FindPropertyRelative("speakerCharacter");
+                speaker = Normalize(speakerCharacterProperty?.FindPropertyRelative("path")?.stringValue);
+            }
+
+            string text = BuildTextSnippet(requestProperty.FindPropertyRelative("dialogueText")?.stringValue, "Empty dialogue");
+
+            if (!string.IsNullOrWhiteSpace(speaker) && text != "Empty dialogue")
+                return $"{speaker}: {text}";
+
+            if (!string.IsNullOrWhiteSpace(speaker))
+                return speaker;
+
+            return text;
+        }
+
+        private static string BuildShowDialogueClipboardText(SerializedProperty stepProperty)
+        {
+            SerializedProperty requestProperty = stepProperty.FindPropertyRelative("dialogueRequestData");
 
             if (requestProperty == null)
                 return string.Empty;
@@ -344,19 +466,41 @@ namespace BC.Editor.ActionSystem
             return $"{keySummary} = {valueSummary}";
         }
 
-        private static string BuildSetSceneCameraSummary(SerializedProperty stepProperty)
+        private static string BuildRegisterOverlayCameraSummary(SerializedProperty stepProperty)
         {
+            string tag = Normalize(stepProperty.FindPropertyRelative("cameraTag")?.stringValue);
             string cameraName = stepProperty.FindPropertyRelative("camera")?.objectReferenceValue?.name;
+            bool activate = stepProperty.FindPropertyRelative("activateImmediately")?.boolValue == true;
+            string suffix = activate ? " (activate)" : string.Empty;
 
-            if (string.IsNullOrWhiteSpace(cameraName))
+            if (string.IsNullOrWhiteSpace(tag) && string.IsNullOrWhiteSpace(cameraName))
                 return "No camera";
 
-            return cameraName;
+            if (string.IsNullOrWhiteSpace(tag))
+                return $"{cameraName}{suffix}";
+
+            if (string.IsNullOrWhiteSpace(cameraName))
+                return $"[{tag}]{suffix}";
+
+            return $"[{tag}] {cameraName}{suffix}";
         }
 
-        private static string BuildClearSceneCameraSummary(SerializedProperty stepProperty)
+        private static string BuildActivateOverlayCameraSummary(SerializedProperty stepProperty)
         {
-            return "Clear action camera";
+            string tag = Normalize(stepProperty.FindPropertyRelative("cameraTag")?.stringValue);
+            return string.IsNullOrWhiteSpace(tag) ? "Activate overlay camera" : $"Activate [{tag}]";
+        }
+
+        private static string BuildDisableOverlayCameraSummary(SerializedProperty stepProperty)
+        {
+            string tag = Normalize(stepProperty.FindPropertyRelative("cameraTag")?.stringValue);
+            return string.IsNullOrWhiteSpace(tag) ? "Disable overlay camera" : $"Disable [{tag}]";
+        }
+
+        private static string BuildPlayPathCameraSummary(SerializedProperty stepProperty)
+        {
+            string pathName = stepProperty.FindPropertyRelative("sequenceSource")?.objectReferenceValue?.name;
+            return string.IsNullOrWhiteSpace(pathName) ? "No path" : pathName;
         }
 
         private static string BuildSetEntityFacingTargetSummary(SerializedProperty stepProperty)

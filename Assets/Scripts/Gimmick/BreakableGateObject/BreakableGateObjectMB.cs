@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BC.Audio;
 using BC.Bomb;
 using BC.Manager;
+using BC.Stage;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -128,7 +129,10 @@ namespace BC.Gimmick
             TryPlayBreakSound();
 
             if (breakEffectPrefab != null)
-                SpawnTransientParticleEffect(breakEffectPrefab, transform.position, Quaternion.identity);
+            {
+                Transform stageRoot = GetComponentInParent<MapRuntimeMB>(true)?.transform;
+                SpawnTransientParticleEffect(breakEffectPrefab, transform.position, Quaternion.identity, stageRoot);
+            }
 
             int activePartCount = 0;
             for (int i = 0; i < breakableParts.Count; i++)
@@ -318,12 +322,14 @@ namespace BC.Gimmick
             public float StabilizeUntil { get; }
         }
 
-        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation)
+        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             if (effectPrefab == null)
                 return;
 
-            ParticleSystem instance = Instantiate(effectPrefab, position, rotation);
+            ParticleSystem instance = parent != null
+                ? Instantiate(effectPrefab, position, rotation, parent)
+                : Instantiate(effectPrefab, position, rotation);
             if (instance == null)
                 return;
 

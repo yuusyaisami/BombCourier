@@ -57,6 +57,24 @@ namespace BC.Managers
 
         public string ResolveSpeakerDisplayName()
         {
+            return TalkSpeakerDisplayNameUtility.ResolveSpeakerDisplayName(speakerCharacter, speakerName);
+        }
+
+        public void EnsureInlineActionFlagsInitialized()
+        {
+            if (actionToggleVersion >= ActionToggleVersionEnabled)
+                return;
+
+            useOnStartTalkAction = false; // 既存の会話アクションはすべてオフにする。必要なものだけオンにしてもらう。
+            useOnCompleteTalkAction = false;
+            actionToggleVersion = ActionToggleVersionEnabled;
+        }
+    }
+
+    internal static class TalkSpeakerDisplayNameUtility
+    {
+        public static string ResolveSpeakerDisplayName(CharacterIdReference speakerCharacter, string speakerName)
+        {
             if (CharacterIdRegistry.TryGetDescriptor(speakerCharacter, out CharacterIdDescriptor descriptor))
             {
                 if (!string.IsNullOrWhiteSpace(descriptor.DisplayName))
@@ -73,14 +91,47 @@ namespace BC.Managers
                 ? speakerCharacter.ToString()
                 : string.Empty;
         }
+    }
+
+    [Serializable]
+    public struct DialogueRequestData
+    {
+        private const int ActionToggleVersionEnabled = 1;
+
+        public CharacterIdReference speakerCharacter;
+        public string speakerName;
+        [TextArea]
+        public string dialogueText;
+
+        public TextEffectData textEffectData;
+        [Min(0f)]
+        public float hideDuration;
+
+        public bool isWaitingActionCompleted;
+        public bool useOnStartDialogueAction;
+        public InlineAction onStartDialogueAction;
+        public bool useOnCompleteDialogueAction;
+        public InlineAction onCompleteDialogueAction;
+
+        [SerializeField, HideInInspector] private int actionToggleVersion;
+
+        public InlineAction OnStartDialogueAction => useOnStartDialogueAction ? onStartDialogueAction : null;
+        public InlineAction OnCompleteDialogueAction => useOnCompleteDialogueAction ? onCompleteDialogueAction : null;
+        public bool HasSpeakerCharacter => speakerCharacter.IsAssigned;
+        public float HideDuration => Mathf.Max(0f, hideDuration);
+
+        public string ResolveSpeakerDisplayName()
+        {
+            return TalkSpeakerDisplayNameUtility.ResolveSpeakerDisplayName(speakerCharacter, speakerName);
+        }
 
         public void EnsureInlineActionFlagsInitialized()
         {
             if (actionToggleVersion >= ActionToggleVersionEnabled)
                 return;
 
-            useOnStartTalkAction = false; // 既存の会話アクションはすべてオフにする。必要なものだけオンにしてもらう。
-            useOnCompleteTalkAction = false;
+            useOnStartDialogueAction = false;
+            useOnCompleteDialogueAction = false;
             actionToggleVersion = ActionToggleVersionEnabled;
         }
     }
@@ -213,6 +264,99 @@ namespace BC.Managers
         public async UniTask ShowTalk(EntityRef actor, EntityRef viewer, TalkRequestData talkRequestData)
         {
             await ShowTalk(actor, actor, null, viewer, talkRequestData);
+        }
+
+        public async UniTask<bool> ShowDialogue(
+            EntityRef actor,
+            EntityRef viewer,
+            DialogueRequestData dialogueRequestData,
+            CancellationToken cancellationToken = default)
+        {
+            dialogueRequestData.EnsureInlineActionFlagsInitialized();
+            dialogueRequestData.speakerName = dialogueRequestData.ResolveSpeakerDisplayName();
+
+            if (talkSystemUIManagerMB == null)
+            {
+                Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: ShowDialogue skipped because {nameof(talkSystemUIManagerMB)} is null.", this);
+                return false;
+            }
+
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
+            }
+
+            cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource currentDialogueCancellation = cancellationTokenSource;
+
+            using CancellationTokenSource linkedCancellation = cancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(currentDialogueCancellation.Token, cancellationToken)
+                : CancellationTokenSource.CreateLinkedTokenSource(currentDialogueCancellation.Token);
+
+            CancellationToken effectiveCancellation = linkedCancellation.Token;
+
+            activeTalkOwnerActor = actor;
+            activeTalkPresentationActor = default;
+            activeTalkPresentationAdapter = null;
+
+            EntityRef focusTargetActor = ResolveCameraFocusActor(default, activeTalkOwnerActor, viewer);
+            BeginConversationCameraFocus(focusTargetActor, viewer);
+
+            bool completed = false;
+
+            try
+            {
+                await ExecuteInlineActionAsync(
+                    activeTalkOwnerActor,
+                    viewer,
+                    dialogueRequestData.OnStartDialogueAction,
+                    dialogueRequestData.isWaitingActionCompleted,
+                    effectiveCancellation,
+                    "start dialogue");
+
+                effectiveCancellation.ThrowIfCancellationRequested();
+
+                talkChoiceUIManagerMB?.ClearChoicesImmediate();
+                talkSystemUIManagerMB.SetCharacterSound(null);
+
+                await talkSystemUIManagerMB.ShowTalk(ToTalkRequestData(dialogueRequestData), effectiveCancellation);
+
+                effectiveCancellation.ThrowIfCancellationRequested();
+
+                await talkSystemUIManagerMB.HideTalk(dialogueRequestData.HideDuration);
+
+                effectiveCancellation.ThrowIfCancellationRequested();
+
+                await ExecuteInlineActionAsync(
+                    activeTalkOwnerActor,
+                    viewer,
+                    dialogueRequestData.OnCompleteDialogueAction,
+                    dialogueRequestData.isWaitingActionCompleted,
+                    CancellationToken.None,
+                    "complete dialogue");
+
+                completed = true;
+                return true;
+            }
+            finally
+            {
+                if (ReferenceEquals(cancellationTokenSource, currentDialogueCancellation))
+                {
+                    if (!completed)
+                    {
+                        talkChoiceUIManagerMB?.ClearChoicesImmediate();
+                        talkSystemUIManagerMB.HideTalk(0f).Forget();
+                    }
+
+                    currentDialogueCancellation.Dispose();
+                    cancellationTokenSource = null;
+                    EndConversationCameraFocus();
+                    activeTalkOwnerActor = default;
+                    activeTalkPresentationActor = default;
+                    activeTalkPresentationAdapter = null;
+                }
+            }
         }
 
         internal async UniTask ShowTalk(
@@ -558,6 +702,25 @@ namespace BC.Managers
             {
                 Debug.LogWarning($"{nameof(TalkSystemManagerMB)}: failed to execute {phaseLabel} talk action. {result.Message}", this);
             }
+        }
+
+        private static TalkRequestData ToTalkRequestData(DialogueRequestData dialogueRequestData)
+        {
+            dialogueRequestData.EnsureInlineActionFlagsInitialized();
+
+            return new TalkRequestData
+            {
+                talkStateId = TalkStateId.None,
+                speakerCharacter = dialogueRequestData.speakerCharacter,
+                speakerName = dialogueRequestData.ResolveSpeakerDisplayName(),
+                dialogueText = dialogueRequestData.dialogueText,
+                textEffectData = dialogueRequestData.textEffectData,
+                isWaitingActionCompleted = false,
+                useOnStartTalkAction = false,
+                onStartTalkAction = null,
+                useOnCompleteTalkAction = false,
+                onCompleteTalkAction = null,
+            };
         }
 
         private void EndConversationCameraFocus()

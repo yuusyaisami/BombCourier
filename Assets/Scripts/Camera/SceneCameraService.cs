@@ -74,6 +74,13 @@ namespace BC.Camera
             RefreshImmediateState();
         }
 
+        // スポーン直後にカメラの初期向きを world 方向から設定する。
+        // SetTrackedPlayer の後に呼ぶことで、前回の look state を引きずらないようにする。
+        public void InitializeCameraLookDirection(Vector3 worldDirection)
+        {
+            presentationController.SetInitialLookDirection(trackedPlayerEntity, worldDirection);
+        }
+
         // シーン切り替えやステージ再ロード時に、service が持つ一時状態をまとめて初期化する。
         public void ResetRuntimeState()
         {
@@ -166,6 +173,58 @@ namespace BC.Camera
         {
             if (overrideState.ClearPresentationCamera())
                 RefreshImmediateState();
+        }
+
+        // ---- OverlayCamera ---- //
+        // InlineAction から動的に登録・切り替えできる追加カメラ。string tag でキーを持ち、
+        // 同時に active にできるのは 1 つだけ。path camera より低優先で動作する。
+
+        // camera を tag 名で登録する。activateImmediately が true の場合、その場で active にする。
+        // 既存 tag を上書き登録しても問題ない。
+        public void RegisterOverlayCamera(string tag, CinemachineCamera camera, bool activateImmediately)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+            {
+                Debug.LogWarning($"{nameof(SceneCameraService)}: overlay camera tag must not be empty.");
+                return;
+            }
+
+            if (camera == null)
+            {
+                Debug.LogWarning($"{nameof(SceneCameraService)}: overlay camera '{tag}' is null and will not be registered.");
+                return;
+            }
+
+            overrideState.RegisterOverlayCamera(tag, camera, ActionRequestPriority);
+
+            if (activateImmediately)
+                ActivateOverlayCamera(tag);
+            else
+                ApplyCameraPriorities();
+        }
+
+        // tag に紐付く overlay camera を active にする（以前 active だった overlay は非 active になる）。
+        public void ActivateOverlayCamera(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+                return;
+
+            overrideState.ActivateOverlayCamera(tag);
+            ApplyCameraPriorities();
+        }
+
+        // tag に紐付く overlay camera を registry から外し、非アクティブにする。GameObject は破棄しない。
+        public void DisableOverlayCamera(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+                return;
+
+            if (overrideState.DisableOverlayCamera(tag, out CinemachineCamera camera))
+            {
+                CameraManager manager = ResolveCameraManager();
+                SetPriority(camera, manager != null ? manager.InactivePriority : 0);
+                ApplyCameraPriorities();
+            }
         }
 
         // パス再生中は path camera を最優先にする。
@@ -298,6 +357,9 @@ namespace BC.Camera
         {
             // Action 単位の camera override。実行終了で自動 cleanup される前提です。
             private readonly Dictionary<ActionExecutionHandle, DirectCameraRequest> actionRequestsByExecution = new();
+            // tag → camera の overlay registry。active な overlay は activeOverlayTag で管理する。
+            private readonly Dictionary<string, DirectCameraRequest> overlayCamerasByTag = new();
+            private string activeOverlayTag;
 
             private int nextRevision = 1;
             // ゴールや演出で使う 1 本の scene-wide presentation camera。
@@ -313,11 +375,56 @@ namespace BC.Camera
             {
                 // ステージ再読み込み時は request 状態を丸ごと初期化する。
                 actionRequestsByExecution.Clear();
+                overlayCamerasByTag.Clear();
+                activeOverlayTag = null;
                 presentationRequest = default;
                 hasPresentationRequest = false;
                 activePathVersion = 0;
                 activePathRequest = null;
                 nextRevision = 1;
+            }
+
+            // ---- Overlay camera registry ---- //
+
+            public void RegisterOverlayCamera(string tag, CinemachineCamera camera, int priority)
+            {
+                overlayCamerasByTag[tag] = new DirectCameraRequest(camera, priority, nextRevision++);
+            }
+
+            // 指定 tag を active にする。以前 active だった tag は単に上書きされる（priority で負ける）。
+            public void ActivateOverlayCamera(string tag)
+            {
+                if (!overlayCamerasByTag.ContainsKey(tag))
+                    return;
+
+                activeOverlayTag = tag;
+            }
+
+            // 指定 tag を registry から除去し、camera を out に返す。active だった場合は active も解除する。
+            public bool DisableOverlayCamera(string tag, out CinemachineCamera camera)
+            {
+                if (!overlayCamerasByTag.TryGetValue(tag, out DirectCameraRequest request))
+                {
+                    camera = null;
+                    return false;
+                }
+
+                overlayCamerasByTag.Remove(tag);
+
+                if (string.Equals(activeOverlayTag, tag, StringComparison.Ordinal))
+                    activeOverlayTag = null;
+
+                camera = request.Camera;
+                return true;
+            }
+
+            public bool TryGetActiveOverlayRequest(out DirectCameraRequest request)
+            {
+                if (activeOverlayTag != null && overlayCamerasByTag.TryGetValue(activeOverlayTag, out request))
+                    return request.Camera != null;
+
+                request = default;
+                return false;
             }
 
             public void SetActionCamera(ActionExecutionHandle executionHandle, CinemachineCamera camera, int priority)
@@ -381,6 +488,15 @@ namespace BC.Camera
 
                 if (hasPresentationRequest && presentationRequest.Camera != null && presentationRequest.Camera != activeCamera)
                     SetPriority(presentationRequest.Camera, inactivePriority);
+
+                // 非 active overlay camera も inactive に落とす。
+                foreach (KeyValuePair<string, DirectCameraRequest> kvp in overlayCamerasByTag)
+                {
+                    if (kvp.Value.Camera == null || kvp.Value.Camera == activeCamera)
+                        continue;
+
+                    SetPriority(kvp.Value.Camera, inactivePriority);
+                }
             }
 
             // 直指定カメラ群の中で一番強いものを 1 つ選ぶ。
@@ -405,6 +521,17 @@ namespace BC.Camera
                         (candidate.Priority == request.Priority && candidate.Revision > request.Revision))
                     {
                         request = candidate;
+                        found = true;
+                    }
+                }
+
+                // active な overlay camera も候補に含める。
+                if (TryGetActiveOverlayRequest(out DirectCameraRequest overlayRequest))
+                {
+                    if (!found || overlayRequest.Priority > request.Priority ||
+                        (overlayRequest.Priority == request.Priority && overlayRequest.Revision > request.Revision))
+                    {
+                        request = overlayRequest;
                         found = true;
                     }
                 }
@@ -510,6 +637,15 @@ namespace BC.Camera
                 {
                     controller.SyncYawToWorldForward(observerTransform.forward);
                 }
+            }
+
+            // スポーン時など、3D world 方向から ThirdPersonCameraController の look state を即時設定する。
+            public void SetInitialLookDirection(EntityRef playerEntity, Vector3 worldDirection)
+            {
+                if (!playerEntity.IsValid || !TryResolveThirdPersonController(playerEntity, out ThirdPersonCameraController controller))
+                    return;
+
+                controller.SetLookDirection(worldDirection);
             }
 
             // 注視演出や presentation camera 中に、プレイヤー入力をどこまで許可するかをここで制御する。

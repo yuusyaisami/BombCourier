@@ -259,7 +259,10 @@ namespace BC.Bomb
             ClearIgnoredHolderCollisions();
 
             if (explosionEffectPrefab != null)
-                SpawnTransientParticleEffect(explosionEffectPrefab, transform.position, Quaternion.identity);
+            {
+                Transform stageRoot = GetComponentInParent<MapRuntimeMB>(true)?.transform;
+                SpawnTransientParticleEffect(explosionEffectPrefab, transform.position, Quaternion.identity, stageRoot);
+            }
 
             ExplosionImpactDispatcher.ApplyExplosionImpact(
                 transform,
@@ -343,12 +346,14 @@ namespace BC.Bomb
             return EntityTags.Item.Bomb.Id;
         }
 
-        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation)
+        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             if (effectPrefab == null)
                 return;
 
-            ParticleSystem instance = Instantiate(effectPrefab, position, rotation);
+            ParticleSystem instance = parent != null
+                ? Instantiate(effectPrefab, position, rotation, parent)
+                : Instantiate(effectPrefab, position, rotation);
             if (instance == null)
                 return;
 

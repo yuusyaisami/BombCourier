@@ -131,6 +131,11 @@ namespace BC.Base
     // Add project-specific character IDs here. Registry picks up nested static CharacterId fields.
     public static class CharacterIds
     {
+        public static class System
+        {
+            [CharacterDisplayName("チュートリアル")]
+            public static readonly CharacterId Tutorial = new(1001);
+        }
         public static class Npc
         {
             [CharacterDisplayName("バニラ")]

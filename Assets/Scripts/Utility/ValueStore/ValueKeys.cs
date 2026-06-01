@@ -595,6 +595,14 @@ namespace BC.Base
                     false,
                     ValueCompositionMode.Raw
                 );
+
+            public static readonly ValueKey<bool> TutorialMode =
+                new ValueKey<bool>(
+                    new ValueKeyId(20005),
+                    "AppSettings.TutorialMode",
+                    false,
+                    ValueCompositionMode.Raw
+                );
         }
     }
 }

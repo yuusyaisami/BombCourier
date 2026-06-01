@@ -62,7 +62,7 @@ Shader "BC/UI/NoiseOutline"
             HLSLPROGRAM
             #pragma vertex   vert
             #pragma fragment frag
-            #pragma target 2.0
+            #pragma target 3.0
 
             #pragma multi_compile_local _ UNITY_UI_CLIP_RECT
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
@@ -96,7 +96,6 @@ Shader "BC/UI/NoiseOutline"
             float  _NoiseScale;
             float  _NoiseSpeed;
             float  _Intensity;
-            float4 _RectSize;
 
             float4 _ClipRect;
 
@@ -146,16 +145,16 @@ Shader "BC/UI/NoiseOutline"
 
                 // ボーダー領域: UV が端に近い矩形リング
                 float2 uv = saturate(IN.uv);
-                float width = max(_RectSize.x, 1.0);
-                float height = max(_RectSize.y, 1.0);
-                float aspect = width / height;
 
-                float wX = aspect >= 1.0 ? (_OutlineWidth / aspect) : _OutlineWidth;
-                float wY = aspect >= 1.0 ? _OutlineWidth : (_OutlineWidth * aspect);
+                // ddx/ddy で UV の画面ピクセルあたり変化量を求め、スクリーンピクセル単位の幅・高さを算出する。
+                // ローカルサイズや Canvas スケールに依存せず、どんな解像度・スケール環境でも均一な太さになる。
+                float screenW = 1.0 / max(abs(ddx(IN.uv.x)), 0.0001);
+                float screenH = 1.0 / max(abs(ddy(IN.uv.y)), 0.0001);
+                float outlinePx = _OutlineWidth * min(screenW, screenH);
 
-                float edgeDistX = min(uv.x, 1.0 - uv.x);
-                float edgeDistY = min(uv.y, 1.0 - uv.y);
-                float normalizedEdgeDist = min(edgeDistX / max(wX, 0.0001), edgeDistY / max(wY, 0.0001));
+                float edgeDistX = min(uv.x, 1.0 - uv.x) * screenW;
+                float edgeDistY = min(uv.y, 1.0 - uv.y) * screenH;
+                float normalizedEdgeDist = min(edgeDistX, edgeDistY) / max(outlinePx, 0.0001);
                 float inBorder = 1.0 - step(1.0, normalizedEdgeDist);
                 float outlineAlpha = inBorder * _Intensity;
 

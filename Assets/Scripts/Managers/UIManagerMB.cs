@@ -17,8 +17,10 @@ namespace BC.Managers
         [SerializeField] private UIManualSnapshotMB manualSnapshotUI;
         [SerializeField] private UIGameEndMB gameEndUI;
         [SerializeField] private UIToastStackMB toastStackUI;
+        [SerializeField] private UIScreenOverlayLayerMB screenOverlayLayerUI;
         [SerializeField] private UITalkSystemMB talkSystemUI;
         [SerializeField] private UITalkChoiceSystemMB talkChoiceSystemUI;
+        [SerializeField] private UITutorialToDoListMB tutorialToDoListUI;
 
         public UIFadeEffectMB FadeEffect => fadeEffect;
         public UIGameSceneManagerMB GameSceneManager => gameSceneManager;
@@ -26,8 +28,10 @@ namespace BC.Managers
         public UIManualSnapshotMB ManualSnapshotUI => manualSnapshotUI;
         public UIGameEndMB GameEndUI => gameEndUI;
         public UIToastStackMB ToastStackUI => toastStackUI;
+        public UIScreenOverlayLayerMB ScreenOverlayLayerUI => screenOverlayLayerUI;
         public UITalkSystemMB TalkSystemUI => talkSystemUI;
         public UITalkChoiceSystemMB TalkChoiceSystemUI => talkChoiceSystemUI;
+        public UITutorialToDoListMB TutorialToDoListUI => tutorialToDoListUI;
 
         private void Awake()
         {
@@ -60,8 +64,10 @@ namespace BC.Managers
             manualSnapshotUI ??= GetComponentInChildren<UIManualSnapshotMB>(true);
             gameEndUI ??= GetComponentInChildren<UIGameEndMB>(true);
             toastStackUI ??= GetComponentInChildren<UIToastStackMB>(true);
+            screenOverlayLayerUI ??= GetComponentInChildren<UIScreenOverlayLayerMB>(true);
             talkSystemUI ??= GetComponentInChildren<UITalkSystemMB>(true);
             talkChoiceSystemUI ??= GetComponentInChildren<UITalkChoiceSystemMB>(true);
+            tutorialToDoListUI ??= GetComponentInChildren<UITutorialToDoListMB>(true);
         }
     }
 }

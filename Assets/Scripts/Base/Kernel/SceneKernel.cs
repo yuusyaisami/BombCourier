@@ -2,6 +2,7 @@ namespace BC.Base
 {
     using BC.ActionSystem;
     using BC.Camera;
+    using BC.Tutorial;
 
     // シーン単位のサービス集約点。
     // Entity ではなく Scene 全体で共有する機能をここに載せ、GameLogic からは kernel 経由で参照する。
@@ -23,6 +24,7 @@ namespace BC.Base
         public ActionService Actions { get; set; }
         public CameraPathPlayerService CameraPaths { get; set; }
         public SceneCameraService Cameras { get; set; }
+        public TutorialRuntimeService Tutorials { get; set; }
 
         // 旧コード互換の alias。新規コードでは EntityValueStore を直接使う。
         public ValueStoreService ValueStore
@@ -43,11 +45,13 @@ namespace BC.Base
             Actions = new ActionService(this);
             CameraPaths = new CameraPathPlayerService(this);
             Cameras = new SceneCameraService(this);
+            Tutorials = new TutorialRuntimeService(this);
 
             Tickables = new ITickable[]
             {
                 Actions,
                 Cameras,
+                Tutorials,
             };
         }
 
@@ -57,6 +61,7 @@ namespace BC.Base
             Actions?.Clear();
             CameraPaths?.Cancel();
             Cameras?.Dispose();
+            Tutorials?.Stop();
             ReactiveValues?.Clear();
             EntityComponents?.Clear();
             EntityValueStore?.Clear();

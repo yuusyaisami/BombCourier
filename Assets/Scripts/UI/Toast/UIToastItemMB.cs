@@ -299,4 +299,5 @@ namespace BC.UI
                 messageText.text = string.Empty;
         }
     }
+
 }

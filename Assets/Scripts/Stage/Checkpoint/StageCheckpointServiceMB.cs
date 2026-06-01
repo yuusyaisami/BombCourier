@@ -43,6 +43,11 @@ namespace BC.Stage
 
         private StageSaveMarkMB[] CollectMarksInScene()
         {
+            // stageRoot が設定されている場合はそのサブツリーだけを検索する（高速かつ正確）。
+            if (stageRoot != null)
+                return stageRoot.GetComponentsInChildren<StageSaveMarkMB>(true);
+
+            // フォールバック: stageRoot 未設定時はシーン全体をスキャンする。
             Scene targetScene = Root.gameObject.scene;
             if (!targetScene.IsValid())
                 return System.Array.Empty<StageSaveMarkMB>();

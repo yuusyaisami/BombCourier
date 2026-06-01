@@ -3,6 +3,7 @@ using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick;
 using BC.Stage;
+using BC.Tutorial;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using BC.Item;
@@ -20,6 +21,7 @@ namespace BC.Manager
         public List<GodHandObjectMB> godHandObjects; // ステージ内のGodHandオブジェクトのリスト
         public MapRuntimeMB mapRuntime; // ステージのRootで参照を集約するランタイム
         public BonusObjectMB bonusObject; // ステージ内のBonusObjectの参照 (スコア計算に使います。)
+        public TutorialStageAuthoringMB tutorialStage; // ステージ固有のチュートリアル定義
         public float ClearTimeThreshold; // ゴールデータにクリアタイムの閾値がある場合はそれを使用し、ない場合はデフォルト値を返す
     }
 
@@ -106,6 +108,7 @@ namespace BC.Manager
                 mapRuntime = mapRuntime,
                 ClearTimeThreshold = data.clearTimeThreshold, // ゴールデータにクリアタイムの閾値がある場合はそれを使用し、ない場合はデフォルト値を返す
                 bonusObject = mapRuntime.BonusObject, // ステージ内のBonusObjectの参照 (スコア計算に使います。)
+                tutorialStage = mapRuntime.TutorialStage,
             };
         }
 
@@ -177,6 +180,7 @@ namespace BC.Manager
                 stageInstance = stageInstance,
                 godHandObjects = new List<GodHandObjectMB>(),
                 mapRuntime = null,
+                tutorialStage = null,
             };
         }
     }

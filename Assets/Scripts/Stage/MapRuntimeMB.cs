@@ -3,6 +3,7 @@ using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick;
 using BC.Item;
+using BC.Tutorial;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -22,6 +23,7 @@ namespace BC.Stage
         [SerializeField] private List<BombMB> bombs = new List<BombMB>();
         [SerializeField] private List<PlayerSpawnPointMB> spawnPoints = new List<PlayerSpawnPointMB>();
         [SerializeField] private List<GodHandObjectMB> godHandObjects = new List<GodHandObjectMB>();
+        [SerializeField] private TutorialStageAuthoringMB tutorialStage;
 
         public CameraPathSequenceAuthoringMB CameraPath => cameraPath;
         [System.Obsolete("Use CameraPath instead.")]
@@ -32,6 +34,7 @@ namespace BC.Stage
         public IReadOnlyList<PlayerSpawnPointMB> SpawnPoints => spawnPoints;
         public IReadOnlyList<GodHandObjectMB> GodHandObjects => godHandObjects;
         public BonusObjectMB BonusObject => bonusObject;
+        public TutorialStageAuthoringMB TutorialStage => tutorialStage;
 
         private void Awake()
         {
@@ -53,6 +56,7 @@ namespace BC.Stage
             spawnPoints = new List<PlayerSpawnPointMB>(GetComponentsInChildren<PlayerSpawnPointMB>(true));
             godHandObjects = new List<GodHandObjectMB>(GetComponentsInChildren<GodHandObjectMB>(true));
             cameraPath = GetComponentInChildren<CameraPathSequenceAuthoringMB>(true);
+            tutorialStage = GetComponentInChildren<TutorialStageAuthoringMB>(true);
 
             goalGate = null;
             goalData = null;

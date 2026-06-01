@@ -13,6 +13,7 @@ using BC.Managers;
 using BC.Player;
 using BC.Rendering.Transition;
 using BC.Stage;
+using BC.Tutorial;
 using BC.UI;
 using BC.UI.Title;
 using Cysharp.Threading.Tasks;
@@ -71,6 +72,7 @@ namespace BC.Manager
         private GoalData currentGoalData; // 現在のゴールデータ。
         private string currentStageName; // 現在の stage 名。
         private CameraPathSequenceAuthoringMB currentCameraPath; // 現在の camera path。
+        private TutorialStageAuthoringMB currentTutorialStage; // 現在の stage に紐づくチュートリアル定義。
         private EntityRef playerRef; // player の EntityRef。
         public Action<PlayerMB> OnPlayerSpawned; // player spawn 通知。
         public Action<PlayerMB> OnPlayerUpdated; // player 参照更新通知。
@@ -92,6 +94,7 @@ namespace BC.Manager
         private bool hasStartedAnyBombFuseThisStage;
         private bool isShuttingDown;
         private bool introPathSkipRequested;
+        private TutorialProgressSnapshot pendingTutorialRestoreSnapshot;
 
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
@@ -271,7 +274,8 @@ namespace BC.Manager
                 resolvedPlayer.transform.rotation,
                 currentBomb,
                 null,
-                gameLogicSnapshot));
+                gameLogicSnapshot,
+                CaptureTutorialProgressSnapshot()));
 
             resetArmed = false;
             return true;
@@ -322,7 +326,8 @@ namespace BC.Manager
                 resolvedPlayer.transform.rotation,
                 targetBomb,
                 targetBomb.CaptureRetryCheckpointState(),
-                CaptureGameLogicValueSnapshot()));
+                CaptureGameLogicValueSnapshot(),
+                CaptureTutorialProgressSnapshot()));
 
             resetArmed = false;
             SetCurrentBomb(targetBomb);
@@ -441,6 +446,8 @@ namespace BC.Manager
                 CameraManager.Instance.CancelPath();
             }
 
+            sceneKernel?.Tutorials?.Stop();
+
             if (GameStateManagerMB.Instance != null)
             {
                 GameStateManagerMB.Instance.StateMachine.Unsubscribe(OnStageChanged);
@@ -480,6 +487,7 @@ namespace BC.Manager
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveBySystem, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, true);
+                StartCurrentTutorialIfRequested();
                 //GameBGMManagerMB.Instance?.PlayGameplayBGM();
             }
             else if (newState == GameState.FusePlaying)
@@ -500,14 +508,17 @@ namespace BC.Manager
             }
             else if (newState == GameState.Goaling)
             {
+                sceneKernel?.Tutorials?.Stop();
                 GoalAsync().Forget(); // ゴール処理を実行する
             }
             else if (newState == GameState.NextStage)
             {
+                sceneKernel?.Tutorials?.Stop();
                 NextStageAsync().Forget(); // 次のステージに進む処理を実行する
             }
             else if (newState == GameState.ReturnToTitle)
             {
+                sceneKernel?.Tutorials?.Stop();
                 ReturnToTitleAsync().Forget();
             }
             else if (newState == GameState.GameOver)
@@ -525,6 +536,57 @@ namespace BC.Manager
                 return Mathf.Max(0, kernelStore.Get(ValueKeys.Kernel.Stage.SelectedStageIndex));
 
             return Mathf.Max(0, debugStartStageIndex);
+        }
+
+        private void StartCurrentTutorialIfRequested()
+        {
+            TutorialProgressSnapshot restoreSnapshot = pendingTutorialRestoreSnapshot;
+            pendingTutorialRestoreSnapshot = TutorialProgressSnapshot.None;
+
+            if (!IsTutorialModeEnabled())
+            {
+                sceneKernel?.Tutorials?.Stop();
+                return;
+            }
+
+            if (currentTutorialStage == null)
+            {
+                sceneKernel?.Tutorials?.Stop();
+                return;
+            }
+
+            if (sceneKernel?.Tutorials == null)
+            {
+                Debug.LogError($"{nameof(GameLogicManagerMB)}: tutorial runtime service is not available.", this);
+                return;
+            }
+
+            PlayerMB resolvedPlayer = ResolvePlayerInstance();
+            if (resolvedPlayer == null || !playerRef.IsValid)
+            {
+                Debug.LogError($"{nameof(GameLogicManagerMB)}: tutorial cannot start because player is not resolved.", this);
+                return;
+            }
+
+            UITutorialToDoListMB todoListUI = UIManagerMB.Instance != null
+                ? UIManagerMB.Instance.TutorialToDoListUI
+                : null;
+
+            sceneKernel.Tutorials.Start(currentTutorialStage, playerRef, todoListUI, restoreSnapshot);
+        }
+
+        private bool IsTutorialModeEnabled()
+        {
+            ApplicationKernelMB appKernelMB = ApplicationKernelMB.Instance;
+            KernelValueStoreService kernelStore = appKernelMB != null ? appKernelMB.Kernel?.KernelValueStore : null;
+            return kernelStore != null && kernelStore.Get(ValueKeys.AppSettings.TutorialMode);
+        }
+
+        private TutorialProgressSnapshot CaptureTutorialProgressSnapshot()
+        {
+            return sceneKernel?.Tutorials != null
+                ? sceneKernel.Tutorials.CaptureSnapshot()
+                : TutorialProgressSnapshot.None;
         }
 
         public async UniTask GoalAsync()
@@ -760,6 +822,7 @@ namespace BC.Manager
         // ステージをロードするための内部ロジック。ステージのインスタンス化、プレイヤーのスポーン、カメラの初期化などを行う。
         private async UniTask LoadStageAsync(int stageIndex, bool playIntro = true)
         {
+            pendingTutorialRestoreSnapshot = TutorialProgressSnapshot.None;
             currentGameStage = stageIndex;
             await LoadGameStageAsync(playIntro);
         }
@@ -1012,6 +1075,8 @@ namespace BC.Manager
                 return;
 
             RetryCheckpointSnapshot retryCheckpoint = retryCheckpointStack.Pop();
+            sceneKernel?.Tutorials?.Stop();
+            pendingTutorialRestoreSnapshot = retryCheckpoint.TutorialSnapshot;
 
             PlayerMB resolvedPlayer = ResolvePlayerInstance();
             PlayerItemHandleStateMB itemHandleState = resolvedPlayer != null
@@ -1069,6 +1134,9 @@ namespace BC.Manager
 
             if (IsDestroyedOrShuttingDown())
                 return;
+
+            pendingTutorialRestoreSnapshot = CaptureTutorialProgressSnapshot();
+            sceneKernel?.Tutorials?.Stop();
 
             await LoadGameStageAsync(playIntro: false);
 
@@ -1155,6 +1223,7 @@ namespace BC.Manager
 
         private async UniTask LoadGameStageAsync(bool playIntro = true)
         {
+            sceneKernel?.Tutorials?.Stop();
             sceneKernel?.Cameras?.ResetRuntimeState();
 
             if (stageInstance != null && debugStageInstance == null)
@@ -1177,7 +1246,9 @@ namespace BC.Manager
                 {
                     // とりあえず最初のスポーンポイントにテレポートさせる
                     PlayerSpawnPointMB spawnPoint = result.spawnPoints[0];
-                    SpawnAndTeleportPlayer(playerPrefab, spawnPoint.transform.position, spawnPoint.transform.rotation);
+                    SpawnAndTeleportPlayer(playerPrefab, spawnPoint.transform.position, spawnPoint.GetSpawnBodyRotation());
+                    // カメラの初期向きをスポーンポイントの向きで上書きする（旧フレームの look state を引きずらない）
+                    sceneKernel.Cameras?.InitializeCameraLookDirection(spawnPoint.GetWorldSpawnDirection());
                 }
                 else
                 {
@@ -1205,6 +1276,7 @@ namespace BC.Manager
             currentGoalData = result.goalData;
             currentStageName = result.StageName;
             currentCameraPath = result.cameraPath;
+            currentTutorialStage = result.tutorialStage;
             currentGodHand = result.godHandObjects.Count > 0 ? result.godHandObjects[0] : null;
             currentBonusObject = result.bonusObject;
             SetCurrentBomb(result.bombs.Count > 0 ? result.bombs[0] : null);
@@ -1444,7 +1516,8 @@ namespace BC.Manager
             Quaternion playerRotation,
             BombMB bomb,
             object bombRetryState,
-            GameLogicValueStoreSnapshot gameLogicSnapshot)
+            GameLogicValueStoreSnapshot gameLogicSnapshot,
+            TutorialProgressSnapshot tutorialSnapshot)
         {
             SourceKind = sourceKind;
             StageCheckpoint = stageCheckpoint;
@@ -1453,6 +1526,7 @@ namespace BC.Manager
             Bomb = bomb;
             BombRetryState = bombRetryState;
             GameLogicSnapshot = gameLogicSnapshot;
+            TutorialSnapshot = tutorialSnapshot;
         }
 
         public RetryCheckpointSourceKind SourceKind { get; }
@@ -1462,5 +1536,6 @@ namespace BC.Manager
         public BombMB Bomb { get; }
         public object BombRetryState { get; }
         public GameLogicValueStoreSnapshot GameLogicSnapshot { get; }
+        public TutorialProgressSnapshot TutorialSnapshot { get; }
     }
 }

@@ -623,13 +623,13 @@ MonoBehaviour:
   facingController: {fileID: 2360609143507810942}
   maxThrowForce: 12
   minThrowForce: 4
-  throwChargeActivationHoldTime: 0.1
+  throwChargeActivationHoldTime: 0.2
   throwForceChargeTime: 1.5
   dropForwardVelocity: 0.75
   dropCarrierPlanarVelocityFactor: 0.35
-  throwOwnerCollisionIgnoreDuration: 0.2
+  throwOwnerCollisionIgnoreDuration: 0.5
   emptyHandThrowPreviewHoldTime: 0.2
-  throwUpwardCompensationAngle: 18.5
+  throwUpwardCompensationAngle: 30
   releasePositionSafetyMargin: 0.06
   releasePositionSearchDistance: 0.8
   releasePositionSearchSteps: 12

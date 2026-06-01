@@ -25,6 +25,8 @@ namespace BC.Editor.ActionSystem
         private static readonly HashSet<string> AutoExpandedPropertyNames = new(StringComparer.Ordinal)
         {
             "talkRequestData",
+            "dialogueRequestData",
+            "screenOverlayShowRequestData",
         };
 
         protected override float GetPropertyHeightCore(SerializedProperty property, GUIContent label)

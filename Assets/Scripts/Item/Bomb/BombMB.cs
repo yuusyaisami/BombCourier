@@ -742,7 +742,10 @@ namespace BC.Bomb
 
                 // 重要 SE なので、AudioSystem のプール枯渇時は必ず 2D ワンショットで鳴らす。
                 if (!playedByAudioSystem)
-                    PlayOneShot2D(explosionSound.Clip, Mathf.Max(0.05f, explosionSound.BaseVolume), explosionSound.Pitch);
+                {
+                    Transform stageRoot = GetComponentInParent<MapRuntimeMB>(true)?.transform;
+                    PlayOneShot2D(explosionSound.Clip, Mathf.Max(0.05f, explosionSound.BaseVolume), explosionSound.Pitch, stageRoot);
+                }
             }
             LogBombDebug(
                 $"Explode scene={gameObject.scene.name} frame={Time.frameCount} position={transform.position} lastImpactForce={LastImpactForce:F3} threshold={lastImpactThreshold:F3} " +
@@ -751,7 +754,10 @@ namespace BC.Bomb
             hasPreviousHeldPosition = false;
 
             if (explosionEffectPrefab != null)
-                SpawnTransientParticleEffect(explosionEffectPrefab, transform.position, Quaternion.identity);
+            {
+                Transform stageRoot = GetComponentInParent<MapRuntimeMB>(true)?.transform;
+                SpawnTransientParticleEffect(explosionEffectPrefab, transform.position, Quaternion.identity, stageRoot);
+            }
 
             ApplyExplosionImpact();
 
@@ -775,12 +781,14 @@ namespace BC.Bomb
             Destroy(gameObject);
         }
 
-        private static void PlayOneShot2D(AudioClip clip, float volume, float pitch)
+        private static void PlayOneShot2D(AudioClip clip, float volume, float pitch, Transform parent = null)
         {
             if (clip == null)
                 return;
 
             GameObject oneShotObject = new GameObject("BombExplosionSE_OneShot");
+            if (parent != null)
+                oneShotObject.transform.SetParent(parent, false);
             AudioSource audioSource = oneShotObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 0f;
@@ -794,12 +802,14 @@ namespace BC.Bomb
             Destroy(oneShotObject, duration + 0.1f);
         }
 
-        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation)
+        private static void SpawnTransientParticleEffect(ParticleSystem effectPrefab, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             if (effectPrefab == null)
                 return;
 
-            ParticleSystem instance = Instantiate(effectPrefab, position, rotation);
+            ParticleSystem instance = parent != null
+                ? Instantiate(effectPrefab, position, rotation, parent)
+                : Instantiate(effectPrefab, position, rotation);
             if (instance == null)
                 return;
 
