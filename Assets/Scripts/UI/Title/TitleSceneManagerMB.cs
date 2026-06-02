@@ -35,8 +35,8 @@ namespace BC.UI.Title
             }
             Instance = this;
 
-            // 初期状態: GameRoot のみ表示、他は非表示
-            if (titleMainPage != null) titleMainPage.gameObject.SetActive(false);
+            // 初期状態: GameRoot のみ表示、TitleMain は非表示のまま事前準備して初回表示スパイクを避ける。
+            titleMainPage?.PrewarmInitialVisuals();
             if (stageSelectPage != null) stageSelectPage.gameObject.SetActive(false);
         }
 

@@ -27,10 +27,10 @@ namespace BC.UI
         // Runtime state
         // ------------------------------------------------------------------
 
-        private readonly List<RuntimeGuideItem>         runtimeItems = new();
-        private readonly List<UIOperationGuideExtenderMB> extenders  = new();
+        private readonly List<RuntimeGuideItem> runtimeItems = new();
+        private readonly List<UIOperationGuideExtenderMB> extenders = new();
 
-        private EntityMB         currentEntityMB;
+        private EntityMB currentEntityMB;
         private ValueStoreService currentStore;
 
         private bool isBoundToGameLogic;
@@ -142,15 +142,15 @@ namespace BC.UI
         private void HandlePlayerSpawned(PlayerMB player)
         {
             currentEntityMB = null;
-            currentStore    = null;
+            currentStore = null;
             if (player == null) return;
 
-            EntityMB entityMB    = player.GetComponent<EntityMB>();
+            EntityMB entityMB = player.GetComponent<EntityMB>();
             SceneKernelMB kernel = player.GetComponentInParent<SceneKernelMB>();
             if (entityMB == null || !entityMB.HasEntity || kernel?.Kernel?.ValueStore == null) return;
 
             currentEntityMB = entityMB;
-            currentStore    = kernel.Kernel.ValueStore;
+            currentStore = kernel.Kernel.ValueStore;
         }
 
         private void HandlePromptDeviceKindChanged(InputPromptDeviceKind _)
@@ -239,13 +239,13 @@ namespace BC.UI
 
         private sealed class RuntimeGuideItem
         {
-            public UIOperationGuideItemMB         GuideItem { get; }
-            public OperationGuideEntryDefinition  Entry     { get; }
+            public UIOperationGuideItemMB GuideItem { get; }
+            public OperationGuideEntryDefinition Entry { get; }
 
             public RuntimeGuideItem(UIOperationGuideItemMB guideItem, OperationGuideEntryDefinition entry)
             {
                 GuideItem = guideItem;
-                Entry     = entry;
+                Entry = entry;
             }
         }
     }

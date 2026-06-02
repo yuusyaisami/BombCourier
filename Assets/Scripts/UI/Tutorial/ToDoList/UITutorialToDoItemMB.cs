@@ -24,8 +24,8 @@ namespace BC.UI
 
             if (toggle != null)
             {
-                toggle.isOn          = false;
-                toggle.interactable  = false; // 表示専用。ユーザー操作を受け付けない。
+                toggle.isOn = false;
+                toggle.interactable = false; // 表示専用。ユーザー操作を受け付けない。
             }
         }
 

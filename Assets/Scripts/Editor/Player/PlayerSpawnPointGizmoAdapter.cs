@@ -9,15 +9,15 @@ namespace BC.Editor.Player
     // スポーン位置を球、向き（ローカル→ワールド変換後）を矢印で表示する。
     internal sealed class PlayerSpawnPointGizmoAdapter : GizmoAdapterBase<PlayerSpawnPointMB>
     {
-        private const float SphereRadius    = 0.25f;
-        private const float ArrowLength     = 1.5f;
+        private const float SphereRadius = 0.25f;
+        private const float ArrowLength = 1.5f;
         private const float ArrowHeadLength = 0.35f;
         private const float ArrowHeadRadius = 0.12f;
 
         protected override void DrawGizmos(PlayerSpawnPointMB target, bool selected)
         {
             Vector3 origin = target.transform.position;
-            Vector3 dir    = target.GetWorldSpawnDirection();
+            Vector3 dir = target.GetWorldSpawnDirection();
 
             Color previousColor = Gizmos.color;
             Gizmos.color = selected ? SceneHandleStyleTokens.SelectedColor : SceneHandleStyleTokens.LineColor;
@@ -39,10 +39,10 @@ namespace BC.Editor.Player
             right.Normalize();
             Vector3 up = Vector3.Cross(right, dir).normalized;
 
-            Gizmos.DrawLine(arrowBase + right  * ArrowHeadRadius, tip);
-            Gizmos.DrawLine(arrowBase - right  * ArrowHeadRadius, tip);
-            Gizmos.DrawLine(arrowBase + up     * ArrowHeadRadius, tip);
-            Gizmos.DrawLine(arrowBase - up     * ArrowHeadRadius, tip);
+            Gizmos.DrawLine(arrowBase + right * ArrowHeadRadius, tip);
+            Gizmos.DrawLine(arrowBase - right * ArrowHeadRadius, tip);
+            Gizmos.DrawLine(arrowBase + up * ArrowHeadRadius, tip);
+            Gizmos.DrawLine(arrowBase - up * ArrowHeadRadius, tip);
 
             Gizmos.color = previousColor;
         }

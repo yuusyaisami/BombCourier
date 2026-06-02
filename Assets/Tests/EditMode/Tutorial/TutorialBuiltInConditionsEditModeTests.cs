@@ -160,6 +160,76 @@ namespace BC.Editor.Tests
         }
 
         [Test]
+        public void ThrowItemCondition_DropDoesNotCompleteWhenOptionDisabled()
+        {
+            SceneKernel kernel = CreateSceneKernel();
+            TutorialStageAuthoringMB stage = CreateStageAuthoring();
+            EntityRef playerEntity = new EntityRef(51, 1);
+            PlayerItemHandleStateMB handleState = CreateRegisteredHandleState(kernel, playerEntity);
+            kernel.ValueStore.Set(playerEntity, ValueKeys.Runtime.ThrowSequence, 0);
+            SetPrivateField(handleState, "isHandlingItem", true);
+
+            var authoring = new TutorialThrowItemConditionAuthoring();
+            SetPrivateField(authoring, "requiredThrowCount", 1);
+            SetPrivateField(authoring, "countDropReleaseAsSuccess", false);
+
+            ITutorialConditionRuntime runtime = authoring.CreateRuntime();
+            runtime.Start(new TutorialConditionContext(kernel, stage, playerEntity, playerEntity), null);
+
+            SetPrivateField(handleState, "isHandlingItem", false);
+            runtime.Tick(0.016f);
+
+            Assert.IsFalse(runtime.IsCompleted);
+        }
+
+        [Test]
+        public void ThrowItemCondition_DropCompletesWhenOptionEnabled()
+        {
+            SceneKernel kernel = CreateSceneKernel();
+            TutorialStageAuthoringMB stage = CreateStageAuthoring();
+            EntityRef playerEntity = new EntityRef(52, 1);
+            PlayerItemHandleStateMB handleState = CreateRegisteredHandleState(kernel, playerEntity);
+            kernel.ValueStore.Set(playerEntity, ValueKeys.Runtime.ThrowSequence, 0);
+            SetPrivateField(handleState, "isHandlingItem", true);
+
+            var authoring = new TutorialThrowItemConditionAuthoring();
+            SetPrivateField(authoring, "requiredThrowCount", 1);
+            SetPrivateField(authoring, "countDropReleaseAsSuccess", true);
+
+            ITutorialConditionRuntime runtime = authoring.CreateRuntime();
+            runtime.Start(new TutorialConditionContext(kernel, stage, playerEntity, playerEntity), null);
+
+            SetPrivateField(handleState, "isHandlingItem", false);
+            runtime.Tick(0.016f);
+
+            Assert.IsTrue(runtime.IsCompleted);
+        }
+
+        [Test]
+        public void ThrowItemCondition_EnabledOptionDoesNotDoubleCountThrowAsDrop()
+        {
+            SceneKernel kernel = CreateSceneKernel();
+            TutorialStageAuthoringMB stage = CreateStageAuthoring();
+            EntityRef playerEntity = new EntityRef(53, 1);
+            PlayerItemHandleStateMB handleState = CreateRegisteredHandleState(kernel, playerEntity);
+            kernel.ValueStore.Set(playerEntity, ValueKeys.Runtime.ThrowSequence, 0);
+            SetPrivateField(handleState, "isHandlingItem", true);
+
+            var authoring = new TutorialThrowItemConditionAuthoring();
+            SetPrivateField(authoring, "requiredThrowCount", 2);
+            SetPrivateField(authoring, "countDropReleaseAsSuccess", true);
+
+            ITutorialConditionRuntime runtime = authoring.CreateRuntime();
+            runtime.Start(new TutorialConditionContext(kernel, stage, playerEntity, playerEntity), null);
+
+            kernel.ValueStore.Set(playerEntity, ValueKeys.Runtime.ThrowSequence, 1);
+            SetPrivateField(handleState, "isHandlingItem", false);
+            runtime.Tick(0.016f);
+
+            Assert.IsFalse(runtime.IsCompleted);
+        }
+
+        [Test]
         public void BreakableGateCondition_CompletesAfterGateBreaks()
         {
             SceneKernel kernel = CreateSceneKernel();

@@ -36,6 +36,7 @@ namespace BC.Camera
         private readonly PresentationController presentationController;
 
         private CameraManager cameraManager;
+        private int nextCameraManagerLookupFrame;
         // 現在この service が追跡しているプレイヤー。会話や演出の対象未指定時の基準になります。
         private EntityRef trackedPlayerEntity;
         // 現在の注視対象コンテキスト。会話以外の演出でも使えるよう汎用名にしています。
@@ -319,9 +320,17 @@ namespace BC.Camera
             if (cameraManager != null)
                 return cameraManager;
 
-            cameraManager = CameraManager.Instance != null
-                ? CameraManager.Instance
-                : UnityEngine.Object.FindAnyObjectByType<CameraManager>();
+            cameraManager = CameraManager.Instance;
+            if (cameraManager != null)
+                return cameraManager;
+
+            if (Time.frameCount < nextCameraManagerLookupFrame)
+                return null;
+
+            cameraManager = UnityEngine.Object.FindAnyObjectByType<CameraManager>();
+            if (cameraManager == null)
+                nextCameraManagerLookupFrame = Time.frameCount + 60;
+
             return cameraManager;
         }
 

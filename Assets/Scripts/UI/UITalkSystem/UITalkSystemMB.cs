@@ -29,6 +29,7 @@ namespace BC.UI
         [SerializeField] private bool advanceOnSkipInput = true; // 文字送り中の入力で全文表示したあと、同じ入力で次stepへ進むか。
 
         [Header("Character Voice")]
+        [SerializeField] private AudioDataSO defaultAudioDataSO; // TalkAdapter を使わない dialogue で使う既定の文字SE。
         [SerializeField] private bool muteInsideHalfWidthParentheses = true; // 半角 () 内の文字SEを無音化する。
         [SerializeField] private bool muteInsideFullWidthParentheses = true; // 全角 （）内の文字SEを無音化する。
 
@@ -45,11 +46,18 @@ namespace BC.UI
         private static bool hasResolvedCharacterDataCharMember;
 
         public InputAction NextTalkInputAction => nextTalkInputAction != null ? nextTalkInputAction.action : null;
+        public AudioDataSO DefaultAudioDataSO => defaultAudioDataSO;
 
         // 話者のキャラクターサウンドを設定する。TalkSystemManagerMB から会話弓に呼ばれる。
         public void SetCharacterSound(AudioDataSO sound)
         {
             currentTalkCharacterSound = sound;
+        }
+
+        // TalkAdapter を持たない dialogue では、この UI に設定された既定SEを使う。
+        public void UseDefaultCharacterSound()
+        {
+            currentTalkCharacterSound = defaultAudioDataSO;
         }
 
         private void OnCharacterVisible(CharacterData characterData)

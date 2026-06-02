@@ -52,22 +52,23 @@ namespace BC.ActionSystem
                 {
                     started = true;
 
-                    if (context.SceneKernel == null || context.SceneKernel.EntityComponents == null)
+                    if (!context.ActorEntity.IsValid)
                     {
-                        Debug.LogWarning($"{nameof(HideTalkStepRuntime)}: scene kernel entity components are not available.");
+                        Debug.LogWarning($"{nameof(HideTalkStepRuntime)}: actor entity is invalid.");
                         failed = true;
                         return ActionNodeStatus.Failed;
                     }
 
-                    if (!context.SceneKernel.EntityComponents.TryResolve(context.ActorEntity, out TalkAdapterMB talkAdapter))
+                    TalkSystemManagerMB talkSystemManager = TalkSystemManagerMB.Instance;
+                    if (talkSystemManager == null)
                     {
-                        Debug.LogWarning($"{nameof(HideTalkStepRuntime)}: {nameof(TalkAdapterMB)} was not found on {context.ActorEntity}.");
+                        Debug.LogWarning($"{nameof(HideTalkStepRuntime)}: {nameof(TalkSystemManagerMB)} is not available.");
                         failed = true;
                         return ActionNodeStatus.Failed;
                     }
 
                     cancellationTokenSource = new CancellationTokenSource();
-                    RunAsync(talkAdapter, cancellationTokenSource.Token).Forget();
+                    RunAsync(talkSystemManager, context.ActorEntity, cancellationTokenSource.Token).Forget();
                 }
 
                 return ActionNodeStatus.Running;
@@ -79,12 +80,13 @@ namespace BC.ActionSystem
             }
 
             private async UniTaskVoid RunAsync(
-                TalkAdapterMB talkAdapter,
+                TalkSystemManagerMB talkSystemManager,
+                EntityRef actor,
                 CancellationToken cancellationToken)
             {
                 try
                 {
-                    completed = await talkAdapter.TryHideTalkAsync(requestData, cancellationToken);
+                    completed = await talkSystemManager.HideTalk(actor, requestData).AttachExternalCancellation(cancellationToken);
                     failed = !completed;
                 }
                 catch (OperationCanceledException)

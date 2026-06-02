@@ -41,6 +41,9 @@ namespace BC.UI
         // ScrollRect にも慣性リセット等を行わせるために転送する。
         public void OnInitializePotentialDrag(PointerEventData eventData)
         {
+            if (_parentScrollRect == null)
+                return;
+
             (_parentScrollRect as IInitializePotentialDragHandler)?.OnInitializePotentialDrag(eventData);
         }
 
@@ -82,14 +85,13 @@ namespace BC.UI
         {
             if (_handledBySlider)
             {
-                // Slider 自身の IDragHandler を呼び出す。
-                ExecuteEvents.Execute(_slider.gameObject, eventData, ExecuteEvents.dragHandler);
+                // 自分自身へ ExecuteEvents を投げるとこのコンポーネントが再入して再帰するため、
+                // Slider 実体へ直接転送する。
+                (_slider as IDragHandler)?.OnDrag(eventData);
             }
             else if (_parentScrollRect != null)
             {
-                ExecuteEvents.Execute(
-                    _parentScrollRect.gameObject, eventData,
-                    ExecuteEvents.dragHandler);
+                (_parentScrollRect as IDragHandler)?.OnDrag(eventData);
             }
         }
 
@@ -98,9 +100,7 @@ namespace BC.UI
         {
             if (!_handledBySlider && _parentScrollRect != null)
             {
-                ExecuteEvents.Execute(
-                    _parentScrollRect.gameObject, eventData,
-                    ExecuteEvents.endDragHandler);
+                (_parentScrollRect as IEndDragHandler)?.OnEndDrag(eventData);
             }
             _handledBySlider = false;
         }
@@ -108,10 +108,7 @@ namespace BC.UI
         // ──────────────────────────────────────────────────────────────
         private void ForwardBeginDragToScrollRect(PointerEventData eventData)
         {
-            if (_parentScrollRect != null)
-                ExecuteEvents.Execute(
-                    _parentScrollRect.gameObject, eventData,
-                    ExecuteEvents.beginDragHandler);
+            (_parentScrollRect as IBeginDragHandler)?.OnBeginDrag(eventData);
         }
     }
 }

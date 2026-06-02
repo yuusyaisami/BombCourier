@@ -28,7 +28,8 @@ namespace BC.UI
     public sealed class ManualOnlyConditionAuthoring : TutorialToDoConditionAuthoring
     {
         public override void Subscribe(ValueStoreService store, EntityRef playerEntity,
-                                       Action<int> onComplete, int index) { }
+                                       Action<int> onComplete, int index)
+        { }
         public override void Unsubscribe() { }
     }
 
@@ -130,10 +131,10 @@ namespace BC.UI
 
         private bool Matches(int value) => op switch
         {
-            ToDoCompareOp.Equal          => value == compareValue,
+            ToDoCompareOp.Equal => value == compareValue,
             ToDoCompareOp.GreaterOrEqual => value >= compareValue,
-            ToDoCompareOp.LessOrEqual    => value <= compareValue,
-            _                            => false,
+            ToDoCompareOp.LessOrEqual => value <= compareValue,
+            _ => false,
         };
     }
 }

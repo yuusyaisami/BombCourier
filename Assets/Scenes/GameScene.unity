@@ -6530,8 +6530,10 @@ MonoBehaviour:
   manualSnapshotUI: {fileID: 0}
   gameEndUI: {fileID: 1975148879}
   toastStackUI: {fileID: 404033395}
+  screenOverlayLayerUI: {fileID: 1315593524}
   talkSystemUI: {fileID: 1484048279}
   talkChoiceSystemUI: {fileID: 1543746130}
+  tutorialToDoListUI: {fileID: 1303266934}
 --- !u!1 &765483972
 GameObject:
   m_ObjectHideFlags: 0
@@ -8950,7 +8952,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UINoiseOutlineMB
   outlineColor: {r: 1, g: 0.85, b: 0, a: 1}
-  outlineInnerColor: {r: 1, g: 0.6519289, b: 0.27987415, a: 0.35}
+  outlineInnerColor: {r: 1, g: 0.73939145, b: 0.27843142, a: 0.77254903}
   outlineWidth: 0.054
   noiseScale: 17
   noiseSpeed: 1.5
@@ -9211,7 +9213,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 1, g: 0.85, b: 0, a: 1}
-    - _OutlineInnerColor: {r: 1, g: 0.6519289, b: 0.27987415, a: 0.35}
+    - _OutlineInnerColor: {r: 1, g: 0.73939145, b: 0.27843142, a: 0.77254903}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!1 &1075897442
@@ -9667,7 +9669,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UINoiseOutlineMB
   outlineColor: {r: 1, g: 0.85, b: 0, a: 1}
-  outlineInnerColor: {r: 1, g: 0.63571125, b: 0.2941177, a: 0.35}
+  outlineInnerColor: {r: 1, g: 0.76181525, b: 0.2941177, a: 0.74509805}
   outlineWidth: 0.054
   noiseScale: 17
   noiseSpeed: 1.5
@@ -10470,8 +10472,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1303266930}
+  - component: {fileID: 1303266934}
+  - component: {fileID: 1303266933}
+  - component: {fileID: 1303266932}
+  - component: {fileID: 1303266931}
   m_Layer: 0
-  m_Name: TutorialPanel
+  m_Name: ToDoPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10491,11 +10497,78 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1572376333}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -140.08508, y: -26.34845}
+  m_SizeDelta: {x: 131.39343, y: 0}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &1303266931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303266929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
+--- !u!225 &1303266932
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303266929}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &1303266933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303266929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 1
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
+--- !u!114 &1303266934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303266929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf24cbd0360f882429fecfc48b624195, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.UITutorialToDoListMB
+  defaultData: {fileID: 0}
+  itemContainer: {fileID: 1303266930}
+  itemPrefab: {fileID: 3371935447373462975, guid: 8f7ffb79fbe593045b971055ce0ca2e9, type: 3}
 --- !u!1 &1303675371
 GameObject:
   m_ObjectHideFlags: 0
@@ -10707,6 +10780,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1314322889}
   m_CullTransparentMesh: 1
+--- !u!1 &1315593522
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1315593523}
+  - component: {fileID: 1315593524}
+  m_Layer: 0
+  m_Name: OverlayPanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1315593523
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1315593522}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1572376333}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1315593524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1315593522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c95362bb82e049e3aa2f378cfed4ef74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.UIScreenOverlayLayerMB
+  overlayRoot: {fileID: 1315593523}
 --- !u!1 &1323394551
 GameObject:
   m_ObjectHideFlags: 0
@@ -13142,10 +13264,11 @@ RectTransform:
   - {fileID: 734381239}
   - {fileID: 404033386}
   - {fileID: 1484048277}
+  - {fileID: 1303266930}
+  - {fileID: 1315593523}
   - {fileID: 1554630678}
   - {fileID: 1975148877}
   - {fileID: 986043420}
-  - {fileID: 1303266930}
   m_Father: {fileID: 755927258}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -15683,7 +15806,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 1, g: 0.85, b: 0, a: 1}
-    - _OutlineInnerColor: {r: 1, g: 0.63571125, b: 0.2941177, a: 0.35}
+    - _OutlineInnerColor: {r: 1, g: 0.76181525, b: 0.2941177, a: 0.74509805}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!1 &2000158930

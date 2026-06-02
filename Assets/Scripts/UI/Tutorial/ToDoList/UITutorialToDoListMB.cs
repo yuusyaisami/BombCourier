@@ -17,9 +17,9 @@ namespace BC.UI
         // Runtime state
         // ------------------------------------------------------------------
 
-        private TutorialToDoListSO         currentData;
-        private ValueStoreService          currentStore;
-        private EntityRef                  currentPlayerEntity;
+        private TutorialToDoListSO currentData;
+        private ValueStoreService currentStore;
+        private EntityRef currentPlayerEntity;
 
         private readonly List<UITutorialToDoItemMB> runtimeItems = new();
         private bool[] completedFlags = Array.Empty<bool>();
@@ -64,9 +64,9 @@ namespace BC.UI
             UnsubscribeAll();
             ClearItems();
 
-            currentData         = data != null ? data : defaultData;
+            currentData = data != null ? data : defaultData;
             currentPlayerEntity = playerEntity;
-            currentStore        = store;
+            currentStore = store;
 
             if (currentData == null) return;
 

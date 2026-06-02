@@ -297,66 +297,42 @@ namespace BC.Managers
             CancellationToken effectiveCancellation = linkedCancellation.Token;
 
             activeTalkOwnerActor = actor;
-            activeTalkPresentationActor = default;
+            activeTalkPresentationActor = actor;
             activeTalkPresentationAdapter = null;
 
-            EntityRef focusTargetActor = ResolveCameraFocusActor(default, activeTalkOwnerActor, viewer);
+            EntityRef focusTargetActor = ResolveCameraFocusActor(activeTalkPresentationActor, activeTalkOwnerActor, viewer);
             BeginConversationCameraFocus(focusTargetActor, viewer);
 
-            bool completed = false;
+            await ExecuteInlineActionAsync(
+                activeTalkOwnerActor,
+                viewer,
+                dialogueRequestData.OnStartDialogueAction,
+                dialogueRequestData.isWaitingActionCompleted,
+                effectiveCancellation,
+                "start dialogue");
 
-            try
-            {
-                await ExecuteInlineActionAsync(
-                    activeTalkOwnerActor,
-                    viewer,
-                    dialogueRequestData.OnStartDialogueAction,
-                    dialogueRequestData.isWaitingActionCompleted,
-                    effectiveCancellation,
-                    "start dialogue");
+            if (effectiveCancellation.IsCancellationRequested)
+                return false;
 
-                effectiveCancellation.ThrowIfCancellationRequested();
+            talkChoiceUIManagerMB?.ClearChoicesImmediate();
+            talkSystemUIManagerMB.UseDefaultCharacterSound();
 
-                talkChoiceUIManagerMB?.ClearChoicesImmediate();
-                talkSystemUIManagerMB.SetCharacterSound(null);
+            await talkSystemUIManagerMB.ShowTalk(ToTalkRequestData(dialogueRequestData), effectiveCancellation);
 
-                await talkSystemUIManagerMB.ShowTalk(ToTalkRequestData(dialogueRequestData), effectiveCancellation);
+            NotifyTalkTypingCompleted();
 
-                effectiveCancellation.ThrowIfCancellationRequested();
+            if (effectiveCancellation.IsCancellationRequested)
+                return false;
 
-                await talkSystemUIManagerMB.HideTalk(dialogueRequestData.HideDuration);
+            await ExecuteInlineActionAsync(
+                activeTalkOwnerActor,
+                viewer,
+                dialogueRequestData.OnCompleteDialogueAction,
+                dialogueRequestData.isWaitingActionCompleted,
+                CancellationToken.None,
+                "complete dialogue");
 
-                effectiveCancellation.ThrowIfCancellationRequested();
-
-                await ExecuteInlineActionAsync(
-                    activeTalkOwnerActor,
-                    viewer,
-                    dialogueRequestData.OnCompleteDialogueAction,
-                    dialogueRequestData.isWaitingActionCompleted,
-                    CancellationToken.None,
-                    "complete dialogue");
-
-                completed = true;
-                return true;
-            }
-            finally
-            {
-                if (ReferenceEquals(cancellationTokenSource, currentDialogueCancellation))
-                {
-                    if (!completed)
-                    {
-                        talkChoiceUIManagerMB?.ClearChoicesImmediate();
-                        talkSystemUIManagerMB.HideTalk(0f).Forget();
-                    }
-
-                    currentDialogueCancellation.Dispose();
-                    cancellationTokenSource = null;
-                    EndConversationCameraFocus();
-                    activeTalkOwnerActor = default;
-                    activeTalkPresentationActor = default;
-                    activeTalkPresentationAdapter = null;
-                }
-            }
+            return true;
         }
 
         internal async UniTask ShowTalk(

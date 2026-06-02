@@ -54,7 +54,7 @@ namespace BC.UI.Title
 
         private void Update()
         {
-            if (stageSelectPage == null || !stageSelectPage.IsShowing)
+            if (stageSelectPage == null || !stageSelectPage.IsShowing || stageSelectPage.IsModalInputActive)
                 return;
 
             SyncFocusWithEventSystemSelection();
@@ -87,7 +87,7 @@ namespace BC.UI.Title
 
         private void OnNavigate(InputAction.CallbackContext ctx)
         {
-            if (stageSelectPage == null || !stageSelectPage.IsShowing) return;
+            if (stageSelectPage == null || !stageSelectPage.IsShowing || stageSelectPage.IsModalInputActive) return;
 
             Vector2 dir = ctx.ReadValue<Vector2>();
 
@@ -105,7 +105,7 @@ namespace BC.UI.Title
 
         private void OnCancel(InputAction.CallbackContext ctx)
         {
-            if (stageSelectPage == null || !stageSelectPage.IsShowing) return;
+            if (stageSelectPage == null || !stageSelectPage.IsShowing || stageSelectPage.IsModalInputActive) return;
             TitleSceneManagerMB.Instance?.GoToMainPageAsync(false, stageSelectPage.destroyCancellationToken).Forget();
         }
 

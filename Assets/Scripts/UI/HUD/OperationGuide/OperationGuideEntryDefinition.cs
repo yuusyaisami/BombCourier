@@ -18,8 +18,8 @@ namespace BC.UI
         [Tooltip("表示条件。null のとき常に表示。AlwaysVisibleCondition も利用可。")]
         private OperationVisibilityConditionAuthoring visibilityCondition;
 
-        public string ActionCatalogId    => actionCatalogId;
-        public string LabelText          => labelText;
+        public string ActionCatalogId => actionCatalogId;
+        public string LabelText => labelText;
         public OperationVisibilityConditionAuthoring VisibilityCondition => visibilityCondition;
     }
 }

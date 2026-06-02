@@ -4881,10 +4881,10 @@ Light:
   serializedVersion: 13
   m_Type: 0
   m_Color: {r: 1, g: 0.909896, b: 0.63207537, a: 1}
-  m_Intensity: 400
-  m_Range: 42.396645
-  m_SpotAngle: 131.71469
-  m_InnerSpotAngle: 73.25329
+  m_Intensity: 600
+  m_Range: 94.2094
+  m_SpotAngle: 145.14697
+  m_InnerSpotAngle: 131.71469
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
     m_Type: 0
@@ -4995,14 +4995,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 162446659333554695}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0.75, z: 27}
+  m_LocalRotation: {x: -0, y: -0, z: -0.3940511, w: 0.91908854}
+  m_LocalPosition: {x: 0.31055027, y: 1.4743364, z: 58.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1774164215032532237}
   m_Father: {fileID: 4342909843559958858}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -46.414}
 --- !u!114 &8644737477100856493
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6444,7 +6444,7 @@ Transform:
   m_GameObject: {fileID: 1382168426662921174}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: 10.25, z: 5}
+  m_LocalPosition: {x: 3, y: 33.75, z: 32}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6478,7 +6478,7 @@ Transform:
   m_GameObject: {fileID: 1426730238486600855}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 6.25, y: 1, z: 17.25}
+  m_LocalPosition: {x: 4.75, y: 1, z: 81.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6971,7 +6971,7 @@ MonoBehaviour:
   - {fileID: 2195357677041616176}
   godHandObjects:
   - {fileID: 7168267093934564626}
-  tutorialStage: {fileID: 0}
+  tutorialStage: {fileID: 7390711968644181719}
 --- !u!114 &7390711968644181719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7009,12 +7009,13 @@ MonoBehaviour:
       - rid: 1662523192763482744
       - rid: 1662523192763482745
       - rid: 1662523192763482747
+      - rid: 1662523196819374312
     onComplete:
       _steps: []
     nextStepId:
       value: 
     completionCondition:
-      rid: 1662523191755538478
+      rid: -2
     todoEntries: []
   - stepId:
       value: Step2
@@ -7030,6 +7031,7 @@ MonoBehaviour:
       - rid: 1662523195309948938
       - rid: 1662523195309949031
       - rid: 1662523195309949078
+      - rid: 1662523196819374339
     nextStepId:
       value: 
     completionCondition:
@@ -7048,6 +7050,7 @@ MonoBehaviour:
       - rid: 1662523195309949218
       - rid: 1662523195309949265
       - rid: 1662523195309949312
+      - rid: 1662523196819374366
     nextStepId:
       value: Step4
     completionCondition:
@@ -7074,6 +7077,7 @@ MonoBehaviour:
       - rid: 1662523195414020964
       - rid: 1662523195414021017
       - rid: 1662523195414021070
+      - rid: 1662523196819374393
     nextStepId:
       value: Step5
     completionCondition:
@@ -7094,6 +7098,7 @@ MonoBehaviour:
       - rid: 1662523195509441091
       - rid: 1662523195509441170
       - rid: 1662523195509441012
+      - rid: 1662523196819374420
     nextStepId:
       value: Step6
     completionCondition:
@@ -7117,6 +7122,7 @@ MonoBehaviour:
       - rid: 1662523195640512595
       - rid: 1662523195640512648
       - rid: 1662523195640512727
+      - rid: 1662523196819374447
     nextStepId:
       value: Step7
     completionCondition:
@@ -7134,9 +7140,22 @@ MonoBehaviour:
       _steps:
       - rid: 1662523195640513275
       - rid: 1662523195640513328
+      - rid: 1662523195640513408
       - rid: 1662523195640513381
+      - rid: 1662523196711895121
+      - rid: 1662523196711895226
+      - rid: 1662523196711895279
+      - rid: 1662523196711895358
+      - rid: 1662523196711895464
+      - rid: 1662523196711895517
+      - rid: 1662523196711895570
+      - rid: 1662523196711895623
+      - rid: 1662523196711895782
+      - rid: 1662523196711895967
+      - rid: 1662523196711895676
+      - rid: 1662523196819374474
     nextStepId:
-      value: Step8
+      value: 
     completionCondition:
       rid: -2
     todoEntries:
@@ -7148,10 +7167,6 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 1662523191755538478
-      type: {class: TutorialBreakableGateBrokenConditionAuthoring, ns: BC.Tutorial, asm: Assembly-CSharp}
-      data:
-        targetGate: {fileID: 0}
     - rid: 1662523191755538643
       type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
       data:
@@ -7606,8 +7621,8 @@ MonoBehaviour:
     - rid: 1662523195414020173
       type: {class: TutorialReachLineConditionAuthoring, ns: BC.Tutorial, asm: Assembly-CSharp}
       data:
-        lineTransform: {fileID: 0}
-        localNormal: {x: 0, y: 0, z: 1}
+        lineTransform: {fileID: 4318461145356791258}
+        localNormal: {x: 1, y: 0, z: 0}
         requireCrossingFromBackSide: 1
         distanceTolerance: 0
     - rid: 1662523195414020540
@@ -8152,7 +8167,7 @@ MonoBehaviour:
       type: {class: TutorialReachLineConditionAuthoring, ns: BC.Tutorial, asm: Assembly-CSharp}
       data:
         lineTransform: {fileID: 5083272726193480619}
-        localNormal: {x: 0, y: 0, z: 1}
+        localNormal: {x: 1, y: 0, z: 0}
         requireCrossingFromBackSide: 1
         distanceTolerance: 0
     - rid: 1662523195640513275
@@ -8208,7 +8223,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3057\u304B\u3057\u3001\u7206\u5F3E\u306B\u3064\u3044\u3066\u306F\u5C11\u3057\u53D6\u308A\u6271\u3044\u306B\n\u6CE8\u610F\u304C\u5FC5\u8981\u3067\u3059\u3002"
+          dialogueText: "\u7206\u5F3E\u306E\u7279\u5FB4\u3068\u3057\u3066\u306F\u3001\n\u3053\u306E\u3088\u3046\u306B\u306A\u3063\u3066\u3044\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8221,6 +8236,307 @@ MonoBehaviour:
           onCompleteDialogueAction:
             _steps: []
           actionToggleVersion: 1
+    - rid: 1662523195640513408
+      type: {class: ShowScreenOverlayStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        screenOverlayShowRequestData:
+          displayId:
+            value: 1
+          contentKind: 2
+          anchoredPosition: {x: 0, y: 50}
+          sortOrder: 0
+          sprite: {fileID: 21300000, guid: 9f2fe74d24df9ce429cdfec659a193e4, type: 3}
+          size: {x: 128, y: 128}
+          imageColor: {r: 1, g: 1, b: 1, a: 1}
+          text: 
+          fontSize: 36
+          textColor: {r: 1, g: 1, b: 1, a: 1}
+          prefab: {fileID: 8591759964173267904, guid: 46a8277052dc32d46ad233031e29db11, type: 3}
+          defaultsVersion: 1
+    - rid: 1662523196711895121
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u5B9F\u969B\u7206\u5F3E\u3092\u6301\u3063\u3066\u6295\u3052\u308B\u306E\u3067\u3059\u304C\u3001"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895226
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u76DB\u3063\u305F\u77AC\u9593\u304B\u3089\u3001\u70B9\u706B\u3057\u3001\n\u30BF\u30A4\u30DE\u30FC\u304C\u30B9\u30BF\u30FC\u30C8\u3057\u307E\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895279
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u305D\u308C\u307E\u3067\u306B\u3001\u7206\u5F3E\u3092\u30B2\u30FC\u30C8\u306B\u5411\u3051\u3066\u3001\n\u6295\u3052\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895358
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u305D\u306E\u305F\u3081\u3001\u3053\u308C\u304B\u3089\u7206\u5F3E\u3092\u3082\u3063\u3066\n\u5B9F\u969B\u306B\u30B2\u30FC\u30C8\u306B\u6295\u3052\u308B\u307E\u3067\u884C\u3044\u307E\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895464
+      type: {class: HideScreenOverlayStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        screenOverlayHideRequestData:
+          displayId:
+            value: 1
+    - rid: 1662523196711895517
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u4E07\u304C\u4E00\u3001\u30B2\u30FC\u30C8\u304C\u58CA\u305B\u306A\u304B\u3063\u305F\u5834\u5408\u306F"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895570
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "R\u30AD\u30FC\u3092\u9577\u62BC\u3057\u3059\u308B\u3053\u3068\u3067\u3084\u308A\u76F4\u305B\u307E\u3059\u3002\n"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895623
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "E\u30AD\u30FC\u9577\u62BC\u3057\u3067\u6295\u3052\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002\n\u9577\u304F\u62BC\u3059\u307B\u3069\u98DB\u8DDD\u96E2\u3092\u4F38\u3070\u305B\u307E\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895676
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u5E78\u904B\u3092\u7948\u3063\u3066\u3044\u307E\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895782
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u307E\u305F\u3001\u7206\u5F3E\u70B9\u706B\u4E2D\u306B\u3001\u661F\u578B\u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u89E6\u308C\u308B\u3053\u3068\u3067\u3001\n\u30DC\u30FC\u30CA\u30B9\u30B9\u30BF\u30FC\u3092\u7372\u5F97\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196711895967
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u3053\u308C\u306B\u3066\u3001\u30C1\u30E5\u30FC\u30C8\u30EA\u30A2\u30EB\u306F\u7D42\u4E86\u3068\u306A\u308A\u307E\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523196819374312
+      type: {class: HideTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        requestData:
+          duration: 0.3
+          applyTalkStateOverride: 0
+          talkStateId: 0
+    - rid: 1662523196819374339
+      type: {class: HideTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        requestData:
+          duration: 0.3
+          applyTalkStateOverride: 0
+          talkStateId: 0
+    - rid: 1662523196819374366
+      type: {class: HideTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        requestData:
+          duration: 0.3
+          applyTalkStateOverride: 0
+          talkStateId: 0
+    - rid: 1662523196819374393
+      type: {class: HideTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        requestData:
+          duration: 0.3
+          applyTalkStateOverride: 0
+          talkStateId: 0
+    - rid: 1662523196819374420
+      type: {class: HideTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        requestData:
+          duration: 0.3
+          applyTalkStateOverride: 0
+          talkStateId: 0
+    - rid: 1662523196819374447
+      type: {class: HideTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        requestData:
+          duration: 0.3
+          applyTalkStateOverride: 0
+          talkStateId: 0
+    - rid: 1662523196819374474
+      type: {class: HideTalkStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        requestData:
+          duration: 0.3
+          applyTalkStateOverride: 0
+          talkStateId: 0
 --- !u!1 &2886828127474513816
 GameObject:
   m_ObjectHideFlags: 0
@@ -12999,38 +13315,38 @@ MonoBehaviour:
   m_SharedTextures: []
   m_Positions:
   - {x: -1, y: 0.00000011920974, z: -18}
-  - {x: -1, y: 0.00000011920974, z: 17.5}
+  - {x: -1, y: 0.00000011920974, z: 32.25}
   - {x: 4, y: 0.00000011920974, z: -18}
-  - {x: 4, y: 0.00000011920974, z: 17.5}
-  - {x: -1, y: 0.00000011920974, z: 17.5}
-  - {x: -1, y: 0.00000011920974, z: 53}
-  - {x: 4, y: 0.00000011920974, z: 17.5}
-  - {x: 4, y: 0.00000011920974, z: 53}
+  - {x: 4, y: 0.00000011920974, z: 32.25}
+  - {x: -1, y: 0.00000011920974, z: 32.25}
+  - {x: -1, y: 0.00000011920974, z: 82.5}
+  - {x: 4, y: 0.00000011920974, z: 32.25}
+  - {x: 4, y: 0.00000011920974, z: 82.5}
   - {x: 4, y: 0.00000011920974, z: -18}
-  - {x: 4, y: 0.00000011920974, z: 17.5}
+  - {x: 4, y: 0.00000011920974, z: 32.25}
   - {x: 9, y: 0.00000011920974, z: -18}
-  - {x: 9, y: 0.00000011920974, z: 17.5}
-  - {x: 4, y: 0.00000011920974, z: 17.5}
-  - {x: 4, y: 0.00000011920974, z: 53}
-  - {x: 9, y: 0.00000011920974, z: 17.5}
-  - {x: 9, y: 0.00000011920974, z: 53}
+  - {x: 9, y: 0.00000011920974, z: 32.25}
+  - {x: 4, y: 0.00000011920974, z: 32.25}
+  - {x: 4, y: 0.00000011920974, z: 82.5}
+  - {x: 9, y: 0.00000011920974, z: 32.25}
+  - {x: 9, y: 0.00000011920974, z: 82.5}
   m_Textures0:
   - {x: -1, y: -18}
-  - {x: -1, y: 17.5}
+  - {x: -1, y: 32.25}
   - {x: 4, y: -18}
-  - {x: 4, y: 17.5}
-  - {x: -1, y: 17.5}
-  - {x: -1, y: 53}
-  - {x: 4, y: 17.5}
-  - {x: 4, y: 53}
+  - {x: 4, y: 32.25}
+  - {x: -1, y: 32.25}
+  - {x: -1, y: 82.5}
+  - {x: 4, y: 32.25}
+  - {x: 4, y: 82.5}
   - {x: 4, y: -18}
-  - {x: 4, y: 17.5}
+  - {x: 4, y: 32.25}
   - {x: 9, y: -18}
-  - {x: 9, y: 17.5}
-  - {x: 4, y: 17.5}
-  - {x: 4, y: 53}
-  - {x: 9, y: 17.5}
-  - {x: 9, y: 53}
+  - {x: 9, y: 32.25}
+  - {x: 4, y: 32.25}
+  - {x: 4, y: 82.5}
+  - {x: 9, y: 32.25}
+  - {x: 9, y: 82.5}
   m_Textures2: []
   m_Textures3: []
   m_Tangents:
@@ -13059,7 +13375,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 14954
+  m_VersionIndex: 16104
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -13079,9 +13395,9 @@ MonoBehaviour:
   m_Shape:
     rid: 30532514339619050
   m_ShapeRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_UnmodifiedMeshVersion: 14954
-  m_Size: {x: 10, y: 0, z: 71}
-  m_LocalCenter: {x: 4, y: 0.00000011920929, z: 17.5}
+  m_UnmodifiedMeshVersion: 16104
+  m_Size: {x: 10, y: 0, z: 100.5}
+  m_LocalCenter: {x: 4, y: 0.00000011920929, z: 32.25}
   references:
     version: 2
     RefIds:
@@ -13826,7 +14142,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: acba99ac968ba3d4791ef1ef4c281799, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 29.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: acba99ac968ba3d4791ef1ef4c281799, type: 3}
       propertyPath: m_LocalRotation.w

@@ -15,7 +15,7 @@ namespace BC.UI
         [Tooltip("達成条件。ManualOnly の場合は SetItemCompleted(i) を外部から呼ぶ。")]
         private TutorialToDoConditionAuthoring condition;
 
-        public string                           LabelText => labelText;
-        public TutorialToDoConditionAuthoring   Condition => condition;
+        public string LabelText => labelText;
+        public TutorialToDoConditionAuthoring Condition => condition;
     }
 }

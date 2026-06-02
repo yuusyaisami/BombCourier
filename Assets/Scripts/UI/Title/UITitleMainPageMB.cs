@@ -49,27 +49,13 @@ namespace BC.UI.Title
 
         private CanvasGroup pageCanvasGroup;
         private bool settingsFocused;
+        private Sprite preparedInitialRightPanelSprite;
 
         private void Awake()
         {
-            pageCanvasGroup = GetComponent<CanvasGroup>();
-            pageCanvasGroup.alpha = 0f;
-            pageCanvasGroup.interactable = false;
-
-            if (buttonsCanvasGroup != null)
-            {
-                buttonsCanvasGroup.alpha = 0f;
-                buttonsCanvasGroup.interactable = false;
-            }
-
-            if (logoTransform != null)
-            {
-                logoTransform.localScale = Vector3.zero;
-                logoTransform.localEulerAngles = Vector3.zero;
-            }
-
-            if (rightPanelTransitionImage != null)
-                rightPanelTransitionImage.SetDefaultProfile(rightPanelTransitionProfile);
+            EnsureReferences();
+            ApplyHiddenCanvasState();
+            ResetLogoTransform();
 
             if (playButtonOutline == null && playButton != null)
                 playButtonOutline = playButton.GetComponentInChildren<UINoiseOutlineMB>(true);
@@ -92,6 +78,19 @@ namespace BC.UI.Title
             RegisterSettingsButtonFocusEvents();
         }
 
+        public void PrewarmInitialVisuals()
+        {
+            EnsureReferences();
+            ApplyHiddenCanvasState();
+            ResetLogoTransform();
+            CachePreparedInitialRightPanelSprite();
+
+            if (preparedInitialRightPanelSprite != null && rightPanelTransitionImage != null)
+                rightPanelTransitionImage.SetImmediateSprite(preparedInitialRightPanelSprite);
+
+            Canvas.ForceUpdateCanvases();
+        }
+
         private void RegisterSettingsButtonFocusEvents()
         {
             if (settingsButton == null) return;
@@ -110,9 +109,11 @@ namespace BC.UI.Title
 
         public override async UniTask ShowAsync(CancellationToken ct)
         {
+            EnsureReferences();
             IsShowing = true;
             gameObject.SetActive(true);
-            pageCanvasGroup.alpha = 0f;
+            ApplyHiddenCanvasState();
+            ResetLogoTransform();
 
             await pageCanvasGroup
                 .DOFade(1f, pageInDuration)
@@ -138,9 +139,11 @@ namespace BC.UI.Title
                     .WithCancellation(ct);
 
                 buttonsCanvasGroup.interactable = true;
+                buttonsCanvasGroup.blocksRaycasts = true;
             }
 
             pageCanvasGroup.interactable = true;
+            pageCanvasGroup.blocksRaycasts = true;
 
             // ゲームプレイボタンに初期フォーカスを当てる
             if (playButton != null)
@@ -151,9 +154,14 @@ namespace BC.UI.Title
 
         public override async UniTask HideAsync(CancellationToken ct)
         {
+            EnsureReferences();
             pageCanvasGroup.interactable = false;
+            pageCanvasGroup.blocksRaycasts = false;
             if (buttonsCanvasGroup != null)
+            {
                 buttonsCanvasGroup.interactable = false;
+                buttonsCanvasGroup.blocksRaycasts = false;
+            }
 
             await pageCanvasGroup
                 .DOFade(0f, pageOutDuration)
@@ -167,9 +175,12 @@ namespace BC.UI.Title
 
         public async UniTask RestoreFromSettingsAsync(CancellationToken ct)
         {
+            EnsureReferences();
             IsShowing = true;
             gameObject.SetActive(true);
             pageCanvasGroup.alpha = 0f;
+            pageCanvasGroup.interactable = false;
+            pageCanvasGroup.blocksRaycasts = false;
 
             await pageCanvasGroup
                 .DOFade(1f, pageInDuration)
@@ -182,6 +193,8 @@ namespace BC.UI.Title
             if (buttonsCanvasGroup != null)
             {
                 buttonsCanvasGroup.alpha = 0f;
+                buttonsCanvasGroup.interactable = false;
+                buttonsCanvasGroup.blocksRaycasts = false;
                 await buttonsCanvasGroup
                     .DOFade(1f, buttonsFadeDuration)
                     .SetEase(Ease.OutQuad)
@@ -189,9 +202,11 @@ namespace BC.UI.Title
                     .WithCancellation(ct);
 
                 buttonsCanvasGroup.interactable = true;
+                buttonsCanvasGroup.blocksRaycasts = true;
             }
 
             pageCanvasGroup.interactable = true;
+            pageCanvasGroup.blocksRaycasts = true;
 
             if (playButton != null)
                 EventSystem.current?.SetSelectedGameObject(playButton.gameObject);
@@ -234,9 +249,7 @@ namespace BC.UI.Title
 
         private void SetInitialRightPanelSprite()
         {
-            Sprite sprite = titleWeightedSprites != null
-                ? titleWeightedSprites.PickRandom()
-                : null;
+            Sprite sprite = ConsumePreparedInitialRightPanelSprite();
 
             if (sprite != null && rightPanelTransitionImage != null)
                 rightPanelTransitionImage.SetImmediateSprite(sprite);
@@ -341,6 +354,62 @@ namespace BC.UI.Title
         {
             if (buttonClickSound != null)
                 AudioSystemMB.Instance?.PlaySE(buttonClickSound);
+        }
+
+        private void EnsureReferences()
+        {
+            pageCanvasGroup ??= GetComponent<CanvasGroup>();
+
+            if (rightPanelTransitionImage != null)
+                rightPanelTransitionImage.SetDefaultProfile(rightPanelTransitionProfile);
+        }
+
+        private void ApplyHiddenCanvasState()
+        {
+            if (pageCanvasGroup != null)
+            {
+                pageCanvasGroup.alpha = 0f;
+                pageCanvasGroup.interactable = false;
+                pageCanvasGroup.blocksRaycasts = false;
+            }
+
+            if (buttonsCanvasGroup != null)
+            {
+                buttonsCanvasGroup.alpha = 0f;
+                buttonsCanvasGroup.interactable = false;
+                buttonsCanvasGroup.blocksRaycasts = false;
+            }
+        }
+
+        private void ResetLogoTransform()
+        {
+            if (logoTransform == null)
+                return;
+
+            logoTransform.localScale = Vector3.zero;
+            logoTransform.localEulerAngles = Vector3.zero;
+        }
+
+        private void CachePreparedInitialRightPanelSprite()
+        {
+            if (preparedInitialRightPanelSprite != null || titleWeightedSprites == null)
+                return;
+
+            preparedInitialRightPanelSprite = titleWeightedSprites.PickRandom();
+        }
+
+        private Sprite ConsumePreparedInitialRightPanelSprite()
+        {
+            if (preparedInitialRightPanelSprite != null)
+            {
+                Sprite sprite = preparedInitialRightPanelSprite;
+                preparedInitialRightPanelSprite = null;
+                return sprite;
+            }
+
+            return titleWeightedSprites != null
+                ? titleWeightedSprites.PickRandom()
+                : null;
         }
     }
 }

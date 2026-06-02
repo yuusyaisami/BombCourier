@@ -9,12 +9,23 @@ namespace BC.Gameplay.PlayModeTests
     public sealed class UITalkSystemPlayModeTests
     {
         private const string UITalkSystemTypeName = "BC.UI.UITalkSystemMB";
+        private const string AudioDataSoTypeName = "BC.Audio.AudioDataSO";
 
         private readonly List<GameObject> createdObjects = new();
+        private readonly List<ScriptableObject> createdScriptableObjects = new();
 
         [TearDown]
         public void TearDown()
         {
+            for (int i = createdScriptableObjects.Count - 1; i >= 0; i--)
+            {
+                ScriptableObject scriptableObject = createdScriptableObjects[i];
+                if (scriptableObject != null)
+                    UnityEngine.Object.DestroyImmediate(scriptableObject);
+            }
+
+            createdScriptableObjects.Clear();
+
             for (int i = createdObjects.Count - 1; i >= 0; i--)
             {
                 GameObject createdObject = createdObjects[i];
@@ -52,6 +63,20 @@ namespace BC.Gameplay.PlayModeTests
 
             Assert.IsTrue(shouldAdvance, "Completed lines should advance on the next fresh input.");
             Assert.IsFalse(GetPrivateField<bool>(talkUi, "waitForAdvanceRelease"), "Advance after completion should not inject an extra release wait.");
+        }
+
+        [Test]
+        public void UseDefaultCharacterSound_AssignsSerializedDefaultAudioDataSo()
+        {
+            Component talkUi = CreateTalkUi("TalkUIDefaultAudio");
+            ScriptableObject defaultAudioDataSo = ScriptableObject.CreateInstance(FindRuntimeType(AudioDataSoTypeName));
+            createdScriptableObjects.Add(defaultAudioDataSo);
+
+            SetPrivateField(talkUi, "defaultAudioDataSO", defaultAudioDataSo);
+
+            InvokeMethod(talkUi, "UseDefaultCharacterSound");
+
+            Assert.AreSame(defaultAudioDataSo, GetPrivateField<object>(talkUi, "currentTalkCharacterSound"));
         }
 
         private Component CreateTalkUi(string name)

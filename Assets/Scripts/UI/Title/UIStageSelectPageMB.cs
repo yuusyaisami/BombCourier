@@ -88,6 +88,8 @@ namespace BC.UI.Title
         private bool stageItemsBound;
         private const int GameSceneBuildIndex = 1;
 
+        public bool IsModalInputActive => tutorialConfirmModal != null && tutorialConfirmModal.IsOpen;
+
         private void Awake()
         {
             pageCanvasGroup = GetComponent<CanvasGroup>();
@@ -211,6 +213,7 @@ namespace BC.UI.Title
             IsShowing = true;
             gameObject.SetActive(true);
             currentPageIndex = 0;
+            pageCanvasGroup.blocksRaycasts = true;
             SetupPageContainers();
             SetupStageItems();
 
@@ -244,6 +247,7 @@ namespace BC.UI.Title
         public override async UniTask HideAsync(CancellationToken ct)
         {
             pageCanvasGroup.interactable = false;
+            pageCanvasGroup.blocksRaycasts = false;
             ResetStageDetailPanel();
 
             await pageCanvasGroup
@@ -324,6 +328,7 @@ namespace BC.UI.Title
             bool isTutorial = false;
             if (tutorialConfirmModal != null && tutorialConfirmModal.ShouldShowForStage(stageIndex))
             {
+                pageCanvasGroup.blocksRaycasts = false;
                 isTutorial = await tutorialConfirmModal.ShowConfirmAsync(destroyCancellationToken);
             }
             kernelStore?.Set(ValueKeys.AppSettings.TutorialMode, isTutorial);

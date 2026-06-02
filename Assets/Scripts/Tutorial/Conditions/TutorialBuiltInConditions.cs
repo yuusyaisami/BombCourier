@@ -95,10 +95,11 @@ namespace BC.Tutorial
     public sealed class TutorialThrowItemConditionAuthoring : TutorialConditionAuthoring
     {
         [SerializeField, Min(1)] private int requiredThrowCount = 1;
+        [SerializeField] private bool countDropReleaseAsSuccess;
 
         public override ITutorialConditionRuntime CreateRuntime()
         {
-            return new ThrowItemConditionRuntime(requiredThrowCount);
+            return new ThrowItemConditionRuntime(requiredThrowCount, countDropReleaseAsSuccess);
         }
 
         public override void Validate(TutorialValidationContext context, string ownerPath)
@@ -593,37 +594,50 @@ namespace BC.Tutorial
     {
         public int CompletedThrowCount;
         public int LastObservedSequence;
+        public bool LastObservedIsHandlingItem;
     }
 
     internal sealed class ThrowItemConditionRuntime : TutorialConditionRuntimeBase
     {
         private readonly int requiredThrowCount;
+        private readonly bool countDropReleaseAsSuccess;
 
         private ValueStoreService store;
         private EntityRef playerEntity;
+        private PlayerItemHandleStateMB handleState;
         private int completedThrowCount;
         private int lastObservedSequence;
+        private bool lastObservedIsHandlingItem;
 
-        public ThrowItemConditionRuntime(int requiredThrowCount)
+        public ThrowItemConditionRuntime(int requiredThrowCount, bool countDropReleaseAsSuccess)
         {
             this.requiredThrowCount = Mathf.Max(0, requiredThrowCount);
+            this.countDropReleaseAsSuccess = countDropReleaseAsSuccess;
         }
 
         public override void Start(in TutorialConditionContext context, object restoredState)
         {
             store = context.ValueStore ?? throw new InvalidOperationException("Tutorial throw-item condition requires SceneKernel.ValueStore.");
             playerEntity = context.PlayerEntity;
+            handleState = countDropReleaseAsSuccess
+                ? TutorialConditionRuntimeUtility.ResolveRequiredPlayerComponent<PlayerItemHandleStateMB>(context)
+                : null;
 
             int currentSequence = store.Get(playerEntity, ValueKeys.Runtime.ThrowSequence);
+            bool currentIsHandlingItem = handleState != null && handleState.IsHandlingItem;
             if (restoredState is ThrowItemConditionState state)
             {
                 completedThrowCount = Mathf.Max(0, state.CompletedThrowCount);
                 lastObservedSequence = Mathf.Max(currentSequence, state.LastObservedSequence);
+                lastObservedIsHandlingItem = handleState != null
+                    ? currentIsHandlingItem
+                    : state.LastObservedIsHandlingItem;
             }
             else
             {
                 completedThrowCount = 0;
                 lastObservedSequence = currentSequence;
+                lastObservedIsHandlingItem = currentIsHandlingItem;
             }
 
             if (requiredThrowCount <= 0 || completedThrowCount >= requiredThrowCount)
@@ -636,11 +650,20 @@ namespace BC.Tutorial
                 return;
 
             int currentSequence = store.Get(playerEntity, ValueKeys.Runtime.ThrowSequence);
-            if (currentSequence > lastObservedSequence)
+            bool currentIsHandlingItem = handleState != null && handleState.IsHandlingItem;
+            int sequenceDelta = Mathf.Max(0, currentSequence - lastObservedSequence);
+
+            if (sequenceDelta > 0)
             {
-                completedThrowCount += currentSequence - lastObservedSequence;
-                lastObservedSequence = currentSequence;
+                completedThrowCount += sequenceDelta;
             }
+            else if (countDropReleaseAsSuccess && lastObservedIsHandlingItem && !currentIsHandlingItem)
+            {
+                completedThrowCount += 1;
+            }
+
+            lastObservedSequence = currentSequence;
+            lastObservedIsHandlingItem = currentIsHandlingItem;
 
             if (completedThrowCount >= requiredThrowCount)
                 MarkCompleted();
@@ -652,6 +675,7 @@ namespace BC.Tutorial
             {
                 CompletedThrowCount = completedThrowCount,
                 LastObservedSequence = lastObservedSequence,
+                LastObservedIsHandlingItem = lastObservedIsHandlingItem,
             };
         }
     }
