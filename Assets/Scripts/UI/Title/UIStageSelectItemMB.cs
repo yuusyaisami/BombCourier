@@ -2,23 +2,21 @@ using System;
 using System.Threading;
 using BC.Audio;
 using BC.Stage;
-using BC.UI.Effect;
+using BC.UI.Components;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
 namespace BC.UI.Title
 {
     // ステージセレクト内の個別ステージ項目。
     // Setup() でデータを受け取り、フォーカス / 選択イベントを外部に通知する。
-    [RequireComponent(typeof(Button))]
+    [RequireComponent(typeof(UIButtonMB))]
     public sealed class UIStageSelectItemMB : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private UINoiseOutlineMB noiseOutline;
-        [SerializeField] private UIButtonFlashMB buttonFlash;
+        [SerializeField] private UIButtonMB button;
         [SerializeField] private Image previewImage;
         [SerializeField] private Image lockedOverlay;
         [SerializeField] private TextMeshProUGUI stageIndexText;
@@ -38,7 +36,6 @@ namespace BC.UI.Title
 
         private UIStageSelectPageMB selectPage;
 
-        private Button button;
         private CanvasGroup canvasGroup;
         private bool initialized;
         private bool isFocused;
@@ -46,7 +43,7 @@ namespace BC.UI.Title
         private void Awake()
         {
             EnsureInitialized();
-            noiseOutline?.SetFocused(false);
+            button?.SetFocusedImmediate(false);
         }
 
         /// <summary>ステージデータを設定し表示を更新する。</summary>
@@ -71,7 +68,7 @@ namespace BC.UI.Title
                 lockedOverlay.gameObject.SetActive(!isUnlocked);
 
             if (button != null)
-                button.interactable = isUnlocked;
+                button.Interactable = isUnlocked;
 
             if (canvasGroup != null)
                 canvasGroup.alpha = isUnlocked ? 1f : 0.45f;
@@ -97,7 +94,7 @@ namespace BC.UI.Title
                 return;
 
             isFocused = focused;
-            noiseOutline?.SetFocused(focused);
+            button?.SetFocusedImmediate(focused);
             if (focused)
             {
                 if (focusSound != null)
@@ -118,11 +115,7 @@ namespace BC.UI.Title
 
             if (button != null)
             {
-                if (selectedObject == button.gameObject)
-                    return true;
-
-                Transform selectedTransform = selectedObject.transform;
-                if (selectedTransform != null && selectedTransform.IsChildOf(button.transform))
+                if (button.IsSelectionTarget(selectedObject))
                     return true;
             }
 
@@ -133,13 +126,13 @@ namespace BC.UI.Title
         public bool CanReceiveNavigationFocus()
         {
             EnsureInitialized();
-            return IsUnlocked && isActiveAndEnabled && gameObject.activeInHierarchy && button != null && button.interactable;
+            return IsUnlocked && isActiveAndEnabled && gameObject.activeInHierarchy && button != null && button.Interactable;
         }
 
         public GameObject GetSelectionObject()
         {
             EnsureInitialized();
-            return button != null ? button.gameObject : gameObject;
+            return button != null ? button.UnityButton.gameObject : gameObject;
         }
 
         private void OnClick()
@@ -153,7 +146,9 @@ namespace BC.UI.Title
             if (initialized)
                 return;
 
-            button = GetComponent<Button>();
+            button = GetComponent<UIButtonMB>();
+            if (button == null && GetComponent<Button>() != null)
+                button = gameObject.AddComponent<UIButtonMB>();
             if (stageIndexText == null)
                 stageIndexText = GetComponentInChildren<TextMeshProUGUI>(true);
 
@@ -163,37 +158,44 @@ namespace BC.UI.Title
             if (canvasGroup == null)
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
-            if (noiseOutline == null)
-                noiseOutline = GetComponentInChildren<UINoiseOutlineMB>(true);
-
             if (button != null)
             {
-                button.onClick.RemoveListener(OnClick);
-                button.onClick.AddListener(OnClick);
-
-                EventTrigger trigger = button.GetComponent<EventTrigger>();
-                if (trigger == null)
-                    trigger = button.gameObject.AddComponent<EventTrigger>();
-
-                EventTrigger.Entry onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-                onPointerEnter.callback.AddListener(_ => EventSystem.current?.SetSelectedGameObject(button.gameObject));
-                trigger.triggers.Add(onPointerEnter);
+                button.RemoveClickListener(OnClick);
+                button.AddClickListener(OnClick);
+                button.Focused -= OnButtonFocused;
+                button.Focused += OnButtonFocused;
+                button.Deselected -= OnButtonDeselected;
+                button.Deselected += OnButtonDeselected;
 
                 // Navigation は UIStageSelectNavigationMB が明示指定するため無効化
-                Navigation nav = button.navigation;
+                Navigation nav = button.Navigation;
                 nav.mode = Navigation.Mode.Explicit;
-                button.navigation = nav;
+                button.Navigation = nav;
             }
-
 
 
             initialized = true;
         }
 
+
+        private void OnButtonFocused(UIButtonMB focusedButton)
+        {
+            SetFocused(true);
+        }
+
+        private void OnButtonDeselected(UIButtonMB deselectedButton)
+        {
+            SetFocused(false);
+        }
+
         private void OnDestroy()
         {
             if (button != null)
-                button.onClick.RemoveListener(OnClick);
+            {
+                button.RemoveClickListener(OnClick);
+                button.Focused -= OnButtonFocused;
+                button.Deselected -= OnButtonDeselected;
+            }
         }
 
         private async UniTaskVoid PlaySelectSequenceAsync(CancellationToken ct)
@@ -203,9 +205,7 @@ namespace BC.UI.Title
             else
                 selectPage?.PlayNavClickSound();
 
-            if (buttonFlash != null)
-                await buttonFlash.PlayFlashAsync(ct);
-
+            await UniTask.Yield(PlayerLoopTiming.Update, ct);
             OnSelected?.Invoke(this);
         }
     }

@@ -2,7 +2,7 @@ using System.Threading;
 using BC.ActionSystem;
 using BC.Base;
 using BC.Manager;
-using BC.UI.Effect;
+using BC.UI.Components;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Febucci.TextAnimatorForUnity;
@@ -20,8 +20,8 @@ namespace BC.UI
     public class UIStageClearMB : MonoBehaviour
     {
         [Header("Buttons")]
-        [SerializeField] private Button returnToTitleButton;
-        [SerializeField] private Button nextStageButton;
+        [SerializeField] private UIButtonMB returnToTitleButton;
+        [SerializeField] private UIButtonMB nextStageButton;
         [Header("Score Display")]
         [SerializeField] private Image clearIcon; // クリアアイコンを表示する Image コンポーネント
         [SerializeField] private Image clearStar; // スコアを表示するテキストコンポーネント
@@ -63,15 +63,13 @@ namespace BC.UI
 
         private CancellationTokenSource _cts;
         private SceneKernel sceneKernel;
-        private UINoiseOutlineMB returnToTitleOutline;
-        private UINoiseOutlineMB nextStageOutline;
 
         private void Awake()
         {
             // ゲーム開始時のスケールを (1, 0, 1) に設定して非表示状態にする
             transform.localScale = new Vector3(1f, 0f, 1f);
-            returnToTitleButton.gameObject.SetActive(false);
-            nextStageButton.gameObject.SetActive(false);
+            returnToTitleButton.UnityButton.gameObject.SetActive(false);
+            nextStageButton.UnityButton.gameObject.SetActive(false);
         }
 
         private void Start()
@@ -87,34 +85,20 @@ namespace BC.UI
 
             GameStateManagerMB.Instance.StateMachine.Subscribe(OnGameStateChanged);
 
-            // UINoiseOutlineMB をボタンに追加する（既に付いていれば再利用）。
             if (returnToTitleButton != null)
             {
-                returnToTitleOutline = returnToTitleButton.GetComponent<UINoiseOutlineMB>()
-                    ?? returnToTitleButton.gameObject.AddComponent<UINoiseOutlineMB>();
-                returnToTitleButton.onClick.AddListener(OnReturnToTitleButtonClicked);
-                AddPointerFocusHandlers(
-                    returnToTitleButton.gameObject,
-                    () =>
-                    {
-                        returnToTitleOutline?.SetFocused(true);
-                        ExecuteInlineAction(onReturnToTitleFocusAction);
-                    },
-                    () => returnToTitleOutline?.SetFocused(false));
+                returnToTitleButton.RemoveClickListener(OnReturnToTitleButtonClicked);
+                returnToTitleButton.AddClickListener(OnReturnToTitleButtonClicked);
+                returnToTitleButton.Focused -= OnReturnToTitleButtonFocused;
+                returnToTitleButton.Focused += OnReturnToTitleButtonFocused;
             }
+
             if (nextStageButton != null)
             {
-                nextStageOutline = nextStageButton.GetComponent<UINoiseOutlineMB>()
-                    ?? nextStageButton.gameObject.AddComponent<UINoiseOutlineMB>();
-                nextStageButton.onClick.AddListener(OnNextStageButtonClicked);
-                AddPointerFocusHandlers(
-                    nextStageButton.gameObject,
-                    () =>
-                    {
-                        nextStageOutline?.SetFocused(true);
-                        ExecuteInlineAction(onNextStageFocusAction);
-                    },
-                    () => nextStageOutline?.SetFocused(false));
+                nextStageButton.RemoveClickListener(OnNextStageButtonClicked);
+                nextStageButton.AddClickListener(OnNextStageButtonClicked);
+                nextStageButton.Focused -= OnNextStageButtonFocused;
+                nextStageButton.Focused += OnNextStageButtonFocused;
             }
         }
 
@@ -123,6 +107,18 @@ namespace BC.UI
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
+
+            if (returnToTitleButton != null)
+            {
+                returnToTitleButton.RemoveClickListener(OnReturnToTitleButtonClicked);
+                returnToTitleButton.Focused -= OnReturnToTitleButtonFocused;
+            }
+
+            if (nextStageButton != null)
+            {
+                nextStageButton.RemoveClickListener(OnNextStageButtonClicked);
+                nextStageButton.Focused -= OnNextStageButtonFocused;
+            }
 
             if (GameStateManagerMB.Instance != null)
             {
@@ -152,27 +148,14 @@ namespace BC.UI
             GameStateManagerMB.Instance.StateMachine.ChangeState(GameState.NextStage);
         }
 
-        // PointerEnter / PointerExit の EventTrigger をランタイムで登録するヘルパー。
-        private static void AddPointerFocusHandlers(GameObject target, System.Action onEnter, System.Action onExit)
+        private void OnReturnToTitleButtonFocused(UIButtonMB button)
         {
-            EventTrigger trigger = target.GetComponent<EventTrigger>() ?? target.AddComponent<EventTrigger>();
+            ExecuteInlineAction(onReturnToTitleFocusAction);
+        }
 
-            EventTrigger.Entry enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            enterEntry.callback.AddListener(_ => onEnter?.Invoke());
-            trigger.triggers.Add(enterEntry);
-
-            EventTrigger.Entry exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-            exitEntry.callback.AddListener(_ => onExit?.Invoke());
-            trigger.triggers.Add(exitEntry);
-
-            // ゲームパッド対応: Select / Deselect で同様に処理する。
-            EventTrigger.Entry selectEntry = new EventTrigger.Entry { eventID = EventTriggerType.Select };
-            selectEntry.callback.AddListener(_ => onEnter?.Invoke());
-            trigger.triggers.Add(selectEntry);
-
-            EventTrigger.Entry deselectEntry = new EventTrigger.Entry { eventID = EventTriggerType.Deselect };
-            deselectEntry.callback.AddListener(_ => onExit?.Invoke());
-            trigger.triggers.Add(deselectEntry);
+        private void OnNextStageButtonFocused(UIButtonMB button)
+        {
+            ExecuteInlineAction(onNextStageFocusAction);
         }
 
         // sceneKernel がある場合は GameLogicManager の EntityRef を actor にして InlineAction を実行する。
@@ -197,10 +180,10 @@ namespace BC.UI
             // パネルが表示される前に InlineAction を実行する。
             ExecuteInlineAction(onFadeInAction);
 
-            returnToTitleButton.gameObject.SetActive(false);
-            nextStageButton.gameObject.SetActive(false);
-            returnToTitleButton.interactable = false;
-            nextStageButton.interactable = false;
+            returnToTitleButton.UnityButton.gameObject.SetActive(false);
+            nextStageButton.UnityButton.gameObject.SetActive(false);
+            returnToTitleButton.Interactable = false;
+            nextStageButton.Interactable = false;
 
             // starsを初期化
             ResetStars();
@@ -297,24 +280,24 @@ namespace BC.UI
                 fastClearStarTooltipTarget.TooltipText = "爆弾のFuseタイムが短いともらえるスターです！\n今回のクリアタイム: " + clearTime.ToString("F2") + "秒\n早いクリアの条件: " + fastClearThreshold.ToString("F2") + "秒以下";
             }
             returnToTitleButton.transform.localScale = new Vector3(1f, 0f, 1f);
-            returnToTitleButton.gameObject.SetActive(true);
+            returnToTitleButton.UnityButton.gameObject.SetActive(true);
             // 原則待たない
             await returnToTitleButton.transform.DOScale(new Vector3(1f, 1f, 1f), 0.1f).SetEase(Ease.OutBack);
 
             nextStageButton.transform.localScale = new Vector3(1f, 0f, 1f);
-            nextStageButton.gameObject.SetActive(true);
+            nextStageButton.UnityButton.gameObject.SetActive(true);
             await nextStageButton.transform.DOScale(new Vector3(1f, 1f, 1f), 0.1f).SetEase(Ease.OutBack);
 
 
 
             transform.localScale = Vector3.one;
-            returnToTitleButton.interactable = true;
-            nextStageButton.interactable = true;
+            returnToTitleButton.Interactable = true;
+            nextStageButton.Interactable = true;
 
             ConfigureButtonNavigation();
             EnsureEventSystemForNavigation();
             if (EventSystem.current != null)
-                EventSystem.current.SetSelectedGameObject(nextStageButton.gameObject);
+                nextStageButton.Select();
         }
         private async UniTaskVoid HideAsync()
         {
@@ -356,8 +339,8 @@ namespace BC.UI
             }
 
             transform.localScale = new Vector3(1f, 0f, 1f);
-            returnToTitleButton.interactable = false;
-            nextStageButton.interactable = false;
+            returnToTitleButton.Interactable = false;
+            nextStageButton.Interactable = false;
 
             // 評価の星をリセット
             ResetStars();
@@ -377,21 +360,21 @@ namespace BC.UI
             if (returnToTitleButton == null || nextStageButton == null)
                 return;
 
-            Navigation returnNavigation = returnToTitleButton.navigation;
+            Navigation returnNavigation = returnToTitleButton.Navigation;
             returnNavigation.mode = Navigation.Mode.Explicit;
-            returnNavigation.selectOnRight = nextStageButton;
-            returnNavigation.selectOnLeft = nextStageButton;
-            returnNavigation.selectOnUp = nextStageButton;
-            returnNavigation.selectOnDown = nextStageButton;
-            returnToTitleButton.navigation = returnNavigation;
+            returnNavigation.selectOnRight = nextStageButton.UnityButton;
+            returnNavigation.selectOnLeft = nextStageButton.UnityButton;
+            returnNavigation.selectOnUp = nextStageButton.UnityButton;
+            returnNavigation.selectOnDown = nextStageButton.UnityButton;
+            returnToTitleButton.Navigation = returnNavigation;
 
-            Navigation nextNavigation = nextStageButton.navigation;
+            Navigation nextNavigation = nextStageButton.Navigation;
             nextNavigation.mode = Navigation.Mode.Explicit;
-            nextNavigation.selectOnRight = returnToTitleButton;
-            nextNavigation.selectOnLeft = returnToTitleButton;
-            nextNavigation.selectOnUp = returnToTitleButton;
-            nextNavigation.selectOnDown = returnToTitleButton;
-            nextStageButton.navigation = nextNavigation;
+            nextNavigation.selectOnRight = returnToTitleButton.UnityButton;
+            nextNavigation.selectOnLeft = returnToTitleButton.UnityButton;
+            nextNavigation.selectOnUp = returnToTitleButton.UnityButton;
+            nextNavigation.selectOnDown = returnToTitleButton.UnityButton;
+            nextStageButton.Navigation = nextNavigation;
         }
 
         private static void EnsureEventSystemForNavigation()

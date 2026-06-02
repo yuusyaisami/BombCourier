@@ -1,12 +1,10 @@
 using System.Threading;
 using BC.Audio;
 using BC.Rendering.Transition;
-using BC.UI.Effect;
+using BC.UI.Components;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace BC.UI.Title
 {
@@ -22,10 +20,8 @@ namespace BC.UI.Title
 
         [Header("Buttons")]
         [SerializeField] private CanvasGroup buttonsCanvasGroup;
-        [SerializeField] private Button playButton;
-        [SerializeField] private Button settingsButton;
-        [SerializeField] private UINoiseOutlineMB playButtonOutline;
-        [SerializeField] private UINoiseOutlineMB settingsButtonOutline;
+        [SerializeField] private UIButtonMB playButton;
+        [SerializeField] private UIButtonMB settingsButton;
         [SerializeField, Min(0f)] private float buttonsFadeDuration = 0.4f;
 
         [Header("Right Panel")]
@@ -57,25 +53,20 @@ namespace BC.UI.Title
             ApplyHiddenCanvasState();
             ResetLogoTransform();
 
-            if (playButtonOutline == null && playButton != null)
-                playButtonOutline = playButton.GetComponentInChildren<UINoiseOutlineMB>(true);
-
-            if (settingsButtonOutline == null && settingsButton != null)
-                settingsButtonOutline = settingsButton.GetComponentInChildren<UINoiseOutlineMB>(true);
-
-            playButtonOutline?.SetFocused(false);
-            settingsButtonOutline?.SetFocused(false);
-
             // ボタンイベント登録
-            if (playButton != null) playButton.onClick.AddListener(OnPlayButtonClicked);
-            if (settingsButton != null) settingsButton.onClick.AddListener(OnSettingsButtonClicked);
+            if (playButton != null) playButton.AddClickListener(OnPlayButtonClicked);
+            if (settingsButton != null) settingsButton.AddClickListener(OnSettingsButtonClicked);
 
-            // フォーカス SE 登録
-            RegisterButtonSoundEvents(playButton);
-            RegisterButtonSoundEvents(settingsButton);
-
-            // Settings ボタンのフォーカスイベント登録
-            RegisterSettingsButtonFocusEvents();
+            // フォーカス SE / Settings パネル差し替え登録
+            RegisterButtonFocusEvents(playButton);
+            RegisterButtonFocusEvents(settingsButton);
+            if (settingsButton != null)
+            {
+                settingsButton.Focused -= OnSettingsButtonFocused;
+                settingsButton.Focused += OnSettingsButtonFocused;
+                settingsButton.Deselected -= OnSettingsButtonDeselected;
+                settingsButton.Deselected += OnSettingsButtonDeselected;
+            }
         }
 
         public void PrewarmInitialVisuals()
@@ -89,22 +80,6 @@ namespace BC.UI.Title
                 rightPanelTransitionImage.SetImmediateSprite(preparedInitialRightPanelSprite);
 
             Canvas.ForceUpdateCanvases();
-        }
-
-        private void RegisterSettingsButtonFocusEvents()
-        {
-            if (settingsButton == null) return;
-
-            EventTrigger trigger = settingsButton.GetComponent<EventTrigger>();
-            if (trigger == null) trigger = settingsButton.gameObject.AddComponent<EventTrigger>();
-
-            var onSelect = new EventTrigger.Entry { eventID = EventTriggerType.Select };
-            onSelect.callback.AddListener(_ => SetSettingsFocus(true));
-            trigger.triggers.Add(onSelect);
-
-            var onDeselect = new EventTrigger.Entry { eventID = EventTriggerType.Deselect };
-            onDeselect.callback.AddListener(_ => SetSettingsFocus(false));
-            trigger.triggers.Add(onDeselect);
         }
 
         public override async UniTask ShowAsync(CancellationToken ct)
@@ -147,9 +122,8 @@ namespace BC.UI.Title
 
             // ゲームプレイボタンに初期フォーカスを当てる
             if (playButton != null)
-                EventSystem.current?.SetSelectedGameObject(playButton.gameObject);
+                playButton.Select();
 
-            RefreshButtonOutlines();
         }
 
         public override async UniTask HideAsync(CancellationToken ct)
@@ -209,17 +183,8 @@ namespace BC.UI.Title
             pageCanvasGroup.blocksRaycasts = true;
 
             if (playButton != null)
-                EventSystem.current?.SetSelectedGameObject(playButton.gameObject);
+                playButton.Select();
 
-            RefreshButtonOutlines();
-        }
-
-        private void Update()
-        {
-            if (!IsShowing)
-                return;
-
-            RefreshButtonOutlines();
         }
 
         private async UniTask PlayLogoIntroAsync(CancellationToken ct)
@@ -284,19 +249,6 @@ namespace BC.UI.Title
                 destroyCancellationToken);
         }
 
-        private void RefreshButtonOutlines()
-        {
-            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-
-            bool playFocused = selected != null && playButton != null &&
-                               (selected == playButton.gameObject || selected.transform.IsChildOf(playButton.transform));
-            bool settingsFocusedNow = selected != null && settingsButton != null &&
-                                      (selected == settingsButton.gameObject || selected.transform.IsChildOf(settingsButton.transform));
-
-            playButtonOutline?.SetFocused(playFocused);
-            settingsButtonOutline?.SetFocused(settingsFocusedNow);
-        }
-
         private void OnPlayButtonClicked()
         {
             PlayClickSound();
@@ -313,35 +265,27 @@ namespace BC.UI.Title
             manager.OpenSettingsAsync(destroyCancellationToken).Forget();
         }
 
-        private void RegisterButtonSoundEvents(Button button)
+        private void RegisterButtonFocusEvents(UIButtonMB button)
         {
             if (button == null) return;
 
-            EventTrigger trigger = button.GetComponent<EventTrigger>();
-            if (trigger == null) trigger = button.gameObject.AddComponent<EventTrigger>();
-
-            var onSelect = new EventTrigger.Entry { eventID = EventTriggerType.Select };
-            onSelect.callback.AddListener(_ => PlayFocusSound());
-            trigger.triggers.Add(onSelect);
-
-            var onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            onPointerEnter.callback.AddListener(_ =>
-            {
-                PlayFocusSound();
-                SelectIfNeeded(button.gameObject);
-            });
-            trigger.triggers.Add(onPointerEnter);
+            button.Focused -= OnButtonFocused;
+            button.Focused += OnButtonFocused;
         }
 
-        private static void SelectIfNeeded(GameObject target)
+        private void OnButtonFocused(UIButtonMB button)
         {
-            if (target == null || EventSystem.current == null)
-                return;
+            PlayFocusSound();
+        }
 
-            if (EventSystem.current.currentSelectedGameObject == target)
-                return;
+        private void OnSettingsButtonFocused(UIButtonMB button)
+        {
+            SetSettingsFocus(true);
+        }
 
-            EventSystem.current.SetSelectedGameObject(target);
+        private void OnSettingsButtonDeselected(UIButtonMB button)
+        {
+            SetSettingsFocus(false);
         }
 
         private void PlayFocusSound()
