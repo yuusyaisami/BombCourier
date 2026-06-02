@@ -6,7 +6,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using BC.UI.Effect;
+using BC.UI.Components;
 
 namespace BC.UI.Title
 {
@@ -24,10 +24,8 @@ namespace BC.UI.Title
         [SerializeField] private List<int> stageIndices = new();
 
         [Header("Buttons")]
-        [SerializeField] private Button yesButton;
-        [SerializeField] private Button noButton;
-        [SerializeField] private UINoiseOutlineMB yesButtonOutline;
-        [SerializeField] private UINoiseOutlineMB noButtonOutline;
+        [SerializeField] private UIButtonMB yesButton;
+        [SerializeField] private UIButtonMB noButton;
 
         [Header("Animation")]
         [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
@@ -46,17 +44,8 @@ namespace BC.UI.Title
             canvasGroup.blocksRaycasts = false;
             canvasGroup.ignoreParentGroups = true;
 
-            yesButtonOutline ??= yesButton != null ? yesButton.GetComponentInChildren<UINoiseOutlineMB>(true) : null;
-            noButtonOutline ??= noButton != null ? noButton.GetComponentInChildren<UINoiseOutlineMB>(true) : null;
-
-            yesButtonOutline?.SetFocused(false);
-            noButtonOutline?.SetFocused(false);
-
-            if (yesButton != null) yesButton.onClick.AddListener(OnYesClicked);
-            if (noButton != null) noButton.onClick.AddListener(OnNoClicked);
-
-            RegisterFocusEvents(yesButton);
-            RegisterFocusEvents(noButton);
+            if (yesButton != null) yesButton.AddClickListener(OnYesClicked);
+            if (noButton != null) noButton.AddClickListener(OnNoClicked);
         }
 
         // ------------------------------------------------------------------
@@ -96,7 +85,6 @@ namespace BC.UI.Title
 
             canvasGroup.interactable = true;
             SelectDefaultButton();
-            RefreshButtonOutlines();
 
             // ボタン押下を待機（キャンセル時は false 扱い）
             bool result = false;
@@ -122,17 +110,8 @@ namespace BC.UI.Title
             pendingResult = null;
             previousSelectedObject = null;
             IsOpen = false;
-            RefreshButtonOutlines();
 
             return result;
-        }
-
-        private void Update()
-        {
-            if (!IsOpen)
-                return;
-
-            RefreshButtonOutlines();
         }
 
         // ------------------------------------------------------------------
@@ -149,41 +128,15 @@ namespace BC.UI.Title
             pendingResult?.TrySetResult(false);
         }
 
-        private void RegisterFocusEvents(Button button)
-        {
-            if (button == null)
-                return;
-
-            EventTrigger trigger = button.GetComponent<EventTrigger>();
-            if (trigger == null)
-                trigger = button.gameObject.AddComponent<EventTrigger>();
-
-            EventTrigger.Entry onSelect = new() { eventID = EventTriggerType.Select };
-            onSelect.callback.AddListener(_ => RefreshButtonOutlines());
-            trigger.triggers.Add(onSelect);
-
-            EventTrigger.Entry onDeselect = new() { eventID = EventTriggerType.Deselect };
-            onDeselect.callback.AddListener(_ => RefreshButtonOutlines());
-            trigger.triggers.Add(onDeselect);
-
-            EventTrigger.Entry onPointerEnter = new() { eventID = EventTriggerType.PointerEnter };
-            onPointerEnter.callback.AddListener(_ => SelectIfNeeded(button.gameObject));
-            trigger.triggers.Add(onPointerEnter);
-        }
-
         private void SelectDefaultButton()
         {
             if (EventSystem.current == null)
                 return;
 
-            GameObject target = yesButton != null
-                ? yesButton.gameObject
-                : noButton != null
-                    ? noButton.gameObject
-                    : null;
-
-            if (target != null)
-                EventSystem.current.SetSelectedGameObject(target);
+            if (yesButton != null)
+                yesButton.Select();
+            else
+                noButton?.Select();
         }
 
         private void ClearModalSelection()
@@ -195,13 +148,13 @@ namespace BC.UI.Title
             if (selected == null)
                 return;
 
-            if (yesButton != null && (selected == yesButton.gameObject || selected.transform.IsChildOf(yesButton.transform)))
+            if (yesButton != null && yesButton.IsSelectionTarget(selected))
             {
                 EventSystem.current.SetSelectedGameObject(null);
                 return;
             }
 
-            if (noButton != null && (selected == noButton.gameObject || selected.transform.IsChildOf(noButton.transform)))
+            if (noButton != null && noButton.IsSelectionTarget(selected))
             {
                 EventSystem.current.SetSelectedGameObject(null);
                 return;
@@ -211,28 +164,5 @@ namespace BC.UI.Title
                 EventSystem.current.SetSelectedGameObject(previousSelectedObject);
         }
 
-        private void RefreshButtonOutlines()
-        {
-            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-
-            bool yesFocused = selected != null && yesButton != null &&
-                              (selected == yesButton.gameObject || selected.transform.IsChildOf(yesButton.transform));
-            bool noFocused = selected != null && noButton != null &&
-                             (selected == noButton.gameObject || selected.transform.IsChildOf(noButton.transform));
-
-            yesButtonOutline?.SetFocused(yesFocused);
-            noButtonOutline?.SetFocused(noFocused);
-        }
-
-        private static void SelectIfNeeded(GameObject target)
-        {
-            if (target == null || EventSystem.current == null)
-                return;
-
-            if (EventSystem.current.currentSelectedGameObject == target)
-                return;
-
-            EventSystem.current.SetSelectedGameObject(target);
-        }
     }
 }

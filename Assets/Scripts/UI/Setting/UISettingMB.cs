@@ -12,7 +12,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using BC.UI.Effect;
+using BC.UI.Components;
 
 namespace BC.UI
 {
@@ -39,10 +39,9 @@ namespace BC.UI
         [SerializeField] private Selectable defaultSelectedOnOpen;
         [Tooltip("設定画面を開いたときに Time.timeScale を 0 にするかどうかを切り替えます。")]
         [SerializeField] private bool pauseTimeScaleOnOpen = true;
-        [SerializeField] private Button closeButton;
-        [SerializeField] private UINoiseOutlineMB closeButtonOutline;
+        [SerializeField] private UIButtonMB closeButton;
         [SerializeField] private bool applyReturnToTitleButton = true;
-        [SerializeField] private Button returnToTitleButton;
+        [SerializeField] private UIButtonMB returnToTitleButton;
 
         [Header("Sound")]
         [Tooltip("設定画面を開いたときに再生するサウンドです。")]
@@ -75,7 +74,6 @@ namespace BC.UI
         private bool hasStoredTimeScale;
         private float previousTimeScale = 1f;
         private bool isLockScene;
-        private UINoiseOutlineMB returnToTitleButtonOutline;
         private CancellationTokenSource toggleCts;
         // resolutionDropdown に表示している解像度の実リストを保持する。
         private readonly List<Resolution> availableResolutions = new();
@@ -93,8 +91,6 @@ namespace BC.UI
 
             BuildResolutionDropdown();
             BuildQualityDropdown();
-            EnsureCloseButtonOutline();
-
             if (applyReturnToTitleButton)
                 EnsureReturnToTitleButton();
         }
@@ -121,7 +117,6 @@ namespace BC.UI
             if (openSettingAction?.action?.WasPressedThisFrame() == true)
                 ToggleSettingAsync().Forget();
 
-            RefreshCloseButtonOutline();
         }
 
         private void OnDestroy()
@@ -141,36 +136,27 @@ namespace BC.UI
             if (!applyReturnToTitleButton)
             {
                 if (returnToTitleButton != null)
-                    returnToTitleButton.gameObject.SetActive(false);
+                    returnToTitleButton.UnityButton.gameObject.SetActive(false);
                 return;
             }
 
             if (returnToTitleButton == null)
                 return;
 
-            returnToTitleButton.gameObject.SetActive(true);
+            returnToTitleButton.UnityButton.gameObject.SetActive(true);
 
-            EventTrigger trigger = returnToTitleButton.GetComponent<EventTrigger>();
-            if (trigger == null)
-                trigger = returnToTitleButton.gameObject.AddComponent<EventTrigger>();
-
-            var onSelect = new EventTrigger.Entry { eventID = EventTriggerType.Select };
-            onSelect.callback.AddListener(_ => { if (forcusChangeSound != null) AudioSystemMB.Instance?.PlaySE(forcusChangeSound); });
-            trigger.triggers.Add(onSelect);
-
-            var onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            onPointerEnter.callback.AddListener(_ => { SelectIfNeeded(returnToTitleButton.gameObject); if (forcusChangeSound != null) AudioSystemMB.Instance?.PlaySE(forcusChangeSound); });
-            trigger.triggers.Add(onPointerEnter);
-
+            returnToTitleButton.Focused -= OnReturnToTitleButtonFocused;
+            returnToTitleButton.Focused += OnReturnToTitleButtonFocused;
 
             isLockScene = false;
-            returnToTitleButton.onClick.RemoveListener(OnClickReturnToTitle);
-            returnToTitleButton.onClick.AddListener(OnClickReturnToTitle);
+            returnToTitleButton.RemoveClickListener(OnClickReturnToTitle);
+            returnToTitleButton.AddClickListener(OnClickReturnToTitle);
+        }
 
-            if (returnToTitleButtonOutline == null)
-                returnToTitleButtonOutline = returnToTitleButton.GetComponentInChildren<UINoiseOutlineMB>(true);
-
-            returnToTitleButtonOutline?.SetFocused(false);
+        private void OnReturnToTitleButtonFocused(UIButtonMB button)
+        {
+            if (forcusChangeSound != null)
+                AudioSystemMB.Instance?.PlaySE(forcusChangeSound);
         }
 
         private void OnClickReturnToTitle()
@@ -378,55 +364,14 @@ namespace BC.UI
             if (closeButton == null)
                 return;
 
-            closeButton.onClick.RemoveListener(ClosePanel);
-            closeButton.onClick.AddListener(ClosePanel);
-
-            EventTrigger trigger = closeButton.GetComponent<EventTrigger>();
-            if (trigger == null)
-                trigger = closeButton.gameObject.AddComponent<EventTrigger>();
-
-            var onSelect = new EventTrigger.Entry { eventID = EventTriggerType.Select };
-            onSelect.callback.AddListener(_ => { });
-            trigger.triggers.Add(onSelect);
-
-            var onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            onPointerEnter.callback.AddListener(_ => SelectIfNeeded(closeButton.gameObject));
-            trigger.triggers.Add(onPointerEnter);
+            closeButton.RemoveClickListener(ClosePanel);
+            closeButton.AddClickListener(ClosePanel);
         }
 
         private void UnregisterCloseButton()
         {
             if (closeButton != null)
-                closeButton.onClick.RemoveListener(ClosePanel);
-        }
-
-        private void EnsureCloseButtonOutline()
-        {
-            if (closeButtonOutline == null && closeButton != null)
-                closeButtonOutline = closeButton.GetComponentInChildren<UINoiseOutlineMB>(true);
-
-            closeButtonOutline?.SetFocused(false);
-        }
-
-        private void RefreshCloseButtonOutline()
-        {
-            if (closeButtonOutline == null || closeButton == null || EventSystem.current == null)
-                return;
-
-            GameObject selected = EventSystem.current.currentSelectedGameObject;
-            bool focused = selected != null && (selected == closeButton.gameObject || selected.transform.IsChildOf(closeButton.transform));
-            closeButtonOutline.SetFocused(focused);
-        }
-
-        private static void SelectIfNeeded(GameObject target)
-        {
-            if (target == null || EventSystem.current == null)
-                return;
-
-            if (EventSystem.current.currentSelectedGameObject == target)
-                return;
-
-            EventSystem.current.SetSelectedGameObject(target);
+                closeButton.RemoveClickListener(ClosePanel);
         }
 
         private void ApplyOpenSettingActionEnabled()

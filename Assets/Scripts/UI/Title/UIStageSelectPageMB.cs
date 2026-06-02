@@ -4,12 +4,11 @@ using BC.Audio;
 using BC.Base;
 using BC.Rendering.Transition;
 using BC.Stage;
-using BC.UI.Effect;
+using BC.UI.Components;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -57,16 +56,11 @@ namespace BC.UI.Title
         [SerializeField] private UIStageSelectNavigationMB navigationMB;
 
         [Header("Arrow Buttons")]
-        [SerializeField] private Button prevPageButton;
-        [SerializeField] private Button nextPageButton;
+        [SerializeField] private UIButtonMB prevPageButton;
+        [SerializeField] private UIButtonMB nextPageButton;
 
         [Header("Back Button")]
-        [SerializeField] private Button backButton;
-
-        [Header("Button Outlines")]
-        [SerializeField] private UINoiseOutlineMB prevPageButtonOutline;
-        [SerializeField] private UINoiseOutlineMB nextPageButtonOutline;
-        [SerializeField] private UINoiseOutlineMB backButtonOutline;
+        [SerializeField] private UIButtonMB backButton;
 
         [Header("Page Animation")]
         [SerializeField, Min(0f)] private float pageInDuration = 0.35f;
@@ -105,20 +99,10 @@ namespace BC.UI.Title
             SetupPageContainers();
 
             // ボタンイベント
-            if (prevPageButton != null) prevPageButton.onClick.AddListener(() => { PlayNavClickSound(); SwitchToPageAsync(currentPageIndex - 1, destroyCancellationToken).Forget(); });
-            if (nextPageButton != null) nextPageButton.onClick.AddListener(() => { PlayNavClickSound(); SwitchToPageAsync(currentPageIndex + 1, destroyCancellationToken).Forget(); });
-            if (backButton != null) backButton.onClick.AddListener(() => { PlayNavClickSound(); OnBackButtonClicked(); });
+            if (prevPageButton != null) prevPageButton.AddClickListener(() => { PlayNavClickSound(); SwitchToPageAsync(currentPageIndex - 1, destroyCancellationToken).Forget(); });
+            if (nextPageButton != null) nextPageButton.AddClickListener(() => { PlayNavClickSound(); SwitchToPageAsync(currentPageIndex + 1, destroyCancellationToken).Forget(); });
+            if (backButton != null) backButton.AddClickListener(() => { PlayNavClickSound(); OnBackButtonClicked(); });
 
-            if (prevPageButtonOutline == null && prevPageButton != null)
-                prevPageButtonOutline = prevPageButton.GetComponentInChildren<UINoiseOutlineMB>(true);
-            if (nextPageButtonOutline == null && nextPageButton != null)
-                nextPageButtonOutline = nextPageButton.GetComponentInChildren<UINoiseOutlineMB>(true);
-            if (backButtonOutline == null && backButton != null)
-                backButtonOutline = backButton.GetComponentInChildren<UINoiseOutlineMB>(true);
-
-            prevPageButtonOutline?.SetFocused(false);
-            nextPageButtonOutline?.SetFocused(false);
-            backButtonOutline?.SetFocused(false);
 
             // ナビゲーションボタンのフォーカス SE 登録
             RegisterNavButtonFocusSound(prevPageButton);
@@ -126,35 +110,17 @@ namespace BC.UI.Title
             RegisterNavButtonFocusSound(backButton);
         }
 
-        private void RegisterNavButtonFocusSound(Button button)
+        private void RegisterNavButtonFocusSound(UIButtonMB button)
         {
             if (button == null) return;
 
-            EventTrigger trigger = button.GetComponent<EventTrigger>();
-            if (trigger == null) trigger = button.gameObject.AddComponent<EventTrigger>();
-
-            var onSelect = new EventTrigger.Entry { eventID = EventTriggerType.Select };
-            onSelect.callback.AddListener(_ => PlayNavFocusSound());
-            trigger.triggers.Add(onSelect);
-
-            var onPointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            onPointerEnter.callback.AddListener(_ =>
-            {
-                PlayNavFocusSound();
-                SelectIfNeeded(button.gameObject);
-            });
-            trigger.triggers.Add(onPointerEnter);
+            button.Focused -= OnNavButtonFocused;
+            button.Focused += OnNavButtonFocused;
         }
 
-        private static void SelectIfNeeded(GameObject target)
+        private void OnNavButtonFocused(UIButtonMB button)
         {
-            if (target == null || EventSystem.current == null)
-                return;
-
-            if (EventSystem.current.currentSelectedGameObject == target)
-                return;
-
-            EventSystem.current.SetSelectedGameObject(target);
+            PlayNavFocusSound();
         }
 
         public void PlayNavFocusSound()
@@ -241,7 +207,6 @@ namespace BC.UI.Title
 
             pageCanvasGroup.interactable = true;
             UpdateArrowButtons();
-            RefreshNavButtonOutlines();
         }
 
         public override async UniTask HideAsync(CancellationToken ct)
@@ -258,14 +223,6 @@ namespace BC.UI.Title
 
             IsShowing = false;
             gameObject.SetActive(false);
-        }
-
-        private void Update()
-        {
-            if (!IsShowing)
-                return;
-
-            RefreshNavButtonOutlines();
         }
 
         /// <summary>指定ページインデックスにスライドアニメーションで切り替える。</summary>
@@ -387,24 +344,8 @@ namespace BC.UI.Title
 
         private void UpdateArrowButtons()
         {
-            if (prevPageButton != null) prevPageButton.interactable = (currentPageIndex > 0);
-            if (nextPageButton != null) nextPageButton.interactable = (currentPageIndex < 1);
-        }
-
-        private void RefreshNavButtonOutlines()
-        {
-            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-
-            bool prevFocused = selected != null && prevPageButton != null &&
-                               (selected == prevPageButton.gameObject || selected.transform.IsChildOf(prevPageButton.transform));
-            bool nextFocused = selected != null && nextPageButton != null &&
-                               (selected == nextPageButton.gameObject || selected.transform.IsChildOf(nextPageButton.transform));
-            bool backFocused = selected != null && backButton != null &&
-                               (selected == backButton.gameObject || selected.transform.IsChildOf(backButton.transform));
-
-            prevPageButtonOutline?.SetFocused(prevFocused);
-            nextPageButtonOutline?.SetFocused(nextFocused);
-            backButtonOutline?.SetFocused(backFocused);
+            if (prevPageButton != null) prevPageButton.Interactable = currentPageIndex > 0;
+            if (nextPageButton != null) nextPageButton.Interactable = currentPageIndex < 1;
         }
 
         private void OnBackButtonClicked()
