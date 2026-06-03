@@ -94,14 +94,14 @@ namespace BC.ActionSystem
                 ScreenOverlaySystemManagerMB screenOverlaySystemManager = ScreenOverlaySystemManagerMB.Instance;
                 if (screenOverlaySystemManager == null)
                 {
-                    Debug.LogWarning($"{nameof(ShowScreenOverlayStepRuntime)}: {nameof(ScreenOverlaySystemManagerMB)} is not available.");
+                    Debug.LogError($"{nameof(ShowScreenOverlayStepRuntime)}: {nameof(ScreenOverlaySystemManagerMB)} is not available in the active scene.");
                     failed = true;
                     return ActionNodeStatus.Failed;
                 }
 
-                if (!screenOverlaySystemManager.ShowOverlay(screenOverlayShowRequestData))
+                if (!screenOverlaySystemManager.TryShowOverlay(screenOverlayShowRequestData, out string failureReason))
                 {
-                    Debug.LogWarning($"{nameof(ShowScreenOverlayStepRuntime)}: screen overlay show failed for '{screenOverlayShowRequestData.displayId}'.");
+                    Debug.LogError($"{nameof(ShowScreenOverlayStepRuntime)}: screen overlay show failed for '{screenOverlayShowRequestData.displayId}'. {failureReason}");
                     failed = true;
                     return ActionNodeStatus.Failed;
                 }
@@ -153,14 +153,14 @@ namespace BC.ActionSystem
                 ScreenOverlaySystemManagerMB screenOverlaySystemManager = ScreenOverlaySystemManagerMB.Instance;
                 if (screenOverlaySystemManager == null)
                 {
-                    Debug.LogWarning($"{nameof(HideScreenOverlayStepRuntime)}: {nameof(ScreenOverlaySystemManagerMB)} is not available.");
+                    Debug.LogError($"{nameof(HideScreenOverlayStepRuntime)}: {nameof(ScreenOverlaySystemManagerMB)} is not available in the active scene.");
                     failed = true;
                     return ActionNodeStatus.Failed;
                 }
 
-                if (!screenOverlaySystemManager.HideOverlay(screenOverlayHideRequestData))
+                if (!screenOverlaySystemManager.TryHideOverlay(screenOverlayHideRequestData, out string failureReason))
                 {
-                    Debug.LogWarning($"{nameof(HideScreenOverlayStepRuntime)}: screen overlay hide failed for '{screenOverlayHideRequestData.displayId}'.");
+                    Debug.LogError($"{nameof(HideScreenOverlayStepRuntime)}: screen overlay hide failed for '{screenOverlayHideRequestData.displayId}'. {failureReason}");
                     failed = true;
                     return ActionNodeStatus.Failed;
                 }

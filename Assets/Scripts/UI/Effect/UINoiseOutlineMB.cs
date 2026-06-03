@@ -19,6 +19,7 @@ namespace BC.UI.Effect
         [SerializeField, Range(0f, 5f)] private float noiseSpeed = 1.5f;
         [SerializeField, Min(0f)] private float fadeDuration = 0.15f;
         [SerializeField] private Vector2 padding = new Vector2(6f, 6f);
+        [SerializeField] private RectTransform targetRect;
 
         [Header("Editor Preview")]
         [SerializeField] private bool showOutlineInEditor = true;
@@ -38,6 +39,9 @@ namespace BC.UI.Effect
         private bool ownsOutlineMaterial;
         private bool isFocused;
         private Vector2 lastAppliedRectSize;
+
+        public RectTransform TargetRect => targetRect;
+        public bool IsFocused => isFocused;
 
         private void Awake()
         {
@@ -71,22 +75,24 @@ namespace BC.UI.Effect
 
         private void EnsureOutlineChild()
         {
+            RectTransform resolvedTargetRect = ResolveTargetRect();
+            if (resolvedTargetRect == null)
+            {
+                Debug.LogError($"[{nameof(UINoiseOutlineMB)}] Missing RectTransform target.", this);
+                return;
+            }
+
             // 既存の子を探す（ホットリロード対策）
-            Transform existing = transform.Find("[NoiseOutline]");
+            Transform existing = FindExistingOutlineTransform(resolvedTargetRect);
             if (existing != null)
             {
+                if (existing.parent != resolvedTargetRect)
+                    existing.SetParent(resolvedTargetRect, false);
+
                 outlineImage = existing.GetComponent<Image>();
                 if (outlineImage != null)
                 {
-                    RectTransform existingRect = existing.GetComponent<RectTransform>();
-                    if (existingRect != null)
-                    {
-                        existingRect.anchorMin = Vector2.zero;
-                        existingRect.anchorMax = Vector2.one;
-                        existingRect.offsetMin = -padding;
-                        existingRect.offsetMax = padding;
-                        existingRect.localScale = Vector3.one;
-                    }
+                    ApplyOutlineRectLayout(outlineImage.rectTransform);
 
                     outlineMaterial = outlineImage.material;
                     bool hasExpectedShader = outlineMaterial != null &&
@@ -116,15 +122,11 @@ namespace BC.UI.Effect
 
             // 新規生成
             GameObject child = new GameObject("[NoiseOutline]");
-            child.transform.SetParent(transform, false);
+            child.transform.SetParent(resolvedTargetRect, false);
             child.transform.SetAsFirstSibling();
 
             RectTransform rt = child.AddComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = -padding;
-            rt.offsetMax = padding;
-            rt.localScale = Vector3.one;
+            ApplyOutlineRectLayout(rt);
 
             outlineImage = child.AddComponent<Image>();
             outlineImage.raycastTarget = false;
@@ -144,6 +146,38 @@ namespace BC.UI.Effect
             EnsureRuntimeMaterialInstance();
 
             ApplyProperties();
+        }
+
+        private RectTransform ResolveTargetRect()
+        {
+            if (targetRect != null)
+                return targetRect;
+
+            return transform as RectTransform;
+        }
+
+        private Transform FindExistingOutlineTransform(RectTransform resolvedTargetRect)
+        {
+            if (outlineImage != null)
+                return outlineImage.transform;
+
+            Transform targetChild = resolvedTargetRect.Find("[NoiseOutline]");
+            if (targetChild != null)
+                return targetChild;
+
+            return transform.Find("[NoiseOutline]");
+        }
+
+        private void ApplyOutlineRectLayout(RectTransform outlineRect)
+        {
+            if (outlineRect == null)
+                return;
+
+            outlineRect.anchorMin = Vector2.zero;
+            outlineRect.anchorMax = Vector2.one;
+            outlineRect.offsetMin = -padding;
+            outlineRect.offsetMax = padding;
+            outlineRect.localScale = Vector3.one;
         }
 
         private void EnsureRuntimeMaterialInstance()
@@ -217,7 +251,7 @@ namespace BC.UI.Effect
                 .SetUpdate(true);
         }
 
-        private void SetFocusedImmediate(bool focused)
+        public void SetFocusedImmediate(bool focused)
         {
             if (outlineMaterial == null)
                 return;
@@ -233,6 +267,27 @@ namespace BC.UI.Effect
             outlineColor = color;
             outlineInnerColor = new Color(color.r, color.g, color.b, color.a * 0.35f);
             outlineWidth = width;
+            ApplyProperties();
+        }
+
+        public void SetTargetRect(RectTransform newTargetRect)
+        {
+            if (targetRect == newTargetRect)
+                return;
+
+            targetRect = newTargetRect;
+            EnsureOutlineChild();
+            ApplyProperties();
+        }
+
+        public void SetPadding(Vector2 newPadding)
+        {
+            if (padding == newPadding)
+                return;
+
+            padding = newPadding;
+            if (outlineImage != null)
+                ApplyOutlineRectLayout(outlineImage.rectTransform);
             ApplyProperties();
         }
 

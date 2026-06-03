@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using BC.UI.Components;
+using BC.Audio;
 
 namespace BC.UI.Title
 {
@@ -26,6 +27,9 @@ namespace BC.UI.Title
         [Header("Buttons")]
         [SerializeField] private UIButtonMB yesButton;
         [SerializeField] private UIButtonMB noButton;
+        [Header("Sound")]
+        [Tooltip("モーダル表示時に再生するサウンド。")]
+        [SerializeField] private AudioDataSO showSound;
 
         [Header("Animation")]
         [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
@@ -44,8 +48,10 @@ namespace BC.UI.Title
             canvasGroup.blocksRaycasts = false;
             canvasGroup.ignoreParentGroups = true;
 
-            if (yesButton != null) yesButton.AddClickListener(OnYesClicked);
-            if (noButton != null) noButton.AddClickListener(OnNoClicked);
+            if (yesButton != null)
+                yesButton.AddClickListener(OnYesClicked);
+            if (noButton != null)
+                noButton.AddClickListener(OnNoClicked);
         }
 
         // ------------------------------------------------------------------
@@ -73,6 +79,9 @@ namespace BC.UI.Title
             pendingResult = new UniTaskCompletionSource<bool>();
             previousSelectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             IsOpen = true;
+
+            // サウンド再生
+            if (showSound != null) AudioSystemMB.Instance?.PlaySE(showSound);
 
             // フェードイン
             canvasGroup.ignoreParentGroups = true;

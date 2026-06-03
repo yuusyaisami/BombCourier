@@ -121,9 +121,21 @@ namespace BC.Audio
         {
             KillVolumeTween();
 
-            if (duration > 0f && audioSource != null)
+            if (audioSource == null)
             {
-                float startVolume = audioSource.volume;
+                ReturnToPool();
+                return;
+            }
+
+            if (duration <= 0f)
+            {
+                audioSource.Stop();
+                ReturnToPool();
+                return;
+            }
+
+            try
+            {
                 volumeTween = DOTween.To(
                     () => audioSource.volume,
                     v => audioSource.volume = v,
@@ -132,13 +144,15 @@ namespace BC.Audio
                 ).SetUpdate(true);
 
                 await volumeTween.AsyncWaitForCompletion().AsUniTask()
-                    .AttachExternalCancellation(ct)
-                    .SuppressCancellationThrow();
+                    .AttachExternalCancellation(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                KillVolumeTween();
+                return;
             }
 
-            if (audioSource != null)
-                audioSource.Stop();
-
+            audioSource.Stop();
             ReturnToPool();
         }
 

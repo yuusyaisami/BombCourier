@@ -4,6 +4,7 @@ using BC.Camera;
 using BC.Effects.Impact;
 using BC.Gimmick;
 using BC.Manager;
+using BC.Rendering;
 using BC.Utility;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -27,6 +28,7 @@ namespace BC.Base
         [SerializeField] private EntityAnimationMB animationController;
         [SerializeField] private PlayerAnimationMB playerAnimationController;
         [SerializeField] private Rigidbody bodyRigidbody;
+        [SerializeField] private EntityMaterialControllerMB materialController;
 
         [Header("Impact Effect")]
         [SerializeField] private ImpactEffectEmitterMB impactEffectEmitter;
@@ -48,6 +50,8 @@ namespace BC.Base
         public ThirdPersonCameraController CameraController => cameraController != null ? cameraController : GetComponentInChildren<ThirdPersonCameraController>();
         public EntityAnimationMB AnimationController => animationController != null ? animationController : GetComponentInChildren<EntityAnimationMB>();
         public PlayerAnimationMB PlayerAnimationController => playerAnimationController != null ? playerAnimationController : GetComponentInChildren<PlayerAnimationMB>();
+        public Rigidbody BodyRigidbody => bodyRigidbody != null ? bodyRigidbody : GetComponent<Rigidbody>();
+        public EntityMaterialControllerMB MaterialController => materialController != null ? materialController : GetComponentInChildren<EntityMaterialControllerMB>();
         public bool CanBeCaughtByGodHand => enabled && gameObject.activeInHierarchy;
 
         private void Awake()
@@ -118,6 +122,11 @@ namespace BC.Base
             if (impactEffectEmitter == null)
             {
                 impactEffectEmitter = GetComponent<ImpactEffectEmitterMB>();
+            }
+
+            if (materialController == null)
+            {
+                materialController = GetComponentInChildren<EntityMaterialControllerMB>(true);
             }
         }
 

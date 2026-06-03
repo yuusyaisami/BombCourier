@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Threading;
-using BC.Audio;
 using BC.Base;
 using BC.Rendering.Transition;
 using BC.Stage;
 using BC.UI.Components;
+using BC.UI.Effect;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -66,12 +66,6 @@ namespace BC.UI.Title
         [SerializeField, Min(0f)] private float pageInDuration = 0.35f;
         [SerializeField, Min(0f)] private float pageOutDuration = 0.3f;
 
-        [Header("Sound")]
-        [Tooltip("ページ切り替えボタン（prev/next/back）にフォーカスしたときの SE です。")]
-        [SerializeField] private AudioDataSO navButtonFocusSound;
-        [Tooltip("ページ切り替えボタン（prev/next/back）をクリックしたときの SE です。")]
-        [SerializeField] private AudioDataSO navButtonClickSound;
-
         [Header("Tutorial")]
         [Tooltip("チュートリアル確認モーダル。null のとき対象ステージでもモーダルを表示しない。")]
         [SerializeField] private UITutorialConfirmModalMB tutorialConfirmModal;
@@ -99,40 +93,9 @@ namespace BC.UI.Title
             SetupPageContainers();
 
             // ボタンイベント
-            if (prevPageButton != null) prevPageButton.AddClickListener(() => { PlayNavClickSound(); SwitchToPageAsync(currentPageIndex - 1, destroyCancellationToken).Forget(); });
-            if (nextPageButton != null) nextPageButton.AddClickListener(() => { PlayNavClickSound(); SwitchToPageAsync(currentPageIndex + 1, destroyCancellationToken).Forget(); });
-            if (backButton != null) backButton.AddClickListener(() => { PlayNavClickSound(); OnBackButtonClicked(); });
-
-
-            // ナビゲーションボタンのフォーカス SE 登録
-            RegisterNavButtonFocusSound(prevPageButton);
-            RegisterNavButtonFocusSound(nextPageButton);
-            RegisterNavButtonFocusSound(backButton);
-        }
-
-        private void RegisterNavButtonFocusSound(UIButtonMB button)
-        {
-            if (button == null) return;
-
-            button.Focused -= OnNavButtonFocused;
-            button.Focused += OnNavButtonFocused;
-        }
-
-        private void OnNavButtonFocused(UIButtonMB button)
-        {
-            PlayNavFocusSound();
-        }
-
-        public void PlayNavFocusSound()
-        {
-            if (navButtonFocusSound != null)
-                AudioSystemMB.Instance?.PlaySE(navButtonFocusSound);
-        }
-
-        public void PlayNavClickSound()
-        {
-            if (navButtonClickSound != null)
-                AudioSystemMB.Instance?.PlaySE(navButtonClickSound);
+            if (prevPageButton != null) prevPageButton.AddClickListener(() => SwitchToPageAsync(currentPageIndex - 1, destroyCancellationToken).Forget());
+            if (nextPageButton != null) nextPageButton.AddClickListener(() => SwitchToPageAsync(currentPageIndex + 1, destroyCancellationToken).Forget());
+            if (backButton != null) backButton.AddClickListener(OnBackButtonClicked);
         }
 
         private void SetupStageItems()

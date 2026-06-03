@@ -12,7 +12,9 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using BC.UI.Effect;
 using BC.UI.Components;
+using Sirenix.OdinInspector;
 
 namespace BC.UI
 {
@@ -37,17 +39,16 @@ namespace BC.UI
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
         [SerializeField] private Selectable defaultSelectedOnOpen;
+        [SerializeField] private UISelectableNavigationMapMB navigationMap;
         [Tooltip("設定画面を開いたときに Time.timeScale を 0 にするかどうかを切り替えます。")]
         [SerializeField] private bool pauseTimeScaleOnOpen = true;
         [SerializeField] private UIButtonMB closeButton;
         [SerializeField] private bool applyReturnToTitleButton = true;
-        [SerializeField] private UIButtonMB returnToTitleButton;
+        [SerializeField, ShowIf("applyReturnToTitleButton")] private UIButtonMB returnToTitleButton;
 
         [Header("Sound")]
         [Tooltip("設定画面を開いたときに再生するサウンドです。")]
         [SerializeField] private AudioDataSO openSound;
-        [SerializeField] private AudioDataSO forcusChangeSound;
-        [SerializeField] private AudioDataSO clickSound;
 
         [Header("Mouse Settings")]
         [SerializeField] private Toggle invertYAxisToggle;
@@ -93,6 +94,9 @@ namespace BC.UI
             BuildQualityDropdown();
             if (applyReturnToTitleButton)
                 EnsureReturnToTitleButton();
+            EnsureSettingFocusWiring();
+            ConfigureSettingNavigation();
+            EnsureInitialSelectionConfigured();
         }
 
         private void Start()
@@ -141,22 +145,16 @@ namespace BC.UI
             }
 
             if (returnToTitleButton == null)
+                returnToTitleButton = FindNamedButtonInChildren("ReturnTitleBtn");
+
+            if (returnToTitleButton == null)
                 return;
 
             returnToTitleButton.UnityButton.gameObject.SetActive(true);
 
-            returnToTitleButton.Focused -= OnReturnToTitleButtonFocused;
-            returnToTitleButton.Focused += OnReturnToTitleButtonFocused;
-
             isLockScene = false;
             returnToTitleButton.RemoveClickListener(OnClickReturnToTitle);
             returnToTitleButton.AddClickListener(OnClickReturnToTitle);
-        }
-
-        private void OnReturnToTitleButtonFocused(UIButtonMB button)
-        {
-            if (forcusChangeSound != null)
-                AudioSystemMB.Instance?.PlaySE(forcusChangeSound);
         }
 
         private void OnClickReturnToTitle()
@@ -219,8 +217,12 @@ namespace BC.UI
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
 
-            if (defaultSelectedOnOpen != null && EventSystem.current != null)
-                EventSystem.current.SetSelectedGameObject(defaultSelectedOnOpen.gameObject);
+            Selectable initialSelection = defaultSelectedOnOpen != null
+                ? defaultSelectedOnOpen
+                : ResolveInitialSelection();
+
+            if (initialSelection != null && EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(initialSelection.gameObject);
 
             if (fadeDuration > 0f)
                 await canvasGroup.DOFade(1f, fadeDuration).SetUpdate(true).AsyncWaitForCompletion().AsUniTask()
@@ -361,6 +363,9 @@ namespace BC.UI
 
         private void RegisterCloseButton()
         {
+            if (closeButton == null)
+                closeButton = FindNamedButtonInChildren("BackBtn");
+
             if (closeButton == null)
                 return;
 
@@ -511,6 +516,165 @@ namespace BC.UI
         {
             if (cameraSensitivityValueText != null)
                 cameraSensitivityValueText.text = value.ToString("0.000");
+        }
+
+        private void EnsureSettingFocusWiring()
+        {
+            EnsureToggleFocus(invertYAxisToggle);
+            EnsureSliderFocus(cameraSensitivitySlider);
+            EnsureSliderFocus(musicVolumeSlider);
+            EnsureSliderFocus(sfxVolumeSlider);
+            EnsureToggleFocus(vSyncToggle);
+            EnsureToggleFocus(fullscreenToggle);
+            EnsureDropdownFocus(qualityLevelDropdown);
+            EnsureDropdownFocus(resolutionDropdown);
+        }
+
+        private void ConfigureSettingNavigation()
+        {
+            if (closeButton == null)
+                closeButton = FindNamedButtonInChildren("BackBtn");
+
+            if (applyReturnToTitleButton && returnToTitleButton == null)
+                returnToTitleButton = FindNamedButtonInChildren("ReturnTitleBtn");
+
+            navigationMap ??= GetComponent<UISelectableNavigationMapMB>();
+            if (navigationMap == null)
+                navigationMap = gameObject.AddComponent<UISelectableNavigationMapMB>();
+
+            var orderedSelectables = new List<Selectable>(10);
+            AppendSelectable(orderedSelectables, invertYAxisToggle);
+            AppendSelectable(orderedSelectables, cameraSensitivitySlider);
+            AppendSelectable(orderedSelectables, musicVolumeSlider);
+            AppendSelectable(orderedSelectables, sfxVolumeSlider);
+            AppendSelectable(orderedSelectables, fullscreenToggle);
+            AppendSelectable(orderedSelectables, resolutionDropdown);
+            AppendSelectable(orderedSelectables, vSyncToggle);
+            AppendSelectable(orderedSelectables, qualityLevelDropdown);
+            AppendSelectable(orderedSelectables, closeButton != null ? closeButton.UnityButton : null);
+            AppendSelectable(orderedSelectables, returnToTitleButton != null ? returnToTitleButton.UnityButton : null);
+
+            var entries = new List<UISelectableNavigationMapMB.NavigationEntry>(orderedSelectables.Count);
+            for (int i = 0; i < orderedSelectables.Count; i++)
+            {
+                Selectable selectable = orderedSelectables[i];
+                if (selectable == null)
+                    continue;
+
+                entries.Add(new UISelectableNavigationMapMB.NavigationEntry
+                {
+                    selectable = selectable,
+                    up = i > 0 ? orderedSelectables[i - 1] : null,
+                    down = i + 1 < orderedSelectables.Count ? orderedSelectables[i + 1] : null,
+                });
+            }
+
+            navigationMap.SetEntries(entries);
+            navigationMap.Apply();
+        }
+
+        private void EnsureInitialSelectionConfigured()
+        {
+            defaultSelectedOnOpen = ResolveInitialSelection();
+        }
+
+        private Selectable ResolveInitialSelection()
+        {
+            if (cameraSensitivitySlider != null)
+                return cameraSensitivitySlider;
+
+            if (musicVolumeSlider != null)
+                return musicVolumeSlider;
+
+            if (invertYAxisToggle != null)
+                return invertYAxisToggle;
+
+            return defaultSelectedOnOpen;
+        }
+
+        private void EnsureToggleFocus(Toggle toggle)
+        {
+            if (toggle == null)
+                return;
+
+            EnsureFocusComponent(toggle, toggle.transform as RectTransform, new Vector2(6f, 6f));
+        }
+
+        private void EnsureSliderFocus(Slider slider)
+        {
+            if (slider == null)
+                return;
+
+            RectTransform outlineTarget = slider.handleRect != null
+                ? slider.handleRect
+                : slider.transform as RectTransform;
+
+            EnsureFocusComponent(slider, outlineTarget, new Vector2(2f, 2f));
+        }
+
+        private void EnsureDropdownFocus(TMP_Dropdown dropdown)
+        {
+            if (dropdown == null)
+                return;
+
+            EnsureFocusComponent(dropdown, dropdown.transform as RectTransform, new Vector2(6f, 6f));
+
+            UITMPDropdownNavigationBridgeMB bridge = dropdown.GetComponent<UITMPDropdownNavigationBridgeMB>();
+            if (bridge == null)
+                bridge = dropdown.gameObject.AddComponent<UITMPDropdownNavigationBridgeMB>();
+
+            if (dropdown.template == null)
+                return;
+
+            Toggle templateToggle = dropdown.template.GetComponentInChildren<Toggle>(true);
+            if (templateToggle == null)
+                return;
+
+            EnsureFocusComponent(templateToggle, templateToggle.transform as RectTransform, new Vector2(6f, 3f));
+        }
+
+        private void EnsureFocusComponent(Selectable selectable, RectTransform outlineTarget, Vector2 padding)
+        {
+            if (selectable == null)
+                return;
+
+            UINoiseOutlineMB noiseOutline = selectable.GetComponent<UINoiseOutlineMB>();
+            if (noiseOutline == null)
+                noiseOutline = selectable.gameObject.AddComponent<UINoiseOutlineMB>();
+
+            noiseOutline.SetTargetRect(outlineTarget);
+            noiseOutline.SetPadding(padding);
+            noiseOutline.SetFocusedImmediate(false);
+
+            UISelectableFocusMB focus = selectable.GetComponent<UISelectableFocusMB>();
+            if (focus == null)
+                focus = selectable.gameObject.AddComponent<UISelectableFocusMB>();
+
+            focus.SetFocusedImmediate(false);
+        }
+
+        private UIButtonMB FindNamedButtonInChildren(string buttonName)
+        {
+            if (string.IsNullOrWhiteSpace(buttonName))
+                return null;
+
+            UIButtonMB[] buttons = GetComponentsInChildren<UIButtonMB>(includeInactive: true);
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                UIButtonMB button = buttons[i];
+                if (button != null && button.name == buttonName)
+                    return button;
+            }
+
+            return null;
+        }
+
+        private static void AppendSelectable(List<Selectable> selectables, Selectable selectable)
+        {
+            if (selectable == null || selectables.Contains(selectable))
+                return;
+
+            selectables.Add(selectable);
         }
 
         private void ApplyGameplayInputLock(bool locked)

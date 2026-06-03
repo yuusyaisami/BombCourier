@@ -3,6 +3,7 @@ using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick;
 using BC.Item;
+using BC.Rendering;
 using BC.Tutorial;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -24,6 +25,7 @@ namespace BC.Stage
         [SerializeField] private List<PlayerSpawnPointMB> spawnPoints = new List<PlayerSpawnPointMB>();
         [SerializeField] private List<GodHandObjectMB> godHandObjects = new List<GodHandObjectMB>();
         [SerializeField] private TutorialStageAuthoringMB tutorialStage;
+        [SerializeField] private string entityMaterialDatasetKind = EntityMaterialSetSO.DefaultDatasetKind;
 
         public CameraPathSequenceAuthoringMB CameraPath => cameraPath;
         [System.Obsolete("Use CameraPath instead.")]
@@ -35,7 +37,7 @@ namespace BC.Stage
         public IReadOnlyList<GodHandObjectMB> GodHandObjects => godHandObjects;
         public BonusObjectMB BonusObject => bonusObject;
         public TutorialStageAuthoringMB TutorialStage => tutorialStage;
-
+        public string EntityMaterialDatasetKind => entityMaterialDatasetKind;
         private void Awake()
         {
             // Prefab の保存状態に依存せず、実行時は Root から必ず再収集する。

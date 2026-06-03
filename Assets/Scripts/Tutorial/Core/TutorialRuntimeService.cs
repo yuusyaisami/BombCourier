@@ -460,9 +460,10 @@ namespace BC.Tutorial
             if (inputLockActive || !playerEntity.IsValid || sceneKernel.ValueStore == null)
                 return;
 
+            // Tutorial の入力ロックは「行動を止める」用途に限定する。
+            // 視点まで止めると、説明中にカメラ確認すらできず操作感が悪くなる。
             sceneKernel.ValueStore.SetBoolModifier(playerEntity, ValueKeys.Move.CanMoveByInput, InputLockTag, false);
             sceneKernel.ValueStore.SetBoolModifier(playerEntity, ValueKeys.Interaction.CanInteract, InputLockTag, false);
-            sceneKernel.ValueStore.SetBoolModifier(playerEntity, ValueKeys.Camera.CanLookByInput, InputLockTag, false);
             inputLockActive = true;
         }
 
@@ -476,7 +477,6 @@ namespace BC.Tutorial
 
             sceneKernel.ValueStore.RemoveBoolModifier(playerEntity, ValueKeys.Move.CanMoveByInput, InputLockTag);
             sceneKernel.ValueStore.RemoveBoolModifier(playerEntity, ValueKeys.Interaction.CanInteract, InputLockTag);
-            sceneKernel.ValueStore.RemoveBoolModifier(playerEntity, ValueKeys.Camera.CanLookByInput, InputLockTag);
             inputLockActive = false;
         }
 

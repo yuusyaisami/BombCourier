@@ -23,6 +23,7 @@ namespace BC.Manager
         public BonusObjectMB bonusObject; // ステージ内のBonusObjectの参照 (スコア計算に使います。)
         public TutorialStageAuthoringMB tutorialStage; // ステージ固有のチュートリアル定義
         public float ClearTimeThreshold; // ゴールデータにクリアタイムの閾値がある場合はそれを使用し、ない場合はデフォルト値を返す
+        public string EntityMaterialDatasetKind; // ステージで使用する EntityMaterialSet の dataset kind
     }
 
     // ステージの読み込みとチェックポイント処理を担当する MonoBehaviour。
@@ -109,6 +110,7 @@ namespace BC.Manager
                 ClearTimeThreshold = data.clearTimeThreshold, // ゴールデータにクリアタイムの閾値がある場合はそれを使用し、ない場合はデフォルト値を返す
                 bonusObject = mapRuntime.BonusObject, // ステージ内のBonusObjectの参照 (スコア計算に使います。)
                 tutorialStage = mapRuntime.TutorialStage,
+                EntityMaterialDatasetKind = mapRuntime.EntityMaterialDatasetKind,
             };
         }
 

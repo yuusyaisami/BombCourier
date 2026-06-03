@@ -38,42 +38,79 @@ namespace BC.UI
 
         public bool Show(ScreenOverlayShowRequestData request)
         {
+            return TryShow(request, out _);
+        }
+
+        public bool TryShow(ScreenOverlayShowRequestData request, out string failureReason)
+        {
             request.EnsureDefaultsInitialized();
             ScreenOverlayShowRequestData sanitizedRequest = request.Sanitize();
 
-            if (!sanitizedRequest.displayId.IsValid || !sanitizedRequest.HasVisibleContent)
+            if (!sanitizedRequest.displayId.IsValid)
+            {
+                failureReason = "Screen overlay display id is not set.";
                 return false;
+            }
+
+            if (!sanitizedRequest.HasVisibleContent)
+            {
+                failureReason = $"Screen overlay '{sanitizedRequest.displayId}' has no visible content for '{sanitizedRequest.contentKind}'.";
+                return false;
+            }
 
             EnsureStructure();
             if (OverlayRoot == null)
+            {
+                failureReason = "Overlay root RectTransform is not available.";
                 return false;
+            }
 
             RemoveExistingEntry(sanitizedRequest.displayId);
+            failureReason = null;
 
             RuntimeEntry runtimeEntry = sanitizedRequest.contentKind switch
             {
-                ScreenOverlayContentKind.Image => CreateGeneratedEntry(sanitizedRequest),
-                ScreenOverlayContentKind.Text => CreateGeneratedEntry(sanitizedRequest),
-                ScreenOverlayContentKind.Prefab => CreatePrefabEntry(sanitizedRequest),
+                ScreenOverlayContentKind.Image => CreateGeneratedEntry(sanitizedRequest, out failureReason),
+                ScreenOverlayContentKind.Text => CreateGeneratedEntry(sanitizedRequest, out failureReason),
+                ScreenOverlayContentKind.Prefab => CreatePrefabEntry(sanitizedRequest, out failureReason),
                 _ => null,
             };
 
             if (runtimeEntry == null)
+            {
+                failureReason ??= $"Unsupported screen overlay content kind '{sanitizedRequest.contentKind}'.";
                 return false;
+            }
 
             runtimeEntries[sanitizedRequest.displayId] = runtimeEntry;
             ApplySiblingOrder();
+            failureReason = null;
             return true;
         }
 
         public bool Hide(ScreenOverlayDisplayId displayId)
         {
-            if (!displayId.IsValid || !runtimeEntries.TryGetValue(displayId, out RuntimeEntry runtimeEntry))
+            return TryHide(displayId, out _);
+        }
+
+        public bool TryHide(ScreenOverlayDisplayId displayId, out string failureReason)
+        {
+            if (!displayId.IsValid)
+            {
+                failureReason = "Screen overlay display id is not set.";
                 return false;
+            }
+
+            if (!runtimeEntries.TryGetValue(displayId, out RuntimeEntry runtimeEntry))
+            {
+                failureReason = $"Screen overlay '{displayId}' is not currently shown.";
+                return false;
+            }
 
             runtimeEntries.Remove(displayId);
             DestroyOverlayObject(runtimeEntry.RootObject);
             ApplySiblingOrder();
+            failureReason = null;
             return true;
         }
 
@@ -102,8 +139,9 @@ namespace BC.UI
             overlayRoot.pivot = new Vector2(0.5f, 0.5f);
         }
 
-        private RuntimeEntry CreateGeneratedEntry(ScreenOverlayShowRequestData request)
+        private RuntimeEntry CreateGeneratedEntry(ScreenOverlayShowRequestData request, out string failureReason)
         {
+            failureReason = null;
             GameObject rootObject = new($"ScreenOverlay_{request.displayId.Value}", typeof(RectTransform), typeof(CanvasGroup), typeof(UIScreenOverlayEntryMB));
             RectTransform rootTransform = rootObject.GetComponent<RectTransform>();
             rootTransform.SetParent(OverlayRoot, false);
@@ -126,6 +164,7 @@ namespace BC.UI
                     break;
 
                 default:
+                    failureReason = $"Unsupported generated screen overlay content kind '{request.contentKind}'.";
                     DestroyOverlayObject(rootObject);
                     return null;
             }
@@ -133,10 +172,15 @@ namespace BC.UI
             return new RuntimeEntry(request.sortOrder, nextSequence++, rootObject, rootTransform);
         }
 
-        private RuntimeEntry CreatePrefabEntry(ScreenOverlayShowRequestData request)
+        private RuntimeEntry CreatePrefabEntry(ScreenOverlayShowRequestData request, out string failureReason)
         {
             if (request.prefab == null)
+            {
+                failureReason = "Screen overlay prefab is not assigned.";
                 return null;
+            }
+
+            failureReason = null;
 
             GameObject hostObject = new($"ScreenOverlay_{request.displayId.Value}", typeof(RectTransform));
             RectTransform hostTransform = hostObject.GetComponent<RectTransform>();
@@ -150,7 +194,7 @@ namespace BC.UI
             RectTransform instanceRectTransform = instance.GetComponent<RectTransform>();
             if (instanceRectTransform == null)
             {
-                Debug.LogWarning($"{nameof(UIScreenOverlayLayerMB)}: Prefab '{request.prefab.name}' does not contain a RectTransform and cannot be shown as a screen overlay.", this);
+                failureReason = $"Screen overlay prefab '{request.prefab.name}' does not contain a RectTransform on the root object.";
                 DestroyOverlayObject(hostObject);
                 return null;
             }

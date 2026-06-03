@@ -47,12 +47,12 @@ MonoBehaviour:
     selectedCount: 2
   - stepTypeName: BC.ActionSystem.RegisterOverlayCameraStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639159401157070690
-    selectedCount: 2
+    lastSelectedUtcTicks: 639160547345642767
+    selectedCount: 4
   - stepTypeName: BC.ActionSystem.DisableOverlayCameraStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639159387703572499
-    selectedCount: 1
+    lastSelectedUtcTicks: 639160547598256658
+    selectedCount: 3
   - stepTypeName: BC.ActionSystem.ShowScreenOverlayStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     lastSelectedUtcTicks: 639159458630009619
@@ -60,6 +60,10 @@ MonoBehaviour:
   - stepTypeName: BC.ActionSystem.HideScreenOverlayStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     lastSelectedUtcTicks: 639159460982040365
+    selectedCount: 1
+  - stepTypeName: BC.ActionSystem.HideTutorialToDoListStepAuthoring, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    lastSelectedUtcTicks: 639160555717444961
     selectedCount: 1
   inlineActionSettings:
     reserved: 0

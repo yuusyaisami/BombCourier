@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbd348dcd158444dbea98136097c5ff1, type: 3}
+  m_Name: PlayerMaterialSet
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Rendering.EntityMaterialSetSO
+  datasetVariants:
+  - datasetKind: Defualt
+    slotMaterials:
+    - slotKey: Body
+      material: {fileID: 2100000, guid: 2639a64822a7f8f4fa95135419c40eda, type: 2}
+    - slotKey: Head
+      material: {fileID: 2100000, guid: 2639a64822a7f8f4fa95135419c40eda, type: 2}
+    - slotKey: Face
+      material: {fileID: 2100000, guid: 2639a64822a7f8f4fa95135419c40eda, type: 2}
+    - slotKey: Ear
+      material: {fileID: 2100000, guid: 2639a64822a7f8f4fa95135419c40eda, type: 2}
+  - datasetKind: Dack
+    slotMaterials:
+    - slotKey: Body
+      material: {fileID: 2100000, guid: 911586f452b369d48add87c53ca492d1, type: 2}
+    - slotKey: Head
+      material: {fileID: 2100000, guid: 911586f452b369d48add87c53ca492d1, type: 2}
+    - slotKey: Face
+      material: {fileID: 2100000, guid: 911586f452b369d48add87c53ca492d1, type: 2}
+    - slotKey: Ear
+      material: {fileID: 2100000, guid: 911586f452b369d48add87c53ca492d1, type: 2}

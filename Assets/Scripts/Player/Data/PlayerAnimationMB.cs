@@ -251,7 +251,7 @@ namespace BC.Base
         private void OnJumped()
         {
             ResolveRuntimeReferences();
-            InlineActionExecutionUtility.ExecuteAndForget(this, entityRef, onJumpAction, default, "Jump");
+            InlineActionExecutionUtility.ExecuteDetachedAndForget(this, entityRef, onJumpAction, default, "Jump");
         }
 
         private bool TryAssignMoveSource(MonoBehaviour behaviour)

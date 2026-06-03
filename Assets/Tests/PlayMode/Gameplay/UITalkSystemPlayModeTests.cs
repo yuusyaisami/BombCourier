@@ -10,6 +10,9 @@ namespace BC.Gameplay.PlayModeTests
     {
         private const string UITalkSystemTypeName = "BC.UI.UITalkSystemMB";
         private const string AudioDataSoTypeName = "BC.Audio.AudioDataSO";
+        private const string TalkSystemManagerTypeName = "BC.Managers.TalkSystemManagerMB";
+        private const string HideTalkRequestDataTypeName = "BC.Managers.HideTalkRequestData";
+        private const string EntityRefTypeName = "BC.Base.EntityRef";
 
         private readonly List<GameObject> createdObjects = new();
         private readonly List<ScriptableObject> createdScriptableObjects = new();
@@ -79,6 +82,35 @@ namespace BC.Gameplay.PlayModeTests
             Assert.AreSame(defaultAudioDataSo, GetPrivateField<object>(talkUi, "currentTalkCharacterSound"));
         }
 
+        [Test]
+        public void ResolveDialogueInputLockEntity_PrefersViewerEntityOverActor()
+        {
+            Component talkSystemManager = CreateComponent(TalkSystemManagerTypeName, "TalkSystemManagerResolveLockEntity");
+            object actor = CreateEntityRef(11u, 1);
+            object viewer = CreateEntityRef(12u, 1);
+
+            object resolved = InvokeMethod(talkSystemManager, "ResolveDialogueInputLockEntity", actor, viewer);
+
+            AssertEntityRefEquals(viewer, resolved);
+        }
+
+        [Test]
+        public void HideTalk_ClearsDialogueInputLockTrackingState()
+        {
+            Component talkSystemManager = CreateComponent(TalkSystemManagerTypeName, "TalkSystemManagerHideTalk");
+            object actor = CreateEntityRef(21u, 1);
+            object requestData = Activator.CreateInstance(FindRuntimeType(HideTalkRequestDataTypeName));
+
+            SetPrivateField(talkSystemManager, "activeTalkOwnerActor", actor);
+            SetPrivateField(talkSystemManager, "activeDialogueInputLockEntity", actor);
+            SetPrivateField(talkSystemManager, "dialogueInputLockActive", true);
+
+            InvokeMethod(talkSystemManager, "HideTalk", actor, requestData);
+
+            Assert.IsFalse(GetPrivateField<bool>(talkSystemManager, "dialogueInputLockActive"));
+            AssertEntityRefEquals(Activator.CreateInstance(FindRuntimeType(EntityRefTypeName)), GetPrivateField<object>(talkSystemManager, "activeDialogueInputLockEntity"));
+        }
+
         private Component CreateTalkUi(string name)
         {
             GameObject root = new GameObject(name);
@@ -86,11 +118,36 @@ namespace BC.Gameplay.PlayModeTests
             return root.AddComponent(FindRuntimeType(UITalkSystemTypeName));
         }
 
+        private Component CreateComponent(string fullTypeName, string name)
+        {
+            GameObject root = new GameObject(name);
+            createdObjects.Add(root);
+            return root.AddComponent(FindRuntimeType(fullTypeName));
+        }
+
+        private static object CreateEntityRef(uint entityId, int version)
+        {
+            return Activator.CreateInstance(FindRuntimeType(EntityRefTypeName), entityId, version);
+        }
+
         private static object InvokeMethod(object target, string methodName, params object[] args)
         {
             MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.IsNotNull(method, $"Expected method on {target.GetType().Name}: {methodName}");
             return method.Invoke(target, args);
+        }
+
+        private static void AssertEntityRefEquals(object expected, object actual)
+        {
+            Assert.AreEqual(GetFieldValue<uint>(expected, "EntityId"), GetFieldValue<uint>(actual, "EntityId"));
+            Assert.AreEqual(GetFieldValue<int>(expected, "Version"), GetFieldValue<int>(actual, "Version"));
+        }
+
+        private static T GetFieldValue<T>(object target, string fieldName)
+        {
+            FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, $"Expected field on {target.GetType().Name}: {fieldName}");
+            return (T)field.GetValue(target);
         }
 
         private static T GetPrivateField<T>(object target, string fieldName)

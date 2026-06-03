@@ -81,7 +81,7 @@ namespace BC.UI.Title
                 // タイトルメインページ表示と同時にタイトル BGM を再生する。
                 if (resetBGM)
                 {
-                    GameBGMManagerMB.Instance?.PlayTitleBGM();
+                    GameSoundDataManagerMB.Instance?.PlayTitleBGM();
                 }
 
                 if (titleMainPage != null)

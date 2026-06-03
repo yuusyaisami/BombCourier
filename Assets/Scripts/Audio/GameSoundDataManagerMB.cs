@@ -1,4 +1,5 @@
 using BC.Audio;
+using BC.UI.Components;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -10,9 +11,9 @@ namespace BC.Managers
     // AudioSystemMB の PlayBGM / StopBGM / FadeBGMVolumeAsync をラップして、
     // シーンやゲーム状態の変化に応じた BGM 切り替えを提供する。
     [DisallowMultipleComponent]
-    public sealed class GameBGMManagerMB : MonoBehaviour
+    public sealed class GameSoundDataManagerMB : MonoBehaviour
     {
-        public static GameBGMManagerMB Instance { get; private set; }
+        public static GameSoundDataManagerMB Instance { get; private set; }
 
         [Header("BGM Assets")]
         [Tooltip("タイトル画面の BGM です。")]
@@ -31,6 +32,12 @@ namespace BC.Managers
         [Header("Intro SE")]
         [Tooltip("Intro カメラ演出の開始時に流れる SE です。")]
         [SerializeField] private AudioDataSO introCameraStartSE;
+
+        [Header("UIButton Sounds")]
+        [Tooltip("UIButton のクリック時に使う既定 SE です。")]
+        [SerializeField] private AudioDataSO defaultUIButtonClickSound;
+        [Tooltip("UIButton のフォーカス時に使う既定 SE です。")]
+        [SerializeField] private AudioDataSO defaultUIButtonFocusSound;
 
         // ─────────────────────────────────────────────────────────────────
         // ライフサイクル
@@ -51,6 +58,36 @@ namespace BC.Managers
         {
             if (Instance == this)
                 Instance = null;
+        }
+
+        public AudioDataSO ResolveUIButtonClickSound(UIButtonMB button)
+        {
+            if (button != null && button.OverrideClickSound != null)
+                return button.OverrideClickSound;
+
+            return defaultUIButtonClickSound;
+        }
+
+        public AudioDataSO ResolveUIButtonFocusSound(UIButtonMB button)
+        {
+            if (button != null && button.OverrideFocusSound != null)
+                return button.OverrideFocusSound;
+
+            return defaultUIButtonFocusSound;
+        }
+
+        public void PlayUIButtonClick(UIButtonMB button)
+        {
+            AudioDataSO sound = ResolveUIButtonClickSound(button);
+            if (sound != null)
+                AudioSystemMB.Instance?.PlaySE(sound);
+        }
+
+        public void PlayUIButtonFocus(UIButtonMB button)
+        {
+            AudioDataSO sound = ResolveUIButtonFocusSound(button);
+            if (sound != null)
+                AudioSystemMB.Instance?.PlaySE(sound);
         }
 
         // ─────────────────────────────────────────────────────────────────

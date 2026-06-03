@@ -60,23 +60,18 @@ namespace BC.Tutorial
     [Serializable]
     public sealed class TutorialReachLineConditionAuthoring : TutorialConditionAuthoring
     {
-        [SerializeField] private Transform lineTransform;
-        [SerializeField] private Vector3 localNormal = Vector3.forward;
-        [SerializeField] private bool requireCrossingFromBackSide = true;
-        [SerializeField, Min(0.0f)] private float distanceTolerance;
+        [SerializeField, Tooltip("Scene 上の到達判定 marker を指定します。向き・越える方向・許容帯は marker 側で定義します。")]
+        private TutorialReachLineMB reachLine;
 
         public override ITutorialConditionRuntime CreateRuntime()
         {
-            return new ReachLineConditionRuntime(lineTransform, localNormal, requireCrossingFromBackSide, distanceTolerance);
+            return new ReachLineConditionRuntime(reachLine);
         }
 
         public override void Validate(TutorialValidationContext context, string ownerPath)
         {
-            if (lineTransform == null)
-                context.AddError($"{ownerPath}.lineTransform is required.");
-
-            if (localNormal.sqrMagnitude <= 0.0001f)
-                context.AddError($"{ownerPath}.localNormal must not be zero.");
+            if (reachLine == null)
+                context.AddError($"{ownerPath}.reachLine is required.");
         }
     }
 
@@ -279,19 +274,19 @@ namespace BC.Tutorial
                     return context.ActorEntity;
 
                 case TutorialValueStoreScope.ExplicitEntity:
-                {
-                    ListPoolBuffer buffer = new();
-                    int resolvedCount = ScopedEntityResolveUtility.ResolveTargets(
-                        new EntityResolveContext(context.SceneKernel, context.ActorEntity, context.PlayerEntity),
-                        EntityResolveScope.Entity,
-                        explicitEntity,
-                        buffer.Results);
+                    {
+                        ListPoolBuffer buffer = new();
+                        int resolvedCount = ScopedEntityResolveUtility.ResolveTargets(
+                            new EntityResolveContext(context.SceneKernel, context.ActorEntity, context.PlayerEntity),
+                            EntityResolveScope.Entity,
+                            explicitEntity,
+                            buffer.Results);
 
-                    if (resolvedCount > 0)
-                        return buffer.Results[0];
+                        if (resolvedCount > 0)
+                            return buffer.Results[0];
 
-                    throw new InvalidOperationException("Tutorial condition failed to resolve the explicit entity target.");
-                }
+                        throw new InvalidOperationException("Tutorial condition failed to resolve the explicit entity target.");
+                    }
 
                 default:
                     throw new InvalidOperationException($"Entity scope is not supported: {scope}");
@@ -447,30 +442,20 @@ namespace BC.Tutorial
 
     internal sealed class ReachLineConditionRuntime : TutorialConditionRuntimeBase
     {
-        private readonly Transform lineTransform;
-        private readonly Vector3 localNormal;
-        private readonly bool requireCrossingFromBackSide;
-        private readonly float distanceTolerance;
+        private readonly TutorialReachLineMB reachLine;
 
         private Transform playerTransform;
         private float previousSignedDistance;
 
-        public ReachLineConditionRuntime(
-            Transform lineTransform,
-            Vector3 localNormal,
-            bool requireCrossingFromBackSide,
-            float distanceTolerance)
+        public ReachLineConditionRuntime(TutorialReachLineMB reachLine)
         {
-            this.lineTransform = lineTransform;
-            this.localNormal = localNormal;
-            this.requireCrossingFromBackSide = requireCrossingFromBackSide;
-            this.distanceTolerance = Mathf.Max(0.0f, distanceTolerance);
+            this.reachLine = reachLine;
         }
 
         public override void Start(in TutorialConditionContext context, object restoredState)
         {
-            if (lineTransform == null)
-                throw new InvalidOperationException("Tutorial reach-line condition requires a lineTransform.");
+            if (reachLine == null)
+                throw new InvalidOperationException("Tutorial reach-line condition requires a reachLine marker.");
 
             playerTransform = TutorialConditionRuntimeUtility.ResolveRequiredPlayerTransform(context);
             previousSignedDistance = restoredState is ReachLineConditionState state
@@ -482,7 +467,7 @@ namespace BC.Tutorial
 
         public override void Tick(float deltaTime)
         {
-            if (IsCompleted || playerTransform == null || lineTransform == null)
+            if (IsCompleted || playerTransform == null || reachLine == null)
                 return;
 
             EvaluateCurrentPosition();
@@ -499,22 +484,17 @@ namespace BC.Tutorial
         private void EvaluateCurrentPosition()
         {
             float currentSignedDistance = ComputeSignedDistance();
-            bool onOrBeyondLine = currentSignedDistance >= -distanceTolerance;
+            bool shouldComplete = reachLine.ShouldComplete(previousSignedDistance, currentSignedDistance);
 
-            if (onOrBeyondLine)
-            {
-                if (!requireCrossingFromBackSide || previousSignedDistance < -distanceTolerance || previousSignedDistance >= -distanceTolerance)
-                    MarkCompleted();
-            }
+            if (shouldComplete)
+                MarkCompleted();
 
             previousSignedDistance = currentSignedDistance;
         }
 
         private float ComputeSignedDistance()
         {
-            Vector3 worldNormal = lineTransform.TransformDirection(localNormal.normalized);
-            Vector3 offset = playerTransform.position - lineTransform.position;
-            return Vector3.Dot(worldNormal, offset);
+            return reachLine.ComputeSignedDistance(playerTransform.position);
         }
     }
 

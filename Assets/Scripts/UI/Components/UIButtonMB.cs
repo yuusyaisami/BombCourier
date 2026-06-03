@@ -1,5 +1,7 @@
 using System;
 using System.Threading;
+using BC.Audio;
+using BC.Managers;
 using BC.UI.Effect;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -33,8 +35,14 @@ namespace BC.UI.Components
         [SerializeField] private bool autoSelectOnPointerEnter = true;
         [SerializeField] private bool playFlashBeforeClick = true;
 
+        [Header("Sound")]
+        [SerializeField] private AudioDataSO overrideClickSound;
+        [SerializeField] private AudioDataSO overrideFocusSound;
+
         [Header("Events")]
         [SerializeField] private UIButtonEvent onClick = new();
+
+        private static bool hasLoggedMissingSoundManager;
 
         private bool initialized;
         private bool focused;
@@ -53,6 +61,8 @@ namespace BC.UI.Components
         }
 
         public UIButtonEvent OnClick => onClick;
+        public AudioDataSO OverrideClickSound => overrideClickSound;
+        public AudioDataSO OverrideFocusSound => overrideFocusSound;
 
         public bool Interactable
         {
@@ -213,6 +223,8 @@ namespace BC.UI.Components
             invokingClick = true;
             try
             {
+                PlayClickSound();
+
                 if (playFlashBeforeClick && buttonFlash != null)
                     await buttonFlash.PlayFlashAsync(ct);
 
@@ -237,6 +249,9 @@ namespace BC.UI.Components
                 return;
 
             if (isFocused)
+                PlayFocusSound();
+
+            if (isFocused)
                 Focused?.Invoke(this);
             else
                 Deselected?.Invoke(this);
@@ -245,6 +260,31 @@ namespace BC.UI.Components
         private bool IsSelectedByEventSystem()
         {
             return EventSystem.current != null && IsSelectionTarget(EventSystem.current.currentSelectedGameObject);
+        }
+
+        private void PlayClickSound()
+        {
+            TryResolveSoundDataManager()?.PlayUIButtonClick(this);
+        }
+
+        private void PlayFocusSound()
+        {
+            TryResolveSoundDataManager()?.PlayUIButtonFocus(this);
+        }
+
+        private static GameSoundDataManagerMB TryResolveSoundDataManager()
+        {
+            GameSoundDataManagerMB soundDataManager = GameSoundDataManagerMB.Instance;
+            if (soundDataManager != null)
+                return soundDataManager;
+
+            if (!hasLoggedMissingSoundManager)
+            {
+                Debug.LogWarning($"{nameof(UIButtonMB)}: {nameof(GameSoundDataManagerMB)} is not available. UIButton sounds will be skipped.");
+                hasLoggedMissingSoundManager = true;
+            }
+
+            return null;
         }
 
 #if UNITY_EDITOR

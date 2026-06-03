@@ -115,6 +115,11 @@ namespace BC.Editor.Tests
 
             Assert.AreEqual("0.2s, Surprised", GetSummary(hideTalkStep));
 
+            SerializedProperty hideToDoStep = AddStep("BC.ActionSystem.HideTutorialToDoListStepAuthoring");
+            ApplyChanges();
+
+            Assert.AreEqual("Hide ToDoList", GetSummary(hideToDoStep));
+
             SerializedProperty choiceStep = AddStep("BC.ActionSystem.ShowTalkChoiceStepAuthoring");
             SerializedProperty optionsProperty = choiceStep.FindPropertyRelative("options");
             optionsProperty.arraySize = 3;
@@ -411,6 +416,57 @@ namespace BC.Editor.Tests
                 Assert.AreEqual(new Vector2(-32f, 40f), root.anchoredPosition);
                 Assert.AreEqual(1, root.childCount);
                 Assert.IsNotNull(root.GetChild(0).GetComponent<RectTransform>());
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(prefabTemplate);
+                UnityEngine.Object.DestroyImmediate(layerObject);
+            }
+        }
+
+        [Test]
+        public void ScreenOverlaySystemManager_TryShowOverlay_WithoutLayer_ReturnsFailureReason()
+        {
+            GameObject managerObject = new("OverlayManager");
+
+            try
+            {
+                object manager = AddComponent(managerObject, "BC.Managers.ScreenOverlaySystemManagerMB");
+                object request = CreateScreenOverlayShowRequest(
+                    displayId: "tutorial.text",
+                    contentKindIndex: 1,
+                    text: "Read this.",
+                    fontSize: 24f);
+
+                (bool result, string failureReason) = InvokeScreenOverlayManagerTryShow(manager, request);
+
+                Assert.IsFalse(result);
+                StringAssert.Contains("UIScreenOverlayLayerMB", failureReason);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(managerObject);
+            }
+        }
+
+        [Test]
+        public void ScreenOverlayLayer_TryShowPrefabWithoutRectTransform_ReturnsFailureReason()
+        {
+            GameObject layerObject = new("OverlayLayer", typeof(RectTransform));
+            GameObject prefabTemplate = new("OverlayPrefabTemplate");
+
+            try
+            {
+                object layer = AddComponent(layerObject, "BC.UI.UIScreenOverlayLayerMB");
+                object request = CreateScreenOverlayShowRequest(
+                    displayId: "tutorial.prefab",
+                    contentKindIndex: 2,
+                    prefab: prefabTemplate);
+
+                (bool result, string failureReason) = InvokeScreenOverlayLayerTryShow(layer, request);
+
+                Assert.IsFalse(result);
+                StringAssert.Contains("RectTransform", failureReason);
             }
             finally
             {
@@ -839,6 +895,24 @@ namespace BC.Editor.Tests
         private static bool InvokeScreenOverlayShow(object layer, object request)
         {
             return (bool)InvokeDeclaredMethod(layer.GetType(), layer, "Show", request);
+        }
+
+        private static (bool Result, string FailureReason) InvokeScreenOverlayLayerTryShow(object layer, object request)
+        {
+            MethodInfo method = layer.GetType().GetMethod("TryShow", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(method, "Expected UIScreenOverlayLayerMB.TryShow.");
+            object[] args = { request, null };
+            bool result = (bool)method.Invoke(layer, args);
+            return (result, args[1] as string);
+        }
+
+        private static (bool Result, string FailureReason) InvokeScreenOverlayManagerTryShow(object manager, object request)
+        {
+            MethodInfo method = manager.GetType().GetMethod("TryShowOverlay", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(method, "Expected ScreenOverlaySystemManagerMB.TryShowOverlay.");
+            object[] args = { request, null };
+            bool result = (bool)method.Invoke(manager, args);
+            return (result, args[1] as string);
         }
 
         private static bool InvokeScreenOverlayHide(object layer, string displayId)

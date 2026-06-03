@@ -68,8 +68,9 @@ namespace BC.UI
         {
             // ゲーム開始時のスケールを (1, 0, 1) に設定して非表示状態にする
             transform.localScale = new Vector3(1f, 0f, 1f);
-            returnToTitleButton.UnityButton.gameObject.SetActive(false);
-            nextStageButton.UnityButton.gameObject.SetActive(false);
+            stageClearPanel ??= transform as RectTransform;
+            SetButtonGameObjectActive(returnToTitleButton, false);
+            SetButtonGameObjectActive(nextStageButton, false);
         }
 
         private void Start()
@@ -80,7 +81,14 @@ namespace BC.UI
                 return;
             }
             // SceneKernel取得
-            sceneKernel = GetComponentInParent<SceneKernelMB>().Kernel;
+            SceneKernelMB sceneKernelMB = GetComponentInParent<SceneKernelMB>();
+            if (sceneKernelMB == null)
+            {
+                Debug.LogError($"{nameof(UIStageClearMB)}: {nameof(SceneKernelMB)} could not be resolved from parent hierarchy.", this);
+                return;
+            }
+
+            sceneKernel = sceneKernelMB.Kernel;
 
 
             GameStateManagerMB.Instance.StateMachine.Subscribe(OnGameStateChanged);
@@ -180,10 +188,10 @@ namespace BC.UI
             // パネルが表示される前に InlineAction を実行する。
             ExecuteInlineAction(onFadeInAction);
 
-            returnToTitleButton.UnityButton.gameObject.SetActive(false);
-            nextStageButton.UnityButton.gameObject.SetActive(false);
-            returnToTitleButton.Interactable = false;
-            nextStageButton.Interactable = false;
+            SetButtonGameObjectActive(returnToTitleButton, false);
+            SetButtonGameObjectActive(nextStageButton, false);
+            SetButtonInteractable(returnToTitleButton, false);
+            SetButtonInteractable(nextStageButton, false);
 
             // starsを初期化
             ResetStars();
@@ -279,25 +287,19 @@ namespace BC.UI
                 fastClearStar.sprite = TransparentSprite;
                 fastClearStarTooltipTarget.TooltipText = "爆弾のFuseタイムが短いともらえるスターです！\n今回のクリアタイム: " + clearTime.ToString("F2") + "秒\n早いクリアの条件: " + fastClearThreshold.ToString("F2") + "秒以下";
             }
-            returnToTitleButton.transform.localScale = new Vector3(1f, 0f, 1f);
-            returnToTitleButton.UnityButton.gameObject.SetActive(true);
-            // 原則待たない
-            await returnToTitleButton.transform.DOScale(new Vector3(1f, 1f, 1f), 0.1f).SetEase(Ease.OutBack);
-
-            nextStageButton.transform.localScale = new Vector3(1f, 0f, 1f);
-            nextStageButton.UnityButton.gameObject.SetActive(true);
-            await nextStageButton.transform.DOScale(new Vector3(1f, 1f, 1f), 0.1f).SetEase(Ease.OutBack);
+            await ShowButtonAsync(returnToTitleButton);
+            await ShowButtonAsync(nextStageButton);
 
 
 
             transform.localScale = Vector3.one;
-            returnToTitleButton.Interactable = true;
-            nextStageButton.Interactable = true;
+            SetButtonInteractable(returnToTitleButton, true);
+            SetButtonInteractable(nextStageButton, true);
 
             ConfigureButtonNavigation();
             EnsureEventSystemForNavigation();
             if (EventSystem.current != null)
-                nextStageButton.Select();
+                nextStageButton?.Select();
         }
         private async UniTaskVoid HideAsync()
         {
@@ -339,8 +341,8 @@ namespace BC.UI
             }
 
             transform.localScale = new Vector3(1f, 0f, 1f);
-            returnToTitleButton.Interactable = false;
-            nextStageButton.Interactable = false;
+            SetButtonInteractable(returnToTitleButton, false);
+            SetButtonInteractable(nextStageButton, false);
 
             // 評価の星をリセット
             ResetStars();
@@ -357,24 +359,59 @@ namespace BC.UI
 
         private void ConfigureButtonNavigation()
         {
-            if (returnToTitleButton == null || nextStageButton == null)
+            if (!TryResolveUnityButton(returnToTitleButton, out Button returnButton) ||
+                !TryResolveUnityButton(nextStageButton, out Button nextButton))
+            {
                 return;
+            }
 
             Navigation returnNavigation = returnToTitleButton.Navigation;
             returnNavigation.mode = Navigation.Mode.Explicit;
-            returnNavigation.selectOnRight = nextStageButton.UnityButton;
-            returnNavigation.selectOnLeft = nextStageButton.UnityButton;
-            returnNavigation.selectOnUp = nextStageButton.UnityButton;
-            returnNavigation.selectOnDown = nextStageButton.UnityButton;
+            returnNavigation.selectOnRight = nextButton;
+            returnNavigation.selectOnLeft = nextButton;
+            returnNavigation.selectOnUp = nextButton;
+            returnNavigation.selectOnDown = nextButton;
             returnToTitleButton.Navigation = returnNavigation;
 
             Navigation nextNavigation = nextStageButton.Navigation;
             nextNavigation.mode = Navigation.Mode.Explicit;
-            nextNavigation.selectOnRight = returnToTitleButton.UnityButton;
-            nextNavigation.selectOnLeft = returnToTitleButton.UnityButton;
-            nextNavigation.selectOnUp = returnToTitleButton.UnityButton;
-            nextNavigation.selectOnDown = returnToTitleButton.UnityButton;
+            nextNavigation.selectOnRight = returnButton;
+            nextNavigation.selectOnLeft = returnButton;
+            nextNavigation.selectOnUp = returnButton;
+            nextNavigation.selectOnDown = returnButton;
             nextStageButton.Navigation = nextNavigation;
+        }
+
+        private async UniTask ShowButtonAsync(UIButtonMB button)
+        {
+            if (button == null)
+                return;
+
+            button.transform.localScale = new Vector3(1f, 0f, 1f);
+            SetButtonGameObjectActive(button, true);
+            await button.transform.DOScale(Vector3.one, 0.1f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
+        }
+
+        private static void SetButtonGameObjectActive(UIButtonMB button, bool active)
+        {
+            if (!TryResolveUnityButton(button, out Button unityButton))
+                return;
+
+            unityButton.gameObject.SetActive(active);
+        }
+
+        private static void SetButtonInteractable(UIButtonMB button, bool interactable)
+        {
+            if (button == null)
+                return;
+
+            button.Interactable = interactable;
+        }
+
+        private static bool TryResolveUnityButton(UIButtonMB button, out Button unityButton)
+        {
+            unityButton = button != null ? button.UnityButton : null;
+            return button != null && unityButton != null;
         }
 
         private static void EnsureEventSystemForNavigation()

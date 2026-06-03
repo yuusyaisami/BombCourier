@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94e94c1c30b15f743920456ff08f61c4, type: 3}
   m_Name: BouncingDVD
   m_EditorClassIdentifier: Assembly-CSharp::BC.Audio.AudioDataSO
-  clip: {fileID: 8300000, guid: 82972861144f29e46a43b25a51b076e7, type: 3}
-  baseVolume: 1
+  clip: {fileID: 8300000, guid: c17caf495ee226142a04f9524dd45af2, type: 3}
+  baseVolume: 0.527
   pitch: 1

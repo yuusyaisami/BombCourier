@@ -2,6 +2,7 @@ using System.Threading;
 using BC.Audio;
 using BC.Rendering.Transition;
 using BC.UI.Components;
+using BC.UI.Effect;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -36,10 +37,6 @@ namespace BC.UI.Title
         [SerializeField, Min(0f)] private float pageOutDuration = 0.3f;
 
         [Header("Sound")]
-        [Tooltip("ボタンにフォーカスしたときの SE です。")]
-        [SerializeField] private AudioDataSO buttonFocusSound;
-        [Tooltip("ボタンをクリックしたときの SE です。")]
-        [SerializeField] private AudioDataSO buttonClickSound;
         [Tooltip("ロゴを回転させるときの SE です。")]
         [SerializeField] private AudioDataSO logoSpinSound;
 
@@ -57,9 +54,6 @@ namespace BC.UI.Title
             if (playButton != null) playButton.AddClickListener(OnPlayButtonClicked);
             if (settingsButton != null) settingsButton.AddClickListener(OnSettingsButtonClicked);
 
-            // フォーカス SE / Settings パネル差し替え登録
-            RegisterButtonFocusEvents(playButton);
-            RegisterButtonFocusEvents(settingsButton);
             if (settingsButton != null)
             {
                 settingsButton.Focused -= OnSettingsButtonFocused;
@@ -251,7 +245,6 @@ namespace BC.UI.Title
 
         private void OnPlayButtonClicked()
         {
-            PlayClickSound();
             TitleSceneManagerMB manager = TitleSceneManagerMB.Instance;
             if (manager == null) return;
             manager.GoToStageSelectAsync(destroyCancellationToken).Forget();
@@ -259,23 +252,9 @@ namespace BC.UI.Title
 
         private void OnSettingsButtonClicked()
         {
-            PlayClickSound();
             TitleSceneManagerMB manager = TitleSceneManagerMB.Instance;
             if (manager == null) return;
             manager.OpenSettingsAsync(destroyCancellationToken).Forget();
-        }
-
-        private void RegisterButtonFocusEvents(UIButtonMB button)
-        {
-            if (button == null) return;
-
-            button.Focused -= OnButtonFocused;
-            button.Focused += OnButtonFocused;
-        }
-
-        private void OnButtonFocused(UIButtonMB button)
-        {
-            PlayFocusSound();
         }
 
         private void OnSettingsButtonFocused(UIButtonMB button)
@@ -286,18 +265,6 @@ namespace BC.UI.Title
         private void OnSettingsButtonDeselected(UIButtonMB button)
         {
             SetSettingsFocus(false);
-        }
-
-        private void PlayFocusSound()
-        {
-            if (buttonFocusSound != null)
-                AudioSystemMB.Instance?.PlaySE(buttonFocusSound);
-        }
-
-        private void PlayClickSound()
-        {
-            if (buttonClickSound != null)
-                AudioSystemMB.Instance?.PlaySE(buttonClickSound);
         }
 
         private void EnsureReferences()

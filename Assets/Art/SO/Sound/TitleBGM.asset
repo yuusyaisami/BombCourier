@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94e94c1c30b15f743920456ff08f61c4, type: 3}
   m_Name: TitleBGM
   m_EditorClassIdentifier: Assembly-CSharp::BC.Audio.AudioDataSO
-  clip: {fileID: 8300000, guid: 61c2c657d1581044e94194858d9480fc, type: 3}
+  clip: {fileID: 8300000, guid: c1ed2328c1228a44b9d070e823153106, type: 3}
   baseVolume: 0.66
   pitch: 1

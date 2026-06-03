@@ -11,6 +11,7 @@ using BC.Gimmick;
 using BC.Item;
 using BC.Managers;
 using BC.Player;
+using BC.Rendering;
 using BC.Rendering.Transition;
 using BC.Stage;
 using BC.Tutorial;
@@ -95,10 +96,12 @@ namespace BC.Manager
         private bool isShuttingDown;
         private bool introPathSkipRequested;
         private TutorialProgressSnapshot pendingTutorialRestoreSnapshot;
+        private string currentEntityMaterialDatasetKind = string.Empty; // 現在のステージで使用する EntityMaterialSet の dataset kind。
 
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
         public int CurrentStageIndex => currentGameStage;
+        public string CurrentEntityMaterialDatasetKind => currentEntityMaterialDatasetKind;
         public RetryActionMode CurrentRetryActionMode => ResolveRetryActionMode();
         public bool HasRetryCheckpoint => retryCheckpointStack.Count > 0;
         public bool HasManualSnapshotBase => ContainsRetryCheckpointSource(RetryCheckpointSourceKind.Manual);
@@ -474,7 +477,7 @@ namespace BC.Manager
             if (newState == GameState.Starting)
             {
                 int startStageIndex = ResolveInitialStageIndex();
-                GameBGMManagerMB.Instance?.PlayGameplayBGM();
+                GameSoundDataManagerMB.Instance?.PlayGameplayBGM();
                 LoadStageAsync(startStageIndex).Forget(); // 起動 stage をロードする
             }
             else if (newState == GameState.Intro)
@@ -488,7 +491,7 @@ namespace BC.Manager
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Move.CanMoveByInput, EntityMoveMotorMB.GameLogicTag, true);
                 sceneKernel.ValueStore.SetBoolModifier(playerRef, ValueKeys.Interaction.CanInteract, EntityMoveMotorMB.GameLogicTag, true);
                 StartCurrentTutorialIfRequested();
-                //GameBGMManagerMB.Instance?.PlayGameplayBGM();
+                //GameSoundDataManagerMB.Instance?.PlayGameplayBGM();
             }
             else if (newState == GameState.FusePlaying)
             {
@@ -727,7 +730,7 @@ namespace BC.Manager
             // ここでは最後のステージのゴールに到達した際の処理を行う
 
             // エンディング BGM をゲームプレイ BGM からクロスフェードで切り替える
-            GameBGMManagerMB.Instance?.PlayEndingBGM();
+            GameSoundDataManagerMB.Instance?.PlayEndingBGM();
 
             await UniTask.Delay(1000); // ゴール到達後の演出のために少し待つ
             if (uiFadeEffectMB != null)
@@ -832,7 +835,7 @@ namespace BC.Manager
             if (IsDestroyedOrShuttingDown())
                 return;
 
-            GameBGMManagerMB.Instance?.StopBGM(returnToTitleBgmFadeOutDuration);
+            GameSoundDataManagerMB.Instance?.StopBGM(returnToTitleBgmFadeOutDuration);
 
             if (uiGameSceneManagerMB != null)
             {
@@ -937,7 +940,7 @@ namespace BC.Manager
 
                 // Intro カメラ演出開始: BGM をフェードアウトして Intro SE を再生する。
                 // 演出終了後は SetupPlaying 状態で PlayGameplayBGM() が呼ばれ BGM が再開する。
-                GameBGMManagerMB.Instance?.StopBGMForIntro();
+                GameSoundDataManagerMB.Instance?.StopBGMForIntro();
 
                 UniTask playPathTask = CameraManager.Instance.PlayPathAsync(currentCameraPath, playerRef, async () =>
                 {
@@ -1238,6 +1241,8 @@ namespace BC.Manager
             if (debugStageInstance == null)
             {
                 result = StageManagerMB.Instance.LoadStage(currentGameStage);
+                currentEntityMaterialDatasetKind = NormalizeEntityMaterialDatasetKind(result.EntityMaterialDatasetKind);
+                ApplyCurrentEntityMaterialDatasetKindToScene();
                 stageInstance = result.stageInstance;
                 RegisterStageEntities(result.stageInstance);
                 ResetPlayer(); // プレイヤーをリセットする (loadで古いステージは消えるのですが、PlayerはMap外に残っているので、こちらで明確に消す必要があります)
@@ -1258,6 +1263,8 @@ namespace BC.Manager
             else
             {
                 result = StageManagerMB.Instance.ResolveStageRuntime(debugStageInstance.gameObject);
+                currentEntityMaterialDatasetKind = NormalizeEntityMaterialDatasetKind(result.EntityMaterialDatasetKind);
+                ApplyCurrentEntityMaterialDatasetKindToScene();
                 stageInstance = result.stageInstance;
                 RegisterStageEntities(result.stageInstance);
                 playerInstance = ResolvePlayerInstance();
@@ -1269,7 +1276,6 @@ namespace BC.Manager
                 // デバッグ用
                 if (!playerRef.IsValid) Debug.LogError("GameLogicManagerMB: PlayerRef is not valid.", this);
             }
-
             // StageManager が解決したランタイム参照だけを使って、ゲームロジック側の入力値を更新する。
             stageInstance = result.stageInstance;
             currentMapRuntime = result.mapRuntime;
@@ -1279,6 +1285,7 @@ namespace BC.Manager
             currentTutorialStage = result.tutorialStage;
             currentGodHand = result.godHandObjects.Count > 0 ? result.godHandObjects[0] : null;
             currentBonusObject = result.bonusObject;
+            currentEntityMaterialDatasetKind = NormalizeEntityMaterialDatasetKind(result.EntityMaterialDatasetKind);
             SetCurrentBomb(result.bombs.Count > 0 ? result.bombs[0] : null);
             currentClearTimeThreshold = result.ClearTimeThreshold;
             ResetRetryActionContext();
@@ -1394,6 +1401,27 @@ namespace BC.Manager
             }
 
             return false;
+        }
+
+        private static string NormalizeEntityMaterialDatasetKind(string datasetKind)
+        {
+            return string.IsNullOrWhiteSpace(datasetKind)
+                ? EntityMaterialSetSO.DefaultDatasetKind
+                : datasetKind.Trim();
+        }
+
+        private void ApplyCurrentEntityMaterialDatasetKindToScene()
+        {
+            EntityMaterialDatasetServiceMB service = EntityMaterialDatasetServiceMB.Instance;
+            if (service == null)
+                return;
+
+            if (!service.TrySetActiveDatasetKind(currentEntityMaterialDatasetKind, out string failureReason))
+            {
+                Debug.LogError(
+                    $"{nameof(GameLogicManagerMB)}: failed to apply entity material dataset kind '{currentEntityMaterialDatasetKind}' to scene. {failureReason}",
+                    this);
+            }
         }
 
         private bool ContainsRetryCheckpointSource(RetryCheckpointSourceKind sourceKind)

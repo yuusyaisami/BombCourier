@@ -4837,133 +4837,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
---- !u!1 &54400186293545171
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1050879443132783746}
-  - component: {fileID: 3413245482492348134}
-  - component: {fileID: 491944573340640303}
-  m_Layer: 0
-  m_Name: Spot Light
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1050879443132783746
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 54400186293545171}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.70710677, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.5, z: -0.000000029802322}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5675784807097398003}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!108 &3413245482492348134
-Light:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 54400186293545171}
-  m_Enabled: 1
-  serializedVersion: 13
-  m_Type: 0
-  m_Color: {r: 1, g: 0.909896, b: 0.63207537, a: 1}
-  m_Intensity: 600
-  m_Range: 94.2094
-  m_SpotAngle: 145.14697
-  m_InnerSpotAngle: 131.71469
-  m_CookieSize2D: {x: 0.5, y: 0.5}
-  m_Shadows:
-    m_Type: 0
-    m_Resolution: -1
-    m_CustomResolution: -1
-    m_Strength: 1
-    m_Bias: 0.05
-    m_NormalBias: 0.4
-    m_NearPlane: 0.2
-    m_CullingMatrixOverride:
-      e00: 1
-      e01: 0
-      e02: 0
-      e03: 0
-      e10: 0
-      e11: 1
-      e12: 0
-      e13: 0
-      e20: 0
-      e21: 0
-      e22: 1
-      e23: 0
-      e30: 0
-      e31: 0
-      e32: 0
-      e33: 1
-    m_UseCullingMatrixOverride: 0
-  m_Cookie: {fileID: 0}
-  m_DrawHalo: 0
-  m_Flare: {fileID: 0}
-  m_RenderMode: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingLayerMask: 1
-  m_Lightmapping: 4
-  m_LightShadowCasterMode: 0
-  m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 15
-  m_ColorTemperature: 6570
-  m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
-  m_UseBoundingSphereOverride: 0
-  m_UseViewFrustumForShadowCasterCull: 1
-  m_ForceVisible: 0
-  m_ShapeRadius: 0.025
-  m_ShadowAngle: 0
-  m_LightUnit: 1
-  m_LuxAtDistance: 1
-  m_EnableSpotReflector: 1
---- !u!114 &491944573340640303
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 54400186293545171}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
-  m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
-  m_CustomShadowLayers: 0
-  m_LightCookieSize: {x: 1, y: 1}
-  m_LightCookieOffset: {x: 0, y: 0}
-  m_SoftShadowQuality: 0
-  m_RenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_ShadowRenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_Version: 4
-  m_LightLayerMask: 1
-  m_ShadowLayerMask: 1
-  m_RenderingLayers: 1
-  m_ShadowRenderingLayers: 1
 --- !u!1 &162446659333554695
 GameObject:
   m_ObjectHideFlags: 0
@@ -6419,39 +6292,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
---- !u!1 &1382168426662921174
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5675784807097398003}
-  m_Layer: 0
-  m_Name: LightA
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5675784807097398003
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1382168426662921174}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: 33.75, z: 32}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2917567076726318998}
-  - {fileID: 1050879443132783746}
-  m_Father: {fileID: 2760836438650308838}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1426730238486600855
 GameObject:
   m_ObjectHideFlags: 0
@@ -6883,6 +6723,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4318461145356791258}
+  - component: {fileID: 4497817938762547200}
   m_Layer: 0
   m_Name: Reach1
   m_TagString: Ground
@@ -6899,12 +6740,30 @@ Transform:
   m_GameObject: {fileID: 1979761788600114383}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.0000525, y: 0.000002861023, z: 63}
+  m_LocalPosition: {x: 4.0000525, y: 0.000002861023, z: 64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7709220913830741554}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4497817938762547200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1979761788600114383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966a332091364d9fa0259e1f03e8dd87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Tutorial.TutorialReachLineMB
+  normalAxis: 0
+  triggerMode: 10
+  distanceTolerance: 0
+  gizmoWidth: 4
+  gizmoHeight: 2
+  gizmoNormalLength: 1.25
 --- !u!1 &2650056577534689671
 GameObject:
   m_ObjectHideFlags: 0
@@ -6996,8 +6855,10 @@ MonoBehaviour:
     playerControlPolicy: 10
     onEnter:
       _steps:
+      - rid: 1662523210654023914
       - rid: 1662523191755538643
       - rid: 1662523191755538713
+      - rid: 1662523210654024149
       - rid: 1662523192763482622
       - rid: 1662523191755538806
       - rid: 1662523191755539130
@@ -7008,7 +6869,6 @@ MonoBehaviour:
       - rid: 1662523192763482743
       - rid: 1662523192763482744
       - rid: 1662523192763482745
-      - rid: 1662523192763482747
       - rid: 1662523196819374312
     onComplete:
       _steps: []
@@ -7070,13 +6930,13 @@ MonoBehaviour:
       - rid: 1662523195414020593
       - rid: 1662523195414020646
       - rid: 1662523195414020699
+      - rid: 1662523225167626310
       - rid: 1662523195414020752
       - rid: 1662523195414020805
       - rid: 1662523195414020858
+      - rid: 1662523225167626311
       - rid: 1662523195414020911
       - rid: 1662523195414020964
-      - rid: 1662523195414021017
-      - rid: 1662523195414021070
       - rid: 1662523196819374393
     nextStepId:
       value: Step5
@@ -7118,10 +6978,12 @@ MonoBehaviour:
       - rid: 1662523195509441407
       - rid: 1662523195509441460
       - rid: 1662523195509441513
+      - rid: 1662523225167626728
       - rid: 1662523195640512542
       - rid: 1662523195640512595
       - rid: 1662523195640512648
       - rid: 1662523195640512727
+      - rid: 1662523225167626963
       - rid: 1662523196819374447
     nextStepId:
       value: Step7
@@ -7145,14 +7007,15 @@ MonoBehaviour:
       - rid: 1662523196711895121
       - rid: 1662523196711895226
       - rid: 1662523196711895279
-      - rid: 1662523196711895358
       - rid: 1662523196711895464
       - rid: 1662523196711895517
       - rid: 1662523196711895570
       - rid: 1662523196711895623
       - rid: 1662523196711895782
+      - rid: 1662523225261212180
       - rid: 1662523196711895967
       - rid: 1662523196711895676
+      - rid: 1662523225285329159
       - rid: 1662523196819374474
     nextStepId:
       value: 
@@ -7176,7 +7039,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3042\u306A\u305F\u306F\u4E0D\u9047\u306A\u5B9F\u9A13\u4F53\u3068\u3057\u3066\u9078\u3070\u308C\u307E\u3057\u305F\u3002"
+          dialogueText: "\u3042\u306A\u305F\u306F\u5E78\u904B\u306A\u5B9F\u9A13\u4F53\u3068\u3057\u3066\u9078\u3070\u308C\u307E\u3057\u305F\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7198,7 +7061,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u521D\u3081\u306B\u3001\u3042\u306A\u305F\u306E\u76EE\u7684\u306F\u533A\u753B\u304B\u3089\u306E\u8131\u51FA\u3067\u3059\u3002"
+          dialogueText: "\u521D\u3081\u306B\u3001\u3042\u306A\u305F\u306E\u76EE\u7684\u3092\u304A\u8A71\u3057\u3057\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7220,7 +7083,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3053\u306E\u6BB5\u30DC\u30FC\u30EB\u3067\u3075\u3055\u304C\u308C\u305F\u30B2\u30FC\u30C8\u304C"
+          dialogueText: "\u3053\u306E\u6BB5\u30DC\u30FC\u30EB\u3067\u585E\u304C\u308C\u305F\u5834\u6240\u304C\u3001"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7242,7 +7105,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u6B21\u306E\u533A\u753B\u3078\u306E\u30B2\u30FC\u30C8\u3068\u306A\u308A\u307E\u3059\u3002"
+          dialogueText: "\u6B21\u306E\u533A\u753B\u3078\u306E\u30B2\u30FC\u30C8\u3067\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7283,7 +7146,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u30B2\u30FC\u30C8\u306E\u7834\u58CA\u3092\u884C\u3046\u305F\u3081\u306B\u306F\u3001\u7206\u5F3E\u3092\u4F7F\u7528\u3059\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002"
+          dialogueText: "\u30B2\u30FC\u30C8\u3092\u585E\u3050\u969C\u5BB3\u7269\u306F\u3001\n\u7206\u5F3E\u3092\u4F7F\u3063\u3066\u7834\u58CA\u3059\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7305,7 +7168,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u30B2\u30FC\u30C8\u3092\u3075\u3055\u3050\u969C\u5BB3\u7269\u306F\u7206\u5F3E\u3092\u4F7F\u7528\u3057\u3066\u9664\u53BB\u3059\u308B\u6D41\u308C\u3067\u3059\u3002"
+          dialogueText: "\u307E\u305A\u306F\u7206\u5F3E\u306E\u3068\u3053\u308D\u307E\u3067\u79FB\u52D5\u3057\u307E\u3057\u3087\u3046\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7332,7 +7195,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u305D\u308C\u3092\u9042\u884C\u3059\u308B\u305F\u3081\u306B\u306F\u3001\n\u7206\u5F3E\u306E\u4F4D\u7F6E\u307E\u3067\u79FB\u52D5\u304C\u5FC5\u8981\u3067\u3059\u3002"
+          dialogueText: "\u79FB\u52D5\u306B\u306F WASD\u30AD\u30FC \u3092\u4F7F\u7528\u3057\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7354,29 +7217,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u79FB\u52D5\u306FWASD\u3067\u52D5\u304F\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
-          textEffectData:
-            applyFontSize: 0
-            fontSize: 0
-          hideDuration: 0
-          isWaitingActionCompleted: 0
-          useOnStartDialogueAction: 0
-          onStartDialogueAction:
-            _steps: []
-          useOnCompleteDialogueAction: 0
-          onCompleteDialogueAction:
-            _steps: []
-          actionToggleVersion: 1
-    - rid: 1662523192763482747
-      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
-      data:
-        DisplayName: 
-        dialogueRequestData:
-          speakerCharacter:
-            id: 1001
-            path: System.Tutorial
-          speakerName: 
-          dialogueText: "\u3067\u306F\u5B9F\u969B\u306B\u79FB\u52D5\u3092\u884C\u3063\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+          dialogueText: "\u3067\u306F\u3001\u5B9F\u969B\u306B\u52D5\u3044\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7425,7 +7266,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3042\u306A\u305F\u306F\u4EBA\u985E\u521D\u306E\u4E8C\u8DB3\u6B69\u884C\u30CD\u30BA\u30DF\u3068\u3057\u3066\n\u3042\u308B\u304F\u3053\u3068\u304C\u51FA\u6765\u307E\u3057\u305F\uFF01"
+          dialogueText: "\u3042\u306A\u305F\u306F\u4EBA\u985E\u521D\u306E\u300C\u4E8C\u8DB3\u6B69\u884C\u3059\u308B\u30CD\u30BA\u30DF\u300D\n\u3068\u3057\u3066\u6B69\u304F\u3053\u3068\u304C\u3067\u304D\u307E\u3057\u305F\uFF01"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7447,7 +7288,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3055\u3089\u306A\u308B\u9AD8\u307F\u3092\u76EE\u6307\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+          dialogueText: "\u3055\u3089\u306A\u308B\u9AD8\u307F\u3092\u76EE\u6307\u3057\u307E\u3057\u3087\u3046\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7469,7 +7310,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u7206\u5F3E\u306E\u4F4D\u7F6E\u307E\u3067\u79FB\u52D5\u3059\u308B\u306B\u306F\u3001\n\u6BB5\u5DEE\u3092\u4E57\u308A\u8D8A\u3048\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002"
+          dialogueText: "\u7206\u5F3E\u306E\u5834\u6240\u3078\u5411\u304B\u3046\u306B\u306F\u3001\n\u6BB5\u5DEE\u3092\u4E57\u308A\u8D8A\u3048\u306A\u3051\u308C\u3070\u306A\u308A\u307E\u305B\u3093\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7513,7 +7354,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u30B8\u30E3\u30F3\u30D7\u306E\u3084\u308A\u65B9\u306F\u30B9\u30DA\u30FC\u30B9\u3092\u5165\u529B\u3059\u308B\u3053\u3068\u3067\n\u884C\u3048\u307E\u3059\u3002"
+          dialogueText: "\u30B9\u30DA\u30FC\u30B9\u30AD\u30FC \u3067\u30B8\u30E3\u30F3\u30D7\u304C\u3067\u304D\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7583,7 +7424,8 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3042\u306A\u305F\u306F\u4EBA\u985E\u521D\u306E\u4E8C\u8DB3\u6B69\u884C\u30B8\u30E3\u30F3\u30D7\u30CD\u30BA\u30DF\u3067\u3059\uFF01\n\u8A87\u308C\u308B\u3053\u3068\u304C\u5897\u3048\u307E\u3057\u305F\u306D\uFF01"
+          dialogueText: "\u4EBA\u985E\u521D\u306E\u300C\u4E8C\u8DB3\u6B69\u884C\u30B8\u30E3\u30F3\u30D7\u30CD\u30BA\u30DF\u300D\u306E\u8A95\u751F\u3067\u3059\uFF01
+            \n\u8A87\u308A\u304C\u3072\u3068\u3064\u5897\u3048\u307E\u3057\u305F"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7605,7 +7447,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u30B8\u30E3\u30F3\u30D7\u3092\u4F7F\u3063\u3066\u3001\u3055\u3089\u306B\u5148\u306B\u9032\u307F\u307E\u3057\u3087\u3046\u3002"
+          dialogueText: "\u30B8\u30E3\u30F3\u30D7\u3092\u99C6\u4F7F\u3057\u3066\u3001\u3055\u3089\u306B\u5148\u3078\u9032\u307F\u307E\u3057\u3087\u3046\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7621,10 +7463,7 @@ MonoBehaviour:
     - rid: 1662523195414020173
       type: {class: TutorialReachLineConditionAuthoring, ns: BC.Tutorial, asm: Assembly-CSharp}
       data:
-        lineTransform: {fileID: 4318461145356791258}
-        localNormal: {x: 1, y: 0, z: 0}
-        requireCrossingFromBackSide: 1
-        distanceTolerance: 0
+        reachLine: {fileID: 4497817938762547200}
     - rid: 1662523195414020540
       type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
       data:
@@ -7656,7 +7495,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u73FE\u5728\u3042\u306A\u305F\u304C\u4E57\u308A\u8D8A\u3048\u3089\u308C\u308B\u30DE\u30B9\u306E\u9AD8\u3055\u306F\n2.5\u30DE\u30B9\u3068\u306A\u3063\u3066\u3044\u307E\u3059\u3002"
+          dialogueText: "\u73FE\u5728\u306E\u3042\u306A\u305F\u306E\u30B8\u30E3\u30F3\u30D7\u529B\u3067\u306F\u3001\n2.5\u30DE\u30B9\u306E\u9AD8\u3055\u307E\u3067\u3057\u304B\u8D85\u3048\u3089\u308C\u307E\u305B\u3093\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7678,7 +7517,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3057\u304B\u3057\u76EE\u306E\u524D\u306E\u6BB5\u5DEE\u306F3\u30DE\u30B9"
+          dialogueText: "\u3057\u304B\u3057\u3001\u76EE\u306E\u524D\u306E\u6BB5\u5DEE\u306F3\u30DE\u30B9\u3042\u308A\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7744,7 +7583,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3053\u306E\u30AF\u30C3\u30B7\u30E7\u30F3\u306F\u6301\u3064\u3053\u3068\u304C\u3067\u304D\u3001\u597D\u304D\u306A\u5834\u6240\u306B\n\u7F6E\u304F\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
+          dialogueText: "\u3053\u306E\u30AF\u30C3\u30B7\u30E7\u30F3\u306F\u3001\n\u6301\u3061\u904B\u3093\u3067\u597D\u304D\u306A\u5834\u6240\u306B\u7F6E\u304F\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7766,7 +7605,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u304A\u304A\u304A\uFF01\u3053\u308C\u3092\u4F7F\u3048\u3070\u3001\u6BB5\u5DEE\u3092\u8D85\u3048\u3089\u308C\u305D\u3046\u3067\u3059\u306D\uFF01"
+          dialogueText: "\u304A\u304A\uFF01 \u3053\u308C\u3092\u4F7F\u3048\u3070\u6BB5\u5DEE\u3092\u8D8A\u3048\u3089\u308C\u305D\u3046\u3067\u3059\u306D\uFF01"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7788,7 +7627,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3067\u306F\u307E\u305A\u306F\u3001\u30AF\u30C3\u30B7\u30E7\u30F3\u3092\u6301\u3063\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+          dialogueText: "\u307E\u305A\u306F\u30AF\u30C3\u30B7\u30E7\u30F3\u306E\u524D\u306B\u7ACB\u3061\u3001"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7810,51 +7649,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u30AF\u30C3\u30B7\u30E7\u30F3\u3092\u6301\u3064\u306B\u306F\u3001\u30AF\u30C3\u30B7\u30E7\u30F3\u306E\u524D\u306B\u7ACB\u3064\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002"
-          textEffectData:
-            applyFontSize: 0
-            fontSize: 0
-          hideDuration: 0
-          isWaitingActionCompleted: 0
-          useOnStartDialogueAction: 0
-          onStartDialogueAction:
-            _steps: []
-          useOnCompleteDialogueAction: 0
-          onCompleteDialogueAction:
-            _steps: []
-          actionToggleVersion: 1
-    - rid: 1662523195414021017
-      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
-      data:
-        DisplayName: 
-        dialogueRequestData:
-          speakerCharacter:
-            id: 1001
-            path: System.Tutorial
-          speakerName: 
-          dialogueText: "\u305D\u306E\u5F8C\u3001\u30AF\u30C3\u30B7\u30E7\u30F3\u306E\u524D\u3067E\u30AD\u30FC\u3092\u5165\u529B\u3057\u307E\u3059\u3002\n"
-          textEffectData:
-            applyFontSize: 0
-            fontSize: 0
-          hideDuration: 0
-          isWaitingActionCompleted: 0
-          useOnStartDialogueAction: 0
-          onStartDialogueAction:
-            _steps: []
-          useOnCompleteDialogueAction: 0
-          onCompleteDialogueAction:
-            _steps: []
-          actionToggleVersion: 1
-    - rid: 1662523195414021070
-      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
-      data:
-        DisplayName: 
-        dialogueRequestData:
-          speakerCharacter:
-            id: 1001
-            path: System.Tutorial
-          speakerName: 
-          dialogueText: "\u3084\u3063\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+          dialogueText: "E\u30AD\u30FC \u3067\u6301\u3061\u4E0A\u3052\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7904,7 +7699,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3067\u306F\u6B21\u306B\u3001\u305D\u306E\u30A2\u30A4\u30C6\u30E0\u3092\u6301\u3063\u305F\u72B6\u614B\u3067"
+          dialogueText: "\u6B21\u306F\u30AF\u30C3\u30B7\u30E7\u30F3\u3092\u6301\u3063\u305F\u72B6\u614B\u3067\u6BB5\u5DEE\u306E\u524D\u3078\u884C\u304D\u3001"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7948,7 +7743,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u6BB5\u5DEE\u306E\u524D\u3067\u3001\u518D\u3073E\u30AD\u30FC\u3092\u62BC\u3057\u3001\n\u304A\u3044\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+          dialogueText: "\u3082\u3046\u4E00\u5EA6 E\u30AD\u30FC \u3092\u62BC\u3057\u3066\u7F6E\u3044\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7970,7 +7765,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "E\u9577\u62BC\u3057\u3067\u6295\u3052\u308B\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u304C\u3001\n\u4E8B\u6545\u3082\u8D77\u304D\u3084\u3059\u3044\u305F\u3081\u3001\u77ED\u304F\u5165\u529B\u3059\u308B\u3053\u3068\u3092\u63A8\u5968\u3057\u307E\u3059\u3002"
+          dialogueText: "\u203BE\u30AD\u30FC\u3092\u9577\u62BC\u3057\u3059\u308B\u3068\u6295\u3052\u3066\u3057\u307E\u3044\u307E\u3059\u3002\n\u30DF\u30B9\u3092\u9632\u3050\u305F\u3081\u3001\u3053\u3053\u3067\u306F\u300C\u77ED\u304F\u62BC\u3059\u300D\u306E\u304C\u304A\u3059\u3059\u3081\u3067\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -7987,6 +7782,7 @@ MonoBehaviour:
       type: {class: TutorialThrowItemConditionAuthoring, ns: BC.Tutorial, asm: Assembly-CSharp}
       data:
         requiredThrowCount: 1
+        countDropReleaseAsSuccess: 1
     - rid: 1662523195509441328
       type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
       data:
@@ -8018,7 +7814,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3053\u308C\u3067\u3001\u6674\u308C\u3066\u3042\u306A\u305F\u306F\u3001\n\u4EBA\u985E\u521D\u306E\u4E8C\u8DB3\u6B69\u884C\u30B8\u30E3\u30F3\u30D7\u6280\u8853\u77E5\u30CD\u30BA\u30DF\u3078\u3068\u9032\u5316\u3057\u307E\u3057\u305F\u3002"
+          dialogueText: "\u3053\u308C\u3067\u3042\u306A\u305F\u306F\u3001\n\u4EBA\u985E\u521D\u306E\u300C\u4E8C\u8DB3\u6B69\u884C\u30B8\u30E3\u30F3\u30D7\u77E5\u80FD\u30CD\u30BA\u30DF\u300D\u3078\u3068\u9032\u5316\u3057\u307E\u3057\u305F\uFF01"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8166,10 +7962,7 @@ MonoBehaviour:
     - rid: 1662523195640512884
       type: {class: TutorialReachLineConditionAuthoring, ns: BC.Tutorial, asm: Assembly-CSharp}
       data:
-        lineTransform: {fileID: 5083272726193480619}
-        localNormal: {x: 1, y: 0, z: 0}
-        requireCrossingFromBackSide: 1
-        distanceTolerance: 0
+        reachLine: {fileID: 5839047307769010176}
     - rid: 1662523195640513275
       type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
       data:
@@ -8179,7 +7972,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3064\u3044\u306B\u7206\u5F3E\u306B\u89E6\u308C\u3089\u308C\u308B\u8DDD\u96E2\u307E\u3067\u8FEB\u308A\u307E\u3057\u305F\u3002"
+          dialogueText: "\u3064\u3044\u306B\u7206\u5F3E\u306E\u624B\u524D\u307E\u3067\u305F\u3069\u308A\u7740\u304D\u307E\u3057\u305F\u306D\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8201,7 +7994,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3057\u304B\u3057\u3001\u7206\u5F3E\u306B\u3064\u3044\u3066\u306F\u5C11\u3057\u53D6\u308A\u6271\u3044\u306B\n\u6CE8\u610F\u304C\u5FC5\u8981\u3067\u3059\u3002"
+          dialogueText: "\u3057\u304B\u3057\u3001\u7206\u5F3E\u306E\u53D6\u308A\u6271\u3044\u306B\u306F\u6CE8\u610F\u304C\u5FC5\u8981\u3067\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8223,7 +8016,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u7206\u5F3E\u306E\u7279\u5FB4\u3068\u3057\u3066\u306F\u3001\n\u3053\u306E\u3088\u3046\u306B\u306A\u3063\u3066\u3044\u307E\u3059\u3002"
+          dialogueText: "\u7206\u5F3E\u306E\u6027\u8CEA\u306F\u3054\u89A7\u306E\u901A\u308A\u3067\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8263,7 +8056,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u5B9F\u969B\u7206\u5F3E\u3092\u6301\u3063\u3066\u6295\u3052\u308B\u306E\u3067\u3059\u304C\u3001"
+          dialogueText: "\u7206\u5F3E\u306F\u6301\u3063\u305F\u77AC\u9593\u304B\u3089\u70B9\u706B\u3057\u3001\n\u30BF\u30A4\u30DE\u30FC\u304C\u4F5C\u52D5\u3057\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8285,7 +8078,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u76DB\u3063\u305F\u77AC\u9593\u304B\u3089\u3001\u70B9\u706B\u3057\u3001\n\u30BF\u30A4\u30DE\u30FC\u304C\u30B9\u30BF\u30FC\u30C8\u3057\u307E\u3059\u3002"
+          dialogueText: "\u7206\u767A\u3059\u308B\u524D\u306B\u3001\n\u30B2\u30FC\u30C8\u3078\u5411\u3051\u3066\u6295\u3052\u8FBC\u307E\u306A\u3051\u308C\u3070\u306A\u308A\u307E\u305B\u3093\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8307,29 +8100,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u305D\u308C\u307E\u3067\u306B\u3001\u7206\u5F3E\u3092\u30B2\u30FC\u30C8\u306B\u5411\u3051\u3066\u3001\n\u6295\u3052\u308B\u5FC5\u8981\u304C\u3042\u308A\u307E\u3059\u3002"
-          textEffectData:
-            applyFontSize: 0
-            fontSize: 0
-          hideDuration: 0
-          isWaitingActionCompleted: 0
-          useOnStartDialogueAction: 0
-          onStartDialogueAction:
-            _steps: []
-          useOnCompleteDialogueAction: 0
-          onCompleteDialogueAction:
-            _steps: []
-          actionToggleVersion: 1
-    - rid: 1662523196711895358
-      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
-      data:
-        DisplayName: 
-        dialogueRequestData:
-          speakerCharacter:
-            id: 1001
-            path: System.Tutorial
-          speakerName: 
-          dialogueText: "\u305D\u306E\u305F\u3081\u3001\u3053\u308C\u304B\u3089\u7206\u5F3E\u3092\u3082\u3063\u3066\n\u5B9F\u969B\u306B\u30B2\u30FC\u30C8\u306B\u6295\u3052\u308B\u307E\u3067\u884C\u3044\u307E\u3059\u3002"
+          dialogueText: "\u3067\u306F\u3001\u5B9F\u969B\u306B\u7206\u5F3E\u3092\u30B2\u30FC\u30C8\u306B\u6295\u3052\u8FBC\u3093\u3067\u307F\u307E\u3057\u3087\u3046\uFF01"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8358,7 +8129,8 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u4E07\u304C\u4E00\u3001\u30B2\u30FC\u30C8\u304C\u58CA\u305B\u306A\u304B\u3063\u305F\u5834\u5408\u306F"
+          dialogueText: "\u4E07\u304C\u4E00\u5931\u6557\u3057\u3066\u3082\u3001R\u30AD\u30FC\u3092\u9577\u62BC\u3057
+            \u3059\u308C\u3070\u3084\u308A\u76F4\u305B\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8380,7 +8152,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "R\u30AD\u30FC\u3092\u9577\u62BC\u3057\u3059\u308B\u3053\u3068\u3067\u3084\u308A\u76F4\u305B\u307E\u3059\u3002\n"
+          dialogueText: "\u7206\u5F3E\u306F E\u30AD\u30FC\u9577\u62BC\u3057 \u3067\u6295\u3052\u3089\u308C\u307E\u3059\u3002\n\u9577\u304F\u62BC\u3059\u307B\u3069\u98DB\u8DDD\u96E2\u304C\u4F38\u3073\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8402,7 +8174,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "E\u30AD\u30FC\u9577\u62BC\u3057\u3067\u6295\u3052\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002\n\u9577\u304F\u62BC\u3059\u307B\u3069\u98DB\u8DDD\u96E2\u3092\u4F38\u3070\u305B\u307E\u3059\u3002"
+          dialogueText: "\u307E\u305F\u3001\u70B9\u706B\u4E2D\u306B\u300C\u661F\u578B\u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u300D\u306B\u89E6\u308C\u308B\u3068\u3001\n\u30DC\u30FC\u30CA\u30B9\u30B9\u30BF\u30FC\u3092\u7372\u5F97\u3067\u304D\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8424,7 +8196,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u5E78\u904B\u3092\u7948\u3063\u3066\u3044\u307E\u3059\u3002"
+          dialogueText: "\u3042\u306A\u305F\u306E\u5E78\u904B\u3092\u7948\u308A\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8446,7 +8218,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u307E\u305F\u3001\u7206\u5F3E\u70B9\u706B\u4E2D\u306B\u3001\u661F\u578B\u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u89E6\u308C\u308B\u3053\u3068\u3067\u3001\n\u30DC\u30FC\u30CA\u30B9\u30B9\u30BF\u30FC\u3092\u7372\u5F97\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
+          dialogueText: "R\u30AD\u30FC\u306B\u3088\u308B\u30EA\u30BB\u30C3\u30C8\u306B\u306F\nReload\u3068Reset\u306E\u4E8C\u3064\u304C\u3042\u308A\u307E\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8468,7 +8240,7 @@ MonoBehaviour:
             id: 1001
             path: System.Tutorial
           speakerName: 
-          dialogueText: "\u3053\u308C\u306B\u3066\u3001\u30C1\u30E5\u30FC\u30C8\u30EA\u30A2\u30EB\u306F\u7D42\u4E86\u3068\u306A\u308A\u307E\u3059\u3002"
+          dialogueText: "\u3053\u308C\u3067\u30C1\u30E5\u30FC\u30C8\u30EA\u30A2\u30EB\u306F\u7D42\u4E86\u3067\u3059\u3002"
           textEffectData:
             applyFontSize: 0
             fontSize: 0
@@ -8537,6 +8309,100 @@ MonoBehaviour:
           duration: 0.3
           applyTalkStateOverride: 0
           talkStateId: 0
+    - rid: 1662523210654023914
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u304A\u3081\u3067\u3068\u3046\u3054\u3056\u3044\u307E\u3059"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523210654024149
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "\u6700\u521D\u306E\u76EE\u7684\u306F\u3001\u3053\u306E\u533A\u753B\u304B\u3089\u306E\u8131\u51FA\u3067\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523225167626310
+      type: {class: RegisterOverlayCameraStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        cameraTag: cushion
+        camera: {fileID: 7447566072625002988}
+        activateImmediately: 1
+    - rid: 1662523225167626311
+      type: {class: DisableOverlayCameraStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        cameraTag: cushion
+    - rid: 1662523225167626728
+      type: {class: RegisterOverlayCameraStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        cameraTag: route
+        camera: {fileID: 2315895492421287827}
+        activateImmediately: 0
+    - rid: 1662523225167626963
+      type: {class: DisableOverlayCameraStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        cameraTag: route
+    - rid: 1662523225261212180
+      type: {class: ShowDialogueStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        dialogueRequestData:
+          speakerCharacter:
+            id: 1001
+            path: System.Tutorial
+          speakerName: 
+          dialogueText: "Reload\u306F\u7206\u5F3E\u4FDD\u6709\u524D\u306B\u623B\u308A\u3001\nReset\u306F\u30B9\u30C6\u30FC\u30B8\u306E\u3084\u308A\u76F4\u3057\u3092\u610F\u5473\u3057\u307E\u3059\u3002"
+          textEffectData:
+            applyFontSize: 0
+            fontSize: 0
+          hideDuration: 0
+          isWaitingActionCompleted: 0
+          useOnStartDialogueAction: 0
+          onStartDialogueAction:
+            _steps: []
+          useOnCompleteDialogueAction: 0
+          onCompleteDialogueAction:
+            _steps: []
+          actionToggleVersion: 1
+    - rid: 1662523225285329159
+      type: {class: HideTutorialToDoListStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
 --- !u!1 &2886828127474513816
 GameObject:
   m_ObjectHideFlags: 0
@@ -8646,6 +8512,8 @@ Transform:
   - {fileID: 1578461773994505029}
   - {fileID: 5223760507034855244}
   - {fileID: 2874175057089906968}
+  - {fileID: 3032150536463286559}
+  - {fileID: 8371539869711181840}
   m_Father: {fileID: 2440146312495742978}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3695479556191971208
@@ -10193,9 +10061,136 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5675784807097398003}
+  - {fileID: 8721544397860409244}
   m_Father: {fileID: 2440146312495742978}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4181256639055208534
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8721544397860409244}
+  - component: {fileID: 4843683419757941705}
+  - component: {fileID: 8580869391842149934}
+  m_Layer: 0
+  m_Name: Directional Light
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8721544397860409244
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4181256639055208534}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.3965436, y: 0.15682243, z: 0.0689518, w: -0.90189004}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2760836438650308838}
+  m_LocalEulerAnglesHint: {x: -316.08002, y: -27.945, z: -20.202}
+--- !u!108 &4843683419757941705
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4181256639055208534}
+  m_Enabled: 1
+  serializedVersion: 13
+  m_Type: 1
+  m_Color: {r: 1, g: 0.88143104, b: 0.5377357, a: 1}
+  m_Intensity: 0.12
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.80208
+  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShapeRadius: 0.025
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!114 &8580869391842149934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4181256639055208534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &4233522367468112559
 GameObject:
   m_ObjectHideFlags: 0
@@ -10235,6 +10230,81 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4233522367468112559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
+  Priority:
+    Enabled: 1
+    m_Value: 0
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 20241001
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 60.000004
+    OrthographicSize: 5
+    NearClipPlane: 0.3
+    FarClipPlane: 1000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
+--- !u!1 &4285849959333607669
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3032150536463286559}
+  - component: {fileID: 7447566072625002988}
+  m_Layer: 0
+  m_Name: CinemachineCamera (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3032150536463286559
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4285849959333607669}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.057035927, y: -0.86502516, z: 0.19869155, w: 0.45716524}
+  m_LocalPosition: {x: 5.737651, y: 4.776119, z: 62.59125}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7709220913830741554}
+  m_LocalEulerAnglesHint: {x: 23.322, y: -123.216, z: 5.185}
+--- !u!114 &7447566072625002988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4285849959333607669}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
@@ -11216,7 +11286,7 @@ Transform:
   m_GameObject: {fileID: 5537086285858024079}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.25, y: 1.75, z: 1.75}
+  m_LocalPosition: {x: 4.25, y: 1.75, z: -0.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -11862,6 +11932,81 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!1 &6024074787304040167
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8371539869711181840}
+  - component: {fileID: 2315895492421287827}
+  m_Layer: 0
+  m_Name: CinemachineCamera (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8371539869711181840
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6024074787304040167}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.98866814, z: -0.150118, w: 0}
+  m_LocalPosition: {x: 4.943196, y: 7.4199686, z: 61.18344}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7709220913830741554}
+  m_LocalEulerAnglesHint: {x: 17.268, y: 180, z: 0}
+--- !u!114 &2315895492421287827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6024074787304040167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
+  Priority:
+    Enabled: 1
+    m_Value: 0
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 20241001
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 60.000004
+    OrthographicSize: 5
+    NearClipPlane: 0.3
+    FarClipPlane: 1000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
 --- !u!1 &6040297342929073251
 GameObject:
   m_ObjectHideFlags: 0
@@ -12505,6 +12650,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5083272726193480619}
+  - component: {fileID: 5839047307769010176}
   m_Layer: 0
   m_Name: Reach2
   m_TagString: Ground
@@ -12521,12 +12667,30 @@ Transform:
   m_GameObject: {fileID: 7027414613847163429}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.0000525, y: 0.000002861023, z: 20}
+  m_LocalPosition: {x: 4.0000525, y: 0.000002861023, z: 16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7709220913830741554}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5839047307769010176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7027414613847163429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966a332091364d9fa0259e1f03e8dd87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Tutorial.TutorialReachLineMB
+  normalAxis: 0
+  triggerMode: 10
+  distanceTolerance: 0
+  gizmoWidth: 4
+  gizmoHeight: 2
+  gizmoNormalLength: 1.25
 --- !u!1 &7041021320794620972
 GameObject:
   m_ObjectHideFlags: 0
@@ -13965,15 +14129,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 14f358a46120b224fb7b019631715d76, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 14f358a46120b224fb7b019631715d76, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 14f358a46120b224fb7b019631715d76, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 14f358a46120b224fb7b019631715d76, type: 3}
       propertyPath: m_LocalRotation.w
@@ -14307,77 +14471,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff2c9ef42b222d44959459e10c6e647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
---- !u!1001 &3456511275697750141
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 5675784807097398003}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-      propertyPath: m_Name
-      value: LightA
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
---- !u!4 &2917567076726318998 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e8fd2d36d67cc7a40bb6907aed9114a4, type: 3}
-  m_PrefabInstance: {fileID: 3456511275697750141}
-  m_PrefabAsset: {fileID: 0}

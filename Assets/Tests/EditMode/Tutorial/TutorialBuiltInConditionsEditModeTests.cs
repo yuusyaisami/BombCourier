@@ -94,14 +94,14 @@ namespace BC.Editor.Tests
             Transform playerTransform = CreateRegisteredTransform(kernel, playerEntity, "Player");
             playerTransform.position = new Vector3(0.0f, 0.0f, -1.0f);
 
-            GameObject lineObject = new GameObject("Line");
-            createdObjects.Add(lineObject);
+            TutorialReachLineMB reachLine = CreateReachLine(
+                "ReachLine",
+                TutorialReachLineNormalAxis.Forward,
+                TutorialReachLineTriggerMode.CrossFromBackToFront,
+                0.0f);
 
             var authoring = new TutorialReachLineConditionAuthoring();
-            SetPrivateField(authoring, "lineTransform", lineObject.transform);
-            SetPrivateField(authoring, "localNormal", Vector3.forward);
-            SetPrivateField(authoring, "requireCrossingFromBackSide", true);
-            SetPrivateField(authoring, "distanceTolerance", 0.0f);
+            SetPrivateField(authoring, "reachLine", reachLine);
 
             ITutorialConditionRuntime runtime = authoring.CreateRuntime();
             runtime.Start(new TutorialConditionContext(kernel, stage, playerEntity, playerEntity), null);
@@ -111,6 +111,91 @@ namespace BC.Editor.Tests
             runtime.Tick(0.016f);
 
             Assert.IsTrue(runtime.IsCompleted);
+        }
+
+        [Test]
+        public void ReachLineCondition_DoesNotCompleteImmediatelyWhenStartingOnFrontSide()
+        {
+            SceneKernel kernel = CreateSceneKernel();
+            TutorialStageAuthoringMB stage = CreateStageAuthoring();
+            EntityRef playerEntity = new EntityRef(31, 1);
+            Transform playerTransform = CreateRegisteredTransform(kernel, playerEntity, "Player");
+            playerTransform.position = new Vector3(1.0f, 0.0f, 0.0f);
+
+            TutorialReachLineMB reachLine = CreateReachLine(
+                "ReachLine",
+                TutorialReachLineNormalAxis.Right,
+                TutorialReachLineTriggerMode.CrossFromBackToFront,
+                0.0f);
+
+            var authoring = new TutorialReachLineConditionAuthoring();
+            SetPrivateField(authoring, "reachLine", reachLine);
+
+            ITutorialConditionRuntime runtime = authoring.CreateRuntime();
+            runtime.Start(new TutorialConditionContext(kernel, stage, playerEntity, playerEntity), null);
+
+            Assert.IsFalse(runtime.IsCompleted);
+
+            playerTransform.position = new Vector3(2.0f, 0.0f, 0.0f);
+            runtime.Tick(0.016f);
+            Assert.IsFalse(runtime.IsCompleted);
+
+            playerTransform.position = new Vector3(-1.0f, 0.0f, 0.0f);
+            runtime.Tick(0.016f);
+            Assert.IsFalse(runtime.IsCompleted);
+
+            playerTransform.position = new Vector3(0.25f, 0.0f, 0.0f);
+            runtime.Tick(0.016f);
+
+            Assert.IsTrue(runtime.IsCompleted);
+        }
+
+        [Test]
+        public void ReachLineCondition_CompletesWhenEnteringToleranceBandFromEitherSide()
+        {
+            SceneKernel kernel = CreateSceneKernel();
+            TutorialStageAuthoringMB stage = CreateStageAuthoring();
+            EntityRef playerEntity = new EntityRef(32, 1);
+            Transform playerTransform = CreateRegisteredTransform(kernel, playerEntity, "Player");
+            playerTransform.position = new Vector3(2.0f, 0.0f, 0.0f);
+
+            TutorialReachLineMB reachLine = CreateReachLine(
+                "ReachLine",
+                TutorialReachLineNormalAxis.Right,
+                TutorialReachLineTriggerMode.CrossEitherDirection,
+                0.25f);
+
+            var authoring = new TutorialReachLineConditionAuthoring();
+            SetPrivateField(authoring, "reachLine", reachLine);
+
+            ITutorialConditionRuntime runtime = authoring.CreateRuntime();
+            runtime.Start(new TutorialConditionContext(kernel, stage, playerEntity, playerEntity), null);
+
+            Assert.IsFalse(runtime.IsCompleted);
+
+            playerTransform.position = new Vector3(0.2f, 0.0f, 0.0f);
+            runtime.Tick(0.016f);
+
+            Assert.IsTrue(runtime.IsCompleted);
+        }
+
+        [Test]
+        public void ReachLineMarker_ComputesSignedDistanceFromConfiguredAxis()
+        {
+            TutorialReachLineMB reachLine = CreateReachLine(
+                "ReachLineAxis",
+                TutorialReachLineNormalAxis.Right,
+                TutorialReachLineTriggerMode.CrossFromBackToFront,
+                0.0f);
+
+            reachLine.transform.position = new Vector3(2.0f, 0.0f, 0.0f);
+            reachLine.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+
+            float frontDistance = reachLine.ComputeSignedDistance(new Vector3(2.0f, 0.0f, -3.0f));
+            float backDistance = reachLine.ComputeSignedDistance(new Vector3(2.0f, 0.0f, 1.5f));
+
+            Assert.Greater(frontDistance, 0.0f);
+            Assert.Less(backDistance, 0.0f);
         }
 
         [Test]
@@ -329,6 +414,22 @@ namespace BC.Editor.Tests
             createdObjects.Add(gameObject);
             kernel.EntityComponents.Register(entity, gameObject, gameObject.transform);
             return gameObject.transform;
+        }
+
+        private TutorialReachLineMB CreateReachLine(
+            string name,
+            TutorialReachLineNormalAxis normalAxis,
+            TutorialReachLineTriggerMode triggerMode,
+            float distanceTolerance)
+        {
+            GameObject gameObject = new GameObject(name);
+            createdObjects.Add(gameObject);
+
+            TutorialReachLineMB reachLine = gameObject.AddComponent<TutorialReachLineMB>();
+            SetPrivateField(reachLine, "normalAxis", normalAxis);
+            SetPrivateField(reachLine, "triggerMode", triggerMode);
+            SetPrivateField(reachLine, "distanceTolerance", distanceTolerance);
+            return reachLine;
         }
 
         private EntityMoveMotorMB CreateRegisteredMoveMotor(SceneKernel kernel, EntityRef entity)

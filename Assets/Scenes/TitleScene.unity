@@ -258,6 +258,8 @@ GameObject:
   - component: {fileID: 49961976}
   - component: {fileID: 49961975}
   - component: {fileID: 49961978}
+  - component: {fileID: 49961980}
+  - component: {fileID: 49961979}
   m_Layer: 0
   m_Name: BackBtn
   m_TagString: Untagged
@@ -387,8 +389,48 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
+--- !u!114 &49961979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49961973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 49961975}
+  noiseOutline: {fileID: 49961978}
+  buttonFlash: {fileID: 49961980}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &49961980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49961973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd25fc29153c7214c891f2e6c5a9beba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UIButtonFlashMB
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashCount: 3
+  flashOnDuration: 0.055
+  flashOffDuration: 0.055
+  blockingCanvasGroup: {fileID: 0}
 --- !u!1 &81268882
 GameObject:
   m_ObjectHideFlags: 0
@@ -949,13 +991,15 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d50c53d2005323f4fb93feefe066fd34, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Managers.GameBGMManagerMB
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Managers.GameSoundDataManagerMB
   titleBGM: {fileID: 11400000, guid: daa4923fb3eca5441826a9230569dfde, type: 2}
   gameplayBGM: {fileID: 11400000, guid: 045d3766da2d06347a9e9dc3628842b2, type: 2}
   endingBGM: {fileID: 11400000, guid: 0762e2206f186f64ca8fca2c2025c2be, type: 2}
   crossfadeDuration: 1.5
   introFadeOutDuration: 0.6
   introCameraStartSE: {fileID: 0}
+  defaultUIButtonClickSound: {fileID: 11400000, guid: f9979a1dbce578843a9869ba1f2cb8ea, type: 2}
+  defaultUIButtonFocusSound: {fileID: 11400000, guid: 77fab35ed65e68f4ca6e5bbfcc0fd028, type: 2}
 --- !u!114 &97729037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -983,6 +1027,8 @@ GameObject:
   - component: {fileID: 123380215}
   - component: {fileID: 123380214}
   - component: {fileID: 123380213}
+  - component: {fileID: 123380218}
+  - component: {fileID: 123380217}
   m_Layer: 0
   m_Name: No
   m_TagString: Untagged
@@ -1030,6 +1076,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &123380214
@@ -1114,6 +1161,45 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 123380211}
   m_CullTransparentMesh: 1
+--- !u!114 &123380217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 123380211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 123380214}
+  noiseOutline: {fileID: 123380213}
+  buttonFlash: {fileID: 123380218}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &123380218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 123380211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd25fc29153c7214c891f2e6c5a9beba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UIButtonFlashMB
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashCount: 3
+  flashOnDuration: 0.055
+  flashOffDuration: 0.055
+  blockingCanvasGroup: {fileID: 0}
 --- !u!1 &160625758
 GameObject:
   m_ObjectHideFlags: 0
@@ -2163,6 +2249,7 @@ GameObject:
   - component: {fileID: 361938447}
   - component: {fileID: 361938446}
   - component: {fileID: 361938445}
+  - component: {fileID: 361938453}
   m_Layer: 0
   m_Name: StageIndex8
   m_TagString: Untagged
@@ -2286,6 +2373,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &361938450
@@ -2300,13 +2388,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 361938449}
-  buttonFlash: {fileID: 361938446}
+  button: {fileID: 0}
   previewImage: {fileID: 361938447}
   lockedOverlay: {fileID: 961226749}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &361938451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2363,6 +2448,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &361938453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361938443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 361938451}
+  noiseOutline: {fileID: 361938449}
+  buttonFlash: {fileID: 361938446}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &377616002
 GameObject:
   m_ObjectHideFlags: 0
@@ -3082,6 +3189,8 @@ GameObject:
   - component: {fileID: 435991625}
   - component: {fileID: 435991624}
   - component: {fileID: 435991627}
+  - component: {fileID: 435991629}
+  - component: {fileID: 435991628}
   m_Layer: 0
   m_Name: PrevBtn
   m_TagString: Untagged
@@ -3210,9 +3319,49 @@ MonoBehaviour:
   noiseScale: 8
   noiseSpeed: 1.5
   fadeDuration: 0.15
-  padding: {x: 6, y: 6}
+  padding: {x: 2, y: 2}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
+--- !u!114 &435991628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 435991622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 435991624}
+  noiseOutline: {fileID: 435991627}
+  buttonFlash: {fileID: 435991629}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &435991629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 435991622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd25fc29153c7214c891f2e6c5a9beba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UIButtonFlashMB
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashCount: 3
+  flashOnDuration: 0.055
+  flashOffDuration: 0.055
+  blockingCanvasGroup: {fileID: 0}
 --- !u!1 &443906896
 GameObject:
   m_ObjectHideFlags: 0
@@ -4126,6 +4275,7 @@ GameObject:
   - component: {fileID: 514377963}
   - component: {fileID: 514377962}
   - component: {fileID: 514377961}
+  - component: {fileID: 514377966}
   m_Layer: 0
   m_Name: GamePlayBtn
   m_TagString: Untagged
@@ -4190,6 +4340,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 1, y: 1}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &514377963
@@ -4274,6 +4425,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 514377959}
   m_CullTransparentMesh: 1
+--- !u!114 &514377966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 514377959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 514377963}
+  noiseOutline: {fileID: 514377962}
+  buttonFlash: {fileID: 514377961}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &549955812
 GameObject:
   m_ObjectHideFlags: 0
@@ -5199,6 +5372,8 @@ GameObject:
   - component: {fileID: 608095613}
   - component: {fileID: 608095612}
   - component: {fileID: 608095611}
+  - component: {fileID: 608095616}
+  - component: {fileID: 608095615}
   m_Layer: 0
   m_Name: Yes
   m_TagString: Untagged
@@ -5246,6 +5421,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &608095612
@@ -5330,6 +5506,45 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 608095609}
   m_CullTransparentMesh: 1
+--- !u!114 &608095615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 608095609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 608095612}
+  noiseOutline: {fileID: 608095611}
+  buttonFlash: {fileID: 608095616}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &608095616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 608095609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd25fc29153c7214c891f2e6c5a9beba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UIButtonFlashMB
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashCount: 3
+  flashOnDuration: 0.055
+  flashOffDuration: 0.055
+  blockingCanvasGroup: {fileID: 0}
 --- !u!21 &631744747
 Material:
   serializedVersion: 8
@@ -5425,6 +5640,7 @@ GameObject:
   - component: {fileID: 657373754}
   - component: {fileID: 657373753}
   - component: {fileID: 657373752}
+  - component: {fileID: 657373760}
   m_Layer: 0
   m_Name: StageIndex7
   m_TagString: Untagged
@@ -5548,6 +5764,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &657373757
@@ -5562,13 +5779,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 657373756}
-  buttonFlash: {fileID: 657373753}
+  button: {fileID: 0}
   previewImage: {fileID: 657373754}
   lockedOverlay: {fileID: 1963341759}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &657373758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5625,6 +5839,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &657373760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 657373750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 657373758}
+  noiseOutline: {fileID: 657373756}
+  buttonFlash: {fileID: 657373753}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &660092421
 GameObject:
   m_ObjectHideFlags: 0
@@ -5854,6 +6090,7 @@ GameObject:
   - component: {fileID: 673945331}
   - component: {fileID: 673945330}
   - component: {fileID: 673945329}
+  - component: {fileID: 673945337}
   m_Layer: 0
   m_Name: StageIndex12
   m_TagString: Untagged
@@ -5977,6 +6214,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &673945334
@@ -5991,13 +6229,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 673945333}
-  buttonFlash: {fileID: 673945330}
+  button: {fileID: 0}
   previewImage: {fileID: 673945331}
   lockedOverlay: {fileID: 549955814}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &673945335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6054,6 +6289,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &673945337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 673945327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 673945335}
+  noiseOutline: {fileID: 673945333}
+  buttonFlash: {fileID: 673945330}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &695200990
 GameObject:
   m_ObjectHideFlags: 0
@@ -6279,6 +6536,8 @@ GameObject:
   - component: {fileID: 700565799}
   - component: {fileID: 700565798}
   - component: {fileID: 700565801}
+  - component: {fileID: 700565802}
+  - component: {fileID: 700565803}
   m_Layer: 0
   m_Name: BackBtn
   m_TagString: Untagged
@@ -6408,8 +6667,48 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
+--- !u!114 &700565802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700565796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd25fc29153c7214c891f2e6c5a9beba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UIButtonFlashMB
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashCount: 3
+  flashOnDuration: 0.055
+  flashOffDuration: 0.055
+  blockingCanvasGroup: {fileID: 0}
+--- !u!114 &700565803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700565796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 700565798}
+  noiseOutline: {fileID: 700565801}
+  buttonFlash: {fileID: 700565802}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &704533706
 GameObject:
   m_ObjectHideFlags: 0
@@ -6720,8 +7019,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -92, y: -7.6}
-  m_SizeDelta: {x: 203.7818, y: 52.5212}
+  m_AnchoredPosition: {x: -162.41666, y: -7.6}
+  m_SizeDelta: {x: 344.6151, y: 52.5212}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &708810030
 MonoBehaviour:
@@ -6770,11 +7069,11 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 36.25
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 0
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 4
@@ -6837,6 +7136,7 @@ GameObject:
   - component: {fileID: 726536627}
   - component: {fileID: 726536626}
   - component: {fileID: 726536625}
+  - component: {fileID: 726536630}
   m_Layer: 0
   m_Name: SettingBtn
   m_TagString: Untagged
@@ -6901,6 +7201,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 1, y: 1}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &726536627
@@ -6985,6 +7286,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 726536623}
   m_CullTransparentMesh: 1
+--- !u!114 &726536630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726536623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 726536627}
+  noiseOutline: {fileID: 726536626}
+  buttonFlash: {fileID: 726536625}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &726607655
 GameObject:
   m_ObjectHideFlags: 0
@@ -7431,6 +7754,7 @@ GameObject:
   - component: {fileID: 756300120}
   - component: {fileID: 756300119}
   - component: {fileID: 756300118}
+  - component: {fileID: 756300126}
   m_Layer: 0
   m_Name: StageIndex3
   m_TagString: Untagged
@@ -7554,6 +7878,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &756300123
@@ -7568,13 +7893,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 756300122}
-  buttonFlash: {fileID: 756300119}
+  button: {fileID: 0}
   previewImage: {fileID: 756300120}
   lockedOverlay: {fileID: 224107978}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &756300124
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7631,6 +7953,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &756300126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 756300116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 756300124}
+  noiseOutline: {fileID: 756300122}
+  buttonFlash: {fileID: 756300119}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!21 &765220314
 Material:
   serializedVersion: 8
@@ -9042,6 +9386,7 @@ GameObject:
   - component: {fileID: 943489549}
   - component: {fileID: 943489548}
   - component: {fileID: 943489547}
+  - component: {fileID: 943489555}
   m_Layer: 0
   m_Name: StageIndex5
   m_TagString: Untagged
@@ -9165,6 +9510,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &943489552
@@ -9179,13 +9525,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 943489551}
-  buttonFlash: {fileID: 943489548}
+  button: {fileID: 0}
   previewImage: {fileID: 943489549}
   lockedOverlay: {fileID: 772804734}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &943489553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9242,6 +9585,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &943489555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943489545}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 943489553}
+  noiseOutline: {fileID: 943489551}
+  buttonFlash: {fileID: 943489548}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &946449952
 GameObject:
   m_ObjectHideFlags: 0
@@ -9779,6 +10144,7 @@ GameObject:
   - component: {fileID: 998775808}
   - component: {fileID: 998775807}
   - component: {fileID: 998775806}
+  - component: {fileID: 998775814}
   m_Layer: 0
   m_Name: StageIndex4
   m_TagString: Untagged
@@ -9902,6 +10268,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &998775811
@@ -9916,13 +10283,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 998775810}
-  buttonFlash: {fileID: 998775807}
+  button: {fileID: 0}
   previewImage: {fileID: 998775808}
   lockedOverlay: {fileID: 822144163}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &998775812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9979,6 +10343,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &998775814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 998775804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 998775812}
+  noiseOutline: {fileID: 998775810}
+  buttonFlash: {fileID: 998775807}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1037820424
 GameObject:
   m_ObjectHideFlags: 0
@@ -10281,6 +10667,7 @@ GameObject:
   - component: {fileID: 1131606477}
   - component: {fileID: 1131606476}
   - component: {fileID: 1131606475}
+  - component: {fileID: 1131606483}
   m_Layer: 0
   m_Name: StageIndex2
   m_TagString: Untagged
@@ -10404,6 +10791,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &1131606480
@@ -10418,13 +10806,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 1131606479}
-  buttonFlash: {fileID: 1131606476}
+  button: {fileID: 0}
   previewImage: {fileID: 1131606477}
   lockedOverlay: {fileID: 2096125157}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &1131606481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10481,6 +10866,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1131606483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1131606473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1131606481}
+  noiseOutline: {fileID: 1131606479}
+  buttonFlash: {fileID: 1131606476}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1135189276
 GameObject:
   m_ObjectHideFlags: 0
@@ -10621,6 +11028,7 @@ GameObject:
   - component: {fileID: 1140448996}
   - component: {fileID: 1140448995}
   - component: {fileID: 1140448994}
+  - component: {fileID: 1140449002}
   m_Layer: 0
   m_Name: StageIndex6
   m_TagString: Untagged
@@ -10744,6 +11152,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &1140448999
@@ -10758,13 +11167,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 1140448998}
-  buttonFlash: {fileID: 1140448995}
+  button: {fileID: 0}
   previewImage: {fileID: 1140448996}
   lockedOverlay: {fileID: 1666308787}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &1140449000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10821,6 +11227,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1140449002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1140448992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1140449000}
+  noiseOutline: {fileID: 1140448998}
+  buttonFlash: {fileID: 1140448995}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1155914605
 GameObject:
   m_ObjectHideFlags: 0
@@ -10924,6 +11352,7 @@ GameObject:
   - component: {fileID: 1166260145}
   - component: {fileID: 1166260144}
   - component: {fileID: 1166260143}
+  - component: {fileID: 1166260151}
   m_Layer: 0
   m_Name: StageIndex9
   m_TagString: Untagged
@@ -11047,6 +11476,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &1166260148
@@ -11061,13 +11491,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 1166260147}
-  buttonFlash: {fileID: 1166260144}
+  button: {fileID: 0}
   previewImage: {fileID: 1166260145}
   lockedOverlay: {fileID: 726607657}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &1166260149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11124,6 +11551,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1166260151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1166260141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1166260149}
+  noiseOutline: {fileID: 1166260147}
+  buttonFlash: {fileID: 1166260144}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!21 &1169193623
 Material:
   serializedVersion: 8
@@ -11301,14 +11750,12 @@ MonoBehaviour:
   canvasGroup: {fileID: 1208742781}
   fadeDuration: 0.2
   defaultSelectedOnOpen: {fileID: 0}
+  navigationMap: {fileID: 0}
   pauseTimeScaleOnOpen: 0
-  closeButton: {fileID: 700565798}
-  closeButtonOutline: {fileID: 700565801}
-  applyReturnToTitleButton: 1
+  closeButton: {fileID: 700565803}
+  applyReturnToTitleButton: 0
   returnToTitleButton: {fileID: 0}
   openSound: {fileID: 11400000, guid: 7ff46e0908ce41a4e928d541fa91a660, type: 2}
-  forcusChangeSound: {fileID: 0}
-  clickSound: {fileID: 0}
   invertYAxisToggle: {fileID: 1155914607}
   cameraSensitivitySlider: {fileID: 866943619}
   cameraSensitivityValueText: {fileID: 974287676}
@@ -12133,6 +12580,7 @@ GameObject:
   - component: {fileID: 1275111248}
   - component: {fileID: 1275111247}
   - component: {fileID: 1275111246}
+  - component: {fileID: 1275111254}
   m_Layer: 0
   m_Name: StageIndex1
   m_TagString: Untagged
@@ -12256,6 +12704,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &1275111251
@@ -12270,13 +12719,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 1275111250}
-  buttonFlash: {fileID: 1275111247}
+  button: {fileID: 0}
   previewImage: {fileID: 1275111248}
   lockedOverlay: {fileID: 1037820426}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &1275111252
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12333,6 +12779,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1275111254
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1275111244}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1275111252}
+  noiseOutline: {fileID: 1275111250}
+  buttonFlash: {fileID: 1275111247}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1327542240
 GameObject:
   m_ObjectHideFlags: 0
@@ -12542,10 +13010,8 @@ MonoBehaviour:
   logoSpinTurns: 3
   logoFinalAngle: 20
   buttonsCanvasGroup: {fileID: 1336951612}
-  playButton: {fileID: 514377963}
-  settingsButton: {fileID: 726536627}
-  playButtonOutline: {fileID: 0}
-  settingsButtonOutline: {fileID: 0}
+  playButton: {fileID: 514377966}
+  settingsButton: {fileID: 726536630}
   buttonsFadeDuration: 0.4
   rightPanelTransitionImage: {fileID: 2007716528}
   titleWeightedSprites: {fileID: 11400000, guid: c8a8999d877648b4381b52c69ee2c2d5, type: 2}
@@ -12554,8 +13020,6 @@ MonoBehaviour:
   rightPanelTransitionProfile: {fileID: 0}
   pageInDuration: 0.35
   pageOutDuration: 0.3
-  buttonFocusSound: {fileID: 11400000, guid: 77fab35ed65e68f4ca6e5bbfcc0fd028, type: 2}
-  buttonClickSound: {fileID: 11400000, guid: f9979a1dbce578843a9869ba1f2cb8ea, type: 2}
   logoSpinSound: {fileID: 0}
 --- !u!225 &1336951612
 CanvasGroup:
@@ -12582,6 +13046,8 @@ GameObject:
   - component: {fileID: 1342063689}
   - component: {fileID: 1342063688}
   - component: {fileID: 1342063691}
+  - component: {fileID: 1342063693}
+  - component: {fileID: 1342063692}
   m_Layer: 0
   m_Name: NextBtn
   m_TagString: Untagged
@@ -12710,9 +13176,49 @@ MonoBehaviour:
   noiseScale: 8
   noiseSpeed: 1.5
   fadeDuration: 0.15
-  padding: {x: 6, y: 6}
+  padding: {x: 2, y: 2}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
+--- !u!114 &1342063692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1342063686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1342063688}
+  noiseOutline: {fileID: 1342063691}
+  buttonFlash: {fileID: 1342063693}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1342063693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1342063686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd25fc29153c7214c891f2e6c5a9beba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UIButtonFlashMB
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashCount: 3
+  flashOnDuration: 0.055
+  flashOffDuration: 0.055
+  blockingCanvasGroup: {fileID: 0}
 --- !u!1 &1351969268
 GameObject:
   m_ObjectHideFlags: 0
@@ -13908,7 +14414,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 50
   m_TargetDisplay: 0
 --- !u!1 &1499613856
 GameObject:
@@ -14128,6 +14634,7 @@ GameObject:
   - component: {fileID: 1512407674}
   - component: {fileID: 1512407673}
   - component: {fileID: 1512407672}
+  - component: {fileID: 1512407680}
   m_Layer: 0
   m_Name: StageIndex11
   m_TagString: Untagged
@@ -14251,6 +14758,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &1512407677
@@ -14265,13 +14773,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 1512407676}
-  buttonFlash: {fileID: 1512407673}
+  button: {fileID: 0}
   previewImage: {fileID: 1512407674}
   lockedOverlay: {fileID: 81268884}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &1512407678
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14328,6 +14833,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1512407680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512407670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1512407678}
+  noiseOutline: {fileID: 1512407676}
+  buttonFlash: {fileID: 1512407673}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1512866965
 GameObject:
   m_ObjectHideFlags: 0
@@ -15144,6 +15671,7 @@ GameObject:
   - component: {fileID: 1596980667}
   - component: {fileID: 1596980666}
   - component: {fileID: 1596980665}
+  - component: {fileID: 1596980673}
   m_Layer: 0
   m_Name: StageIndex10
   m_TagString: Untagged
@@ -15267,6 +15795,7 @@ MonoBehaviour:
   noiseSpeed: 1.5
   fadeDuration: 0.15
   padding: {x: 6, y: 6}
+  targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
 --- !u!114 &1596980670
@@ -15281,13 +15810,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f79409b5580992d489e914615f3373eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UIStageSelectItemMB
-  noiseOutline: {fileID: 1596980669}
-  buttonFlash: {fileID: 1596980666}
+  button: {fileID: 0}
   previewImage: {fileID: 1596980667}
   lockedOverlay: {fileID: 507335970}
   stageIndexText: {fileID: 0}
-  focusSound: {fileID: 0}
-  selectSound: {fileID: 0}
 --- !u!114 &1596980671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15344,6 +15870,28 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1596980673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1596980663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1596980671}
+  noiseOutline: {fileID: 1596980669}
+  buttonFlash: {fileID: 1596980666}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1597490407
 GameObject:
   m_ObjectHideFlags: 0
@@ -16433,7 +16981,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 12, y: 12}
+  m_SizeDelta: {x: 4, y: 4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1741797483
 MonoBehaviour:
@@ -17384,7 +17932,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 12, y: 12}
+  m_SizeDelta: {x: 4, y: 4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1856549281
 MonoBehaviour:
@@ -19018,16 +19566,11 @@ MonoBehaviour:
   stageRegistry: {fileID: 11400000, guid: 34700beff9181ba418a30086e506a34d, type: 2}
   stageLoadTransitionProfile: {fileID: 11400000, guid: 771bda7aaa7687b4e8ff3c01b6655524, type: 2}
   navigationMB: {fileID: 2033577050}
-  prevPageButton: {fileID: 435991624}
-  nextPageButton: {fileID: 1342063688}
-  backButton: {fileID: 49961975}
-  prevPageButtonOutline: {fileID: 435991627}
-  nextPageButtonOutline: {fileID: 1342063691}
-  backButtonOutline: {fileID: 49961978}
+  prevPageButton: {fileID: 435991628}
+  nextPageButton: {fileID: 1342063692}
+  backButton: {fileID: 49961979}
   pageInDuration: 0.35
   pageOutDuration: 0.3
-  navButtonFocusSound: {fileID: 11400000, guid: 77fab35ed65e68f4ca6e5bbfcc0fd028, type: 2}
-  navButtonClickSound: {fileID: 11400000, guid: f9979a1dbce578843a9869ba1f2cb8ea, type: 2}
   tutorialConfirmModal: {fileID: 2085081987}
 --- !u!225 &2033577052
 CanvasGroup:
@@ -19485,10 +20028,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Title.UITutorialConfirmModalMB
   stageIndices: 00000000
-  yesButton: {fileID: 608095612}
-  noButton: {fileID: 123380214}
-  yesButtonOutline: {fileID: 0}
-  noButtonOutline: {fileID: 0}
+  yesButton: {fileID: 608095615}
+  noButton: {fileID: 123380217}
+  showSound: {fileID: 11400000, guid: 7ff46e0908ce41a4e928d541fa91a660, type: 2}
   fadeDuration: 0.2
 --- !u!225 &2085081988
 CanvasGroup:

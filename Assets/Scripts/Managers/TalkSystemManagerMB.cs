@@ -209,6 +209,8 @@ namespace BC.Managers
     // UI はここ、camera focus は SceneCameraService、具体的な action は ActionSystem に委譲する。
     public class TalkSystemManagerMB : MonoBehaviour
     {
+        private static readonly ValueModifierTagId DialogueInputLockTag = new ValueModifierTagId(15001);
+
         public static TalkSystemManagerMB Instance { get; private set; }
 
         [SerializeField] private UITalkSystemMB talkSystemUIManagerMB;
@@ -224,6 +226,8 @@ namespace BC.Managers
         private SceneCameraFocusContext activeConversationFocusContext;
         private SceneKernel sceneKernel;
         private readonly CharacterDataBaseService characterDataBase = new();
+        private EntityRef activeDialogueInputLockEntity;
+        private bool dialogueInputLockActive;
 
         private void Awake()
         {
@@ -250,6 +254,7 @@ namespace BC.Managers
             }
 
             EndConversationCameraFocus();
+            ClearDialogueInputLock();
             activeTalkOwnerActor = default;
             activeTalkPresentationActor = default;
             activeTalkPresentationAdapter = null;
@@ -281,6 +286,8 @@ namespace BC.Managers
                 return false;
             }
 
+            ClearDialogueInputLock();
+
             if (cancellationTokenSource != null)
             {
                 cancellationTokenSource.Cancel();
@@ -299,9 +306,12 @@ namespace BC.Managers
             activeTalkOwnerActor = actor;
             activeTalkPresentationActor = actor;
             activeTalkPresentationAdapter = null;
+            ApplyDialogueInputLock(ResolveDialogueInputLockEntity(actor, viewer));
 
-            EntityRef focusTargetActor = ResolveCameraFocusActor(activeTalkPresentationActor, activeTalkOwnerActor, viewer);
-            BeginConversationCameraFocus(focusTargetActor, viewer);
+            // ShowDialogue は TalkAdapter を介さない純粋なダイアログ表示なので、
+            // TalkCamera / focus 演出は開始しない。
+            // 既存の会話 focus が残っていた場合だけ明示的に解除する。
+            EndConversationCameraFocus();
 
             await ExecuteInlineActionAsync(
                 activeTalkOwnerActor,
@@ -352,6 +362,8 @@ namespace BC.Managers
             }
 
             // 連続で会話が来たら、前の待機処理を止めて新しい会話に切り替える。
+            ClearDialogueInputLock();
+
             if (cancellationTokenSource != null)
             {
                 cancellationTokenSource.Cancel();
@@ -542,6 +554,7 @@ namespace BC.Managers
             ResolveActivePresentationAdapter()?.HandleTalkHidden(requestData);
 
             EndConversationCameraFocus();
+            ClearDialogueInputLock();
             activeTalkOwnerActor = default;
             activeTalkPresentationActor = default;
             activeTalkPresentationAdapter = null;
@@ -706,6 +719,50 @@ namespace BC.Managers
 
             activeConversationFocusContext = default;
             isConversationFocusActive = false;
+        }
+
+        private EntityRef ResolveDialogueInputLockEntity(EntityRef actor, EntityRef viewer)
+        {
+            if (viewer.IsValid)
+                return viewer;
+
+            return actor;
+        }
+
+        private void ApplyDialogueInputLock(EntityRef targetEntity)
+        {
+            ClearDialogueInputLock();
+
+            if (!targetEntity.IsValid)
+                return;
+
+            if (!TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) || resolvedSceneKernel.ValueStore == null)
+                return;
+
+            resolvedSceneKernel.ValueStore.SetBoolModifier(targetEntity, ValueKeys.Move.CanMoveByInput, DialogueInputLockTag, false);
+            resolvedSceneKernel.ValueStore.SetBoolModifier(targetEntity, ValueKeys.Interaction.CanInteract, DialogueInputLockTag, false);
+            activeDialogueInputLockEntity = targetEntity;
+            dialogueInputLockActive = true;
+        }
+
+        private void ClearDialogueInputLock()
+        {
+            if (!dialogueInputLockActive)
+            {
+                activeDialogueInputLockEntity = default;
+                return;
+            }
+
+            if (activeDialogueInputLockEntity.IsValid &&
+                TryResolveSceneKernel(out SceneKernel resolvedSceneKernel) &&
+                resolvedSceneKernel.ValueStore != null)
+            {
+                resolvedSceneKernel.ValueStore.RemoveBoolModifier(activeDialogueInputLockEntity, ValueKeys.Move.CanMoveByInput, DialogueInputLockTag);
+                resolvedSceneKernel.ValueStore.RemoveBoolModifier(activeDialogueInputLockEntity, ValueKeys.Interaction.CanInteract, DialogueInputLockTag);
+            }
+
+            activeDialogueInputLockEntity = default;
+            dialogueInputLockActive = false;
         }
 
         private TalkAdapterMB ResolveActivePresentationAdapter()

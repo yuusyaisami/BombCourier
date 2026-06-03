@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using BC.Audio;
 using BC.Stage;
 using BC.UI.Components;
 using Cysharp.Threading.Tasks;
@@ -21,20 +20,12 @@ namespace BC.UI.Title
         [SerializeField] private Image lockedOverlay;
         [SerializeField] private TextMeshProUGUI stageIndexText;
 
-        [Header("Sound")]
-        [Tooltip("フォーカスしたときの SE です。")]
-        [SerializeField] private AudioDataSO focusSound;
-        [Tooltip("選択したときの SE です。")]
-        [SerializeField] private AudioDataSO selectSound;
-
         public int StageIndex { get; private set; }
         public bool IsUnlocked { get; private set; }
         public StageData StageData { get; private set; }
 
         public event Action<UIStageSelectItemMB> OnFocused;
         public event Action<UIStageSelectItemMB> OnSelected;
-
-        private UIStageSelectPageMB selectPage;
 
         private CanvasGroup canvasGroup;
         private bool initialized;
@@ -97,11 +88,6 @@ namespace BC.UI.Title
             button?.SetFocusedImmediate(focused);
             if (focused)
             {
-                if (focusSound != null)
-                    AudioSystemMB.Instance?.PlaySE(focusSound);
-                else
-                    selectPage?.PlayNavFocusSound();
-
                 OnFocused?.Invoke(this);
             }
         }
@@ -152,8 +138,6 @@ namespace BC.UI.Title
             if (stageIndexText == null)
                 stageIndexText = GetComponentInChildren<TextMeshProUGUI>(true);
 
-            selectPage = GetComponentInParent<UIStageSelectPageMB>();
-
             canvasGroup = GetComponent<CanvasGroup>();
             if (canvasGroup == null)
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
@@ -200,11 +184,6 @@ namespace BC.UI.Title
 
         private async UniTaskVoid PlaySelectSequenceAsync(CancellationToken ct)
         {
-            if (selectSound != null)
-                AudioSystemMB.Instance?.PlaySE(selectSound);
-            else
-                selectPage?.PlayNavClickSound();
-
             await UniTask.Yield(PlayerLoopTiming.Update, ct);
             OnSelected?.Invoke(this);
         }

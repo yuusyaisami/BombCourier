@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using BC.Base;
@@ -24,7 +25,8 @@ namespace BC.Audio
         private readonly HashSet<AudioObjectMB> activeSE = new();
 
         private AudioObjectMB activeBGM;
-        private CancellationTokenSource bgmFadeCts;
+        private CancellationTokenSource bgmTransitionCts;
+        private CancellationTokenSource bgmVolumeFadeCts;
 
         private ValueWatchHandle<float> musicVolumeHandle;
         private ValueWatchHandle<float> sfxVolumeHandle;
@@ -69,9 +71,13 @@ namespace BC.Audio
             musicVolumeSub?.Dispose();
             sfxVolumeSub?.Dispose();
 
-            bgmFadeCts?.Cancel();
-            bgmFadeCts?.Dispose();
-            bgmFadeCts = null;
+            bgmTransitionCts?.Cancel();
+            bgmTransitionCts?.Dispose();
+            bgmTransitionCts = null;
+
+            bgmVolumeFadeCts?.Cancel();
+            bgmVolumeFadeCts?.Dispose();
+            bgmVolumeFadeCts = null;
 
             if (Instance == this)
                 Instance = null;
@@ -176,7 +182,7 @@ namespace BC.Audio
         public UniTask FadeBGMVolumeAsync(float targetVolume, float fadeDuration, CancellationToken ct = default)
         {
             if (activeBGM == null) return UniTask.CompletedTask;
-            return FadeBGMVolumeInternalAsync(activeBGM, targetVolume, fadeDuration, ct);
+            return FadeActiveBGMVolumeAsync(activeBGM, targetVolume, fadeDuration, ct);
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -185,21 +191,22 @@ namespace BC.Audio
 
         private async UniTaskVoid CrossfadeBGMAsync(AudioClip clip, float baseVolume, float pitch, bool loop, float crossfadeDuration)
         {
-            // 前のフェード操作をキャンセルして新しいトークンで進める。
-            bgmFadeCts?.Cancel();
-            bgmFadeCts?.Dispose();
-            bgmFadeCts = new CancellationTokenSource();
-            CancellationToken ct = bgmFadeCts.Token;
+            // 次の BGM 立ち上げだけをキャンセルし、既に走り始めた outgoing fade は止めない。
+            bgmTransitionCts?.Cancel();
+            bgmTransitionCts?.Dispose();
+            bgmTransitionCts = new CancellationTokenSource();
+            CancellationToken ct = bgmTransitionCts.Token;
 
-            // 既存 BGM をフェードアウト開始 (並走させる)。
             if (activeBGM != null)
             {
                 AudioObjectMB fading = activeBGM;
                 activeBGM = null;
-                fading.FadeOutAsync(crossfadeDuration, ct).Forget();
+                if (crossfadeDuration > 0f)
+                    fading.FadeOutAsync(crossfadeDuration).Forget();
+                else
+                    fading.StopImmediate();
             }
 
-            // 新しい BGM をプールから取り出してフェードインする。
             AudioObjectMB newBGM = GetFromPool();
             if (newBGM == null)
             {
@@ -209,39 +216,41 @@ namespace BC.Audio
 
             float gameVolume = musicVolumeHandle != null ? musicVolumeHandle.CurrentValue : 1f;
             float targetVolume = baseVolume * gameVolume;
-            newBGM.PlayBGM(clip, volume: 0f, loop: loop, pitch: pitch, baseVolume: baseVolume);
+            float startVolume = crossfadeDuration > 0f ? 0f : targetVolume;
+            newBGM.PlayBGM(clip, volume: startVolume, loop: loop, pitch: pitch, baseVolume: baseVolume);
             activeBGM = newBGM;
 
             if (crossfadeDuration > 0f)
             {
-                Tween fadeIn = DOTween.To(
-                    () => newBGM.Volume,
-                    v => newBGM.Volume = v,
-                    targetVolume,
-                    crossfadeDuration
-                ).SetUpdate(true);
-
-                await fadeIn.AsyncWaitForCompletion().AsUniTask()
-                    .AttachExternalCancellation(ct)
-                    .SuppressCancellationThrow();
-            }
-            else
-            {
-                newBGM.Volume = targetVolume;
+                try
+                {
+                    await FadeBGMVolumeInternalAsync(newBGM, targetVolume, crossfadeDuration, ct);
+                }
+                catch (OperationCanceledException)
+                {
+                }
             }
         }
 
         private async UniTaskVoid StopBGMAsync(float fadeDuration)
         {
-            bgmFadeCts?.Cancel();
-            bgmFadeCts?.Dispose();
-            bgmFadeCts = new CancellationTokenSource();
-            CancellationToken ct = bgmFadeCts.Token;
+            bgmTransitionCts?.Cancel();
+            bgmTransitionCts?.Dispose();
+            bgmTransitionCts = null;
 
             AudioObjectMB fading = activeBGM;
             activeBGM = null;
 
-            await fading.FadeOutAsync(fadeDuration, ct);
+            if (fading == null)
+                return;
+
+            if (fadeDuration <= 0f)
+            {
+                fading.StopImmediate();
+                return;
+            }
+
+            await fading.FadeOutAsync(fadeDuration);
         }
 
         private static async UniTask FadeBGMVolumeInternalAsync(AudioObjectMB target, float targetVolume, float fadeDuration, CancellationToken ct)
@@ -259,9 +268,35 @@ namespace BC.Audio
                 fadeDuration
             ).SetUpdate(true);
 
-            await tween.AsyncWaitForCompletion().AsUniTask()
-                .AttachExternalCancellation(ct)
-                .SuppressCancellationThrow();
+            try
+            {
+                await tween.AsyncWaitForCompletion().AsUniTask()
+                    .AttachExternalCancellation(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                tween.Kill();
+                throw;
+            }
+        }
+
+        private async UniTask FadeActiveBGMVolumeAsync(AudioObjectMB target, float targetVolume, float fadeDuration, CancellationToken ct)
+        {
+            bgmVolumeFadeCts?.Cancel();
+            bgmVolumeFadeCts?.Dispose();
+            bgmVolumeFadeCts = new CancellationTokenSource();
+
+            using CancellationTokenSource linkedCancellation = ct.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(bgmVolumeFadeCts.Token, ct)
+                : CancellationTokenSource.CreateLinkedTokenSource(bgmVolumeFadeCts.Token);
+
+            try
+            {
+                await FadeBGMVolumeInternalAsync(target, targetVolume, fadeDuration, linkedCancellation.Token);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         // ─────────────────────────────────────────────────────────────────

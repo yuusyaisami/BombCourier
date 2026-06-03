@@ -47,6 +47,7 @@ namespace BC.Editor.ActionSystem
                 ShowTalkStepAuthoring => BuildShowTalkSummary(stepProperty),
                 ShowDialogueStepAuthoring => BuildShowDialogueSummary(stepProperty),
                 HideTalkStepAuthoring => BuildHideTalkSummary(stepProperty),
+                HideTutorialToDoListStepAuthoring => BuildHideTutorialToDoListSummary(),
                 ShowTalkChoiceStepAuthoring => BuildShowTalkChoiceSummary(stepProperty),
                 SetValueStoreValueStepAuthoring => BuildValueStoreSummary(stepProperty),
                 RegisterOverlayCameraStepAuthoring => BuildRegisterOverlayCameraSummary(stepProperty),
@@ -357,6 +358,11 @@ namespace BC.Editor.ActionSystem
             return string.IsNullOrWhiteSpace(talkState)
                 ? $"{durationSummary}, restore idle"
                 : $"{durationSummary}, {talkState}";
+        }
+
+        private static string BuildHideTutorialToDoListSummary()
+        {
+            return "Hide ToDoList";
         }
 
         private static string BuildTalkStateSummary(SerializedProperty talkStateProperty)
