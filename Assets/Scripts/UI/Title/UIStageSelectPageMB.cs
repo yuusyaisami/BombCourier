@@ -141,6 +141,8 @@ namespace BC.UI.Title
         {
             IsShowing = true;
             gameObject.SetActive(true);
+            // カスタムナビ(UIStageSelectNavigationMB)が読む project-wide UI マップを有効化しておく。
+            UINavigationBootstrap.EnsureConfigured();
             currentPageIndex = 0;
             pageCanvasGroup.blocksRaycasts = true;
             SetupPageContainers();

@@ -115,6 +115,7 @@ namespace BC.UI.Title
             pageCanvasGroup.blocksRaycasts = true;
 
             // ゲームプレイボタンに初期フォーカスを当てる
+            UINavigationBootstrap.EnsureConfigured();
             if (playButton != null)
                 playButton.Select();
 

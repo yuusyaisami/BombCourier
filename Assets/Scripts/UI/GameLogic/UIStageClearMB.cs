@@ -8,7 +8,6 @@ using DG.Tweening;
 using Febucci.TextAnimatorForUnity;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace BC.UI
@@ -231,7 +230,9 @@ namespace BC.UI
                 return;
             }
 
-
+            // ループは elapsed を加算してから抜けるため最終 t が 1 未満で終わる。
+            // 星演出・シェイクの前にここで必ず等倍へ確定させ、0.9 付近のまま固定→末尾で急に 1 になる挙動を防ぐ。
+            transform.localScale = Vector3.one;
 
             // スコアに応じて星のスプライトとツールチップを設定
             // 最初の星はクリア時に確定でもらえます(頑張ったね賞)
@@ -297,7 +298,7 @@ namespace BC.UI
             SetButtonInteractable(nextStageButton, true);
 
             ConfigureButtonNavigation();
-            EnsureEventSystemForNavigation();
+            UINavigationBootstrap.EnsureConfigured();
             if (EventSystem.current != null)
                 nextStageButton?.Select();
         }
@@ -412,28 +413,6 @@ namespace BC.UI
         {
             unityButton = button != null ? button.UnityButton : null;
             return button != null && unityButton != null;
-        }
-
-        private static void EnsureEventSystemForNavigation()
-        {
-            EventSystem eventSystem = EventSystem.current;
-            if (eventSystem == null)
-            {
-                GameObject eventSystemObject = new GameObject("EventSystem");
-                eventSystem = eventSystemObject.AddComponent<EventSystem>();
-            }
-
-            eventSystem.sendNavigationEvents = true;
-
-            InputSystemUIInputModule uiInputModule = eventSystem.GetComponent<InputSystemUIInputModule>();
-            if (uiInputModule == null)
-                uiInputModule = eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
-
-            if (uiInputModule.actionsAsset == null)
-                uiInputModule.AssignDefaultActions();
-
-            if (!uiInputModule.enabled)
-                uiInputModule.enabled = true;
         }
     }
 }

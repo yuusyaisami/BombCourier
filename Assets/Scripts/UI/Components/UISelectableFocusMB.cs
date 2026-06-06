@@ -1,4 +1,6 @@
 using System;
+using BC.Audio;
+using BC.Managers;
 using BC.UI.Effect;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,6 +25,10 @@ namespace BC.UI.Components
 
         [Header("Behavior")]
         [SerializeField] private bool autoSelectOnPointerEnter = true;
+
+        [Header("Sound")]
+        [Tooltip("フォーカス時に使う SE。未指定なら GameSoundDataManagerMB の既定フォーカス SE を鳴らす。")]
+        [SerializeField] private AudioDataSO overrideFocusSound;
 
         private bool initialized;
         private bool focused;
@@ -149,9 +155,23 @@ namespace BC.UI.Components
                 return;
 
             if (isFocused)
+            {
+                PlayFocusSound();
                 Focused?.Invoke(this);
+            }
             else
+            {
                 Deselected?.Invoke(this);
+            }
+        }
+
+        // ボタンと同様に、フォーカス(OnSelect)時に UI フォーカス SE を鳴らす。
+        // これによりポインター/ナビゲーションのどちらでも同じ SE が出る。
+        private void PlayFocusSound()
+        {
+            GameSoundDataManagerMB soundDataManager = GameSoundDataManagerMB.Instance;
+            if (soundDataManager != null)
+                soundDataManager.PlayUIFocus(overrideFocusSound);
         }
 
         private bool IsSelectedByEventSystem()

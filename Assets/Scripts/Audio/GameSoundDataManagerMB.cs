@@ -62,30 +62,46 @@ namespace BC.Managers
 
         public AudioDataSO ResolveUIButtonClickSound(UIButtonMB button)
         {
-            if (button != null && button.OverrideClickSound != null)
-                return button.OverrideClickSound;
-
-            return defaultUIButtonClickSound;
+            return ResolveUIClickSound(button != null ? button.OverrideClickSound : null);
         }
 
         public AudioDataSO ResolveUIButtonFocusSound(UIButtonMB button)
         {
-            if (button != null && button.OverrideFocusSound != null)
-                return button.OverrideFocusSound;
-
-            return defaultUIButtonFocusSound;
+            return ResolveUIFocusSound(button != null ? button.OverrideFocusSound : null);
         }
 
         public void PlayUIButtonClick(UIButtonMB button)
         {
-            AudioDataSO sound = ResolveUIButtonClickSound(button);
-            if (sound != null)
-                AudioSystemMB.Instance?.PlaySE(sound);
+            PlayUIClick(button != null ? button.OverrideClickSound : null);
         }
 
         public void PlayUIButtonFocus(UIButtonMB button)
         {
-            AudioDataSO sound = ResolveUIButtonFocusSound(button);
+            PlayUIFocus(button != null ? button.OverrideFocusSound : null);
+        }
+
+        // ボタン以外の Selectable(スライダー/トグル/ドロップダウン/ステージ項目など)からも
+        // 同じ既定 SE を鳴らせるよう、override を受け取る汎用 API を公開する。
+        public AudioDataSO ResolveUIClickSound(AudioDataSO overrideSound)
+        {
+            return overrideSound != null ? overrideSound : defaultUIButtonClickSound;
+        }
+
+        public AudioDataSO ResolveUIFocusSound(AudioDataSO overrideSound)
+        {
+            return overrideSound != null ? overrideSound : defaultUIButtonFocusSound;
+        }
+
+        public void PlayUIClick(AudioDataSO overrideSound)
+        {
+            AudioDataSO sound = ResolveUIClickSound(overrideSound);
+            if (sound != null)
+                AudioSystemMB.Instance?.PlaySE(sound);
+        }
+
+        public void PlayUIFocus(AudioDataSO overrideSound)
+        {
+            AudioDataSO sound = ResolveUIFocusSound(overrideSound);
             if (sound != null)
                 AudioSystemMB.Instance?.PlaySE(sound);
         }

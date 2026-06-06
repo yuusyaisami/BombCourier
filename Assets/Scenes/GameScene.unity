@@ -94,7 +94,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
-  m_LightingSettings: {fileID: 0}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: aa5bd920ca5d1bb45b8494ee09ab8c32, type: 2}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -6397,8 +6397,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69cca719ab4cd5c41a2d9b76d5aad3b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.UI.UIStageClearMB
-  returnToTitleButton: {fileID: 0}
-  nextStageButton: {fileID: 0}
+  returnToTitleButton: {fileID: 1118282216}
+  nextStageButton: {fileID: 1002868711}
   clearIcon: {fileID: 0}
   clearStar: {fileID: 765483974}
   clearStarSprite: {fileID: -1576168481, guid: 892fb2cade019ca459cebe46522b277b, type: 3}
@@ -9488,6 +9488,8 @@ GameObject:
   - component: {fileID: 1002868708}
   - component: {fileID: 1002868707}
   - component: {fileID: 1002868710}
+  - component: {fileID: 1002868712}
+  - component: {fileID: 1002868711}
   m_Layer: 0
   m_Name: NextBtn
   m_TagString: Untagged
@@ -9619,6 +9621,45 @@ MonoBehaviour:
   targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
+--- !u!114 &1002868711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1002868705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1002868707}
+  noiseOutline: {fileID: 1002868710}
+  buttonFlash: {fileID: 1002868712}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1002868712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1002868705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd25fc29153c7214c891f2e6c5a9beba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UIButtonFlashMB
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashCount: 3
+  flashOnDuration: 0.055
+  flashOffDuration: 0.055
+  blockingCanvasGroup: {fileID: 0}
 --- !u!1 &1005222919
 GameObject:
   m_ObjectHideFlags: 0
@@ -10230,6 +10271,8 @@ GameObject:
   - component: {fileID: 1118282212}
   - component: {fileID: 1118282211}
   - component: {fileID: 1118282214}
+  - component: {fileID: 1118282216}
+  - component: {fileID: 1118282215}
   m_Layer: 0
   m_Name: HomeBtn
   m_TagString: Untagged
@@ -10361,6 +10404,45 @@ MonoBehaviour:
   targetRect: {fileID: 0}
   showOutlineInEditor: 1
   editorPreviewIntensity: 1
+--- !u!114 &1118282215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1118282209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd25fc29153c7214c891f2e6c5a9beba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Effect.UIButtonFlashMB
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashCount: 3
+  flashOnDuration: 0.055
+  flashOffDuration: 0.055
+  blockingCanvasGroup: {fileID: 0}
+--- !u!114 &1118282216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1118282209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3922771cc91340d181239d4ca99e0888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.UI.Components.UIButtonMB
+  button: {fileID: 1118282211}
+  noiseOutline: {fileID: 1118282214}
+  buttonFlash: {fileID: 1118282215}
+  autoSelectOnPointerEnter: 1
+  playFlashBeforeClick: 1
+  overrideClickSound: {fileID: 0}
+  overrideFocusSound: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1121825751
 GameObject:
   m_ObjectHideFlags: 0
@@ -13089,6 +13171,8 @@ MonoBehaviour:
   TimerIconStoppedClipSource:
     rid: 30532575285477444
   timerIconAnimationPlayer: {fileID: 215438507}
+  timeBonusMarkSprite: {fileID: 344145850260219069, guid: 614df4b404b597f4ea817a4affa81ad5, type: 3}
+  timeBonusMarkWidthToHeightRatio: 0.15
   references:
     version: 2
     RefIds:
@@ -14735,17 +14819,17 @@ MonoBehaviour:
   m_MoveRepeatDelay: 0.5
   m_MoveRepeatRate: 0.1
   m_XRTrackingOrigin: {fileID: 0}
-  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_PointAction: {fileID: -1654692200621890270, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_MoveAction: {fileID: -8784545083839296357, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_SubmitAction: {fileID: 392368643174621059, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_CancelAction: {fileID: 7727032971491509709, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_LeftClickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_MiddleClickAction: {fileID: -2185481485913320682, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_RightClickAction: {fileID: -4090225696740746782, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
@@ -16329,7 +16413,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1501740000}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.5653651
+  m_Size: 0.56626886
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -16803,26 +16887,22 @@ MonoBehaviour:
   epilogueLineContainer: {fileID: 1650075992}
   epilogueLinePrefab: {fileID: 7174533396242366807, guid: e6cca56a64db01b458e4bf6f22723e4f, type: 3}
   epilogueLines:
-  - Text: "\u5854\u306E\u4E0A\u306B\u3001\u7A7A\u306F\u306A\u304B\u3063\u305F\u3002"
+  - Text: ALL STAGES CLEARED!
+    HoldDuration: 1.5
+  - Text: Created by Tinnosuke
+    HoldDuration: 1.5
+  - Text: Made with Unity 6
+    HoldDuration: 1.5
+  - Text: Special Thanks
+    HoldDuration: 1.2
+  - Text: Tanaka Michael
+    HoldDuration: 1.2
+  - Text: Isami
+    HoldDuration: 1.2
+  - Text: And
     HoldDuration: 0.9
-  - Text: "\u305D\u3053\u306B\u3042\u3063\u305F\u306E\u306F\u3001\u767D\u3044\u5149\u3068\u3001\u51B7\u305F\u3044\u5E8A\u3068\u3001"
-    HoldDuration: 0.9
-  - Text: "\u3053\u3061\u3089\u3092\u8997\u304D\u3053\u3080\u5927\u304D\u306A\u76EE\u3060\u3051\u3060\u3063\u305F\u3002"
-    HoldDuration: 0.9
-  - Text: "\u6B21\u306B\u76EE\u3092\u958B\u3051\u305F\u3068\u304D\u3001\u30CD\u30BA\u30DF\u306F\u51B7\u305F\u3044\u91D1\u5C5E\u306E\u30B1\u30FC\u30B8\u306E\u4E2D\u306B\u3044\u305F\u3002"
-    HoldDuration: 0.9
-  - Text: "\u3069\u3053\u304B\u3078\u904B\u3070\u308C\u3066\u3044\u308B\u3089\u3057\u304B\u3063\u305F\u3002"
-    HoldDuration: 0.9
-  - Text: "\u7D30\u3044\u3059\u304D\u9593\u304B\u3089\u3001\u51B7\u305F\u3044\u7A7A\u6C17\u304C\u5165\u308A\u8FBC\u3080\u3002"
-    HoldDuration: 0.9
-  - Text: "\u30B1\u30FC\u30B8\u306E\u9685\u306B\u3001\u5C0F\u3055\u306A\u767D\u3044\u7DBF\u304C\u843D\u3061\u3066\u3044\u305F\u3002"
-    HoldDuration: 0.9
-  - Text: "\u305F\u3060\u3001\u305D\u308C\u306F\u51B7\u305F\u304B\u3063\u305F\u3002"
-    HoldDuration: 0.9
-  - Text: "\u305D\u308C\u304B\u3089\u3001\u30B1\u30FC\u30B8\u306E\u5E95\u306B\u722A\u3092\u7ACB\u3066\u305F\u3002"
-    HoldDuration: 0.9
-  - Text: "\u5C0F\u3055\u306A\u5854\u3092\u6398\u3063\u305F\u3002"
-    HoldDuration: 0.9
+  - Text: You
+    HoldDuration: 1.2
   nextEpilogueInputAction: {fileID: 392368643174621059, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   epilogueAdvanceDelay: 1.6
   advanceOnSkipInput: 1
@@ -17558,7 +17638,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2048740730}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 0
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0

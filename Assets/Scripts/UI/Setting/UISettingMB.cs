@@ -3,6 +3,7 @@ using System.Threading;
 using BC.Audio;
 using BC.Base;
 using BC.Manager;
+using BC.Managers;
 using BC.UI.Title;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -12,6 +13,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Localization;
 using BC.UI.Effect;
 using BC.UI.Components;
 using Sirenix.OdinInspector;
@@ -66,6 +68,10 @@ namespace BC.UI
         [Header("Screen Settings")]
         [SerializeField] private Toggle fullscreenToggle;
         [SerializeField] private TMP_Dropdown resolutionDropdown;
+
+        [Header("Language Settings")]
+        [Tooltip("言語選択ドロップダウン。LanguageManagerMB 経由で Unity Localization を切り替えます。")]
+        [SerializeField] private TMP_Dropdown languageDropdown;
 
         private bool isShowing = false;
         private bool isInitializing = false;
@@ -189,7 +195,7 @@ namespace BC.UI
 
             isShowing = true;
 
-            EnsureEventSystem();
+            UINavigationBootstrap.EnsureConfigured();
             EnsureCanvasRaycaster();
             transform.SetAsLastSibling();
 
@@ -315,6 +321,7 @@ namespace BC.UI
             if (fullscreenToggle != null)
                 fullscreenToggle.isOn = Screen.fullScreen;
             RefreshResolutionDropdownSelection();
+            BuildLanguageDropdown();
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -339,6 +346,12 @@ namespace BC.UI
                 fullscreenToggle.onValueChanged.AddListener(OnFullscreenToggleChanged);
             if (resolutionDropdown != null)
                 resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
+            if (languageDropdown != null)
+                languageDropdown.onValueChanged.AddListener(OnLanguageDropdownChanged);
+
+            LanguageManagerMB languageManager = LanguageManagerMB.Instance;
+            if (languageManager != null)
+                languageManager.LanguageChanged += OnLanguageManagerChanged;
         }
 
         private void UnregisterListeners()
@@ -359,6 +372,12 @@ namespace BC.UI
                 fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggleChanged);
             if (resolutionDropdown != null)
                 resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
+            if (languageDropdown != null)
+                languageDropdown.onValueChanged.RemoveListener(OnLanguageDropdownChanged);
+
+            LanguageManagerMB languageManager = LanguageManagerMB.Instance;
+            if (languageManager != null)
+                languageManager.LanguageChanged -= OnLanguageManagerChanged;
         }
 
         private void RegisterCloseButton()
@@ -492,6 +511,59 @@ namespace BC.UI
             qualityLevelDropdown.AddOptions(new List<string>(QualitySettings.names));
         }
 
+        // ─────────────────────────────────────────────────────────────────
+        // 言語設定 Dropdown
+        // ─────────────────────────────────────────────────────────────────
+
+        private void BuildLanguageDropdown()
+        {
+            if (languageDropdown == null)
+                return;
+
+            languageDropdown.ClearOptions();
+
+            LanguageManagerMB manager = LanguageManagerMB.Instance;
+            if (manager == null)
+                return;
+
+            IReadOnlyList<Locale> locales = manager.AvailableLocales;
+            var options = new List<string>(locales.Count);
+            for (int i = 0; i < locales.Count; i++)
+                options.Add(LanguageManagerMB.GetDisplayName(locales[i]));
+
+            languageDropdown.AddOptions(options);
+            RefreshLanguageDropdownSelection();
+        }
+
+        private void RefreshLanguageDropdownSelection()
+        {
+            if (languageDropdown == null)
+                return;
+
+            LanguageManagerMB manager = LanguageManagerMB.Instance;
+            if (manager == null)
+                return;
+
+            int index = manager.CurrentLocaleIndex;
+            if (index >= 0 && index < languageDropdown.options.Count)
+                languageDropdown.SetValueWithoutNotify(index);
+        }
+
+        private void OnLanguageDropdownChanged(int index)
+        {
+            if (isInitializing) return;
+            LanguageManagerMB.Instance?.SetLanguageByIndex(index);
+        }
+
+        private void OnLanguageManagerChanged(Locale locale)
+        {
+            // マネージャ初期化前に UI が構築され、言語リストが空のままなら作り直す。
+            if (languageDropdown != null && languageDropdown.options.Count == 0)
+                BuildLanguageDropdown();
+            else
+                RefreshLanguageDropdownSelection();
+        }
+
         private void RefreshResolutionDropdownSelection()
         {
             if (resolutionDropdown == null) return;
@@ -528,6 +600,7 @@ namespace BC.UI
             EnsureToggleFocus(fullscreenToggle);
             EnsureDropdownFocus(qualityLevelDropdown);
             EnsureDropdownFocus(resolutionDropdown);
+            EnsureDropdownFocus(languageDropdown);
         }
 
         private void ConfigureSettingNavigation()
@@ -551,6 +624,7 @@ namespace BC.UI
             AppendSelectable(orderedSelectables, resolutionDropdown);
             AppendSelectable(orderedSelectables, vSyncToggle);
             AppendSelectable(orderedSelectables, qualityLevelDropdown);
+            AppendSelectable(orderedSelectables, languageDropdown);
             AppendSelectable(orderedSelectables, closeButton != null ? closeButton.UnityButton : null);
             AppendSelectable(orderedSelectables, returnToTitleButton != null ? returnToTitleButton.UnityButton : null);
 
@@ -580,14 +654,36 @@ namespace BC.UI
 
         private Selectable ResolveInitialSelection()
         {
+            // 開いた瞬間に必ず選択が入るよう、存在するものを順にフォールバックする(最後はボタンも候補)。
             if (cameraSensitivitySlider != null)
                 return cameraSensitivitySlider;
 
             if (musicVolumeSlider != null)
                 return musicVolumeSlider;
 
+            if (sfxVolumeSlider != null)
+                return sfxVolumeSlider;
+
             if (invertYAxisToggle != null)
                 return invertYAxisToggle;
+
+            if (fullscreenToggle != null)
+                return fullscreenToggle;
+
+            if (vSyncToggle != null)
+                return vSyncToggle;
+
+            if (resolutionDropdown != null)
+                return resolutionDropdown;
+
+            if (qualityLevelDropdown != null)
+                return qualityLevelDropdown;
+
+            if (closeButton != null && closeButton.UnityButton != null)
+                return closeButton.UnityButton;
+
+            if (returnToTitleButton != null && returnToTitleButton.UnityButton != null)
+                return returnToTitleButton.UnityButton;
 
             return defaultSelectedOnOpen;
         }
@@ -710,30 +806,6 @@ namespace BC.UI
                 store.RemoveBoolModifier(playerEntity, ValueKeys.Interaction.CanInteract, SettingsInputLockTag);
                 gameplayInputLockedBySettings = false;
             }
-        }
-
-        private static void EnsureEventSystem()
-        {
-            EventSystem eventSystem = EventSystem.current;
-
-            if (eventSystem == null)
-            {
-                GameObject eventSystemObject = new GameObject("EventSystem");
-                eventSystem = eventSystemObject.AddComponent<EventSystem>();
-            }
-
-            eventSystem.sendNavigationEvents = true;
-
-            // Input System UI の入力モジュールがなければ追加する。
-            InputSystemUIInputModule uiInputModule = eventSystem.GetComponent<InputSystemUIInputModule>();
-            if (uiInputModule == null)
-                uiInputModule = eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
-
-            if (uiInputModule.actionsAsset == null)
-                uiInputModule.AssignDefaultActions();
-
-            if (!uiInputModule.enabled)
-                uiInputModule.enabled = true;
         }
 
         private void EnsureCanvasRaycaster()

@@ -3,6 +3,7 @@ using BC.Audio;
 using BC.Manager;
 using BC.Managers;
 using BC.UI;
+using BC.UI.Components;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -42,6 +43,10 @@ namespace BC.UI.Title
 
         private void Start()
         {
+            // シーン開始時に EventSystem/入力モジュールを project-wide アクションへ統一しておく。
+            // これでモジュール駆動の標準ナビと、UIStageSelectNavigationMB のカスタムナビが同じアセットを使う。
+            UINavigationBootstrap.EnsureConfigured();
+
             // GameRoot ページを表示してゲーム開始を待つ
             ShowGameRootAsync(destroyCancellationToken).Forget();
         }

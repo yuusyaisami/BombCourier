@@ -38,6 +38,9 @@ namespace BC.UI.Title
 
         private void OnEnable()
         {
+            // project-wide UI マップが無効だと performed が発火しないため、念のため有効化しておく。
+            InputSystem.actions?.FindActionMap("UI")?.Enable();
+
             navigateAction = InputSystem.actions?.FindAction("UI/Navigate");
             submitAction = InputSystem.actions?.FindAction("UI/Submit");
             cancelAction = InputSystem.actions?.FindAction("UI/Cancel");
