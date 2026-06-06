@@ -18,8 +18,8 @@ namespace BC.Gameplay.PlayModeTests
         private const string GameLogicManagerTypeName = "BC.Manager.GameLogicManagerMB";
         private const string GameStateManagerTypeName = "BC.Manager.GameStateManagerMB";
         private const string StageManagerTypeName = "BC.Manager.StageManagerMB";
-        private const string StageCheckpointServiceTypeName = "BC.Stage.StageCheckpointServiceMB";
-        private const string StageSaveMarkTypeName = "BC.Stage.StageSaveMarkMB";
+        private const string StageCheckpointServiceTypeName = "BC.Stage.Snapshot.StageSnapshotServiceMB";
+        private const string StageSaveMarkTypeName = "BC.Stage.Snapshot.StageRestorableMB";
         private const string MapRuntimeTypeName = "BC.Stage.MapRuntimeMB";
         private const string BombTypeName = "BC.Bomb.BombMB";
         private const string PlayerTypeName = "BC.Base.PlayerMB";
@@ -158,10 +158,9 @@ namespace BC.Gameplay.PlayModeTests
             stageRootObject.transform.SetParent(stageManagerObject.transform, false);
             createdObjects.Add(stageRootObject);
 
-            Component checkpointService = stageManagerObject.AddComponent(FindRuntimeType(StageCheckpointServiceTypeName));
+            Component snapshotService = stageManagerObject.AddComponent(FindRuntimeType(StageCheckpointServiceTypeName));
             Component stageManager = stageManagerObject.AddComponent(FindRuntimeType(StageManagerTypeName));
-            SetPrivateField(checkpointService, "stageRoot", stageRootObject.transform);
-            SetPrivateField(stageManager, "checkpointService", checkpointService);
+            SetPrivateField(stageManager, "snapshotService", snapshotService);
             SetPrivateField(stageManager, "stageRoot", stageRootObject.transform);
             ForceSingletonInstance(stageManager.GetType(), stageManager);
 

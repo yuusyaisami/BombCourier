@@ -47,12 +47,12 @@ MonoBehaviour:
     selectedCount: 2
   - stepTypeName: BC.ActionSystem.RegisterOverlayCameraStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639160547345642767
-    selectedCount: 4
+    lastSelectedUtcTicks: 639162678331935114
+    selectedCount: 5
   - stepTypeName: BC.ActionSystem.DisableOverlayCameraStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    lastSelectedUtcTicks: 639160547598256658
-    selectedCount: 3
+    lastSelectedUtcTicks: 639162678566134260
+    selectedCount: 4
   - stepTypeName: BC.ActionSystem.ShowScreenOverlayStepAuthoring, Assembly-CSharp,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     lastSelectedUtcTicks: 639159458630009619

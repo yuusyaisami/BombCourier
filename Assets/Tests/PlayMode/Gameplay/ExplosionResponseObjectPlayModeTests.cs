@@ -90,7 +90,7 @@ namespace BC.Gameplay.PlayModeTests
             Component responseObject = CreateResponseObject("CheckpointResponse", "Timer", 0.12f, 0.0f);
 
             InvokeMethod(responseObject, "OnExplosionImpactReceived", Vector3.forward, 1.0f);
-            object checkpoint = InvokeMethodWithResult(responseObject, "CaptureCheckpointState");
+            object checkpoint = InvokeMethodWithResult(responseObject, "CaptureStageState");
 
             Assert.IsTrue(GetPropertyValue<bool>(responseObject, "IsActive"), "Timer mode should be active immediately after impact.");
 
@@ -99,7 +99,7 @@ namespace BC.Gameplay.PlayModeTests
                 0.3f,
                 "Timer mode did not switch off before checkpoint restore.");
 
-            InvokeMethod(responseObject, "RestoreCheckpointState", checkpoint);
+            InvokeMethod(responseObject, "RestoreStageState", checkpoint);
             Assert.IsTrue(GetPropertyValue<bool>(responseObject, "IsActive"), "Checkpoint restore should reactivate the saved Timer state.");
 
             yield return WaitUntilOrTimeout(

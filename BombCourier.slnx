@@ -2,6 +2,7 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="BombCourier.Editor.csproj" />
+  <Project Path="Sirenix.OdinInspector.Modules.UnityLocalization.Editor.csproj" />
   <Project Path="BombCourier.Particles.EditorTests.csproj" />
   <Project Path="BombCourier.Gameplay.PlayModeTests.csproj" />
   <Project Path="Febucci.TextAnimatorForUnity.Runtime.csproj" />
@@ -12,6 +13,7 @@
   <Project Path="Febucci.TextAnimatorForUnity.UITk.Runtime.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.Editor.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.csproj" />
+  <Project Path="Sirenix.OdinInspector.Modules.Unity.Addressables.csproj" />
   <Project Path="Febucci.TextAnimatorForUnity.TMP.Runtime.csproj" />
   <Project Path="Febucci.TextAnimatorForUnity.Input.Runtime.csproj" />
   <Project Path="BombCourier.Particles.PlayModeTests.csproj" />
@@ -22,5 +24,6 @@
   <Project Path="Febucci.TextAnimator.Demo.Runtime.csproj" />
   <Project Path="Sirenix.OdinInspector.Modules.UnityMathematics.csproj" />
   <Project Path="BombCourier.ToyDioramaPostProcess.EditorTests.csproj" />
+  <Project Path="Sirenix.OdinInspector.Modules.UnityLocalization.csproj" />
   <Project Path="BombCourier.Gimmick.EditorTests.csproj" />
 </Solution>
