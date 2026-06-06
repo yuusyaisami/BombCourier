@@ -10,7 +10,8 @@ using UnityEngine;
 namespace BC.Gimmick
 {
     // このクラスは、外部からBombなどの衝撃を一定以上受けると、自身の子オブジェクトのRigidbodyにBombの衝撃に加え、設定された力を加えて破壊するギミックの実装です。
-    public class BreakableGateObjectMB : MonoBehaviour, IBombImpactReceiver, IExplosionImpactReceiver
+    [RequireComponent(typeof(BC.Stage.Snapshot.StageRestorableMB))]
+    public class BreakableGateObjectMB : MonoBehaviour, IBombImpactReceiver, IExplosionImpactReceiver, BC.Stage.Snapshot.IStageStateRestorable
     {
         [Header("Breakable Gate Settings")]
         [SerializeField] private ParticleSystem breakEffectPrefab;
@@ -253,6 +254,87 @@ namespace BC.Gimmick
         {
             CollectBreakablePartsIfNeeded();
             InitializeBreakableParts();
+        }
+
+        // ステージ開始時状態（閉じた状態・破片の初期ローカル姿勢・ゲート当たり判定の有効状態）を保存する。
+        public object CaptureStageState()
+        {
+            CollectBreakablePartsIfNeeded();
+            var partPoses = new PartPose[breakableParts.Count];
+            for (int i = 0; i < breakableParts.Count; i++)
+            {
+                Rigidbody part = breakableParts[i];
+                if (part == null)
+                {
+                    partPoses[i] = default;
+                    continue;
+                }
+
+                Transform t = part.transform;
+                partPoses[i] = new PartPose(t.localPosition, t.localRotation, t.localScale);
+            }
+
+            return new GateStageState(isBroken, gateCollider != null && gateCollider.enabled, partPoses);
+        }
+
+        // 破壊状態を巻き戻し、破片を初期ローカル姿勢＋kinematic/sleep（閉じた authored 状態）へ戻す。
+        public void RestoreStageState(object state)
+        {
+            if (!(state is GateStageState gateState))
+                return;
+
+            // 進行中の安定化/コリジョン有効化コルーチンを停止（このコンポーネントは本コルーチンのみ起動する）。
+            StopAllCoroutines();
+            activeBrokenParts.Clear();
+
+            CollectBreakablePartsIfNeeded();
+            PartPose[] partPoses = gateState.Parts;
+            for (int i = 0; i < breakableParts.Count; i++)
+            {
+                Rigidbody part = breakableParts[i];
+                if (part == null || partPoses == null || i >= partPoses.Length)
+                    continue;
+
+                Transform t = part.transform;
+                t.localPosition = partPoses[i].LocalPosition;
+                t.localRotation = partPoses[i].LocalRotation;
+                t.localScale = partPoses[i].LocalScale;
+            }
+
+            isBroken = gateState.IsBroken;
+            if (gateCollider != null)
+                gateCollider.enabled = gateState.GateColliderEnabled;
+
+            // 破片を kinematic/sleep・子Collider無効（＝閉じた状態）へ再初期化する。
+            InitializeBreakableParts();
+        }
+
+        private readonly struct PartPose
+        {
+            public PartPose(Vector3 localPosition, Quaternion localRotation, Vector3 localScale)
+            {
+                LocalPosition = localPosition;
+                LocalRotation = localRotation;
+                LocalScale = localScale;
+            }
+
+            public Vector3 LocalPosition { get; }
+            public Quaternion LocalRotation { get; }
+            public Vector3 LocalScale { get; }
+        }
+
+        private readonly struct GateStageState
+        {
+            public GateStageState(bool isBroken, bool gateColliderEnabled, PartPose[] parts)
+            {
+                IsBroken = isBroken;
+                GateColliderEnabled = gateColliderEnabled;
+                Parts = parts;
+            }
+
+            public bool IsBroken { get; }
+            public bool GateColliderEnabled { get; }
+            public PartPose[] Parts { get; }
         }
 
         private void TryPlayBreakSound()

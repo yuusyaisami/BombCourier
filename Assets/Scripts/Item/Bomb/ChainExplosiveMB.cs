@@ -11,7 +11,7 @@ namespace BC.Bomb
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class ChainExplosiveMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IExplosionImpactDetector, ICarryReleaseOwnerCollisionGuard, IStageCheckpointParticipant
+    public sealed class ChainExplosiveMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IExplosionImpactDetector, ICarryReleaseOwnerCollisionGuard, BC.Stage.Snapshot.IStageStateRestorable
     {
         public event Action<ChainExplosiveMB> Exploded;
         public event Action<ChainExplosiveMB> StartedFuse;
@@ -161,12 +161,12 @@ namespace BC.Bomb
             ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
         }
 
-        public object CaptureCheckpointState()
+        public object CaptureStageState()
         {
             return new ChainExplosiveCheckpointState(isHandled, fuseStarted, exploded, remainingFuseTime, LastReceivedExplosionForce);
         }
 
-        public void RestoreCheckpointState(object state)
+        public void RestoreStageState(object state)
         {
             if (state is not ChainExplosiveCheckpointState checkpoint)
                 return;

@@ -101,6 +101,7 @@ namespace BC.Manager
         public BombMB CurrentBomb => currentBomb;
         public PlayerMB PlayerInstance => playerInstance;
         public int CurrentStageIndex => currentGameStage;
+        public float CurrentClearTimeThreshold => currentClearTimeThreshold; // 現在ステージの fast clear (タイムボーナス) 閾値。
         public string CurrentEntityMaterialDatasetKind => currentEntityMaterialDatasetKind;
         public RetryActionMode CurrentRetryActionMode => ResolveRetryActionMode();
         public bool HasRetryCheckpoint => retryCheckpointStack.Count > 0;
@@ -255,13 +256,6 @@ namespace BC.Manager
                 return false;
             }
 
-            StageCheckpointSnapshot stageCheckpoint = stageManager.CaptureStageCheckpointSnapshot();
-            if (!stageCheckpoint.IsValid)
-            {
-                Debug.LogError($"{nameof(GameLogicManagerMB)}: manual snapshot stage checkpoint capture failed.", this);
-                return false;
-            }
-
             GameLogicValueStoreSnapshot gameLogicSnapshot = CaptureGameLogicValueSnapshot();
             if (!gameLogicSnapshot.IsValid)
             {
@@ -272,11 +266,12 @@ namespace BC.Manager
             retryCheckpointStack.Clear();
             retryCheckpointStack.Push(new RetryCheckpointSnapshot(
                 RetryCheckpointSourceKind.Manual,
-                stageCheckpoint,
                 resolvedPlayer.transform.position,
                 resolvedPlayer.transform.rotation,
                 currentBomb,
                 null,
+                currentBonusObject,
+                currentBonusObject != null ? currentBonusObject.CaptureRetryCheckpointState() : null,
                 gameLogicSnapshot,
                 CaptureTutorialProgressSnapshot()));
 
@@ -314,21 +309,15 @@ namespace BC.Manager
             if (targetBomb.FuseStarted || targetBomb.HasExploded)
                 return;
 
-            // リトライチェックポイントをキャプチャしてスタックに積む。これには、ステージの状態、プレイヤーの位置と回転、そしてターゲットとなる爆弾の参照が含まれる。
-            StageCheckpointSnapshot stageCheckpoint = stageManager.CaptureStageCheckpointSnapshot();
-            if (!stageCheckpoint.IsValid)
-            {
-                Debug.LogError($"{nameof(GameLogicManagerMB)}: stage checkpoint snapshot capture failed.", this);
-                return;
-            }
-
+            // リトライチェックポイントをスタックに積む（プレイヤー位置/回転・対象爆弾の参照。ワールドは開始ベースラインへ戻すため含めない）。
             retryCheckpointStack.Push(new RetryCheckpointSnapshot(
                 RetryCheckpointSourceKind.BombPickup,
-                stageCheckpoint,
                 resolvedPlayer.transform.position,
                 resolvedPlayer.transform.rotation,
                 targetBomb,
                 targetBomb.CaptureRetryCheckpointState(),
+                currentBonusObject,
+                currentBonusObject != null ? currentBonusObject.CaptureRetryCheckpointState() : null,
                 CaptureGameLogicValueSnapshot(),
                 CaptureTutorialProgressSnapshot()));
 
@@ -1087,15 +1076,25 @@ namespace BC.Manager
                 : null;
             itemHandleState?.RestoreRetryCheckpointState();
 
-            StageManagerMB.Instance.ReloadStage(retryCheckpoint.StageCheckpoint);
+            StageManagerMB.Instance.RestoreStageStartBaseline();
 
             if (retryCheckpoint.Bomb != null && retryCheckpoint.BombRetryState != null)
             {
                 if (!retryCheckpoint.Bomb.gameObject.activeSelf)
                     retryCheckpoint.Bomb.gameObject.SetActive(true);
 
-                retryCheckpoint.Bomb.RestoreCheckpointState(retryCheckpoint.BombRetryState);
+                retryCheckpoint.Bomb.RestoreStageState(retryCheckpoint.BombRetryState);
             }
+
+            // ボーナスアイテムの取得状態と初期スポーン位置を巻き戻す。
+            if (retryCheckpoint.BonusObject != null)
+            {
+                retryCheckpoint.BonusObject.RestoreRetryCheckpointState(retryCheckpoint.BonusRetryState);
+            }
+
+            // リロードで再配置されるボーナス/爆弾には、現在のマップの dataset kind に合わせて
+            // EntityMaterialController があれば必ずマテリアル差し替えを送る。
+            ReapplyCurrentEntityMaterialDatasetToReloadedEntities(retryCheckpoint.BonusObject);
 
             RestoreGameLogicValueSnapshot(retryCheckpoint.GameLogicSnapshot);
 
@@ -1296,6 +1295,8 @@ namespace BC.Manager
             if (currentGoalData == null) Debug.LogError("GameLogicManagerMB: GoalData is not resolved from the stage runtime.", this);
             if (currentCameraPath == null) Debug.LogError("GameLogicManagerMB: Camera path is not resolved from the stage runtime.", this);
 
+            // ステージ開始時状態のベースラインを、player spawn 後・最初の物理 settle 後に1回だけ取得する。
+            await CaptureStageStartBaselineAsync();
 
             if (playIntro)
             {
@@ -1305,6 +1306,19 @@ namespace BC.Manager
             {
                 await StartGameplayWithoutIntroAsync();
             }
+        }
+
+        // 開始ベースラインを「player spawn 後・最初の物理 settle 後」に1回だけ取得する。
+        private async UniTask CaptureStageStartBaselineAsync()
+        {
+            // 動的 Rigidbody（Cushion/Stair 等）が初期姿勢へ落ち着くよう、最初の物理ステップ後に取得する。
+            await UniTask.WaitForFixedUpdate();
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+
+            if (IsDestroyedOrShuttingDown())
+                return;
+
+            StageManagerMB.Instance?.CaptureStageStartBaseline();
         }
 
         private void RegisterStageEntities(GameObject rootObject)
@@ -1381,7 +1395,7 @@ namespace BC.Manager
             resetArmed = false;
             hasStartedAnyBombFuseThisStage = false;
             timeSinceStartBomb = 0f;
-            StageManagerMB.Instance?.ClearStageCheckpoint();
+            StageManagerMB.Instance?.ClearBaseline();
         }
 
         private bool HasAnySceneBombFuseStartedOrExploded()
@@ -1421,6 +1435,47 @@ namespace BC.Manager
                 Debug.LogError(
                     $"{nameof(GameLogicManagerMB)}: failed to apply entity material dataset kind '{currentEntityMaterialDatasetKind}' to scene. {failureReason}",
                     this);
+            }
+        }
+
+        // リロードなどでボーナス/爆弾を再配置するときに呼ぶ。対象に EntityMaterialController があれば、
+        // 現在のマップの dataset kind へ合わせたマテリアル差し替えを必ず実行する。
+        private void ReapplyCurrentEntityMaterialDatasetToReloadedEntities(BonusObjectMB bonusObject)
+        {
+            ApplyCurrentEntityMaterialDatasetTo(bonusObject);
+
+            if (currentMapRuntime != null && currentMapRuntime.Bombs != null)
+            {
+                for (int i = 0; i < currentMapRuntime.Bombs.Count; i++)
+                    ApplyCurrentEntityMaterialDatasetTo(currentMapRuntime.Bombs[i]);
+            }
+        }
+
+        // 対象とその子に付く EntityMaterialController を探し、現在のマップの dataset kind を適用する。
+        // コントローラーが無ければ何もしない (存在確認のうえで送る)。
+        private void ApplyCurrentEntityMaterialDatasetTo(Component target)
+        {
+            if (target == null)
+                return;
+
+            EntityMaterialControllerMB[] controllers = target.GetComponentsInChildren<EntityMaterialControllerMB>(true);
+            for (int i = 0; i < controllers.Length; i++)
+            {
+                EntityMaterialControllerMB controller = controllers[i];
+                if (controller == null)
+                    continue;
+
+                if (controller.TryApplyDatasetKind(currentEntityMaterialDatasetKind, out string failureReason))
+                    continue;
+
+                // そのコントローラーが現在の dataset kind を持たない場合は適用対象外なのでエラーにしない。
+                if (controller.DefaultMaterialSet != null &&
+                    !controller.DefaultMaterialSet.HasDatasetKind(currentEntityMaterialDatasetKind))
+                    continue;
+
+                Debug.LogError(
+                    $"{nameof(GameLogicManagerMB)}: failed to apply entity material dataset '{currentEntityMaterialDatasetKind}' to '{controller.name}'. {failureReason}",
+                    controller);
             }
         }
 
@@ -1539,30 +1594,33 @@ namespace BC.Manager
     {
         public RetryCheckpointSnapshot(
             RetryCheckpointSourceKind sourceKind,
-            StageCheckpointSnapshot stageCheckpoint,
             Vector3 playerPosition,
             Quaternion playerRotation,
             BombMB bomb,
             object bombRetryState,
+            BonusObjectMB bonusObject,
+            object bonusRetryState,
             GameLogicValueStoreSnapshot gameLogicSnapshot,
             TutorialProgressSnapshot tutorialSnapshot)
         {
             SourceKind = sourceKind;
-            StageCheckpoint = stageCheckpoint;
             PlayerPosition = playerPosition;
             PlayerRotation = playerRotation;
             Bomb = bomb;
             BombRetryState = bombRetryState;
+            BonusObject = bonusObject;
+            BonusRetryState = bonusRetryState;
             GameLogicSnapshot = gameLogicSnapshot;
             TutorialSnapshot = tutorialSnapshot;
         }
 
         public RetryCheckpointSourceKind SourceKind { get; }
-        public StageCheckpointSnapshot StageCheckpoint { get; }
         public Vector3 PlayerPosition { get; }
         public Quaternion PlayerRotation { get; }
         public BombMB Bomb { get; }
         public object BombRetryState { get; }
+        public BonusObjectMB BonusObject { get; }
+        public object BonusRetryState { get; }
         public GameLogicValueStoreSnapshot GameLogicSnapshot { get; }
         public TutorialProgressSnapshot TutorialSnapshot { get; }
     }

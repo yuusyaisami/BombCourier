@@ -193,7 +193,7 @@ namespace BC.Bomb
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(RigidbodySupportRiderMB))]
-    public sealed class BombMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IBombImpactDetector, IExplosionImpactDetector, IInteractionPromptDetailTextProvider, IStageCheckpointParticipant, ICarryReleaseOwnerCollisionGuard
+    public sealed class BombMB : MonoBehaviour, ICarryableItem, ICarryMoveModifier, ICushionImpactSource, IBombImpactDetector, IExplosionImpactDetector, IInteractionPromptDetailTextProvider, BC.Stage.Snapshot.IStageStateRestorable, ICarryReleaseOwnerCollisionGuard
     {
         public event Action<BombMB> Exploded;
         public event Action<BombMB> StartedFuse;
@@ -270,7 +270,7 @@ namespace BC.Bomb
             return Mathf.Max(0, Mathf.CeilToInt(seconds));
         }
 
-        public object CaptureCheckpointState()
+        public object CaptureStageState()
         {
             return new BombCheckpointState(
                 transform.parent,
@@ -313,7 +313,7 @@ namespace BC.Bomb
             Vector3.zero);
         }
 
-        public void RestoreCheckpointState(object state)
+        public void RestoreStageState(object state)
         {
             if (state is not BombCheckpointState checkpointState)
                 return;
@@ -832,7 +832,7 @@ namespace BC.Bomb
 
         private bool TryHandleCheckpointableExplosion()
         {
-            bool hasStageSaveMark = TryGetComponent(out StageSaveMarkMB _);
+            bool hasStageSaveMark = TryGetComponent(out BC.Stage.Snapshot.StageRestorableMB _);
             bool hasRetryCheckpoint = GameLogicManagerMB.Instance != null && GameLogicManagerMB.Instance.HasRetryCheckpoint;
             if (!hasStageSaveMark && !hasRetryCheckpoint)
                 return false;

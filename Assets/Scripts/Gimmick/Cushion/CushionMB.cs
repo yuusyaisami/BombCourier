@@ -9,7 +9,7 @@ namespace BC.Gimmick.Cushion
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class CushionMB : MonoBehaviour, ICarryableItem, ICushionImpactSource, ICarryReleaseOwnerCollisionGuard, IStageCheckpointParticipant
+    public sealed class CushionMB : MonoBehaviour, ICarryableItem, ICushionImpactSource, ICarryReleaseOwnerCollisionGuard, BC.Stage.Snapshot.IStageStateRestorable
     {
         [Header("Carry")]
         [Tooltip("このクッションを持ち運び可能にするかを指定します。")]
@@ -112,12 +112,12 @@ namespace BC.Gimmick.Cushion
             LogCushionCarryDebug($"IgnoreOwnerCollisionAfterRelease owner={ownerRoot.name} duration={durationSeconds:F3} ignoredCount={ignoredHolderColliders.Count}");
         }
 
-        public object CaptureCheckpointState()
+        public object CaptureStageState()
         {
             return new CushionCheckpointState(isHandled);
         }
 
-        public void RestoreCheckpointState(object state)
+        public void RestoreStageState(object state)
         {
             if (state is not CushionCheckpointState checkpoint)
                 return;

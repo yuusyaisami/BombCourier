@@ -9,7 +9,7 @@ namespace BC.Item
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public sealed class CarryableObjectMB : MonoBehaviour, ICarryableItem, ICarryReleaseOwnerCollisionGuard, IInteractionPromptDetailTextProvider, IStageCheckpointParticipant
+    public sealed class CarryableObjectMB : MonoBehaviour, ICarryableItem, ICarryReleaseOwnerCollisionGuard, IInteractionPromptDetailTextProvider, BC.Stage.Snapshot.IStageStateRestorable
     {
         [Header("Carry")]
         [Tooltip("このオブジェクトを持ち運び可能にするかを指定します。")]
@@ -102,12 +102,12 @@ namespace BC.Item
             ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
         }
 
-        public object CaptureCheckpointState()
+        public object CaptureStageState()
         {
             return new CarryableCheckpointState(isHandled);
         }
 
-        public void RestoreCheckpointState(object state)
+        public void RestoreStageState(object state)
         {
             if (state is not CarryableCheckpointState checkpoint)
                 return;

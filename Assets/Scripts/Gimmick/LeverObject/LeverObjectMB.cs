@@ -154,7 +154,7 @@ namespace BC.Gimmick.LeverObject
     }
 
     [DisallowMultipleComponent]
-    public sealed class LeverObjectMB : MonoBehaviour, IInteractionTarget, IInteractionPromptProvider, IInteractionPromptDetailTextProvider, IStageCheckpointParticipant
+    public sealed class LeverObjectMB : MonoBehaviour, IInteractionTarget, IInteractionPromptProvider, IInteractionPromptDetailTextProvider, BC.Stage.Snapshot.IStageStateRestorable
     {
         [Header("Interaction")]
         [Tooltip("インタラクト位置に使うワールド Transform です。未指定時は自身の Transform を使います。")]
@@ -700,12 +700,12 @@ namespace BC.Gimmick.LeverObject
             AudioSource.PlayClipAtPoint(sound.Clip, transform.position, sound.BaseVolume);
         }
 
-        public object CaptureCheckpointState()
+        public object CaptureStageState()
         {
             return new LeverCheckpointState(currentState, nextMiddleStepTowardRight);
         }
 
-        public void RestoreCheckpointState(object state)
+        public void RestoreStageState(object state)
         {
             if (state is not LeverCheckpointState checkpoint)
                 return;

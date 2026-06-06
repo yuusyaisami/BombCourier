@@ -19,7 +19,7 @@ namespace BC.Gimmick.ExplosionResponseObject
     }
 
     [DisallowMultipleComponent]
-    public sealed class ExplosionResponseObjectMB : MonoBehaviour, IExplosionImpactReceiver, IBombImpactReceiver, IStageCheckpointParticipant
+    public sealed class ExplosionResponseObjectMB : MonoBehaviour, IExplosionImpactReceiver, IBombImpactReceiver, BC.Stage.Snapshot.IStageStateRestorable
     {
         [Header("Impact")]
         [Tooltip("この値以上の爆風を受けた時だけ反応します。")]
@@ -309,7 +309,7 @@ namespace BC.Gimmick.ExplosionResponseObject
             propertyBlock ??= new MaterialPropertyBlock();
         }
 
-        public object CaptureCheckpointState()
+        public object CaptureStageState()
         {
             return new ExplosionResponseCheckpointState(
                 isActive,
@@ -317,7 +317,7 @@ namespace BC.Gimmick.ExplosionResponseObject
                 UsesTimerMode ? GetRemainingTimerSeconds() : 0f);
         }
 
-        public void RestoreCheckpointState(object state)
+        public void RestoreStageState(object state)
         {
             if (state is not ExplosionResponseCheckpointState checkpoint)
                 return;

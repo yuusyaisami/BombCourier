@@ -3,6 +3,7 @@ using BC.Bomb;
 using BC.Camera;
 using BC.Gimmick;
 using BC.Stage;
+using BC.Stage.Snapshot;
 using BC.Tutorial;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -45,7 +46,7 @@ namespace BC.Manager
         // 現在の stage instance を保持し、次回 Load 時に安全に破棄する。
         private Transform stageInstance;
         [SerializeField] private StageRegistrySO stageData; // ステージデータのScriptableObject
-        [SerializeField] private StageCheckpointServiceMB checkpointService; // チェックポイントサービス
+        [SerializeField] private StageSnapshotServiceMB snapshotService; // ステージ開始ベースラインのスナップショットサービス
         [SerializeField] private Transform stageRoot; // ステージの親オブジェクト
 
         // index 指定で stage prefab を instantiate し、その場で runtime 参照へ変換する。
@@ -114,59 +115,36 @@ namespace BC.Manager
             };
         }
 
-        // 現在の checkpointService に stage checkpoint を保存させる。
-        public void CaptureStageCheckpoint()
+        // ステージ開始時状態のベースラインを取得する（ステージ毎に1回）。
+        public void CaptureStageStartBaseline()
         {
-            if (checkpointService == null)
+            if (snapshotService == null)
             {
-                Debug.LogError($"{nameof(StageManagerMB)}: checkpointService is not assigned.", this);
+                Debug.LogError($"{nameof(StageManagerMB)}: snapshotService is not assigned.", this);
                 return;
             }
 
-            checkpointService.Capture();
+            snapshotService.CaptureBaseline();
         }
 
-        // 呼び出し側が snapshot を持ち回りたい場合はこちらを使う。
-        public StageCheckpointSnapshot CaptureStageCheckpointSnapshot()
-        {
-            if (checkpointService == null)
-            {
-                Debug.LogError($"{nameof(StageManagerMB)}: checkpointService is not assigned.", this);
-                return default;
-            }
+        public bool HasBaseline => snapshotService != null && snapshotService.HasBaseline;
 
-            return checkpointService.CaptureSnapshot();
-        }
-
-        // 現在の checkpoint へ戻す reload 入口。
-        public void ReloadStage()
+        // 開始時状態へ全対象を戻す reload 入口。
+        public void RestoreStageStartBaseline()
         {
-            if (checkpointService == null)
+            if (snapshotService == null)
             {
-                Debug.LogError($"{nameof(StageManagerMB)}: checkpointService is not assigned.", this);
+                Debug.LogError($"{nameof(StageManagerMB)}: snapshotService is not assigned.", this);
                 return;
             }
 
-            checkpointService.Restore();
-
+            snapshotService.RestoreBaseline();
         }
 
-        // snapshot 指定で stage を戻したい場合の入口。
-        public void ReloadStage(StageCheckpointSnapshot snapshot)
+        // 退避済みベースラインを消す。
+        public void ClearBaseline()
         {
-            if (checkpointService == null)
-            {
-                Debug.LogError($"{nameof(StageManagerMB)}: checkpointService is not assigned.", this);
-                return;
-            }
-
-            checkpointService.RestoreSnapshot(snapshot);
-        }
-
-        // 退避済み checkpoint を消し、リロード可能状態をリセットする。
-        public void ClearStageCheckpoint()
-        {
-            checkpointService?.Clear();
+            snapshotService?.ClearBaseline();
         }
 
         // 失敗時でも呼び出し側が扱いやすいよう、空の結果を返す helper。
