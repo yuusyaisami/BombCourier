@@ -723,8 +723,8 @@ GameObject:
   - component: {fileID: 1506801381519090931}
   - component: {fileID: 7067108101993753816}
   - component: {fileID: 1818221325975524334}
-  - component: {fileID: -2564731540987235114}
   - component: {fileID: 4727190523488949106}
+  - component: {fileID: 4025065679717752197}
   m_Layer: 0
   m_Name: MovableStair3Object1
   m_TagString: Ground
@@ -794,22 +794,6 @@ MonoBehaviour:
     path: 
   flags: 0
   autoInstallRigidbodySupportRiders: 1
---- !u!114 &-2564731540987235114
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3027825722322984655}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95d106de869059f46ba96319f276b075, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageSaveMarkMB
-  excludeFromCheckpoint: 0
-  saveActiveSelf: 1
-  saveTransform: 1
-  saveRigidbody: 1
 --- !u!114 &4727190523488949106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -830,6 +814,24 @@ MonoBehaviour:
   carryVelocityRate: 1
   maxCarryCorrectionSpeed: 30
   maxSupportVelocity: 30
+--- !u!114 &4025065679717752197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3027825722322984655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a5ab8fa4c68e945bd1ee9c6453d5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.Snapshot.StageRestorableMB
+  excludeFromSnapshot: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
+  persistAcrossRestore: 0
+  stableId: cd346fbf1c8b493291b091b2c4e3932e
 --- !u!1 &6660157296826772693
 GameObject:
   m_ObjectHideFlags: 0

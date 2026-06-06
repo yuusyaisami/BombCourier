@@ -21601,7 +21601,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: interactionAction._steps.Array.size
-      value: 17
+      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'managedReferences[30532875499340237]'
@@ -21717,46 +21717,70 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[6]'
-      value: 30533034660856518
+      value: 1662523297012384275
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[7]'
-      value: 30532875499340243
+      value: 30533034660856518
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[8]'
-      value: 30532875499340244
+      value: 30532875499340243
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[9]'
-      value: 30533001124511829
+      value: 30532875499340244
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: 'managedReferences[1662523297012384275]'
+      value: Assembly-CSharp BC.ActionSystem.ShowTalkStepAuthoring
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: 'managedReferences[1662523297012384357]'
+      value: Assembly-CSharp BC.ActionSystem.ShowTalkStepAuthoring
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: 'managedReferences[1662523297012384439]'
+      value: Assembly-CSharp BC.ActionSystem.ShowTalkStepAuthoring
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: 'managedReferences[1662523297012384548]'
+      value: Assembly-CSharp BC.ActionSystem.ShowTalkStepAuthoring
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[10]'
-      value: 30532875499340245
+      value: 1662523297012384439
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[11]'
-      value: 30532875499340246
+      value: 30532875499340245
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[12]'
-      value: 30532875499340247
+      value: 30532875499340246
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[13]'
-      value: 30532875499340248
+      value: 1662523297012384548
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[14]'
-      value: 30532875499340249
+      value: 30532875499340247
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[15]'
-      value: 30532875499340250
+      value: 30532875499340248
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: 'interactionAction._steps.Array.data[16]'
+      value: 30532875499340249
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: 'interactionAction._steps.Array.data[17]'
+      value: 30532875499340250
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: 'interactionAction._steps.Array.data[18]'
       value: 30532875499340251
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -21848,6 +21872,22 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].DisplayName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].DisplayName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].DisplayName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].DisplayName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].wrapSelection
       value: 1
       objectReference: {fileID: 0}
@@ -21860,8 +21900,96 @@ PrefabInstance:
       value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340237].talkRequestData.entry
+      value: S02_INTRO_VANILLA_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].defaultSelectionIndex
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340239].talkRequestData.entry
+      value: S02_COMMON_ART_VANILLA_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340240].talkRequestData.entry
+      value: S02_COMMON_ART_VANILLA_002
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340241].talkRequestData.entry
+      value: S02_COMMON_ART_MOUSE_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340242].talkRequestData.entry
+      value: S02_COMMON_PROPHECY_VANILLA_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340243].talkRequestData.entry
+      value: S02_COMMON_PROPHECY_MOUSE_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340244].talkRequestData.entry
+      value: S02_COMMON_ORDER_VANILLA_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340245].talkRequestData.entry
+      value: S02_COMMON_ORDER_MOUSE_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340246].talkRequestData.entry
+      value: S02_COMMON_HINT_VANILLA_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340247].talkRequestData.entry
+      value: S02_COMMON_HINT_VANILLA_003
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340248].talkRequestData.entry
+      value: S02_COMMON_HINT_MOUSE_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340249].talkRequestData.entry
+      value: S02_COMMON_HINT_MOUSE_002
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340250].talkRequestData.entry
+      value: S02_COMMON_END_VANILLA_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340252].talkRequestData.entry
+      value: S02_BRANCH_WHO_VANILLA_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340253].talkRequestData.entry
+      value: S02_BRANCH_WHO_MOUSE_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340254].talkRequestData.entry
+      value: S02_BRANCH_WHERE_VANILLA_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340255].talkRequestData.entry
+      value: S02_BRANCH_WHERE_MOUSE_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532954408354182].talkRequestData.entry
+      value: S02_BRANCH_WHO_VANILLA_002
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.entry
+      value: S02_COMMON_PROPHECY_VANILLA_003
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.entry
+      value: S02_COMMON_PROPHECY_VANILLA_002
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.entry
+      value: S02_COMMON_ORDER_VANILLA_002
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.entry
+      value: S02_COMMON_HINT_VANILLA_002
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340251].requestData.talkStateId
@@ -21874,6 +22002,14 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.talkStateId
       value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].entry
+      value: S02_CHOICE_INTRO_WHO
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].entry
+      value: S02_CHOICE_INTRO_WHERE
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340239].talkRequestData.speakerName
@@ -22029,7 +22165,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.dialogueText
-      value: "\u3053\u3093\u306B\u3061\u306F\u3001\u56DA\u308F\u308C\u306E\u30CD\u30BA\u30DF\u3055\u3093!"
+      value: "\u3053\u3093\u306B\u3061\u306F\u3001"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340239].talkRequestData.dialogueText
@@ -22037,7 +22173,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340240].talkRequestData.dialogueText
-      value: "\u3068 \u304F \u306B\uFF01\n\u4EBA\u304C\u5931\u6557\u3057\u305F\u3068\u3053\u308D\u3092\u5199\u3059\u306E\u304C\u3068\u3066\u3082\u597D\u304D\u306A\u306E\uFF01"
+      value: "\u6C7A\u5B9A\u7684\u306A\u77AC\u9593\u3001\u305D\u308C\u306F\u5931\u6557\u306E\u77AC\u9593\u3088!"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340241].talkRequestData.dialogueText
@@ -22045,7 +22181,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340242].talkRequestData.dialogueText
-      value: "\u305D\u3046\u306D\u3047...\u6B21\u306B\u3042\u306A\u305F\u306F\u3001\n\u305D\u3053\u306E\u5D16\u304B\u3089\u6301\u3063\u3066\u3044\u308B\u7206\u5F3E\u3054\u3068\u843D\u3061\u308B\u3002"
+      value: "\u305D\u3046\u306D\u3047...\u6B21\u306B\u3042\u306A\u305F\u306F\u3001"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340243].talkRequestData.dialogueText
@@ -22053,7 +22189,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340244].talkRequestData.dialogueText
-      value: "\u3044\u3044\u3053\u3068\uFF1F \u79C1\u306E\u30A4\u30F3\u30B9\u30D4\u30EC\u30FC\u30B7\u30E7\u30F3\u306E\u305F\u3081\u306B\u3001\n\u4ECA\u4E88\u8A00\u3057\u305F\u901A\u308A\u306B\u898B\u4E8B\u306B\u7206\u6B7B\u3057\u306A\u3055\u3044\uFF01 "
+      value: "\u3044\u3044\u3053\u3068\uFF1F \u79C1\u306E\u30A4\u30F3\u30B9\u30D4\u30EC\u30FC\u30B7\u30E7\u30F3\u306E\u305F\u3081\u306B\u3001"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340245].talkRequestData.dialogueText
@@ -22061,7 +22197,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340246].talkRequestData.dialogueText
-      value: "\u3044\u3044\uFF01\uFF1F \u7D76\u5BFE\u306B\u3001\u79C1\u306E\u96A3\u306B\u3042\u308B\u3053\u306E\u30B5\u30D6\u30EC\u30AF\u30C3\u30B7\u30E7\u30F3\u3092\u6301\u3061\u904B\u3093\u3067\u3001\n\u305D\u306E\u4E0A\u306B\u7740\u5730\u3057\u3088\u3046\u306A\u3093\u3066\u601D\u3063\u3061\u3083\u30C0\u30E1\u3088\uFF01"
+      value: "\u3044\u3044\uFF01\uFF1F \u7D76\u5BFE\u306B\u3001\n\u79C1\u306E\u96A3\u306B\u3042\u308B\u3053\u306E\u30B5\u30D6\u30EC\u30AF\u30C3\u30B7\u30E7\u30F3\u3092\u6301\u3061\u904B\u3093\u3067\u3001"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340247].talkRequestData.dialogueText
@@ -22085,7 +22221,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340253].talkRequestData.dialogueText
-      value: "(\u8A00\u308F\u305A\u3082\u304C\u306A...? \u3067\u3082\u305D\u308C\u306B\u89E6\u308C\u305F\u3089\u53EF\u54C0\u305D\u3046\u3060\u3088\u306D)"
+      value: "(\u8A00\u308F\u305A\u3082\u304C\u306A...?)"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340254].talkRequestData.dialogueText
@@ -22097,7 +22233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532954408354182].talkRequestData.dialogueText
-      value: "\u52DD\u624B\u306B\u540C\u60C5\u3059\u3093\u306A"
+      value: "\uFF1F\u3063\u3066\u9854\u306D"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533001124511829].talkRequestData.dialogueText
@@ -22106,7 +22242,132 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533034660856518].talkRequestData.dialogueText
       value: "\u305D\u3057\u3066\u843D\u4E0B\u306E\u885D\u6483\u3067\u30C9\u30AB\u30F3\uFF01
+        \u3063\u3066\u7206\u6B7B"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.speakerName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.talkStateId
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.speakerName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.talkStateId
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.speakerName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.talkStateId
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.speakerName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.talkStateId
+      value: 70
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340237].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340239].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340240].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340241].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340242].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340243].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340244].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340245].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340246].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340247].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340248].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340249].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340250].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340252].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340253].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340254].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340255].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532954408354182].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.dialogueText
+      value: "\u305D\u3053\u306E\u5D16\u304B\u3089\u6301\u3063\u3066\u3044\u308B\u7206\u5F3E\u3054\u3068\u843D\u3061\u308B\u3002"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.dialogueText
+      value: "\u305D\u3057\u3066\u843D\u4E0B\u306E\u885D\u6483\u3067\u30C9\u30AB\u30F3\uFF01
         \n\u3063\u3066\u7206\u6B7B\u3059\u308B\u308F\uFF01 \u304D\u3063\u3068\u5091\u4F5C\u306B\u306A\u308B\u308F\u306D\uFF01"
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.dialogueText
+      value: "\u4ECA\u4E88\u8A00\u3057\u305F\u901A\u308A\u306B\u898B\u4E8B\u306B\u7206\u6B7B\u3057\u306A\u3055\u3044\uFF01 "
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.dialogueText
+      value: "\u305D\u306E\u4E0A\u306B\u7740\u5730\u3057\u3088\u3046\u306A\u3093\u3066\u601D\u3063\u3061\u3083\u30C0\u30E1\u3088\uFF01"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].stableId
@@ -22115,6 +22376,94 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].stableId
       value: 2760fa77e73943d5aa30f53fb1b4be9e
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340237].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340239].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340240].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340241].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340242].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340243].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340244].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340245].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340246].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340247].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340248].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340249].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340250].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340252].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340253].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340254].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340255].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532954408354182].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.speakerNameEntry
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].displayText
@@ -22133,6 +22482,18 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.speakerNameEntry
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340251].requestData.applyTalkStateOverride
       value: 0
       objectReference: {fileID: 0}
@@ -22143,6 +22504,14 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.speakerCharacter.id
       value: 2001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].applySetTable
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].applySetTable
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340239].talkRequestData.actionToggleVersion
@@ -22377,6 +22746,38 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.actionToggleVersion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.speakerCharacter.id
+      value: 2001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.actionToggleVersion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.speakerCharacter.id
+      value: 2001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.actionToggleVersion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.speakerCharacter.id
+      value: 2001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.actionToggleVersion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.speakerCharacter.id
+      value: 2001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.speakerCharacter.path
       value: Npc.Vanilla
       objectReference: {fileID: 0}
@@ -22454,6 +22855,38 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533034660856518].talkRequestData.speakerCharacter.path
+      value: Npc.Vanilla
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.useOnStartTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.useOnStartTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.useOnStartTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.useOnStartTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.speakerCharacter.path
+      value: Npc.Vanilla
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.speakerCharacter.path
+      value: Npc.Vanilla
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.speakerCharacter.path
+      value: Npc.Vanilla
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.speakerCharacter.path
       value: Npc.Vanilla
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22617,7 +23050,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340237].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340237].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340239].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22625,7 +23066,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340240].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340240].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340241].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22633,7 +23082,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340242].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340242].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340243].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22641,7 +23098,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340244].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340244].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340245].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22649,7 +23114,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340246].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340246].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340247].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22657,7 +23130,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340248].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340248].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340249].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22665,7 +23146,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340250].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340250].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340252].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22673,7 +23162,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340253].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340253].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340254].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22681,7 +23178,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340255].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340255].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532954408354182].talkRequestData.applySetSpeakerNameTable
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22693,7 +23198,71 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533034660856518].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.textEffectData.fontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.useOnCompleteTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.textEffectData.fontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.useOnCompleteTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.textEffectData.fontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.useOnCompleteTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.textEffectData.fontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.useOnCompleteTalkAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.isWaitingActionCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.applySetSpeakerNameTable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.isWaitingActionCompleted
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22782,6 +23351,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533034660856518].talkRequestData.textEffectData.applyFontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.textEffectData.applyFontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.textEffectData.applyFontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.textEffectData.applyFontSize
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.textEffectData.applyFontSize
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
@@ -22911,6 +23496,22 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].inlineAction._steps.Array.size
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.onStartTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.onStartTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.onStartTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.onStartTalkAction._steps.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.target.tag.path
@@ -23061,6 +23662,22 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.onCompleteTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384357].talkRequestData.onCompleteTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.onCompleteTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.onCompleteTalkAction._steps.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.floatValue.literal
       value: 0
       objectReference: {fileID: 0}
@@ -23101,6 +23718,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340237].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.entityValue.sourceKind
       value: 0
       objectReference: {fileID: 0}
@@ -23133,6 +23754,78 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340239].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340240].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340241].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340242].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340243].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340244].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340245].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340246].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340247].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340248].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340249].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340250].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340252].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340253].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340254].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340255].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532954408354182].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.failurePolicy
       value: 0
       objectReference: {fileID: 0}
@@ -23155,6 +23848,18 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.intValue.evaluationMode
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.evaluationMode
@@ -23269,6 +23974,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[0].table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.entityValue.key.id
       value: 0
       objectReference: {fileID: 0}
@@ -23287,6 +23996,10 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.shapeExpressionValue.literal
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340238].options.Array.data[1].table.m_TableReference.m_TableCollectionName
+      value: GUID:7ea6260e28ce9a84b96efd9508de4ab7
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.boolValue.entityValue.key.id
@@ -23493,6 +24206,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340237].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.comparison
       value: 0
       objectReference: {fileID: 0}
@@ -23531,6 +24248,78 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.stringValue.localValue.storeScope
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340239].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340240].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340241].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340242].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340243].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340244].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340245].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340246].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340247].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340248].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340249].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340250].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340252].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340253].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340254].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532875499340255].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30532954408354182].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[30533034660856518].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareNumber.comparison
@@ -23587,6 +24376,18 @@ PrefabInstance:
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[1].valueStoreWrite.shapeExpressionValue.fallbackValue
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384275].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384439].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
+      propertyPath: managedReferences[1662523297012384548].talkRequestData.speakerNameTable.m_TableReference.m_TableCollectionName
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30532875499340238].options.Array.data[0].valueStoreWrite.boolValue.compareFloat.left.literal

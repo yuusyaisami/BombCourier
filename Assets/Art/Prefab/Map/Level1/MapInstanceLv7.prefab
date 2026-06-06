@@ -5436,6 +5436,7 @@ GameObject:
   - component: {fileID: 1453457410398435515}
   - component: {fileID: 2171782619927630019}
   - component: {fileID: 1115761173833202516}
+  - component: {fileID: 3738700202759379270}
   m_Layer: 0
   m_Name: RedObject
   m_TagString: Untagged
@@ -5712,6 +5713,22 @@ MonoBehaviour:
   conditionReadSucceeded: 0
   currentConditionValue: 0
   currentColliderEnabled: 0
+--- !u!114 &3738700202759379270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837377656585678825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95d106de869059f46ba96319f276b075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageSaveMarkMB
+  excludeFromCheckpoint: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
 --- !u!1 &893319222073578616
 GameObject:
   m_ObjectHideFlags: 0
@@ -15015,6 +15032,7 @@ GameObject:
   - component: {fileID: 3496768854047254435}
   - component: {fileID: 9062498527264954433}
   - component: {fileID: 4299317020056376925}
+  - component: {fileID: 1070159559613021619}
   m_Layer: 0
   m_Name: ExplosionResponseObject
   m_TagString: Untagged
@@ -15523,6 +15541,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 2.25, z: 1}
   m_Center: {x: 0, y: 1.125, z: 0}
+--- !u!114 &1070159559613021619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4330843629763342005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a5ab8fa4c68e945bd1ee9c6453d5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.Snapshot.StageRestorableMB
+  excludeFromSnapshot: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
+  persistAcrossRestore: 0
+  stableId: 6e4e7dfc43314c80a112c275cd4156a9
 --- !u!1 &4380864713481926148
 GameObject:
   m_ObjectHideFlags: 0
@@ -20798,6 +20834,7 @@ GameObject:
   - component: {fileID: 6441112229495108465}
   - component: {fileID: 3106359518415078806}
   - component: {fileID: 70115955945163399}
+  - component: {fileID: 5522916656410233299}
   m_Layer: 0
   m_Name: GreenObject
   m_TagString: Untagged
@@ -21080,6 +21117,22 @@ MonoBehaviour:
   conditionReadSucceeded: 0
   currentConditionValue: 0
   currentColliderEnabled: 0
+--- !u!114 &5522916656410233299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4497805240733021937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95d106de869059f46ba96319f276b075, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageSaveMarkMB
+  excludeFromCheckpoint: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
 --- !u!1 &4547933938677784815
 GameObject:
   m_ObjectHideFlags: 0
@@ -34389,6 +34442,7 @@ GameObject:
   - component: {fileID: 3395491380329194194}
   - component: {fileID: 462919104538256364}
   - component: {fileID: 5178146563165104198}
+  - component: {fileID: 6619316819890129300}
   m_Layer: 0
   m_Name: ExplosionResponseObject (1)
   m_TagString: Untagged
@@ -34897,6 +34951,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 2.25, z: 1}
   m_Center: {x: 0, y: 1.125, z: 0}
+--- !u!114 &6619316819890129300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718105850560029838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a5ab8fa4c68e945bd1ee9c6453d5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.Snapshot.StageRestorableMB
+  excludeFromSnapshot: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
+  persistAcrossRestore: 0
+  stableId: ae5ad62fac704244a02c17dc28174302
 --- !u!1 &8730617715006709796
 GameObject:
   m_ObjectHideFlags: 0
@@ -38010,7 +38082,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6685403254104442847, guid: ad5b7952b8b26fb4589eea96a0dc25c4, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6685403254104442847, guid: ad5b7952b8b26fb4589eea96a0dc25c4, type: 3}
       propertyPath: m_LocalScale.z
@@ -38022,7 +38094,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6685403254104442847, guid: ad5b7952b8b26fb4589eea96a0dc25c4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6.23
+      value: -6.58
       objectReference: {fileID: 0}
     - target: {fileID: 6685403254104442847, guid: ad5b7952b8b26fb4589eea96a0dc25c4, type: 3}
       propertyPath: m_LocalPosition.z
@@ -38055,6 +38127,14 @@ PrefabInstance:
     - target: {fileID: 6685403254104442847, guid: ad5b7952b8b26fb4589eea96a0dc25c4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8048606531051936782, guid: ad5b7952b8b26fb4589eea96a0dc25c4, type: 3}
+      propertyPath: m_UseGravity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8048606531051936782, guid: ad5b7952b8b26fb4589eea96a0dc25c4, type: 3}
+      propertyPath: m_IsKinematic
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8524696542075303770, guid: ad5b7952b8b26fb4589eea96a0dc25c4, type: 3}
       propertyPath: canBeCarried
@@ -38233,7 +38313,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -13.1
+      value: -5.55
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.y
@@ -38241,7 +38321,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -5.05
+      value: 31.93
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalRotation.w

@@ -48,7 +48,7 @@ GameObject:
   - component: {fileID: 752337484741967622}
   - component: {fileID: 2087086719102170233}
   - component: {fileID: 7881615725892307391}
-  - component: {fileID: -317971045276265327}
+  - component: {fileID: 3831359201565879996}
   m_Layer: 6
   m_Name: LeverObject1
   m_TagString: Untagged
@@ -272,7 +272,7 @@ MonoBehaviour:
     path: 
   flags: 0
   autoInstallRigidbodySupportRiders: 1
---- !u!114 &-317971045276265327
+--- !u!114 &3831359201565879996
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -281,13 +281,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 3188648952488666676}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95d106de869059f46ba96319f276b075, type: 3}
+  m_Script: {fileID: 11500000, guid: 29a5ab8fa4c68e945bd1ee9c6453d5b4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageSaveMarkMB
-  excludeFromCheckpoint: 0
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.Snapshot.StageRestorableMB
+  excludeFromSnapshot: 0
   saveActiveSelf: 1
   saveTransform: 1
   saveRigidbody: 1
+  persistAcrossRestore: 0
+  stableId: 3199a573b4ab4b13b8d681470bdb8e79
 --- !u!1 &3974830176332274464
 GameObject:
   m_ObjectHideFlags: 0

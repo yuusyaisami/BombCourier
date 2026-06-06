@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 2469909993995623199}
   - component: {fileID: 2873683816355028704}
   - component: {fileID: 8417656126735646282}
-  - component: {fileID: 4031289261615151705}
+  - component: {fileID: -8073277843458604064}
   m_Layer: 6
   m_Name: SableCushion
   m_TagString: Untagged
@@ -143,9 +143,12 @@ MonoBehaviour:
   highJumpSpeedMultiplier: 1.5
   bounceDirectionMode: 0
   customLocalDirection: {x: 0, y: 1, z: 0}
+  enableIncomingLateralBoost: 0
+  incomingLateralBoostMultiplier: 1
   attachWhenStopped: 0
   defaultRetainedVelocityRate: 0
   stopDampenRules: []
+  minPlayerDownwardImpactSpeedToApplyStopResponse: 3.5
   attachPoint: {fileID: 0}
   suppressHardLanding: 1
   acceptAnyHardLandingTag: 1
@@ -215,7 +218,7 @@ MonoBehaviour:
   carryVelocityRate: 1
   maxCarryCorrectionSpeed: 30
   maxSupportVelocity: 30
---- !u!114 &4031289261615151705
+--- !u!114 &-8073277843458604064
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -224,13 +227,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 9025351276914114289}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95d106de869059f46ba96319f276b075, type: 3}
+  m_Script: {fileID: 11500000, guid: 29a5ab8fa4c68e945bd1ee9c6453d5b4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.StageSaveMarkMB
-  excludeFromCheckpoint: 0
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.Snapshot.StageRestorableMB
+  excludeFromSnapshot: 0
   saveActiveSelf: 1
   saveTransform: 1
   saveRigidbody: 1
+  persistAcrossRestore: 0
+  stableId: 07ce6eefeb8a4389bcc730da296bda1a
 --- !u!1001 &6923436437825639952
 PrefabInstance:
   m_ObjectHideFlags: 0
