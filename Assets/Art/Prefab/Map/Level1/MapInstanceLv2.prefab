@@ -5892,7 +5892,7 @@ Transform:
   m_GameObject: {fileID: 1357615439737440474}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5, y: 18, z: 0}
+  m_LocalPosition: {x: 5, y: 19.25, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5945,6 +5945,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BC.Bomb.PlayerSpawnPointMB
   spawnPointID: 0
+  localSpawnDirection: {x: 0, y: 0, z: 1}
 --- !u!1 &1680331356436524712
 GameObject:
   m_ObjectHideFlags: 0
@@ -6612,6 +6613,15 @@ MonoBehaviour:
   - {fileID: 2195357677041616176}
   godHandObjects:
   - {fileID: 0}
+  tutorialStage: {fileID: 0}
+  entityMaterialDatasetKind: Default
+  applyShadowPolicy: 1
+  pcShadowMode: 1
+  mobileShadowMode: 2
+  webglShadowMode: 2
+  shadowQuality: 2
+  roomMainLightOverride: {fileID: 0}
+  directionalLightOverride: {fileID: 0}
 --- !u!1 &2886828127474513816
 GameObject:
   m_ObjectHideFlags: 0
@@ -14051,9 +14061,18 @@ MonoBehaviour:
     routeSegments:
     - rid: 30532849279435718
     - rid: 30532849279435719
+  treeAuthoring:
+    railNodes: []
+    rootRailNodeId: 
+    selectors: []
   motionTargets:
   - {fileID: 4119996340617927072}
   autoCollectChildRigidbodies: 1
+  usePlatformTransformScaleForRail: 1
+  dynamicTargetMaxLinearSpeed: 14
+  maxRouteLinearSpeed: 6
+  maxTransferLinearSpeed: 4
+  maxReportedSupportSpeed: 8
   publishLayerSignals: 1
   layerEnabledSignal:
     id: 10101
@@ -20815,7 +20834,7 @@ Transform:
   m_GameObject: {fileID: 8825358721561468603}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.75, y: 18.25, z: -10}
+  m_LocalPosition: {x: 3.75, y: 19, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -21450,7 +21469,7 @@ Transform:
   m_GameObject: {fileID: 9140694517947297873}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.25, y: 16.75, z: 5}
+  m_LocalPosition: {x: 2.25, y: 19, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -26026,6 +26045,18 @@ PrefabInstance:
     - target: {fileID: 7847952390249075909, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8738270863626177579, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.000024080276
+      objectReference: {fileID: 0}
+    - target: {fileID: 8738270863626177579, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3.0000076
+      objectReference: {fileID: 0}
+    - target: {fileID: 8738270863626177579, guid: d582f37bc4c7e4045889372515f908fb, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -20.000015
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

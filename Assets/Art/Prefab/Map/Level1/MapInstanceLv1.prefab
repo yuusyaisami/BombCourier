@@ -6714,6 +6714,81 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!1 &1967795443989795123
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8145823281837228893}
+  - component: {fileID: 3365229342131344365}
+  m_Layer: 0
+  m_Name: CinemachineCamera (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8145823281837228893
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1967795443989795123}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.25881863, y: 0.0000005613434, z: -0.00000015041118, w: -0.965926}
+  m_LocalPosition: {x: 4.94, y: 3.85, z: 78.41}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7709220913830741554}
+  m_LocalEulerAnglesHint: {x: 30, y: 360, z: 0}
+--- !u!114 &3365229342131344365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1967795443989795123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
+  Priority:
+    Enabled: 1
+    m_Value: 0
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 20241001
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 60.000004
+    OrthographicSize: 5
+    NearClipPlane: 0.3
+    FarClipPlane: 1000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
 --- !u!1 &1979761788600114383
 GameObject:
   m_ObjectHideFlags: 0
@@ -6831,6 +6906,14 @@ MonoBehaviour:
   godHandObjects:
   - {fileID: 7168267093934564626}
   tutorialStage: {fileID: 7390711968644181719}
+  entityMaterialDatasetKind: Default
+  applyShadowPolicy: 1
+  pcShadowMode: 2
+  mobileShadowMode: 2
+  webglShadowMode: 2
+  shadowQuality: 2
+  roomMainLightOverride: {fileID: 0}
+  directionalLightOverride: {fileID: 0}
 --- !u!114 &7390711968644181719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6855,8 +6938,10 @@ MonoBehaviour:
     playerControlPolicy: 10
     onEnter:
       _steps:
+      - rid: 1662523280502555178
       - rid: 1662523210654023914
       - rid: 1662523191755538643
+      - rid: 1662523280502555260
       - rid: 1662523191755538713
       - rid: 1662523210654024149
       - rid: 1662523192763482622
@@ -8037,7 +8122,7 @@ MonoBehaviour:
           displayId:
             value: 1
           contentKind: 2
-          anchoredPosition: {x: 0, y: 50}
+          anchoredPosition: {x: 0, y: 25}
           sortOrder: 0
           sprite: {fileID: 21300000, guid: 9f2fe74d24df9ce429cdfec659a193e4, type: 3}
           size: {x: 128, y: 128}
@@ -8371,7 +8456,7 @@ MonoBehaviour:
         DisplayName: 
         cameraTag: route
         camera: {fileID: 2315895492421287827}
-        activateImmediately: 0
+        activateImmediately: 1
     - rid: 1662523225167626963
       type: {class: DisableOverlayCameraStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
       data:
@@ -8403,6 +8488,18 @@ MonoBehaviour:
       type: {class: HideTutorialToDoListStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
       data:
         DisplayName: 
+    - rid: 1662523280502555178
+      type: {class: RegisterOverlayCameraStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        cameraTag: title
+        camera: {fileID: 3365229342131344365}
+        activateImmediately: 1
+    - rid: 1662523280502555260
+      type: {class: DisableOverlayCameraStepAuthoring, ns: BC.ActionSystem, asm: Assembly-CSharp}
+      data:
+        DisplayName: 
+        cameraTag: title
 --- !u!1 &2886828127474513816
 GameObject:
   m_ObjectHideFlags: 0
@@ -8514,6 +8611,7 @@ Transform:
   - {fileID: 2874175057089906968}
   - {fileID: 3032150536463286559}
   - {fileID: 8371539869711181840}
+  - {fileID: 8145823281837228893}
   m_Father: {fileID: 2440146312495742978}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3695479556191971208
@@ -10090,13 +10188,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4181256639055208534}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.3965436, y: 0.15682243, z: 0.0689518, w: -0.90189004}
+  m_LocalRotation: {x: -0.91813105, y: 0.15964651, z: -0.06213388, w: -0.3573343}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2760836438650308838}
-  m_LocalEulerAnglesHint: {x: -316.08002, y: -27.945, z: -20.202}
+  m_LocalEulerAnglesHint: {x: -317.468, y: -180, z: -160.272}
 --- !u!108 &4843683419757941705
 Light:
   m_ObjectHideFlags: 0
