@@ -74,6 +74,9 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                 EditorGUILayout.LabelField("Selectors", movingPlatform.EffectiveTreeSelectorCount.ToString());
                 EditorGUILayout.LabelField("Validation", $"Errors: {errorCount}  Warnings: {warningCount}");
             }
+
+            if (movingPlatform.TryGetEditorGizmoBlockReason(out string gizmoBlockReason))
+                EditorGUILayout.HelpBox($"経路 Gizmo が表示されません:\n{gizmoBlockReason}", MessageType.Warning);
         }
 
         private void DrawActions()

@@ -378,6 +378,78 @@ namespace BC.Gimmick.MovingPlatform
                    (railNodesData != null && railNodesData.Count > 0);
         }
 
+        /// <summary>
+        /// Editor で経路 Gizmo を描画できない場合に、その理由を返します。
+        /// 描画可能（または showPathInEditor が意図的に無効）なら false を返します。
+        /// </summary>
+        public bool TryGetEditorGizmoBlockReason(out string reason)
+        {
+            reason = string.Empty;
+
+            // showPathInEditor が無効なのは「意図的に非表示」なので警告対象にしない。
+            if (!showPathInEditor)
+                return false;
+
+            MovingPlatformTreeAuthoring effectiveTreeAuthoring = GetEffectiveTreeAuthoring();
+            if (effectiveTreeAuthoring == null || !effectiveTreeAuthoring.HasAuthoringData)
+            {
+                reason = "Tree authoring データがありません。レールノードと Selector を設定してください。";
+                return true;
+            }
+
+            MovingPlatformTreeRuntime visualizationTreeRuntime = GetVisualizationTreeRuntime();
+            if (visualizationTreeRuntime == null)
+            {
+                reason = "Tree runtime を構築できませんでした。";
+                return true;
+            }
+
+            if (!visualizationTreeRuntime.IsValid)
+            {
+                reason = BuildTreeInvalidReason(visualizationTreeRuntime);
+                return true;
+            }
+
+            // 妥当だが描画データが 0 件（全ノードが同一座標／ルートが空など）。
+            var diagnosticLayerPaths = new List<MovingPlatformEditorLayerPathData>();
+            var diagnosticRailConnections = new List<MovingPlatformEditorRailConnectionData>();
+            var diagnosticRailNodes = new List<MovingPlatformEditorRailNodeData>();
+            if (!TryCollectEditorGizmoData(diagnosticLayerPaths, diagnosticRailConnections, diagnosticRailNodes))
+            {
+                reason = "Tree は妥当ですが、描画する経路点が生成されませんでした。" +
+                         "各 Selector の Move ステップや、レールノード座標（全点が同一座標になっていないか）を確認してください。";
+                return true;
+            }
+
+            return false;
+        }
+
+        private static string BuildTreeInvalidReason(MovingPlatformTreeRuntime runtime)
+        {
+            var builder = new System.Text.StringBuilder();
+            builder.Append("Tree runtime が無効です。");
+
+            if (runtime.RailNodeCount <= 0)
+                builder.Append(" レールノードがありません。");
+
+            if (runtime.SelectorCount <= 0)
+                builder.Append(" Selector（レイヤー）が1つもありません。");
+
+            if (runtime.RootRailIndex < 0)
+                builder.Append(" ルートレールノードが決まっていません。");
+
+            IReadOnlyList<MovingPlatformTreeValidationIssue> issues = runtime.Issues;
+            for (int i = 0; i < issues.Count; i++)
+            {
+                if (issues[i].Severity != MovingPlatformTreeValidationSeverity.Error)
+                    continue;
+
+                builder.Append($" [Error:{issues[i].Code}] {issues[i].Message}");
+            }
+
+            return builder.ToString();
+        }
+
         public bool TryCollectEditorRailNodeHandleData(List<MovingPlatformEditorRailNodeHandleData> handleNodes)
         {
             if (handleNodes == null)
@@ -598,6 +670,7 @@ namespace BC.Gimmick.MovingPlatform
 
             List<MovingPlatformRailNodeAuthoring> treeRailNodes = treeAuthoring.MutableRailNodes;
             var usedRailIds = new HashSet<string>(StringComparer.Ordinal);
+            var usedRailLabels = new HashSet<string>(StringComparer.Ordinal);
             for (int i = 0; i < treeRailNodes.Count; i++)
             {
                 MovingPlatformRailNodeAuthoring railNode = treeRailNodes[i];
@@ -612,8 +685,10 @@ namespace BC.Gimmick.MovingPlatform
                     stableId = generatedId;
                 }
 
-                if (string.IsNullOrWhiteSpace(railNode.Label))
-                    railNode.SetLabel(stableId);
+                // ラベルが空、または既出（重複）の場合は衝突しない "Rail N" を割り当てる。
+                string label = railNode.Label;
+                if (string.IsNullOrWhiteSpace(label) || !usedRailLabels.Add(label))
+                    railNode.SetLabel(MovingPlatformTreeAuthoring.GenerateUniqueRailLabel(usedRailLabels));
             }
 
             if (treeRailNodes.Count > 0 && string.IsNullOrWhiteSpace(treeAuthoring.RootRailNodeId))

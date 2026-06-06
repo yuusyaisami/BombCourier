@@ -12,13 +12,21 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
         private readonly List<MovingPlatformEditorRailConnectionData> railConnections = new();
         private readonly List<MovingPlatformEditorRailNodeData> railNodes = new();
 
+        // 同じ理由を毎フレーム出し続けないよう、target ごとに直近の警告内容を覚えておく。
+        private readonly Dictionary<int, string> lastWarningByTarget = new();
+
         public void Draw(MovingPlatformMB target)
         {
             if (target == null)
                 return;
 
             if (!target.TryCollectEditorGizmoData(layerPaths, railConnections, railNodes))
+            {
+                WarnIfBlocked(target);
                 return;
+            }
+
+            ClearWarning(target);
 
             Color previousColor = Gizmos.color;
 
@@ -79,6 +87,27 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                 Gizmos.color = layerPath.Color;
                 Gizmos.DrawSphere(layerPath.Points[layerPath.Points.Length - 1], pointRadius * 0.75f);
             }
+        }
+
+        private void WarnIfBlocked(MovingPlatformMB target)
+        {
+            if (!target.TryGetEditorGizmoBlockReason(out string reason))
+            {
+                ClearWarning(target);
+                return;
+            }
+
+            int targetId = target.GetInstanceID();
+            if (lastWarningByTarget.TryGetValue(targetId, out string previousReason) && previousReason == reason)
+                return;
+
+            lastWarningByTarget[targetId] = reason;
+            Debug.LogWarning($"{nameof(MovingPlatformMB)}[{target.name}]: 経路 Gizmo を描画できません。{reason}", target);
+        }
+
+        private void ClearWarning(MovingPlatformMB target)
+        {
+            lastWarningByTarget.Remove(target.GetInstanceID());
         }
     }
 }

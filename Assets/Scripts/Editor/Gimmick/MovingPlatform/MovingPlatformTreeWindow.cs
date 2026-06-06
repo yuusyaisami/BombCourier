@@ -179,11 +179,15 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
 
             IReadOnlyList<MovingPlatformRailNodeAuthoring> railNodes = authoring.RailNodes ?? System.Array.Empty<MovingPlatformRailNodeAuthoring>();
             var childrenByParent = new Dictionary<string, List<int>>(System.StringComparer.Ordinal);
+            var railNodeIds = new HashSet<string>(System.StringComparer.Ordinal);
             for (int i = 0; i < railNodes.Count; i++)
             {
                 MovingPlatformRailNodeAuthoring railNode = railNodes[i];
                 if (railNode == null)
                     continue;
+
+                if (!string.IsNullOrWhiteSpace(railNode.StableId))
+                    railNodeIds.Add(railNode.StableId);
 
                 string parentId = railNode.ParentRailNodeId;
                 if (!childrenByParent.TryGetValue(parentId, out List<int> children))
@@ -235,7 +239,7 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                 {
                     MovingPlatformControlNodeAuthoring step = steps[stepIndex];
                     rows.Add(new TreeRow(
-                        step != null ? step.Label : $"Step {stepIndex + 1}",
+                        BuildStepRowTitle(step, stepIndex, railNodeIds),
                         $"{selectorPath}.orderedChildren.Array.data[{stepIndex}]",
                         2,
                         true,
@@ -262,7 +266,7 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                 return;
 
             rows.Add(new TreeRow(
-                railNode.Label,
+                BuildRailRowTitle(railNode),
                 $"treeAuthoring.railNodes.Array.data[{railNodeIndex}]",
                 depth,
                 true,
@@ -326,7 +330,10 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                     evt.menu.AppendAction("Create/Child Rail", _ => CreateChildRail(row.RailNodeIndex));
                     evt.menu.AppendAction("Create/Selector", _ => CreateSelectorNode(row.RailNodeIndex));
                     evt.menu.AppendSeparator();
+                    evt.menu.AppendAction("Move/Up One Level", _ => MoveRailUpOneLevel(row.RailNodeIndex));
                     evt.menu.AppendAction("Move/Make Root", _ => MakeRailRoot(row.RailNodeIndex));
+                    AppendRailReparentMenu(evt, row.RailNodeIndex);
+                    evt.menu.AppendSeparator();
                     evt.menu.AppendAction("Delete/Rail Node", _ => DeleteRailNode(row.RailNodeIndex));
                     break;
                 case TreeRowKind.SelectorNode:
@@ -341,6 +348,7 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                     evt.menu.AppendAction("Delete/Selector", _ => DeleteSelectorNode(row.SelectorIndex));
                     break;
                 case TreeRowKind.SelectorStep:
+                    AppendStepTargetRailMenu(evt, row);
                     AppendStepMoveMenu(evt, row);
                     evt.menu.AppendSeparator();
                     evt.menu.AppendAction("Delete/Step", _ => DeleteSelectorStep(row.SelectorIndex, row.StepIndex));
@@ -360,9 +368,110 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
             for (int i = 0; i < railNodes.Count; i++)
             {
                 int railIndex = i;
-                string title = railNodes[i] != null ? railNodes[i].Label : $"Rail {i + 1}";
+                string title = BuildRailMenuTitle(railNodes[i], i);
                 evt.menu.AppendAction($"Move Anchor/{title}", _ => SetSelectorAnchor(selectorIndex, railIndex));
             }
+        }
+
+        private void AppendStepTargetRailMenu(ContextualMenuPopulateEvent evt, TreeRow row)
+        {
+            if (!TryResolveMovingPlatform(out MovingPlatformMB movingPlatform))
+                return;
+
+            MovingPlatformTreeAuthoring tree = movingPlatform.TreeAuthoring;
+            IReadOnlyList<MovingPlatformSelectorNodeAuthoring> selectors = tree?.Selectors ?? System.Array.Empty<MovingPlatformSelectorNodeAuthoring>();
+            if (row.SelectorIndex < 0 || row.SelectorIndex >= selectors.Count || selectors[row.SelectorIndex] == null)
+                return;
+
+            IReadOnlyList<MovingPlatformControlNodeAuthoring> steps = selectors[row.SelectorIndex].OrderedChildren;
+            if (row.StepIndex < 0 || row.StepIndex >= steps.Count || steps[row.StepIndex] is not MovingPlatformMoveNodeAuthoring moveStep)
+                return; // Move ステップ以外には移動先 Rail の概念がない。
+
+            string currentTargetId = moveStep.TargetRailNodeId;
+            IReadOnlyList<MovingPlatformRailNodeAuthoring> railNodes = tree.RailNodes ?? System.Array.Empty<MovingPlatformRailNodeAuthoring>();
+            for (int i = 0; i < railNodes.Count; i++)
+            {
+                MovingPlatformRailNodeAuthoring rail = railNodes[i];
+                if (rail == null)
+                    continue;
+
+                int railIndex = i;
+                bool isCurrent = string.Equals(rail.StableId, currentTargetId, System.StringComparison.Ordinal);
+                evt.menu.AppendAction(
+                    $"Set Target Rail/{BuildRailMenuTitle(rail, i)}",
+                    _ => SetMoveStepTargetRail(row.SelectorIndex, row.StepIndex, railIndex),
+                    isCurrent ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+            }
+        }
+
+        private void AppendRailReparentMenu(ContextualMenuPopulateEvent evt, int railNodeIndex)
+        {
+            if (!TryResolveMovingPlatform(out MovingPlatformMB movingPlatform))
+                return;
+
+            IReadOnlyList<MovingPlatformRailNodeAuthoring> railNodes = movingPlatform.TreeAuthoring?.RailNodes ?? System.Array.Empty<MovingPlatformRailNodeAuthoring>();
+            if (railNodeIndex < 0 || railNodeIndex >= railNodes.Count || railNodes[railNodeIndex] == null)
+                return;
+
+            MovingPlatformRailNodeAuthoring movedRail = railNodes[railNodeIndex];
+            string movedRailId = movedRail.StableId;
+            string currentParentId = movedRail.ParentRailNodeId;
+
+            for (int i = 0; i < railNodes.Count; i++)
+            {
+                MovingPlatformRailNodeAuthoring candidate = railNodes[i];
+                if (candidate == null || i == railNodeIndex)
+                    continue;
+
+                // 自分自身の子孫を親に選ぶと循環するため候補から除外する。
+                if (IsRailDescendantOf(railNodes, candidate.StableId, movedRailId))
+                    continue;
+
+                int targetRailIndex = i;
+                string title = string.IsNullOrWhiteSpace(candidate.Label) ? $"Rail {i + 1}" : candidate.Label;
+
+                // 現在の親はチェック付きの no-op として見せる（誤操作防止 & 現状把握）。
+                bool isCurrentParent = string.Equals(candidate.StableId, currentParentId, System.StringComparison.Ordinal);
+                evt.menu.AppendAction(
+                    $"Move/Reparent To/{title}",
+                    _ => ReparentRail(railNodeIndex, targetRailIndex),
+                    isCurrentParent ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+            }
+        }
+
+        private static bool IsRailDescendantOf(
+            IReadOnlyList<MovingPlatformRailNodeAuthoring> railNodes,
+            string candidateId,
+            string ancestorId)
+        {
+            var visited = new HashSet<string>(System.StringComparer.Ordinal);
+            string cursor = candidateId;
+            while (!string.IsNullOrWhiteSpace(cursor) && visited.Add(cursor))
+            {
+                if (string.Equals(cursor, ancestorId, System.StringComparison.Ordinal))
+                    return true;
+
+                MovingPlatformRailNodeAuthoring node = FindRailById(railNodes, cursor);
+                if (node == null)
+                    break;
+
+                cursor = node.ParentRailNodeId;
+            }
+
+            return false;
+        }
+
+        private static MovingPlatformRailNodeAuthoring FindRailById(
+            IReadOnlyList<MovingPlatformRailNodeAuthoring> railNodes,
+            string stableId)
+        {
+            for (int i = 0; i < railNodes.Count; i++)
+            {
+                if (railNodes[i] != null && string.Equals(railNodes[i].StableId, stableId, System.StringComparison.Ordinal))
+                    return railNodes[i];
+            }
+
+            return null;
         }
 
         private void AppendStepMoveMenu(ContextualMenuPopulateEvent evt, TreeRow row)
@@ -418,7 +527,8 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                 if (tree == null || parentRailNodeIndex < 0 || parentRailNodeIndex >= railNodes.Count || railNodes[parentRailNodeIndex] == null)
                     return false;
 
-                tree.AddRailNode($"Rail {railNodes.Count + 1}", railNodes[parentRailNodeIndex].StableId);
+                // label を null にして、衝突しない一意ラベルをデータ層に生成させる。
+                tree.AddRailNode(null, railNodes[parentRailNodeIndex].StableId);
                 return true;
             });
         }
@@ -433,6 +543,44 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                     return false;
 
                 return tree.ReparentRailNode(railNodes[railNodeIndex].StableId, string.Empty);
+            });
+        }
+
+        private void MoveRailUpOneLevel(int railNodeIndex)
+        {
+            ExecuteTreeMutation("Move MovingPlatform Rail Up", movingPlatform =>
+            {
+                MovingPlatformTreeAuthoring tree = movingPlatform.TreeAuthoring;
+                IReadOnlyList<MovingPlatformRailNodeAuthoring> railNodes = tree?.RailNodes ?? System.Array.Empty<MovingPlatformRailNodeAuthoring>();
+                if (tree == null || railNodeIndex < 0 || railNodeIndex >= railNodes.Count || railNodes[railNodeIndex] == null)
+                    return false;
+
+                string parentId = railNodes[railNodeIndex].ParentRailNodeId;
+                if (string.IsNullOrWhiteSpace(parentId))
+                    return false; // 既にルートなので、これ以上は上げられない。
+
+                MovingPlatformRailNodeAuthoring parentRail = FindRailById(railNodes, parentId);
+                string grandparentId = parentRail != null ? parentRail.ParentRailNodeId : string.Empty;
+
+                // 親の親へ付け替える。親がルートだった場合は grandparentId が空 = 自身がルート化。
+                return tree.ReparentRailNode(railNodes[railNodeIndex].StableId, grandparentId);
+            });
+        }
+
+        private void ReparentRail(int railNodeIndex, int newParentRailNodeIndex)
+        {
+            ExecuteTreeMutation("Reparent MovingPlatform Rail Node", movingPlatform =>
+            {
+                MovingPlatformTreeAuthoring tree = movingPlatform.TreeAuthoring;
+                IReadOnlyList<MovingPlatformRailNodeAuthoring> railNodes = tree?.RailNodes ?? System.Array.Empty<MovingPlatformRailNodeAuthoring>();
+                if (tree == null ||
+                    railNodeIndex < 0 || railNodeIndex >= railNodes.Count || railNodes[railNodeIndex] == null ||
+                    newParentRailNodeIndex < 0 || newParentRailNodeIndex >= railNodes.Count || railNodes[newParentRailNodeIndex] == null)
+                {
+                    return false;
+                }
+
+                return tree.ReparentRailNode(railNodes[railNodeIndex].StableId, railNodes[newParentRailNodeIndex].StableId);
             });
         }
 
@@ -539,6 +687,27 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
             });
         }
 
+        private void SetMoveStepTargetRail(int selectorIndex, int stepIndex, int railNodeIndex)
+        {
+            ExecuteTreeMutation("Set MovingPlatform Move Target", movingPlatform =>
+            {
+                MovingPlatformTreeAuthoring tree = movingPlatform.TreeAuthoring;
+                IReadOnlyList<MovingPlatformSelectorNodeAuthoring> selectors = tree?.Selectors ?? System.Array.Empty<MovingPlatformSelectorNodeAuthoring>();
+                IReadOnlyList<MovingPlatformRailNodeAuthoring> railNodes = tree?.RailNodes ?? System.Array.Empty<MovingPlatformRailNodeAuthoring>();
+                if (tree == null || selectorIndex < 0 || selectorIndex >= selectors.Count || selectors[selectorIndex] == null)
+                    return false;
+
+                IReadOnlyList<MovingPlatformControlNodeAuthoring> steps = selectors[selectorIndex].OrderedChildren;
+                if (stepIndex < 0 || stepIndex >= steps.Count || steps[stepIndex] is not MovingPlatformMoveNodeAuthoring moveStep)
+                    return false;
+
+                if (railNodeIndex < 0 || railNodeIndex >= railNodes.Count || railNodes[railNodeIndex] == null)
+                    return false;
+
+                return tree.SetMoveStepTargetRailNodeId(selectors[selectorIndex].StableId, moveStep.StableId, railNodes[railNodeIndex].StableId);
+            });
+        }
+
         private void MoveSelectorStep(int sourceSelectorIndex, int stepIndex, int targetSelectorIndex)
         {
             ExecuteTreeMutation("Move MovingPlatform Step", movingPlatform =>
@@ -594,6 +763,46 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
             }
 
             detailBridge.Bind(new SerializedObject(resolvedTarget), selectedPropertyPath);
+        }
+
+        // Rail 行には参照に使う StableId を併記する。Move ステップが参照する 'rail.1' などと突き合わせられるようにする。
+        private static string BuildRailRowTitle(MovingPlatformRailNodeAuthoring railNode)
+        {
+            if (railNode == null)
+                return "Rail";
+
+            string label = string.IsNullOrWhiteSpace(railNode.Label) ? "Rail" : railNode.Label;
+            string id = railNode.StableId;
+            return string.IsNullOrWhiteSpace(id) ? label : $"{label}   ·   {id}";
+        }
+
+        // メニュー項目用の Rail タイトル。ラベルと StableId を併記する。
+        private static string BuildRailMenuTitle(MovingPlatformRailNodeAuthoring railNode, int index)
+        {
+            string label = railNode != null && !string.IsNullOrWhiteSpace(railNode.Label) ? railNode.Label : $"Rail {index + 1}";
+            string id = railNode != null ? railNode.StableId : string.Empty;
+            return string.IsNullOrWhiteSpace(id) ? label : $"{label} ({id})";
+        }
+
+        // Move ステップ行には移動先 Rail の StableId を併記し、参照切れは (missing) で明示する。
+        private static string BuildStepRowTitle(
+            MovingPlatformControlNodeAuthoring step,
+            int stepIndex,
+            HashSet<string> railNodeIds)
+        {
+            string baseTitle = step != null ? step.Label : $"Step {stepIndex + 1}";
+
+            if (step is not MovingPlatformMoveNodeAuthoring moveStep)
+                return baseTitle;
+
+            string targetId = moveStep.TargetRailNodeId;
+            if (string.IsNullOrWhiteSpace(targetId))
+                return $"{baseTitle}   →   (no target)";
+
+            bool exists = railNodeIds != null && railNodeIds.Contains(targetId);
+            return exists
+                ? $"{baseTitle}   →   {targetId}"
+                : $"{baseTitle}   →   {targetId} (missing)";
         }
 
         private static string NormalizeSelectedPropertyPath(string propertyPath)

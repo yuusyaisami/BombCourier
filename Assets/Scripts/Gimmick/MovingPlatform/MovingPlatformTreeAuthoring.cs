@@ -378,7 +378,10 @@ namespace BC.Gimmick.MovingPlatform
             var railNode = new MovingPlatformRailNodeAuthoring();
             string stableId = GenerateUniqueId("rail", usedIds, rails.Count + 1);
             railNode.SetStableId(stableId);
-            railNode.SetLabel(string.IsNullOrWhiteSpace(label) ? stableId : label);
+            string resolvedLabel = string.IsNullOrWhiteSpace(label)
+                ? GenerateUniqueRailLabel(BuildUsedRailLabels())
+                : label;
+            railNode.SetLabel(resolvedLabel);
             railNode.SetParentRailNodeId(MovingPlatformTreeNodeAuthoring.NormalizeId(parentRailNodeId));
             railNode.SetLocalPosition(localPosition);
             rails.Add(railNode);
@@ -549,6 +552,36 @@ namespace BC.Gimmick.MovingPlatform
 
             selector.SetAnchorRailNodeId(resolvedAnchorRailNodeId);
             return true;
+        }
+
+        // Move ステップの移動先 Rail を、実在する Rail ノードへ付け替える。
+        // 参照切れ ('rail.1' などの missing 参照) をエディタから直接修復するために使う。
+        public bool SetMoveStepTargetRailNodeId(string selectorStableId, string stepStableId, string targetRailNodeId)
+        {
+            MovingPlatformSelectorNodeAuthoring selector = FindSelectorNode(selectorStableId);
+            if (selector == null)
+                return false;
+
+            stepStableId = MovingPlatformTreeNodeAuthoring.NormalizeId(stepStableId);
+            if (string.IsNullOrWhiteSpace(stepStableId))
+                return false;
+
+            string resolvedRailNodeId = MovingPlatformTreeNodeAuthoring.NormalizeId(targetRailNodeId);
+            if (string.IsNullOrWhiteSpace(resolvedRailNodeId) || FindRailNodeIndex(resolvedRailNodeId) < 0)
+                return false;
+
+            List<MovingPlatformControlNodeAuthoring> steps = selector.MutableOrderedChildren;
+            for (int i = 0; i < steps.Count; i++)
+            {
+                if (steps[i] is MovingPlatformMoveNodeAuthoring moveStep &&
+                    string.Equals(moveStep.StableId, stepStableId, StringComparison.Ordinal))
+                {
+                    moveStep.SetTargetRailNodeId(resolvedRailNodeId);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public MovingPlatformControlNodeAuthoring AddSelectorStep(string selectorStableId, Type stepType = null, string label = null)
@@ -944,6 +977,43 @@ namespace BC.Gimmick.MovingPlatform
             }
 
             return usedIds;
+        }
+
+        internal HashSet<string> BuildUsedRailLabels(MovingPlatformRailNodeAuthoring exclude = null)
+        {
+            var usedLabels = new HashSet<string>(StringComparer.Ordinal);
+            if (railNodes == null)
+                return usedLabels;
+
+            for (int i = 0; i < railNodes.Count; i++)
+            {
+                MovingPlatformRailNodeAuthoring railNode = railNodes[i];
+                if (railNode == null || ReferenceEquals(railNode, exclude))
+                    continue;
+
+                string label = railNode.Label;
+                if (!string.IsNullOrWhiteSpace(label))
+                    usedLabels.Add(label);
+            }
+
+            return usedLabels;
+        }
+
+        // 既存ラベルと衝突しない "Rail N" を生成する。見つけた候補は usedLabels に予約する。
+        internal static string GenerateUniqueRailLabel(HashSet<string> usedLabels)
+        {
+            int counter = 1;
+            while (true)
+            {
+                string candidate = $"Rail {counter}";
+                if (usedLabels == null || !usedLabels.Contains(candidate))
+                {
+                    usedLabels?.Add(candidate);
+                    return candidate;
+                }
+
+                counter++;
+            }
         }
 
         private HashSet<string> BuildUsedSelectorIds()
