@@ -97,7 +97,10 @@ namespace BC.ActionSystem
             if (IsKernelEntityScope(scope))
                 return isKernel && !isLocal;
 
-            return !isKernel && !isLocal;
+            // Entity スコープ: Local 専用キーと、アプリ永続の Kernel.* 以外は Entity 単位で保持できる。
+            // GameLogic.* を共有(SceneKernel)だけでなく、NPC ごとの会話回数などエンティティ単位にも書き込めるようにする。
+            bool isApplicationKernel = ValueStoreWriteValueTypeUtility.IsApplicationKernelDescriptor(descriptor);
+            return !isLocal && !isApplicationKernel;
         }
 
         public static int ResolveTargets(
@@ -262,6 +265,12 @@ namespace BC.ActionSystem
             return IsLocalPath(descriptor.Path);
         }
 
+        // アプリ永続のカーネルキー (Kernel.*) かどうか。GameLogic.* は含めない。
+        public static bool IsApplicationKernelDescriptor(ValueKeyDescriptor descriptor)
+        {
+            return IsApplicationKernelPath(descriptor.Path);
+        }
+
         public static bool IsKernelPath(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
@@ -269,6 +278,11 @@ namespace BC.ActionSystem
 
             return path.StartsWith("Kernel.", StringComparison.Ordinal) ||
                    path.StartsWith("GameLogic.", StringComparison.Ordinal);
+        }
+
+        public static bool IsApplicationKernelPath(string path)
+        {
+            return !string.IsNullOrWhiteSpace(path) && path.StartsWith("Kernel.", StringComparison.Ordinal);
         }
 
         public static bool IsLocalPath(string path)
