@@ -13,6 +13,8 @@
 #define ESL_DEBUG_COMBINED_LIGHT_INTENSITY 7
 #define ESL_DEBUG_LIGHT_BAND_EMISSION_MASK 8
 #define ESL_DEBUG_SIMPLE_BOOST_FRESNEL 9
+#define ESL_DEBUG_SHADOW_ATTENUATION 10
+#define ESL_DEBUG_OCCLUSION_SHADOW 11
 
 // 符号付きノイズを可視化用の0..1へ再マッピングします。
 float3 ESL_EncodeDebugNoise(float noiseValue)
@@ -79,6 +81,19 @@ float3 ESL_ApplyDebugView(float3 color, ESL_StylizedDiffuseData diffuseData)
 	if (debugView == ESL_DEBUG_SIMPLE_BOOST_FRESNEL)
 	{
 		return diffuseData.simpleBoostFresnelTerm.xxx;
+	}
+
+	// 受光した生のシャドウ。白=照射(1.0)、黒=完全遮蔽(0.0)。
+	// 障害物の裏で黒くならない場合、シェーダーには影が届いていない（＝ライト/キャスト/パイプライン側の問題）。
+	if (debugView == ESL_DEBUG_SHADOW_ATTENUATION)
+	{
+		return diffuseData.rawShadowAttenuation.xxx;
+	}
+
+	// _ShadowStrength / _ShadowInfluence 適用後の遮蔽係数。最終的な減光量の確認用。
+	if (debugView == ESL_DEBUG_OCCLUSION_SHADOW)
+	{
+		return diffuseData.occlusionShadow.xxx;
 	}
 
 	return color;

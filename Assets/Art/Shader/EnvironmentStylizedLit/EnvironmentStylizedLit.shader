@@ -53,6 +53,7 @@ Shader "BC/EnvironmentStylizedLit"
         _ShadowInfluence ("Shadow Influence", Range(0, 1)) = 1
         _ShadowSoftFill ("Shadow Soft Fill", Range(0, 1)) = 0.2
         _ShadowColorBlend ("Shadow Color Blend", Range(0, 1)) = 0.6
+        _ShadowStrength ("Shadow Strength", Range(0, 1)) = 0.9
 
         _AmbientTopColor ("Ambient Top Color", Color) = (0.50, 0.57, 0.70, 1)
         _AmbientSideColor ("Ambient Side Color", Color) = (0.34, 0.38, 0.46, 1)
@@ -123,7 +124,7 @@ Shader "BC/EnvironmentStylizedLit"
         _NoiseDistanceFadeStart ("Noise Distance Fade Start", Range(0, 100)) = 12
         _NoiseDistanceFadeEnd ("Noise Distance Fade End", Range(0, 100)) = 32
 
-        [Range(0, 9)] _DebugView ("Debug View", Float) = 0
+        [Range(0, 11)] _DebugView ("Debug View", Float) = 0
     }
 
     SubShader

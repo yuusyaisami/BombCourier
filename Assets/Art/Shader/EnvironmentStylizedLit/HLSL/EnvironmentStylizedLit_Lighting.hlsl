@@ -321,6 +321,14 @@ float ESL_EvaluateShadowMask(float shadowAttenuation)
 	return saturate(1.0 - shadowAttenuation);
 }
 
+// 遮蔽（キャストシャドウ）による減光係数。1=照射, 0=完全遮蔽。
+// ソフトフィルでは持ち上げず、生の減衰から算出する（影をくっきり残すため）。
+float ESL_EvaluateOcclusionShadow(float rawShadowAttenuation)
+{
+	float occlusion = lerp(1.0, saturate(rawShadowAttenuation), saturate(_ShadowStrength));
+	return lerp(1.0, occlusion, saturate(_ShadowInfluence));
+}
+
 float3 ESL_EvaluateShadowColor(float shadowMask)
 {
 	return lerp(_ShadowColor.rgb, _DeepShadowColor.rgb, saturate(shadowMask));
@@ -342,7 +350,11 @@ float3 ESL_EvaluateShadowedBandColor(float3 bandColor, float rawShadowAttenuatio
 
 float ESL_EvaluateIndirectMask(float shadowAttenuation, float ndotl)
 {
-	return saturate(max(ESL_EvaluateShadowMask(shadowAttenuation), 1.0 - saturate(ndotl)));
+	// 自己シェーディング側（未照射）は従来通り間接光で埋める。
+	float terminatorMask = 1.0 - saturate(ndotl);
+	// キャストシャドウ由来のフィルは控えめにし、影が遮蔽として読めるようにする。
+	float castShadowMask = ESL_EvaluateShadowMask(shadowAttenuation) * 0.35;
+	return saturate(max(terminatorMask, castShadowMask));
 }
 
 // 間接光（環境光/バウンス/ベイクGI）をスタイライズして合成します。

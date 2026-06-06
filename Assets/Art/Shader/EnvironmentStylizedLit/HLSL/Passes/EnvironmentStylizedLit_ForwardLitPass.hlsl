@@ -117,7 +117,15 @@ ESL_InputData ESL_BuildInputData(ESL_Varyings input, ESL_SurfaceData surfaceData
         inputData.shadowMask);
     #else
     inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS);
+    #if defined(LIGHTMAP_ON)
     inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
+    #else
+    // ベイク非対象（リアルタイム）のオブジェクトでは、ベイク影マスクが無い。
+    // Mixed Lighting(Shadowmask) 有効時に SAMPLE_SHADOWMASK が 0 を返すと、
+    // URP の MainLightShadow が主光 shadowAttenuation を 0 に潰して全面影になるため、
+    // ベイク非対象では明示的に 1（=ベイク影なし）を入れてリアルタイム影を優先する。
+    inputData.shadowMask = half4(1.0, 1.0, 1.0, 1.0);
+    #endif
     #endif
 
     AmbientOcclusionFactor aoFactor = CreateAmbientOcclusionFactor(inputData.normalizedScreenSpaceUV, surfaceData.occlusion);

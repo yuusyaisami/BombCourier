@@ -14,6 +14,8 @@ struct ESL_StylizedDiffuseData
 	float steppedLight;
 	float3 bandColor;
 	float shadowAttenuation;
+	float occlusionShadow;
+	float rawShadowAttenuation;
 	float3 shadowedBandColor;
 	float3 ambientColor;
 	float3 bounceColor;
@@ -47,9 +49,14 @@ ESL_StylizedDiffuseData ESL_EvaluateStylizedDiffuse(ESL_InputData inputData, ESL
 	diffuseData.surfaceNoise = surfaceData.surfaceNoise;
 	diffuseData.bandNoise = surfaceData.bandNoise;
 	diffuseData.wrappedLight = ESL_ComputeWrappedLight(diffuseData.ndotl, _WrapLighting);
+	// キャストシャドウの遮蔽係数を先に求め、バンド前のライトスカラへ畳み込む（(A)）。
+	// min(...) は「未照射 または 遮蔽」の暗い方を採用するため、裏面を二重に暗くしない。
+	diffuseData.occlusionShadow = ESL_EvaluateOcclusionShadow(mainLight.shadowAttenuation);
+	diffuseData.rawShadowAttenuation = mainLight.shadowAttenuation; // 受光した生のシャドウ（Debug用、1=照射 0=遮蔽）。
+	float occludedLightScalar = min(diffuseData.wrappedLight, diffuseData.occlusionShadow);
 	// ライト段にバンドノイズと局所オフセットを加えて、トゥーン段差を決定します。
 	diffuseData.steppedLight = ESL_ComputeSteppedLight(
-		ESL_ApplyBandContrastAndOffset(diffuseData.wrappedLight + diffuseData.bandNoise, ESL_EvaluateSurfaceBandOffset(surfaceData)),
+		ESL_ApplyBandContrastAndOffset(occludedLightScalar + diffuseData.bandNoise, ESL_EvaluateSurfaceBandOffset(surfaceData)),
 		_LightStepCount,
 		saturate(_LightStepSmoothness));
 	diffuseData.bandColor = ESL_EvaluateBandColor(diffuseData.steppedLight);
@@ -109,7 +116,9 @@ ESL_StylizedDiffuseData ESL_EvaluateStylizedDiffuse(ESL_InputData inputData, ESL
 	}
 
 	diffuseData.emissionAddColor = diffuseData.lightBandEmissionColor + diffuseData.simpleBoostEmissionColor;
-	diffuseData.finalColor = surfaceData.albedo * diffuseData.shadowedBandColor * mainLight.color * mainLight.distanceAttenuation
+	// (B) 主光拡散項に遮蔽係数を乗算し、遮蔽部では主光がほぼ消える（くっきり遮蔽）。
+	// 純黒に落ちないのは、影非依存の半球アンビエント（indirectColor）が下限を与えるため。
+	diffuseData.finalColor = surfaceData.albedo * diffuseData.shadowedBandColor * mainLight.color * mainLight.distanceAttenuation * diffuseData.occlusionShadow
 		+ diffuseData.indirectColor
 		+ diffuseData.additionalLightColor
 		+ specularData.combinedSpecular;

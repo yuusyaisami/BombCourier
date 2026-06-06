@@ -50,6 +50,7 @@ CBUFFER_START(UnityPerMaterial)
     float _ShadowInfluence;
     float _ShadowSoftFill;
     float _ShadowColorBlend;
+    float _ShadowStrength;
 
     float4 _AmbientTopColor;
     float4 _AmbientSideColor;

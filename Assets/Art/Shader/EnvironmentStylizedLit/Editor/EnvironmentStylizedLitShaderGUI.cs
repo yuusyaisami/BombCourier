@@ -248,6 +248,7 @@ namespace BC.Rendering
             DrawProperty("_ShadowInfluence");
             DrawProperty("_ShadowSoftFill");
             DrawProperty("_ShadowColorBlend");
+            DrawProperty("_ShadowStrength");
         }
 
         private void DrawAmbientBounceSection()
