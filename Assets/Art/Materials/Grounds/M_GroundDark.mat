@@ -94,7 +94,7 @@ Material:
     - _AdditionalLightAttenuationSmoothness: 0.08
     - _AdditionalLightAttenuationStepCount: 3
     - _AdditionalLightColorInfluence: 1
-    - _AdditionalLightIntensity: 0.753
+    - _AdditionalLightIntensity: 1
     - _AdditionalLightMode: 2
     - _AdditionalLightPaletteBlend: 0.65
     - _AdditionalLightShadowInfluence: 1
@@ -102,8 +102,8 @@ Material:
     - _AlphaClip: 0
     - _AlphaToMask: 0
     - _AmbientStrength: 0.42
-    - _BandContrast: 1.111
-    - _BandOffset: -0.121
+    - _BandContrast: 1.345
+    - _BandOffset: -0.23
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BounceStrength: 0.28
@@ -145,7 +145,7 @@ Material:
     - _LightBandNoiseScale: 0.75
     - _LightBandNoiseStrength: 0.08
     - _LightStepCount: 5
-    - _LightStepSmoothness: 0.056
+    - _LightStepSmoothness: 0.214
     - _MainLightColorInfluence: 0.2
     - _MainLightIntensityResponse: 1
     - _Metallic: 0
@@ -161,6 +161,7 @@ Material:
     - _ShadowColorBlend: 0.6
     - _ShadowInfluence: 1
     - _ShadowSoftFill: 0.2
+    - _ShadowStrength: 0.9
     - _SimpleBoostEmissionEnabled: 0
     - _SimpleBoostEmissionIntensity: 4
     - _SimpleBoostFresnelInvert: 0
@@ -183,7 +184,7 @@ Material:
     - _TriplanarNormalMapEnabled: 0
     - _TriplanarScale: 1.09
     - _VertexColorBandOffsetStrength: 1
-    - _VertexColorCavityStrength: 0.983
+    - _VertexColorCavityStrength: 0.986
     - _VertexColorColorVariationStrength: 1
     - _VertexColorEnabled: 1
     - _WorkflowMode: 1
@@ -194,7 +195,7 @@ Material:
     - _WorldYGradientMax: 3
     - _WorldYGradientMin: 0
     - _WorldYGradientStrength: 0
-    - _WrapLighting: 0.555
+    - _WrapLighting: 0.35
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:

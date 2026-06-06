@@ -12,7 +12,8 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _VERTEXCOLORENABLED_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -92,10 +93,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
-    - _AdditionalLightColorInfluence: 0.75
-    - _AdditionalLightIntensity: 0.5
+    - _AdditionalLightColorInfluence: 1
+    - _AdditionalLightIntensity: 1
     - _AdditionalLightMode: 1
-    - _AdditionalLightShadowInfluence: 0.65
+    - _AdditionalLightShadowInfluence: 1
     - _AlbedoNoiseStrength: 0.18
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -142,7 +143,7 @@ Material:
     - _LightBandEmissionStepMin: 3
     - _LightBandNoiseScale: 0.75
     - _LightBandNoiseStrength: 0.08
-    - _LightStepCount: 3
+    - _LightStepCount: 4
     - _LightStepSmoothness: 0.08
     - _Metallic: 0
     - _NoiseDistanceFadeEnd: 32
@@ -156,6 +157,7 @@ Material:
     - _ShadowColorBlend: 0.6
     - _ShadowInfluence: 1
     - _ShadowSoftFill: 0.2
+    - _ShadowStrength: 0.9
     - _SimpleBoostEmissionEnabled: 0
     - _SimpleBoostEmissionIntensity: 4
     - _SimpleBoostFresnelInvert: 0
@@ -180,7 +182,7 @@ Material:
     - _VertexColorBandOffsetStrength: 1
     - _VertexColorCavityStrength: 1
     - _VertexColorColorVariationStrength: 1
-    - _VertexColorEnabled: 0
+    - _VertexColorEnabled: 1
     - _WorkflowMode: 1
     - _WorldNoiseContrast: 1.25
     - _WorldNoiseScale: 0.4

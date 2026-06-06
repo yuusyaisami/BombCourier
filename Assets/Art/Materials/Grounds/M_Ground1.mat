@@ -149,10 +149,10 @@ Material:
     m_Floats:
     - _AAS: 0.0001
     - _AddPrecomputedVelocity: 0
-    - _AdditionalLightColorInfluence: 0.75
-    - _AdditionalLightIntensity: 0.5
+    - _AdditionalLightColorInfluence: 1
+    - _AdditionalLightIntensity: 1
     - _AdditionalLightMode: 1
-    - _AdditionalLightShadowInfluence: 0.65
+    - _AdditionalLightShadowInfluence: 1
     - _AlbedoNoiseStrength: 0.18
     - _AlpToCov: 0
     - _AlphaBaseCutout: 1
@@ -191,9 +191,11 @@ Material:
     - _DynamicNoisyOutline: 0
     - _EdgeSheenPower: 2.5
     - _EdgeSheenStrength: 0.15
+    - _EdgeWidth: 1
     - _EmissionStrength: 0
     - _EnvironmentReflections: 1
     - _EnvironmentalLightingIntensity: 1
+    - _FaceAlpha: 1
     - _FarDistanceMaxWidth: 10
     - _GIFlatShade: 0
     - _GIShadeThreshold: 0
@@ -217,6 +219,18 @@ Material:
     - _LightAffectOutlineColor: 0
     - _LightAffectRimLightColor: 0
     - _LightAffectShadow: 1
+    - _LightBandEmissionAdditionalWeight: 1
+    - _LightBandEmissionBandStepBlend: 1
+    - _LightBandEmissionEnabled: 0
+    - _LightBandEmissionFeather: 0.08
+    - _LightBandEmissionGradientInfluence: 0
+    - _LightBandEmissionIntensity: 2
+    - _LightBandEmissionMax: 1
+    - _LightBandEmissionMin: 0.55
+    - _LightBandEmissionResponse: 2
+    - _LightBandEmissionSpecialMaskInfluence: 0
+    - _LightBandEmissionStepMax: 5
+    - _LightBandEmissionStepMin: 3
     - _LightBandNoiseScale: 0.75
     - _LightBandNoiseStrength: 0.08
     - _LightFalloffAffectShadowT: 0
@@ -333,6 +347,7 @@ Material:
     - _ShadowHardness: 0
     - _ShadowInfluence: 1
     - _ShadowSoftFill: 0.2
+    - _ShadowStrength: 0.9
     - _ShadowTColorPower: 1
     - _ShadowTHardness: 1
     - _ShadowTIntensity: 1
@@ -343,6 +358,11 @@ Material:
     - _ShowInAmbientLightShadowThreshold: 0.4
     - _ShowNormal: 0
     - _SimTrans: 0
+    - _SimpleBoostEmissionEnabled: 0
+    - _SimpleBoostEmissionIntensity: 4
+    - _SimpleBoostFresnelInvert: 0
+    - _SimpleBoostFresnelPower: 2
+    - _SimpleBoostFresnelStrength: 1
     - _SkinMatrixIndex: 0
     - _SmoothObjectNormal: 0
     - _Smoothness: 0.5
@@ -356,6 +376,7 @@ Material:
     - _SrcBlendAlpha: 1
     - _StraWidt: 10
     - _Surface: 0
+    - _SurfaceMode: 0
     - _TEXMCOLINT: 1
     - _TRANSMODE: 0
     - _TessellationFar: 1
@@ -406,12 +427,14 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _CustomLightDirection: {r: 0, g: 0, b: 10, a: 0}
     - _DeepShadowColor: {r: 0.33999997, g: 0.39999998, b: 0.56, a: 1}
+    - _EdgeColor: {r: 1, g: 1, b: 1, a: 1}
     - _EdgeSheenColor: {r: 1, g: 0.96999997, b: 0.92, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GlossColor: {r: 1, g: 1, b: 1, a: 1}
     - _Glow_Color: {r: 1, g: 1, b: 1, a: 1}
     - _HighlightColor: {r: 1, g: 1, b: 1, a: 1}
     - _IndirectShadowColor: {r: 0.72, g: 0.78, b: 0.88, a: 1}
+    - _LightBandEmissionColor: {r: 1.4, g: 1.2, b: 1, a: 1}
     - _LightColor: {r: 1, g: 0.96, b: 0.9, a: 1}
     - _MainColor: {r: 1, g: 1, b: 1, a: 1}
     - _MidColor: {r: 0.8399999, g: 0.88, b: 0.93, a: 1}
@@ -431,6 +454,7 @@ Material:
     - _SelfShadowRealTimeShadowColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0.56, g: 0.63, b: 0.78999996, a: 1}
     - _ShadowTColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SimpleBoostEmissionColor: {r: 1, g: 0.95, b: 0.9, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _WorldYGradientBottomColor: {r: 1, g: 1, b: 1, a: 1}
