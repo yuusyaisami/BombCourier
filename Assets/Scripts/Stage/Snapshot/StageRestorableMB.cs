@@ -53,6 +53,15 @@ namespace BC.Stage.Snapshot
             runtimeKey = key;
         }
 
+        // 旧 StageSaveMarkMB から実行時にフラグを引き継ぐための橋渡し（移行なしで新系に対応させる）。
+        internal void ApplyLegacyConfiguration(bool excludeFromSnapshot, bool saveActiveSelf, bool saveTransform, bool saveRigidbody)
+        {
+            this.excludeFromSnapshot = excludeFromSnapshot;
+            this.saveActiveSelf = saveActiveSelf;
+            this.saveTransform = saveTransform;
+            this.saveRigidbody = saveRigidbody;
+        }
+
         private void OnEnable()
         {
             StageRestorableRegistry.Register(this);

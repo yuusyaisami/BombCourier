@@ -22,8 +22,13 @@ namespace BC.Item
         private Rigidbody rb;
         private Collider objectCollider;
         private bool isHandled;
+        private Transform releaseParent; // 拾う前の親（Map 内）。リリース時にここへ戻す。
         private float ignoreOwnerCollisionUntilTime;
+        private float ignoreOwnerCollisionHardDeadline;
         private readonly List<Collider> ignoredHolderColliders = new(16);
+
+        // 投擲後、重なりが解消しない場合でもこの猶予を超えたら無視を強制解除する安全上限。
+        private const float OwnerCollisionOverlapHardCapSeconds = 2.0f;
 
         public Transform ItemTransform => transform;
         public bool IsHandled => isHandled;
@@ -50,14 +55,27 @@ namespace BC.Item
             if (Time.time < ignoreOwnerCollisionUntilTime)
                 return;
 
-            ignoreOwnerCollisionUntilTime = 0f;
-            ClearIgnoredHolderCollisions();
+            // タイマー満了後は、重なっているペアを分離するまで無視を維持し、めり込み解消による吹き飛びを防ぐ。
+            // ハードキャップを超えたら強制解除する。
+            bool hardCapReached = Time.time >= ignoreOwnerCollisionHardDeadline;
+            bool allReleased = CarryCollisionUtility.ReleaseSeparatedIgnoredColliders(objectCollider, ignoredHolderColliders);
+
+            if (allReleased || hardCapReached)
+            {
+                ignoreOwnerCollisionUntilTime = 0f;
+                ignoreOwnerCollisionHardDeadline = 0f;
+                ClearIgnoredHolderCollisions();
+            }
         }
 
         public void OnHandle(Transform handlePoint)
         {
             if (!CanBeCarried || handlePoint == null)
                 return;
+
+            // 拾う前の親（Map 内）を覚えておき、リリース時にそこへ戻す（GameScene ルートに残さない）。
+            if (!isHandled)
+                releaseParent = transform.parent;
 
             isHandled = true;
 
@@ -69,6 +87,10 @@ namespace BC.Item
             rb.useGravity = false;
 
             ConfigureHeldHolderCollisionIgnore(handlePoint);
+
+            // 持っている間は当たり判定を消す（Player・壁ともに干渉させない）。
+            if (objectCollider != null)
+                objectCollider.enabled = false;
 
             transform.SetParent(handlePoint, true);
             transform.localPosition = Vector3.zero;
@@ -82,8 +104,11 @@ namespace BC.Item
 
             isHandled = false;
             ignoreOwnerCollisionUntilTime = 0f;
+            // 先にコライダーを有効化してから無視解除する（無効状態での解除漏れを避ける）。
+            if (objectCollider != null)
+                objectCollider.enabled = true;
             ClearIgnoredHolderCollisions();
-            transform.SetParent(null, true);
+            transform.SetParent(CarryReleaseUtility.ResolveReleaseParent(releaseParent), true);
 
             rb.isKinematic = false;
             rb.detectCollisions = true;
@@ -100,6 +125,7 @@ namespace BC.Item
 
             ConfigureHeldHolderCollisionIgnore(ownerRoot);
             ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
+            ignoreOwnerCollisionHardDeadline = Mathf.Max(ignoreOwnerCollisionHardDeadline, Time.time + durationSeconds + OwnerCollisionOverlapHardCapSeconds);
         }
 
         public object CaptureStageState()

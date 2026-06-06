@@ -4,9 +4,12 @@ using BC.ActionSystem;
 using BC.Audio;
 using BC.Base;
 using BC.Camera;
+using BC.Localization;
 using BC.UI;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Tables;
 
 namespace BC.Managers
 {
@@ -37,9 +40,13 @@ namespace BC.Managers
 
         public TalkStateId talkStateId; // 会話中の actor presentation を選ぶ状態。
         public CharacterIdReference speakerCharacter;
-        public string speakerName;
         [TextArea]
         public string dialogueText;
+
+        // ローカライズ: セリフ表示テキスト。entry が見つからなければ上の dialogueText をフォールバック表示する。
+        public LocalizedStringTable table;
+        public string entry;
+        public bool applySetTable;
 
         public TextEffectData textEffectData; // 文字サイズなど、会話テキストの見た目を制御する設定。
 
@@ -57,7 +64,7 @@ namespace BC.Managers
 
         public string ResolveSpeakerDisplayName()
         {
-            return TalkSpeakerDisplayNameUtility.ResolveSpeakerDisplayName(speakerCharacter, speakerName);
+            return TalkSpeakerDisplayNameUtility.ResolveSpeakerDisplayName(speakerCharacter);
         }
 
         public void EnsureInlineActionFlagsInitialized()
@@ -73,7 +80,7 @@ namespace BC.Managers
 
     internal static class TalkSpeakerDisplayNameUtility
     {
-        public static string ResolveSpeakerDisplayName(CharacterIdReference speakerCharacter, string speakerName)
+        public static string ResolveSpeakerDisplayName(CharacterIdReference speakerCharacter)
         {
             if (CharacterIdRegistry.TryGetDescriptor(speakerCharacter, out CharacterIdDescriptor descriptor))
             {
@@ -83,9 +90,6 @@ namespace BC.Managers
                 if (!string.IsNullOrWhiteSpace(descriptor.Path))
                     return descriptor.Path;
             }
-
-            if (!string.IsNullOrWhiteSpace(speakerName))
-                return speakerName;
 
             return speakerCharacter.IsAssigned
                 ? speakerCharacter.ToString()
@@ -99,9 +103,13 @@ namespace BC.Managers
         private const int ActionToggleVersionEnabled = 1;
 
         public CharacterIdReference speakerCharacter;
-        public string speakerName;
         [TextArea]
         public string dialogueText;
+
+        // ローカライズ: セリフ表示テキスト。entry が見つからなければ上の dialogueText をフォールバック表示する。
+        public LocalizedStringTable table;
+        public string entry;
+        public bool applySetTable;
 
         public TextEffectData textEffectData;
         [Min(0f)]
@@ -122,7 +130,7 @@ namespace BC.Managers
 
         public string ResolveSpeakerDisplayName()
         {
-            return TalkSpeakerDisplayNameUtility.ResolveSpeakerDisplayName(speakerCharacter, speakerName);
+            return TalkSpeakerDisplayNameUtility.ResolveSpeakerDisplayName(speakerCharacter);
         }
 
         public void EnsureInlineActionFlagsInitialized()
@@ -156,12 +164,33 @@ namespace BC.Managers
 
     public readonly struct TalkChoiceOptionRequestData
     {
-        public readonly string DisplayText;
+        public readonly LocalizedStringTable Table;
+        public readonly string Entry;
+        public readonly bool ApplySetTable;
+        public readonly string FallbackText;
+        public readonly string DisplayText; // 解決済みの表示テキスト（未解決時は FallbackText）。
 
-        public TalkChoiceOptionRequestData(string displayText)
+        public TalkChoiceOptionRequestData(LocalizedStringTable table, string entry, bool applySetTable, string fallbackText)
         {
-            DisplayText = displayText ?? string.Empty;
+            Table = table;
+            Entry = entry ?? string.Empty;
+            ApplySetTable = applySetTable;
+            FallbackText = fallbackText ?? string.Empty;
+            DisplayText = FallbackText;
         }
+
+        private TalkChoiceOptionRequestData(
+            LocalizedStringTable table, string entry, bool applySetTable, string fallbackText, string displayText)
+        {
+            Table = table;
+            Entry = entry ?? string.Empty;
+            ApplySetTable = applySetTable;
+            FallbackText = fallbackText ?? string.Empty;
+            DisplayText = string.IsNullOrEmpty(displayText) ? FallbackText : displayText;
+        }
+
+        public TalkChoiceOptionRequestData WithResolvedDisplayText(string resolvedDisplayText)
+            => new TalkChoiceOptionRequestData(Table, Entry, ApplySetTable, FallbackText, resolvedDisplayText);
     }
 
     public readonly struct TalkChoiceRequestData
@@ -215,6 +244,11 @@ namespace BC.Managers
 
         [SerializeField] private UITalkSystemMB talkSystemUIManagerMB;
         [SerializeField] private UITalkChoiceSystemMB talkChoiceUIManagerMB;
+
+        [Header("Localization")]
+        [Tooltip("話者名を解決する統一 String Table。Key は SpeakerCharacter の Path（例: Npc.Vanilla）。見つからなければ DisplayName。")]
+        public LocalizedStringTable speakerNameTable;
+
         [Header("Camera")]
         [SerializeField] private bool lockConversationFocusUntilHide = true;
 
@@ -278,7 +312,13 @@ namespace BC.Managers
             CancellationToken cancellationToken = default)
         {
             dialogueRequestData.EnsureInlineActionFlagsInitialized();
-            dialogueRequestData.speakerName = dialogueRequestData.ResolveSpeakerDisplayName();
+            dialogueRequestData.dialogueText = await ResolveLocalizedTextAsync(
+                dialogueRequestData.table,
+                dialogueRequestData.entry,
+                dialogueRequestData.applySetTable,
+                dialogueRequestData.dialogueText,
+                dialogueHeldTable);
+            string dialogueSpeakerName = await ResolveSpeakerDisplayNameAsync(dialogueRequestData.speakerCharacter);
 
             if (talkSystemUIManagerMB == null)
             {
@@ -327,7 +367,7 @@ namespace BC.Managers
             talkChoiceUIManagerMB?.ClearChoicesImmediate();
             talkSystemUIManagerMB.UseDefaultCharacterSound();
 
-            await talkSystemUIManagerMB.ShowTalk(ToTalkRequestData(dialogueRequestData), effectiveCancellation);
+            await talkSystemUIManagerMB.ShowTalk(ToTalkRequestData(dialogueRequestData), dialogueSpeakerName, effectiveCancellation);
 
             NotifyTalkTypingCompleted();
 
@@ -353,7 +393,13 @@ namespace BC.Managers
             TalkRequestData talkRequestData)
         {
             talkRequestData.EnsureInlineActionFlagsInitialized();
-            talkRequestData.speakerName = talkRequestData.ResolveSpeakerDisplayName();
+            talkRequestData.dialogueText = await ResolveLocalizedTextAsync(
+                talkRequestData.table,
+                talkRequestData.entry,
+                talkRequestData.applySetTable,
+                talkRequestData.dialogueText,
+                dialogueHeldTable);
+            string talkSpeakerName = await ResolveSpeakerDisplayNameAsync(talkRequestData.speakerCharacter);
 
             if (talkSystemUIManagerMB == null)
             {
@@ -400,7 +446,7 @@ namespace BC.Managers
                 talkSystemUIManagerMB.SetCharacterSound(characterSound);
             }
 
-            await talkSystemUIManagerMB.ShowTalk(talkRequestData, currentTalkCancellation.Token);
+            await talkSystemUIManagerMB.ShowTalk(talkRequestData, talkSpeakerName, currentTalkCancellation.Token);
 
             // Typewriter 側 callback が取りこぼされても、ShowTalk 復帰時点で speaking 表現は必ず落とす。
             NotifyTalkTypingCompleted();
@@ -444,80 +490,23 @@ namespace BC.Managers
                 return false;
             }
 
-            bool resolved = false;
-            CharacterIdReference resolvedByNameReference = default;
-            bool hasResolvedByName = false;
+            if (!talkRequestData.HasSpeakerCharacter)
+                return false;
 
-            if (talkRequestData.HasSpeakerCharacter)
-            {
-                resolved = characterDataBase.TryResolveTalkAdapter(
-                    talkRequestData.speakerCharacter,
-                    resolvedSceneKernel,
-                    out adapter,
-                    out speakerEntity);
-            }
-
-            if (!resolved && TryResolveSpeakerReferenceFromName(talkRequestData.speakerName, out resolvedByNameReference))
-            {
-                hasResolvedByName = true;
-
-                if (!talkRequestData.HasSpeakerCharacter || !talkRequestData.speakerCharacter.Equals(resolvedByNameReference))
-                {
-                    resolved = characterDataBase.TryResolveTalkAdapter(
-                        resolvedByNameReference,
-                        resolvedSceneKernel,
-                        out adapter,
-                        out speakerEntity);
-                }
-            }
+            bool resolved = characterDataBase.TryResolveTalkAdapter(
+                talkRequestData.speakerCharacter,
+                resolvedSceneKernel,
+                out adapter,
+                out speakerEntity);
 
             if (!resolved)
             {
-                string speakerName = string.IsNullOrWhiteSpace(talkRequestData.speakerName)
-                    ? "(empty)"
-                    : talkRequestData.speakerName;
-                string fallbackText = hasResolvedByName
-                    ? $", fallbackByName='{resolvedByNameReference}'"
-                    : string.Empty;
-
                 Debug.LogWarning(
-                    $"{nameof(TalkSystemManagerMB)}: speaker lookup failed. speakerCharacter='{talkRequestData.speakerCharacter}', speakerName='{speakerName}'{fallbackText}.",
+                    $"{nameof(TalkSystemManagerMB)}: speaker lookup failed. speakerCharacter='{talkRequestData.speakerCharacter}'.",
                     this);
             }
 
             return resolved;
-        }
-
-        private static bool TryResolveSpeakerReferenceFromName(string speakerName, out CharacterIdReference characterReference)
-        {
-            characterReference = default;
-
-            if (string.IsNullOrWhiteSpace(speakerName))
-                return false;
-
-            string normalizedName = speakerName.Trim();
-
-            if (CharacterIdRegistry.TryGetDescriptor(normalizedName, out CharacterIdDescriptor byPathDescriptor))
-            {
-                characterReference = CharacterIdReference.From(byPathDescriptor.Id);
-                return true;
-            }
-
-            for (int i = 0; i < CharacterIdRegistry.AllDescriptors.Count; i++)
-            {
-                CharacterIdDescriptor descriptor = CharacterIdRegistry.AllDescriptors[i];
-
-                if (string.Equals(descriptor.DisplayName, normalizedName, StringComparison.Ordinal) ||
-                    string.Equals(descriptor.Path, normalizedName, StringComparison.Ordinal) ||
-                    string.Equals(descriptor.DisplayName, normalizedName, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(descriptor.Path, normalizedName, StringComparison.OrdinalIgnoreCase))
-                {
-                    characterReference = CharacterIdReference.From(descriptor.Id);
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         public async UniTask<bool> HideTalk(EntityRef actor, HideTalkRequestData requestData)
@@ -568,6 +557,23 @@ namespace BC.Managers
             if (talkChoiceUIManagerMB == null || !requestData.HasOptions)
                 return TalkChoiceSelectionResult.None;
 
+            // 各オプションの表示テキストを保有Table＋Entryから順番に解決し、解決済みで再構築する。
+            TalkChoiceOptionRequestData[] sourceOptions = requestData.Options;
+            TalkChoiceOptionRequestData[] resolvedOptions = new TalkChoiceOptionRequestData[sourceOptions.Length];
+            for (int i = 0; i < sourceOptions.Length; i++)
+            {
+                string resolvedText = await ResolveLocalizedTextAsync(
+                    sourceOptions[i].Table,
+                    sourceOptions[i].Entry,
+                    sourceOptions[i].ApplySetTable,
+                    sourceOptions[i].FallbackText,
+                    dialogueHeldTable);
+                resolvedOptions[i] = sourceOptions[i].WithResolvedDisplayText(resolvedText);
+            }
+
+            TalkChoiceRequestData resolvedRequest = new TalkChoiceRequestData(
+                resolvedOptions, requestData.DefaultSelectionIndex, requestData.WrapSelection);
+
             cancellationTokenSource ??= new CancellationTokenSource();
 
             using CancellationTokenSource linkedCancellation = cancellationToken.CanBeCanceled
@@ -575,7 +581,7 @@ namespace BC.Managers
                 : CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token);
 
             return await talkChoiceUIManagerMB.ShowChoicesAsync(
-                requestData,
+                resolvedRequest,
                 talkSystemUIManagerMB != null ? talkSystemUIManagerMB.NextTalkInputAction : null,
                 linkedCancellation.Token);
         }
@@ -693,6 +699,63 @@ namespace BC.Managers
             }
         }
 
+        private sealed class HeldTableState
+        {
+            public TableReference Table;
+            public bool HasTable;
+        }
+
+        // セリフ用に「直前に使った Table」を保有する。
+        private readonly HeldTableState dialogueHeldTable = new();
+
+        // セリフ本文を「保有Table ＋ Entry」から現在ロケールで解決する。見つからなければ fallback を返す。
+        private async UniTask<string> ResolveLocalizedTextAsync(
+            LocalizedStringTable tableField,
+            string entry,
+            bool applySetTable,
+            string fallback,
+            HeldTableState held)
+        {
+            fallback ??= string.Empty;
+
+            // Apply Set Table が true かつ Table 指定あり → それを使用し保有更新。else → 保有Table。
+            TableReference table;
+            bool haveTable;
+            if (applySetTable && tableField != null && tableField.TableReference.ReferenceType != TableReference.Type.Empty)
+            {
+                table = tableField.TableReference;
+                held.Table = table;
+                held.HasTable = true;
+                haveTable = true;
+            }
+            else
+            {
+                table = held.Table;
+                haveTable = held.HasTable;
+            }
+
+            if (!haveTable)
+                return fallback;
+
+            return await LocalizedStringResolver.ResolveAsync(table, entry, fallback);
+        }
+
+        // 話者名を SpeakerCharacter から解決する。統一 speakerNameTable の Key には descriptor.Path を使い、
+        // 見つからなければ descriptor.DisplayName（[CharacterDisplayName]）をフォールバックにする。
+        private async UniTask<string> ResolveSpeakerDisplayNameAsync(CharacterIdReference speakerCharacter)
+        {
+            if (!speakerCharacter.IsAssigned)
+                return string.Empty;
+
+            string fallbackName = TalkSpeakerDisplayNameUtility.ResolveSpeakerDisplayName(speakerCharacter);
+
+            if (!CharacterIdRegistry.TryGetDescriptor(speakerCharacter, out CharacterIdDescriptor descriptor) ||
+                string.IsNullOrWhiteSpace(descriptor.Path))
+                return fallbackName;
+
+            return await LocalizedStringResolver.ResolveAsync(speakerNameTable, descriptor.Path, fallbackName);
+        }
+
         private static TalkRequestData ToTalkRequestData(DialogueRequestData dialogueRequestData)
         {
             dialogueRequestData.EnsureInlineActionFlagsInitialized();
@@ -701,7 +764,6 @@ namespace BC.Managers
             {
                 talkStateId = TalkStateId.None,
                 speakerCharacter = dialogueRequestData.speakerCharacter,
-                speakerName = dialogueRequestData.ResolveSpeakerDisplayName(),
                 dialogueText = dialogueRequestData.dialogueText,
                 textEffectData = dialogueRequestData.textEffectData,
                 isWaitingActionCompleted = false,

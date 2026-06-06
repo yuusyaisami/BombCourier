@@ -14,6 +14,7 @@ namespace BC.Manager
     public struct StageLoadResult
     {
         public string StageName; // ステージ表示名 (Intro UI などで使う)
+        public string StageNameKey; // ステージ名のローカライズ Key
         public List<BombMB> bombs; // ステージ内の爆弾のリスト
         public List<PlayerSpawnPointMB> spawnPoints; // ステージ内のプレイヤースポーンポイントのリスト
         public CameraPathSequenceAuthoringMB cameraPath; // カメラパス
@@ -101,6 +102,7 @@ namespace BC.Manager
             return new StageLoadResult
             {
                 StageName = data != null ? data.stageName : string.Empty,
+                StageNameKey = data != null ? data.stageNameKey : string.Empty,
                 bombs = new List<BombMB>(mapRuntime.Bombs),
                 spawnPoints = new List<PlayerSpawnPointMB>(mapRuntime.SpawnPoints),
                 cameraPath = mapRuntime.CameraPath,
@@ -113,6 +115,14 @@ namespace BC.Manager
                 tutorialStage = mapRuntime.TutorialStage,
                 EntityMaterialDatasetKind = mapRuntime.EntityMaterialDatasetKind,
             };
+        }
+
+        // ステージ名を Table+Key（StageRegistrySO）から現在ロケールで解決する。
+        public UniTask<string> ResolveStageNameAsync(string key, string fallback)
+        {
+            return stageData != null
+                ? stageData.ResolveStageNameAsync(key, fallback)
+                : UniTask.FromResult(fallback ?? string.Empty);
         }
 
         // ステージ開始時状態のベースラインを取得する（ステージ毎に1回）。
@@ -141,6 +151,24 @@ namespace BC.Manager
             snapshotService.RestoreBaseline();
         }
 
+        // 現在のワールド状態をスナップショットとして取得する（チェックポイント保存用）。
+        public StageStartSnapshot CaptureCurrentWorldSnapshot()
+        {
+            return snapshotService != null ? snapshotService.CaptureCurrentSnapshot() : default;
+        }
+
+        // チェックポイントスナップショットへ復元する。無効なら開始ベースラインへフォールバック。
+        public void RestoreFromCheckpointSnapshot(in StageStartSnapshot checkpoint)
+        {
+            if (snapshotService == null)
+            {
+                Debug.LogError($"{nameof(StageManagerMB)}: snapshotService is not assigned.", this);
+                return;
+            }
+
+            snapshotService.RestoreFromCheckpointSnapshot(checkpoint);
+        }
+
         // 退避済みベースラインを消す。
         public void ClearBaseline()
         {
@@ -153,6 +181,7 @@ namespace BC.Manager
             return new StageLoadResult
             {
                 StageName = string.Empty,
+                StageNameKey = string.Empty,
                 bombs = new List<BombMB>(),
                 spawnPoints = new List<PlayerSpawnPointMB>(),
                 cameraPath = null,

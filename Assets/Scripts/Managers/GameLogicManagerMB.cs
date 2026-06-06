@@ -14,8 +14,10 @@ using BC.Player;
 using BC.Rendering;
 using BC.Rendering.Transition;
 using BC.Stage;
+using BC.Stage.Snapshot;
 using BC.Tutorial;
 using BC.UI;
+using BC.UI.Components;
 using BC.UI.Title;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -272,7 +274,9 @@ namespace BC.Manager
                 null,
                 currentBonusObject,
                 currentBonusObject != null ? currentBonusObject.CaptureRetryCheckpointState() : null,
+                stageManager.CaptureCurrentWorldSnapshot(),
                 gameLogicSnapshot,
+                CaptureSceneKernelGameLogicSnapshot(),
                 CaptureTutorialProgressSnapshot()));
 
             resetArmed = false;
@@ -309,7 +313,7 @@ namespace BC.Manager
             if (targetBomb.FuseStarted || targetBomb.HasExploded)
                 return;
 
-            // リトライチェックポイントをスタックに積む（プレイヤー位置/回転・対象爆弾の参照。ワールドは開始ベースラインへ戻すため含めない）。
+            // リトライチェックポイントをスタックに積む（プレイヤー位置/回転・ワールド状態・対象爆弾の参照）。
             retryCheckpointStack.Push(new RetryCheckpointSnapshot(
                 RetryCheckpointSourceKind.BombPickup,
                 resolvedPlayer.transform.position,
@@ -318,7 +322,9 @@ namespace BC.Manager
                 targetBomb.CaptureRetryCheckpointState(),
                 currentBonusObject,
                 currentBonusObject != null ? currentBonusObject.CaptureRetryCheckpointState() : null,
+                stageManager.CaptureCurrentWorldSnapshot(),
                 CaptureGameLogicValueSnapshot(),
+                CaptureSceneKernelGameLogicSnapshot(),
                 CaptureTutorialProgressSnapshot()));
 
             resetArmed = false;
@@ -403,6 +409,10 @@ namespace BC.Manager
 
         private void Start()
         {
+            // GameScene 起動時に EventSystem / InputSystem 入力モジュールを確実に整合させる。
+            // これにより StageClear UI での Submit などナビゲーション入力が最初から機能する。
+            UINavigationBootstrap.EnsureConfigured();
+
             // scene kernel を起点に、ゲーム進行と state machine の接続を作る。
             sceneKernel = transform.GetComponentInChildren<SceneKernelMB>().Kernel;
             GameStateManagerMB stateManager = GameStateManagerMB.Instance;
@@ -1076,7 +1086,7 @@ namespace BC.Manager
                 : null;
             itemHandleState?.RestoreRetryCheckpointState();
 
-            StageManagerMB.Instance.RestoreStageStartBaseline();
+            StageManagerMB.Instance.RestoreFromCheckpointSnapshot(retryCheckpoint.WorldSnapshot);
 
             if (retryCheckpoint.Bomb != null && retryCheckpoint.BombRetryState != null)
             {
@@ -1097,6 +1107,11 @@ namespace BC.Manager
             ReapplyCurrentEntityMaterialDatasetToReloadedEntities(retryCheckpoint.BonusObject);
 
             RestoreGameLogicValueSnapshot(retryCheckpoint.GameLogicSnapshot);
+            RestoreSceneKernelGameLogicSnapshot(retryCheckpoint.SceneKernelGameLogicSnapshot);
+
+            // スナップショット復元＋ValueStore復元が完了したので、ValueStore条件で状態が決まるもの
+            // （ConditionDrivenColliderObject 等）を最後に一度だけ再評価させる。
+            BC.Stage.Snapshot.StageRestoreEvents.RaisePostRestore();
 
             if (resolvedPlayer != null)
             {
@@ -1279,7 +1294,9 @@ namespace BC.Manager
             stageInstance = result.stageInstance;
             currentMapRuntime = result.mapRuntime;
             currentGoalData = result.goalData;
-            currentStageName = result.StageName;
+            currentStageName = StageManagerMB.Instance != null
+                ? await StageManagerMB.Instance.ResolveStageNameAsync(result.StageNameKey, result.StageName)
+                : result.StageName;
             currentCameraPath = result.cameraPath;
             currentTutorialStage = result.tutorialStage;
             currentGodHand = result.godHandObjects.Count > 0 ? result.godHandObjects[0] : null;
@@ -1548,13 +1565,19 @@ namespace BC.Manager
 
         private void ResetSceneKernelValueStore()
         {
-            if (sceneKernel == null)
+            if (sceneKernel?.ValueStore == null)
                 return;
 
+            // モディファイアのリセット
             sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateBlue, EntityMoveMotorMB.GameLogicTag, false);
             sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateRed, EntityMoveMotorMB.GameLogicTag, false);
             sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateGreen, EntityMoveMotorMB.GameLogicTag, false);
             sceneKernel.ValueStore.SetBoolModifier(gameLogicManagerRef, ValueKeys.GameLogic.Interaction.IsStateYellow, EntityMoveMotorMB.GameLogicTag, false);
+
+            // 実値のリセット（前ステージの GameLogic.* 値がそのまま残るのを防ぐ）
+            EntityRef sceneKernelEntity = ResolveSceneKernelEntity();
+            if (sceneKernelEntity.IsValid)
+                GameLogicValueStoreSnapshotUtility.ResetToDefaults(sceneKernel.ValueStore, sceneKernelEntity);
         }
 
         private GameLogicValueStoreSnapshot CaptureGameLogicValueSnapshot()
@@ -1567,6 +1590,33 @@ namespace BC.Manager
         {
             TryResolveGameLogicValueStoreContext(out ValueStoreService valueStore, out EntityRef selfEntity);
             GameLogicValueStoreSnapshotUtility.Restore(valueStore, selfEntity, snapshot);
+        }
+
+        private GameLogicValueStoreSnapshot CaptureSceneKernelGameLogicSnapshot()
+        {
+            if (sceneKernel?.ValueStore == null)
+                return default;
+            EntityRef sceneKernelEntity = ResolveSceneKernelEntity();
+            return GameLogicValueStoreSnapshotUtility.Capture(sceneKernel.ValueStore, sceneKernelEntity);
+        }
+
+        private void RestoreSceneKernelGameLogicSnapshot(in GameLogicValueStoreSnapshot snapshot)
+        {
+            if (sceneKernel?.ValueStore == null)
+                return;
+            EntityRef sceneKernelEntity = ResolveSceneKernelEntity();
+            GameLogicValueStoreSnapshotUtility.Restore(sceneKernel.ValueStore, sceneKernelEntity, snapshot);
+        }
+
+        private EntityRef ResolveSceneKernelEntity()
+        {
+            var buffer = new List<EntityRef>(1);
+            ScopedEntityResolveUtility.ResolveTargets(
+                new EntityResolveContext(sceneKernel, gameLogicManagerRef, default),
+                EntityResolveScope.SceneKernel,
+                default,
+                buffer);
+            return buffer.Count > 0 ? buffer[0] : default;
         }
 
         private bool TryResolveGameLogicValueStoreContext(out ValueStoreService valueStore, out EntityRef selfEntity)
@@ -1600,7 +1650,9 @@ namespace BC.Manager
             object bombRetryState,
             BonusObjectMB bonusObject,
             object bonusRetryState,
+            StageStartSnapshot worldSnapshot,
             GameLogicValueStoreSnapshot gameLogicSnapshot,
+            GameLogicValueStoreSnapshot sceneKernelGameLogicSnapshot,
             TutorialProgressSnapshot tutorialSnapshot)
         {
             SourceKind = sourceKind;
@@ -1610,7 +1662,9 @@ namespace BC.Manager
             BombRetryState = bombRetryState;
             BonusObject = bonusObject;
             BonusRetryState = bonusRetryState;
+            WorldSnapshot = worldSnapshot;
             GameLogicSnapshot = gameLogicSnapshot;
+            SceneKernelGameLogicSnapshot = sceneKernelGameLogicSnapshot;
             TutorialSnapshot = tutorialSnapshot;
         }
 
@@ -1621,7 +1675,9 @@ namespace BC.Manager
         public object BombRetryState { get; }
         public BonusObjectMB BonusObject { get; }
         public object BonusRetryState { get; }
+        public StageStartSnapshot WorldSnapshot { get; }
         public GameLogicValueStoreSnapshot GameLogicSnapshot { get; }
+        public GameLogicValueStoreSnapshot SceneKernelGameLogicSnapshot { get; }
         public TutorialProgressSnapshot TutorialSnapshot { get; }
     }
 }

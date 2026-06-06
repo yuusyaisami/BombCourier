@@ -236,11 +236,14 @@ namespace BC.Bomb
         private float remainingFuseTime;
         private float ignoreImpactExplosionUntilTime;
         private float ignoreOwnerCollisionUntilTime;
+        private float ignoreOwnerCollisionHardDeadline;
         private bool hasPreviousHeldPosition;
+        private Transform releaseParent; // 拾う前の親（Map 内）。リリース時にここへ戻す。
         private Vector3 previousHeldPosition;
         private float lastImpactThreshold;
 
         private const int MaxHeldCollisionHits = 16;
+        private const float OwnerCollisionOverlapHardCapSeconds = 2.0f;
         private readonly Collider[] heldCollisionHits = new Collider[MaxHeldCollisionHits];
         private readonly List<Collider> ignoredPlayerColliders = new(16);
         private readonly List<EntityImpactResponseMB> explosionImpactResponses = new(16);
@@ -469,6 +472,10 @@ namespace BC.Bomb
             if (exploded)
                 return;
 
+            // 拾う前の親（Map 内）を覚えておき、リリース時にそこへ戻す（GameScene ルートに残さない）。
+            if (!isHandled)
+                releaseParent = transform.parent;
+
             isHandled = true;
             ignoreImpactExplosionUntilTime = Time.time + impactExplosionGraceTime;
 
@@ -514,7 +521,7 @@ namespace BC.Bomb
             hasPreviousHeldPosition = false;
             ClearIgnoredPlayerCollisions();
 
-            transform.SetParent(null, true);
+            transform.SetParent(CarryReleaseUtility.ResolveReleaseParent(releaseParent), true);
 
             rb.isKinematic = false;
             rb.detectCollisions = true;
@@ -605,7 +612,7 @@ namespace BC.Bomb
 
             if (appliedResult.ResponseKind == CushionResponseKind.Stop)
             {
-                transform.SetParent(null, true);
+                transform.SetParent(CarryReleaseUtility.ResolveReleaseParent(releaseParent), true);
 
                 rb.isKinematic = false;
                 rb.detectCollisions = true;
@@ -631,6 +638,7 @@ namespace BC.Bomb
 
             ConfigureHeldPlayerCollisionIgnore(ownerRoot);
             ignoreOwnerCollisionUntilTime = Mathf.Max(ignoreOwnerCollisionUntilTime, Time.time + durationSeconds);
+            ignoreOwnerCollisionHardDeadline = Mathf.Max(ignoreOwnerCollisionHardDeadline, Time.time + durationSeconds + OwnerCollisionOverlapHardCapSeconds);
             LogBombDebug(
                 $"IgnoreOwnerCollisionAfterRelease scene={gameObject.scene.name} frame={Time.frameCount} ownerRoot={DescribeTransform(ownerRoot)} duration={durationSeconds:F3} " +
                 $"ignoredPlayerColliders={ignoredPlayerColliders.Count} ignoreOwnerUntil={ignoreOwnerCollisionUntilTime:F3}");
@@ -923,9 +931,18 @@ namespace BC.Bomb
             if (Time.time < ignoreOwnerCollisionUntilTime)
                 return;
 
+            // タイマー満了後は、重なっているペアを分離するまで無視を維持し、めり込み解消による吹き飛びを防ぐ。
+            // ハードキャップを超えたら強制解除する。
+            bool hardCapReached = Time.time >= ignoreOwnerCollisionHardDeadline;
+            bool allReleased = CarryCollisionUtility.ReleaseSeparatedIgnoredColliders(bombCollider, ignoredPlayerColliders);
+
+            if (!allReleased && !hardCapReached)
+                return;
+
             LogBombDebug(
                 $"TickReleaseOwnerCollisionIgnore scene={gameObject.scene.name} frame={Time.frameCount} ownerCollisionIgnoreExpired ignoreOwnerUntil={ignoreOwnerCollisionUntilTime:F3}");
             ignoreOwnerCollisionUntilTime = 0f;
+            ignoreOwnerCollisionHardDeadline = 0f;
             ClearIgnoredPlayerCollisions();
         }
 

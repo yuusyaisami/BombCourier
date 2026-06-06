@@ -171,9 +171,9 @@ namespace BC.UI.Title
             {
                 int rowIndex = current - rowSize; // 0-3
                 int candidate = rowIndex + dx;
-                if (candidate >= 0 && candidate < rowSize) return current - rowSize + (rowIndex + dx); // 同行内
+                if (candidate >= 0 && candidate < rowSize) return rowSize + candidate; // 同行内
                 if (dx > 0 && rowIndex == rowSize - 1) return page1Count; // 下段右端 → Page2 先頭 (8)
-                if (dx < 0 && rowIndex == 0) return current - rowSize; // 下段左端 → 上段右端 (3)
+                if (dx < 0 && rowIndex == 0) return rowSize - 1; // 下段左端 → 上段右端 (3)
                 return current;
             }
             // Page2 (8-11): 1 行 4 ステージ

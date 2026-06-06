@@ -60,6 +60,9 @@ namespace BC.UI.Components
         }
 
         // モジュールの入力アセットを project-wide の InputSystem_Actions に統一する。
+        // actionsAsset が既に正しい場合は AssignDefaultActions() を呼ばない。
+        // 不必要な AssignDefaultActions() 呼び出しはモジュールの再初期化を引き起こし、
+        // 既に正しくシリアライズされた Submit アクション購読を壊す原因になる。
         private static void ApplyProjectWideActions(InputSystemUIInputModule module)
         {
             if (module == null)
@@ -67,40 +70,15 @@ namespace BC.UI.Components
 
             InputActionAsset actions = InputSystem.actions;
             if (actions == null)
+                return;
+
+            if (module.actionsAsset != actions)
             {
-                // project-wide 未設定環境のフォールバック(package 既定)。
-                if (module.actionsAsset == null)
-                    module.AssignDefaultActions();
-                return;
+                // actionsAsset が異なる場合のみ差し替えて標準参照を再バインドする。
+                module.actionsAsset = actions;
+                module.AssignDefaultActions();
             }
-
-            if (module.actionsAsset == actions)
-                return;
-
-            module.actionsAsset = actions;
-            module.point = ResolveActionReference(actions, "UI/Point");
-            module.leftClick = ResolveActionReference(actions, "UI/Click");
-            module.rightClick = ResolveActionReference(actions, "UI/RightClick");
-            module.middleClick = ResolveActionReference(actions, "UI/MiddleClick");
-            module.scrollWheel = ResolveActionReference(actions, "UI/ScrollWheel");
-            module.move = ResolveActionReference(actions, "UI/Navigate");
-            module.submit = ResolveActionReference(actions, "UI/Submit");
-            module.cancel = ResolveActionReference(actions, "UI/Cancel");
-
-            // TrackedDevice 系は存在すれば貼る(未使用でも害なし)。
-            InputActionReference trackedPosition = ResolveActionReference(actions, "UI/TrackedDevicePosition");
-            if (trackedPosition != null)
-                module.trackedDevicePosition = trackedPosition;
-
-            InputActionReference trackedOrientation = ResolveActionReference(actions, "UI/TrackedDeviceOrientation");
-            if (trackedOrientation != null)
-                module.trackedDeviceOrientation = trackedOrientation;
-        }
-
-        private static InputActionReference ResolveActionReference(InputActionAsset actions, string actionPath)
-        {
-            InputAction action = actions.FindAction(actionPath);
-            return action != null ? InputActionReference.Create(action) : null;
+            // actionsAsset が既に正しい場合はシリアライズ済みの参照をそのまま使う。
         }
 
         private static void EnableUiActionMap()

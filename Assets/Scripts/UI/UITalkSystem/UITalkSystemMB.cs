@@ -136,7 +136,7 @@ namespace BC.UI
 
         private Transform TalkRoot => talkUIRoot != null ? talkUIRoot : transform;
 
-        public async UniTask ShowTalk(TalkRequestData talkRequestData, CancellationToken cancellationToken)
+        public async UniTask ShowTalk(TalkRequestData talkRequestData, string speakerDisplayName, CancellationToken cancellationToken)
         {
             if (bodyTypewriter == null)
             {
@@ -163,7 +163,7 @@ namespace BC.UI
             // 話者名と本文を typewriter 経由で更新する。
             if (speakerNameTypewriter != null)
             {
-                speakerNameTypewriter.ShowText(talkRequestData.speakerName ?? string.Empty);
+                speakerNameTypewriter.ShowText(speakerDisplayName ?? string.Empty);
             }
 
             bodyTypewriter.ShowText(talkRequestData.dialogueText ?? string.Empty);
@@ -234,6 +234,10 @@ namespace BC.UI
 
         private bool IsSubmitActuated()
         {
+            // 設定画面などモーダルUIが開いている間は入力を無視する。
+            if (UiModalGate.IsAnyOpen)
+                return false;
+
             InputAction action = nextTalkInputAction != null ? nextTalkInputAction.action : null;
             if (action != null && action.IsPressed())
                 return true;
@@ -259,6 +263,10 @@ namespace BC.UI
 
         private bool WasAdvancePressedThisFrame()
         {
+            // 設定画面などモーダルUIが開いている間は、裏のTalkを進めない（生入力の貫通対策）。
+            if (UiModalGate.IsAnyOpen)
+                return false;
+
             InputAction action = nextTalkInputAction != null ? nextTalkInputAction.action : null;
             if (action != null && action.WasPressedThisFrame())
                 return true;

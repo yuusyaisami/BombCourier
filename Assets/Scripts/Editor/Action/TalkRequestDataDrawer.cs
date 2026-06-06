@@ -16,7 +16,9 @@ namespace BC.Editor
             float height = 0f;
             height += GetRowHeight(property.FindPropertyRelative("talkStateId"));
             height += GetRowHeight(property.FindPropertyRelative("speakerCharacter"));
-            height += GetRowHeight(property.FindPropertyRelative("speakerName"));
+            height += GetRowHeight(property.FindPropertyRelative("table"));
+            height += GetRowHeight(property.FindPropertyRelative("entry"));
+            height += GetRowHeight(property.FindPropertyRelative("applySetTable"));
             height += GetRowHeight(property.FindPropertyRelative("dialogueText"));
             height += GetRowHeight(property.FindPropertyRelative("textEffectData"));
             height += GetRowHeight(property.FindPropertyRelative("isWaitingActionCompleted"));
@@ -42,8 +44,10 @@ namespace BC.Editor
 
             DrawChildProperty(ref rowRect, property.FindPropertyRelative("talkStateId"), new GUIContent("Talk State"));
             DrawChildProperty(ref rowRect, property.FindPropertyRelative("speakerCharacter"), new GUIContent("Speaker Character"));
-            DrawChildProperty(ref rowRect, property.FindPropertyRelative("speakerName"), new GUIContent("Legacy Speaker Label"));
-            DrawChildProperty(ref rowRect, property.FindPropertyRelative("dialogueText"), new GUIContent("Dialogue"), true);
+            DrawChildProperty(ref rowRect, property.FindPropertyRelative("table"), new GUIContent("Dialogue Table"), true);
+            DrawChildProperty(ref rowRect, property.FindPropertyRelative("entry"), new GUIContent("Dialogue Key"));
+            DrawChildProperty(ref rowRect, property.FindPropertyRelative("applySetTable"), new GUIContent("Apply Dialogue Table"));
+            DrawChildProperty(ref rowRect, property.FindPropertyRelative("dialogueText"), new GUIContent("Fallback Text"), true);
             DrawChildProperty(ref rowRect, property.FindPropertyRelative("textEffectData"), new GUIContent("Text Effect"), true);
             DrawChildProperty(ref rowRect, property.FindPropertyRelative("isWaitingActionCompleted"), new GUIContent("Wait Action Completed"));
 
@@ -129,7 +133,9 @@ namespace BC.Editor
 
             float height = 0f;
             height += GetRowHeight(property.FindPropertyRelative("speakerCharacter"));
-            height += GetRowHeight(property.FindPropertyRelative("speakerName"));
+            height += GetRowHeight(property.FindPropertyRelative("table"));
+            height += GetRowHeight(property.FindPropertyRelative("entry"));
+            height += GetRowHeight(property.FindPropertyRelative("applySetTable"));
             height += GetRowHeight(property.FindPropertyRelative("dialogueText"));
             height += GetRowHeight(property.FindPropertyRelative("textEffectData"));
             height += GetRowHeight(property.FindPropertyRelative("hideDuration"));
@@ -155,8 +161,10 @@ namespace BC.Editor
             Rect rowRect = new(contentRect.x, contentRect.y, contentRect.width, LineHeight);
 
             DrawChildProperty(ref rowRect, property.FindPropertyRelative("speakerCharacter"), new GUIContent("Speaker Character"));
-            DrawChildProperty(ref rowRect, property.FindPropertyRelative("speakerName"), new GUIContent("Speaker Name"));
-            DrawChildProperty(ref rowRect, property.FindPropertyRelative("dialogueText"), new GUIContent("Dialogue"), true);
+            DrawChildProperty(ref rowRect, property.FindPropertyRelative("table"), new GUIContent("Dialogue Table"), true);
+            DrawChildProperty(ref rowRect, property.FindPropertyRelative("entry"), new GUIContent("Dialogue Key"));
+            DrawChildProperty(ref rowRect, property.FindPropertyRelative("applySetTable"), new GUIContent("Apply Dialogue Table"));
+            DrawChildProperty(ref rowRect, property.FindPropertyRelative("dialogueText"), new GUIContent("Fallback Text"), true);
             DrawChildProperty(ref rowRect, property.FindPropertyRelative("textEffectData"), new GUIContent("Text Effect"), true);
             DrawChildProperty(ref rowRect, property.FindPropertyRelative("hideDuration"), new GUIContent("Hide Duration"));
             DrawChildProperty(ref rowRect, property.FindPropertyRelative("isWaitingActionCompleted"), new GUIContent("Wait Action Completed"));

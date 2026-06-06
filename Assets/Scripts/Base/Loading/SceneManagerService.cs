@@ -108,6 +108,10 @@ namespace BC.Base
                     await UniTask.Yield(PlayerLoopTiming.Update, ct);
                 }
 
+                // ロード直後の新シーン初期フレーム（カメラ未配置/ステージ未生成のチラつき）を隠すため、
+                // ロード黒を約0.2s 保持してから解除する。
+                await UniTask.Delay(200, DelayType.UnscaledDeltaTime, PlayerLoopTiming.Update, ct);
+
                 if (LoadingScene != null)
                     await LoadingScene.HideAsync();
 
@@ -173,6 +177,10 @@ namespace BC.Base
                     ct.ThrowIfCancellationRequested();
                     await UniTask.Yield(PlayerLoopTiming.Update, ct);
                 }
+
+                // ロード直後の新シーン初期フレーム（カメラ未配置/ステージ未生成のチラつき）を隠すため、
+                // ロード黒を約0.2s 保持してから解除する。
+                await UniTask.Delay(200, DelayType.UnscaledDeltaTime, PlayerLoopTiming.Update, ct);
 
                 if (LoadingScene != null)
                     await LoadingScene.HideAsync();

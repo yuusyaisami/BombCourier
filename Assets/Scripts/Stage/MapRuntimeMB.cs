@@ -64,6 +64,27 @@ namespace BC.Stage
         public BonusObjectMB BonusObject => bonusObject;
         public TutorialStageAuthoringMB TutorialStage => tutorialStage;
         public string EntityMaterialDatasetKind => entityMaterialDatasetKind;
+
+        // 現在アクティブな（最後に有効化された）Map ルート。アイテムのリリース時、親解決のフォールバックに使う。
+        public static MapRuntimeMB Active { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetActive()
+        {
+            Active = null;
+        }
+
+        private void OnEnable()
+        {
+            Active = this;
+        }
+
+        private void OnDisable()
+        {
+            if (Active == this)
+                Active = null;
+        }
+
         private void Awake()
         {
             // Prefab の保存状態に依存せず、実行時は Root から必ず再収集する。

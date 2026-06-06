@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using BC.Managers;
 using UnityEngine;
+using UnityEngine.Localization;
 
 namespace BC.ActionSystem
 {
@@ -16,12 +17,18 @@ namespace BC.ActionSystem
     public sealed class TalkChoiceOptionAuthoring
     {
         [SerializeField, HideInInspector] private string stableId;
+        [SerializeField] private LocalizedStringTable table;
+        [SerializeField] private string entry;
+        [SerializeField] private bool applySetTable;
         [SerializeField] private string displayText;
         [SerializeField] private TalkChoiceOptionOutcomeKind outcomeKind;
         [SerializeField] private InlineAction inlineAction;
         [SerializeField] private ValueStoreWriteAuthoring valueStoreWrite = new();
 
         public string StableId => stableId;
+        public LocalizedStringTable Table => table;
+        public string Entry => entry;
+        public bool ApplySetTable => applySetTable;
         public string DisplayText => displayText;
         public TalkChoiceOptionOutcomeKind OutcomeKind => outcomeKind;
         public InlineAction InlineAction => inlineAction;
@@ -102,8 +109,8 @@ namespace BC.ActionSystem
                     continue;
                 }
 
-                if (string.IsNullOrWhiteSpace(option.DisplayText))
-                    context.AddError($"Talk choice option {i} text is empty.");
+                if (string.IsNullOrWhiteSpace(option.Entry) && string.IsNullOrWhiteSpace(option.DisplayText))
+                    context.AddError($"Talk choice option {i} needs a localization Entry or fallback text.");
 
                 ValidateOptionOutcome(option, i, context);
             }
@@ -119,7 +126,11 @@ namespace BC.ActionSystem
             for (int i = 0; i < options.Length; i++)
             {
                 TalkChoiceOptionAuthoring option = options[i];
-                requestOptions[i] = new TalkChoiceOptionRequestData(option?.DisplayText ?? string.Empty);
+                requestOptions[i] = new TalkChoiceOptionRequestData(
+                    option != null ? option.Table : null,
+                    option?.Entry ?? string.Empty,
+                    option != null && option.ApplySetTable,
+                    option?.DisplayText ?? string.Empty);
                 compiledOptions[i] = new TalkChoiceOptionDefinition(
                     option?.DisplayText ?? string.Empty,
                     CompileOptionOutcome(option));

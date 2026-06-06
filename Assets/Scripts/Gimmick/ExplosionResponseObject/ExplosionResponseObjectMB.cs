@@ -19,6 +19,7 @@ namespace BC.Gimmick.ExplosionResponseObject
     }
 
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(BC.Stage.Snapshot.StageRestorableMB))]
     public sealed class ExplosionResponseObjectMB : MonoBehaviour, IExplosionImpactReceiver, IBombImpactReceiver, BC.Stage.Snapshot.IStageStateRestorable
     {
         [Header("Impact")]

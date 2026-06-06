@@ -326,9 +326,10 @@ namespace BC.UI.Title
                 return;
             }
 
+            currentDetailStageData = item.StageData;
             if (stageTitleText != null)
             {
-                stageTitleText.text = item.StageData != null ? item.StageData.stageName ?? string.Empty : string.Empty;
+                UpdateStageTitleAsync(item.StageData).Forget();
             }
 
             TitleStageProgressServiceMB.StageProgressData progress = TitleStageProgressServiceMB.GetStageProgressPersisted(item.StageIndex);
@@ -337,8 +338,25 @@ namespace BC.UI.Title
             ApplyRewardSprite(fastClearRewardImage, progress.HasFastClearReward, fastClearRewardEarnedSprite);
         }
 
+        private StageData currentDetailStageData;
+
+        // ステージ名を Table+Key（StageRegistrySO）から解決して表示する。フォールバックは stageName。
+        private async UniTaskVoid UpdateStageTitleAsync(StageData data)
+        {
+            string resolved = data == null
+                ? string.Empty
+                : (stageRegistry != null
+                    ? await stageRegistry.ResolveStageNameAsync(data)
+                    : data.stageName ?? string.Empty);
+
+            // 解決を待つ間に選択が変わっていたら反映しない。
+            if (currentDetailStageData == data && stageTitleText != null)
+                stageTitleText.text = resolved ?? string.Empty;
+        }
+
         private void ResetStageDetailPanel()
         {
+            currentDetailStageData = null;
             if (stageTitleText != null)
             {
                 stageTitleText.text = string.Empty;

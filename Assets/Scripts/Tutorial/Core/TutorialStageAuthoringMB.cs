@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BC.ActionSystem;
 using BC.Base;
 using UnityEngine;
+using UnityEngine.Localization;
 
 namespace BC.Tutorial
 {
@@ -104,10 +105,17 @@ namespace BC.Tutorial
     [Serializable]
     public sealed class TutorialToDoEntryAuthoring
     {
+        [Tooltip("ToDo に表示するフォールバックテキスト（Key が見つからない場合に表示）。")]
         [SerializeField] private string labelText;
+        [Tooltip("ローカライズ用 String Table。Key で引けなければ labelText を表示する。")]
+        [SerializeField] private LocalizedStringTable table;
+        [Tooltip("ローカライズ用エントリ Key。")]
+        [SerializeField] private string entry;
         [SerializeReference] private TutorialConditionAuthoring condition;
 
         public string LabelText => labelText ?? string.Empty;
+        public LocalizedStringTable Table => table;
+        public string Entry => entry;
         public TutorialConditionAuthoring Condition => condition;
 
         public void Validate(TutorialValidationContext context, string ownerPath)

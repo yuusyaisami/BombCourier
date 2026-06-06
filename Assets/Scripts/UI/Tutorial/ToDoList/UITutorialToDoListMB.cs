@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using BC.Base;
+using BC.Localization;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace BC.UI
@@ -82,6 +84,7 @@ namespace BC.UI
                 {
                     item = UnityEngine.Object.Instantiate(itemPrefab, itemContainer);
                     item.Setup(definition.LabelText);
+                    ResolveTodoItemLabelAsync(item, definition).Forget();
                 }
                 runtimeItems.Add(item);
 
@@ -91,6 +94,17 @@ namespace BC.UI
                     completedIndex => SetItemCompleted(completedIndex, true),
                     capturedIndex);
             }
+        }
+
+        // SO 経由の ToDo アイテムのテキストを Table+Key で解決して反映する（フォールバックは labelText）。
+        private static async UniTaskVoid ResolveTodoItemLabelAsync(UITutorialToDoItemMB item, TutorialToDoItemDefinition definition)
+        {
+            if (item == null || definition == null)
+                return;
+
+            string resolved = await LocalizedStringResolver.ResolveAsync(definition.Table, definition.Entry, definition.LabelText);
+            if (item != null)
+                item.SetLabel(resolved);
         }
 
         public void ShowChecklist(IReadOnlyList<string> labels, IReadOnlyList<bool> completedStates = null)

@@ -106,8 +106,9 @@ namespace BC.ActionSystem
 
         public override void Validate(ActionValidationContext context)
         {
-            if (string.IsNullOrWhiteSpace(dialogueRequestData.dialogueText))
-                context.AddError("Dialogue text is required.");
+            if (string.IsNullOrWhiteSpace(dialogueRequestData.entry) &&
+                string.IsNullOrWhiteSpace(dialogueRequestData.dialogueText))
+                context.AddError("Dialogue needs a localization Entry or fallback text.");
         }
 
         public override void Compile(ActionCompileContext context)

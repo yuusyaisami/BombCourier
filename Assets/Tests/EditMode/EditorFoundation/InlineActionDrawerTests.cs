@@ -77,18 +77,16 @@ namespace BC.Editor.Tests
 
             SerializedProperty talkStep = AddStep("BC.ActionSystem.ShowTalkStepAuthoring");
             talkStep.FindPropertyRelative("talkRequestData").FindPropertyRelative("talkStateId").enumValueIndex = 4;
-            talkStep.FindPropertyRelative("talkRequestData").FindPropertyRelative("speakerName").stringValue = "Guide";
             talkStep.FindPropertyRelative("talkRequestData").FindPropertyRelative("dialogueText").stringValue = "Line 1\nLine 2";
             ApplyChanges();
 
-            Assert.AreEqual("Happy | Guide: Line 1 Line 2", GetSummary(talkStep));
+            Assert.AreEqual("Happy | Line 1 Line 2", GetSummary(talkStep));
 
             SerializedProperty dialogueStep = AddStep("BC.ActionSystem.ShowDialogueStepAuthoring");
-            dialogueStep.FindPropertyRelative("dialogueRequestData").FindPropertyRelative("speakerName").stringValue = "Narrator";
             dialogueStep.FindPropertyRelative("dialogueRequestData").FindPropertyRelative("dialogueText").stringValue = "Read this first.";
             ApplyChanges();
 
-            Assert.AreEqual("Narrator: Read this first.", GetSummary(dialogueStep));
+            Assert.AreEqual("Read this first.", GetSummary(dialogueStep));
 
             SerializedProperty overlayStep = AddStep("BC.ActionSystem.ShowScreenOverlayStepAuthoring");
             SerializedProperty overlayRequest = overlayStep.FindPropertyRelative("screenOverlayShowRequestData");
@@ -161,7 +159,6 @@ namespace BC.Editor.Tests
 
                 speakerCharacter.FindPropertyRelative("id").intValue = 2001;
                 speakerCharacter.FindPropertyRelative("path").stringValue = "Npc.Vanilla";
-                talkRequestData.FindPropertyRelative("speakerName").stringValue = string.Empty;
                 talkRequestData.FindPropertyRelative("dialogueText").stringValue = "Line 1\nLine 2";
                 ApplyChanges();
 

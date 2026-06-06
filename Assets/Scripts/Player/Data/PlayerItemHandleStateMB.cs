@@ -718,8 +718,24 @@ namespace BC.Player
 
             if (direction.sqrMagnitude <= 0.0001f)
                 direction = transform.forward;
-
             direction.y = 0.0f;
+
+            // Player から外側（手の方向）へ逃がす水平成分を加味する。下を向いて投げたときでも探索方向が
+            // Player 内へ向かわないようにし、アイテムが Player と重なったままリリースされて押し合うのを防ぐ。
+            Transform ownerRoot = ResolveOwnerCollisionRoot();
+            Vector3 handPosition = handleItemPoint != null ? handleItemPoint.position : transform.position;
+            if (ownerRoot != null)
+            {
+                Vector3 outward = handPosition - ownerRoot.position;
+                outward.y = 0.0f;
+                if (outward.sqrMagnitude > 0.0001f)
+                {
+                    Vector3 horizontalThrow = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
+                    direction = outward.normalized + horizontalThrow;
+                    direction.y = 0.0f;
+                }
+            }
+
             return direction.sqrMagnitude <= 0.0001f ? Vector3.forward : direction.normalized;
         }
 

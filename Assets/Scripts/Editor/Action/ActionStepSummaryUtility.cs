@@ -218,13 +218,8 @@ namespace BC.Editor.ActionSystem
                 return "Empty talk";
 
             string talkState = BuildTalkStateSummary(requestProperty.FindPropertyRelative("talkStateId"));
-            string speaker = Normalize(requestProperty.FindPropertyRelative("speakerName")?.stringValue);
-
-            if (string.IsNullOrWhiteSpace(speaker))
-            {
-                SerializedProperty speakerCharacterProperty = requestProperty.FindPropertyRelative("speakerCharacter");
-                speaker = Normalize(speakerCharacterProperty?.FindPropertyRelative("path")?.stringValue);
-            }
+            SerializedProperty speakerCharacterProperty = requestProperty.FindPropertyRelative("speakerCharacter");
+            string speaker = Normalize(speakerCharacterProperty?.FindPropertyRelative("path")?.stringValue);
 
             string text = BuildTextSnippet(requestProperty.FindPropertyRelative("dialogueText")?.stringValue, "Empty talk");
             string bodySummary = text;
@@ -268,13 +263,8 @@ namespace BC.Editor.ActionSystem
             if (requestProperty == null)
                 return "Empty dialogue";
 
-            string speaker = Normalize(requestProperty.FindPropertyRelative("speakerName")?.stringValue);
-
-            if (string.IsNullOrWhiteSpace(speaker))
-            {
-                SerializedProperty speakerCharacterProperty = requestProperty.FindPropertyRelative("speakerCharacter");
-                speaker = Normalize(speakerCharacterProperty?.FindPropertyRelative("path")?.stringValue);
-            }
+            SerializedProperty speakerCharacterProperty = requestProperty.FindPropertyRelative("speakerCharacter");
+            string speaker = Normalize(speakerCharacterProperty?.FindPropertyRelative("path")?.stringValue);
 
             string text = BuildTextSnippet(requestProperty.FindPropertyRelative("dialogueText")?.stringValue, "Empty dialogue");
 
@@ -308,13 +298,7 @@ namespace BC.Editor.ActionSystem
 
         private static string BuildSpeakerClipboardName(SerializedProperty requestProperty)
         {
-            string speaker = ResolveCharacterDisplayName(requestProperty.FindPropertyRelative("speakerCharacter"));
-
-            if (!string.IsNullOrWhiteSpace(speaker))
-                return speaker;
-
-            string speakerName = Normalize(requestProperty.FindPropertyRelative("speakerName")?.stringValue);
-            return speakerName;
+            return ResolveCharacterDisplayName(requestProperty.FindPropertyRelative("speakerCharacter"));
         }
 
         private static string ResolveCharacterDisplayName(SerializedProperty characterProperty)

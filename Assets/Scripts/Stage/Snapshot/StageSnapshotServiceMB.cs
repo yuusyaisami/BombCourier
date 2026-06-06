@@ -17,19 +17,13 @@ namespace BC.Stage.Snapshot
         /// <summary>登録済み全対象から開始ベースラインを取得する（ステージ毎に1回）。</summary>
         public void CaptureBaseline()
         {
-            IReadOnlyList<StageRestorableMB> active = StageRestorableRegistry.OrderedActive;
-            var entries = new List<RestorableSnapshot>(active.Count);
+            baseline = new StageStartSnapshot(CaptureEntries());
+        }
 
-            for (int i = 0; i < active.Count; i++)
-            {
-                StageRestorableMB restorable = active[i];
-                if (restorable == null || restorable.ExcludeFromSnapshot)
-                    continue;
-
-                entries.Add(restorable.CaptureSnapshot());
-            }
-
-            baseline = new StageStartSnapshot(entries.ToArray());
+        /// <summary>現在アクティブな全対象からスナップショットを取得して返す（チェックポイント用）。</summary>
+        public StageStartSnapshot CaptureCurrentSnapshot()
+        {
+            return new StageStartSnapshot(CaptureEntries());
         }
 
         public void ClearBaseline()
@@ -46,7 +40,40 @@ namespace BC.Stage.Snapshot
                 return;
             }
 
-            IReadOnlyList<RestorableSnapshot> entries = baseline.Entries;
+            ApplyRestore(baseline.Entries);
+            DespawnNotInBaseline(baseline.Entries);
+        }
+
+        /// <summary>チェックポイントスナップショットへ復元する。ベースラインが有効な場合はそれを使ってデスポーン判定する。</summary>
+        public void RestoreFromCheckpointSnapshot(in StageStartSnapshot checkpoint)
+        {
+            if (!checkpoint.IsValid)
+            {
+                RestoreBaseline();
+                return;
+            }
+
+            ApplyRestore(checkpoint.Entries);
+            if (baseline.IsValid)
+                DespawnNotInBaseline(baseline.Entries);
+        }
+
+        private static RestorableSnapshot[] CaptureEntries()
+        {
+            IReadOnlyList<StageRestorableMB> active = StageRestorableRegistry.OrderedActive;
+            var entries = new List<RestorableSnapshot>(active.Count);
+            for (int i = 0; i < active.Count; i++)
+            {
+                StageRestorableMB restorable = active[i];
+                if (restorable == null || restorable.ExcludeFromSnapshot)
+                    continue;
+                entries.Add(restorable.CaptureSnapshot());
+            }
+            return entries.ToArray();
+        }
+
+        private void ApplyRestore(IReadOnlyList<RestorableSnapshot> entries)
+        {
             var disabledControllers = new List<CharacterController>(8);
 
             // --- パス1: 再活性化 → CharacterController停止 → kinematic固定/速度0 → 親復元 → ワールド姿勢 ---
@@ -159,8 +186,6 @@ namespace BC.Stage.Snapshot
             }
 
             Physics.SyncTransforms();
-
-            DespawnNotInBaseline(entries);
         }
 
         private static Rigidbody ResolveRigidbody(in RestorableSnapshot entry, GameObject go)

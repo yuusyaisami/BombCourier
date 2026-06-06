@@ -29,6 +29,13 @@ namespace BC.UI
             }
         }
 
+        /// <summary>ラベルテキストのみ更新する（チェック状態は変更しない）。</summary>
+        public void SetLabel(string text)
+        {
+            if (labelText != null)
+                labelText.text = text;
+        }
+
         /// <summary>チェック状態を更新する。</summary>
         public void SetCompleted(bool completed)
         {

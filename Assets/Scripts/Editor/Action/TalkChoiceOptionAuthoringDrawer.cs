@@ -17,6 +17,9 @@ namespace BC.Editor
                 return LineHeight * 2f;
 
             float height = 0f;
+            height += GetRowHeight(property.FindPropertyRelative("table"));
+            height += GetRowHeight(property.FindPropertyRelative("entry"));
+            height += GetRowHeight(property.FindPropertyRelative("applySetTable"));
             height += GetRowHeight(displayTextProperty);
             height += GetRowHeight(outcomeKindProperty);
 
@@ -44,7 +47,18 @@ namespace BC.Editor
             Rect contentRect = EditorGUI.IndentedRect(position);
             Rect rowRect = new(contentRect.x, contentRect.y, contentRect.width, LineHeight);
 
-            EditorGUI.PropertyField(rowRect, displayTextProperty, new GUIContent("Display Text"));
+            SerializedProperty tableProperty = property.FindPropertyRelative("table");
+            float tableHeight = EditorGUI.GetPropertyHeight(tableProperty, true);
+            EditorGUI.PropertyField(new Rect(rowRect.x, rowRect.y, rowRect.width, tableHeight), tableProperty, new GUIContent("Table"), true);
+            rowRect.y += tableHeight + Spacing;
+
+            EditorGUI.PropertyField(rowRect, property.FindPropertyRelative("entry"), new GUIContent("Key"));
+            rowRect.y += LineHeight + Spacing;
+
+            EditorGUI.PropertyField(rowRect, property.FindPropertyRelative("applySetTable"), new GUIContent("Apply Table"));
+            rowRect.y += LineHeight + Spacing;
+
+            EditorGUI.PropertyField(rowRect, displayTextProperty, new GUIContent("Fallback Text"));
             rowRect.y += LineHeight + Spacing;
 
             EditorGUI.PropertyField(rowRect, outcomeKindProperty, new GUIContent("Outcome Kind"));

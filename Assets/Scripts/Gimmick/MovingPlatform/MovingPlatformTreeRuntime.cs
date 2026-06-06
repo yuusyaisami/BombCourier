@@ -1010,6 +1010,36 @@ namespace BC.Gimmick.MovingPlatform
                 return BuildInvalidRoute(selector, anchorRailIndex);
             }
 
+            // Loop の場合、末尾が anchor に戻らない「開いた経路」(例 A→B→C) だと、巻き戻し時に
+            // step0 の終点(=2番目の点 B)へ向かうため、最後の2点(B↔C)で往復してしまう。
+            // 末尾 → anchor への戻りステップを補完して閉ループ化し、A→B→C→A→… と正しく巡回させる。
+            if (selector.Rule.PlaybackMode == MovingPlatformPlaybackMode.Loop &&
+                currentRailIndex != anchorRailIndex &&
+                TryBuildRailPath(railNodes, currentRailIndex, anchorRailIndex, pathBuffer) &&
+                pathBuffer.Count > 1)
+            {
+                for (int pathIndex = 0; pathIndex < pathBuffer.Count - 1; pathIndex++)
+                {
+                    int fromRailIndex = pathBuffer[pathIndex];
+                    int toRailIndex = pathBuffer[pathIndex + 1];
+                    MovingPlatformTreeEdgeTiming timing = ResolveEdgeTiming(railNodes, fromRailIndex, toRailIndex, selector.Rule);
+
+                    resolvedSteps.Add(new MovingPlatformSelectorRoute.ResolvedStep(
+                        -1, // 合成した戻りステップ（オーサリング由来ではない）。
+                        MovingPlatformSelectorRoute.ResolvedStepKind.Move,
+                        fromRailIndex,
+                        toRailIndex,
+                        timing.Duration,
+                        timing.EasingMode,
+                        null));
+
+                    referencedRailIndices.Add(toRailIndex);
+                }
+
+                routeRailIndices.Add(anchorRailIndex);
+                currentRailIndex = anchorRailIndex;
+            }
+
             if (resolvedSteps.Count == 0)
             {
                 issues.Add(new MovingPlatformTreeValidationIssue(

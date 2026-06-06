@@ -70,6 +70,7 @@ namespace BC.Gimmick.ConditionDrivenColliderObject
             CacheRendererBaseColors();
             RebuildConditionBinding();
             RefreshConditionState(force: true);
+            BC.Stage.Snapshot.StageRestoreEvents.PostRestore += OnStageRestorePostRestore;
         }
 
         private void Update()
@@ -85,8 +86,21 @@ namespace BC.Gimmick.ConditionDrivenColliderObject
 
         private void OnDisable()
         {
+            BC.Stage.Snapshot.StageRestoreEvents.PostRestore -= OnStageRestorePostRestore;
             DisposeConditionBinding();
             hasAppliedState = false;
+        }
+
+        // ステージ復元（スナップショット＋ValueStore）完了後に、条件を再読込してコライダー状態を強制的に再評価する。
+        // 条件で状態が決まるため、他の復元で上書きされた状態を最後に正しい状態へ戻す。
+        private void OnStageRestorePostRestore()
+        {
+            if (!isActiveAndEnabled)
+                return;
+
+            ResolveReferences();
+            RebuildConditionBinding();
+            RefreshConditionState(force: true);
         }
 
         private void OnValidate()

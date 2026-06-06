@@ -40,6 +40,7 @@ namespace BC.Bomb
         private bool fuseStarted;
         private bool exploded;
         private bool isHandled;
+        private Transform releaseParent; // 拾う前の親（Map 内）。リリース時にここへ戻す。
         private float remainingFuseTime;
         private float ignoreOwnerCollisionUntilTime;
 
@@ -108,6 +109,10 @@ namespace BC.Bomb
             if (!CanBeCarried || handlePoint == null)
                 return;
 
+            // 拾う前の親（Map 内）を覚えておき、リリース時にそこへ戻す（GameScene ルートに残さない）。
+            if (!isHandled)
+                releaseParent = transform.parent;
+
             isHandled = true;
 
             rb.linearVelocity = Vector3.zero;
@@ -131,7 +136,7 @@ namespace BC.Bomb
             isHandled = false;
             ignoreOwnerCollisionUntilTime = 0f;
             ClearIgnoredHolderCollisions();
-            transform.SetParent(null, true);
+            transform.SetParent(CarryReleaseUtility.ResolveReleaseParent(releaseParent), true);
 
             rb.isKinematic = false;
             rb.detectCollisions = true;

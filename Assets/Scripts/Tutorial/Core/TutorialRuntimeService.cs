@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using BC.ActionSystem;
 using BC.Base;
+using BC.Localization;
 using BC.UI;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -186,7 +187,7 @@ namespace BC.Tutorial
                 if (step.PlayerControlPolicy == TutorialPlayerControlPolicy.LockDuringEnterActions)
                     ClearInputLock();
 
-                PrepareStepRuntime(step, restoreSnapshot);
+                await PrepareStepRuntime(step, restoreSnapshot);
                 EvaluateStepCompletion();
             }
             catch (OperationCanceledException)
@@ -199,7 +200,7 @@ namespace BC.Tutorial
             }
         }
 
-        private void PrepareStepRuntime(TutorialStepAuthoring step, TutorialProgressSnapshot restoreSnapshot)
+        private async UniTask PrepareStepRuntime(TutorialStepAuthoring step, TutorialProgressSnapshot restoreSnapshot)
         {
             IReadOnlyList<TutorialToDoEntryAuthoring> todoEntries = step.ToDoEntries ?? Array.Empty<TutorialToDoEntryAuthoring>();
             currentTodoCompleted = new bool[todoEntries.Count];
@@ -215,7 +216,12 @@ namespace BC.Tutorial
 
             string[] labels = new string[todoEntries.Count];
             for (int i = 0; i < todoEntries.Count; i++)
-                labels[i] = todoEntries[i]?.LabelText ?? string.Empty;
+            {
+                TutorialToDoEntryAuthoring todoEntry = todoEntries[i];
+                labels[i] = todoEntry != null
+                    ? await LocalizedStringResolver.ResolveAsync(todoEntry.Table, todoEntry.Entry, todoEntry.LabelText)
+                    : string.Empty;
+            }
 
             if (todoEntries.Count > 0)
             {

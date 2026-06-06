@@ -139,6 +139,11 @@ namespace BC.UI
             if (pauseTimeScaleOnOpen && hasStoredTimeScale)
                 Time.timeScale = previousTimeScale;
             ApplyGameplayInputLock(false);
+            if (modalGatePushed)
+            {
+                modalGatePushed = false;
+                UiModalGate.Pop();
+            }
         }
 
         private void EnsureReturnToTitleButton()
@@ -185,6 +190,8 @@ namespace BC.UI
                 await ShowPanelAsync();
         }
 
+        private bool modalGatePushed;
+
         public async UniTask ShowPanelAsync()
         {
             if (isShowing)
@@ -194,6 +201,8 @@ namespace BC.UI
                 return;
 
             isShowing = true;
+            modalGatePushed = true;
+            UiModalGate.Push();
 
             UINavigationBootstrap.EnsureConfigured();
             EnsureCanvasRaycaster();
@@ -242,6 +251,11 @@ namespace BC.UI
             if (!isShowing)
                 return;
             isShowing = false;
+            if (modalGatePushed)
+            {
+                modalGatePushed = false;
+                UiModalGate.Pop();
+            }
 
             toggleCts?.Cancel();
             toggleCts?.Dispose();

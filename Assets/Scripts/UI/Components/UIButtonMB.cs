@@ -21,7 +21,8 @@ namespace BC.UI.Components
         IPointerEnterHandler,
         IPointerExitHandler,
         ISelectHandler,
-        IDeselectHandler
+        IDeselectHandler,
+        ISubmitHandler
     {
         [Serializable]
         public sealed class UIButtonEvent : UnityEvent { }
@@ -185,6 +186,13 @@ namespace BC.UI.Components
         public void OnDeselect(BaseEventData eventData)
         {
             SetFocused(false, notify: true);
+        }
+
+        public void OnSubmit(BaseEventData eventData)
+        {
+            // キーボード/ゲームパッドの決定（Submit）でもクリックを発火させる。
+            // ※ Unity Button 側の OnSubmit でも onClick は呼ばれ得るが、invokingClick ガードで二重発火を防ぐ。
+            OnUnityButtonClicked();
         }
 
         private void EnsureInitialized()

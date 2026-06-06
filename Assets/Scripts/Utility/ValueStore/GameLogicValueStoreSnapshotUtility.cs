@@ -33,6 +33,16 @@ namespace BC.Base
         private static readonly IReadOnlyList<ValueKeyDescriptor> GameLogicDescriptors =
             ValueKeyRegistry.GetDescriptors(pathPrefix: "GameLogic");
 
+        /// <summary>全 GameLogic.* エントリをデフォルト値（false/0/0f/""…）にリセットする。</summary>
+        public static void ResetToDefaults(IEntityValueStoreService store, EntityRef entity)
+        {
+            if (store == null || !entity.IsValid)
+                return;
+
+            for (int i = 0; i < GameLogicDescriptors.Count; i++)
+                WriteValue(store, entity, GameLogicDescriptors[i], null);
+        }
+
         public static GameLogicValueStoreSnapshot Capture(IEntityValueStoreService store, EntityRef entity)
         {
             if (store == null || !entity.IsValid)
