@@ -20,6 +20,66 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2799c0db5ee77e24caa0e676b9453898
+    m_Address: Assets/Settings/Localization/StringTables/Stage_Data/StageData Shared
+      Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d1352b1d10b0484e9376583c8b29897
+    m_Address: Assets/Settings/Localization/StringTables/ToDoList_Data/ToDoList_Data
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34a9c22dd0784a240a717e83dec2de8d
+    m_Address: Assets/Settings/Localization/StringTables/Talk_Stage06/Talk_Stage06
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 733d26e9e98269d4fb8f528880f9ce9e
+    m_Address: Assets/Settings/Localization/StringTables/Talk_Stage08/Talk_Stage08
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7ea6260e28ce9a84b96efd9508de4ab7
+    m_Address: Assets/Settings/Localization/StringTables/Talk_Stage02/Talk_Stage02
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9e8e649b95611ab4f8923a645fe74ad3
+    m_Address: Assets/Settings/Localization/StringTables/Tutorial_Stage01/Tutorial_Stage01
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a028f62b253f9964f9038c81ff161ff6
+    m_Address: Assets/Settings/Localization/StringTables/Talk_Stage05/Talk_Stage05
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e67fffb5a48d70248963524855adaac3
+    m_Address: Assets/Settings/Localization/StringTables/Speaker_Data/Speaker_Data
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e7ebdf2ac4bb2fd41b35975953410b83
+    m_Address: Assets/Settings/Localization/StringTables/Talk_Stage12/Talk_Stage12
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fed8a0e3774e16444a047179eaa30d40
+    m_Address: Assets/Settings/Localization/StringTables/Talk_Stage09/Talk_Stage09
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: 154ab8fb2e1de784185628cb6b4726c6, type: 2}
   m_SchemaSet:

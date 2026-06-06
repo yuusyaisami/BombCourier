@@ -15,8 +15,68 @@ MonoBehaviour:
   m_GroupName: Localization-String-Tables-English (en)
   m_GUID: 15b4989db714e374fa6604eb6c99d0da
   m_SerializeEntries:
+  - m_GUID: 28b5748b2ffbe01468f6044d28ec191e
+    m_Address: Talk_Stage12_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2c7cb5e87a1c02841b01a3b3ae5ffd44
     m_Address: UI_Common_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 54f8eb2bd857d3e479d4ac550a49fe7c
+    m_Address: Talk_Stage09_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5bb31932060fdfd41b36067baee5d3a9
+    m_Address: Talk_Stage02_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6bce2c6b38361cd4f9c64cba55852a54
+    m_Address: StageData_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c7308bed220ab142af754eb10f7c23a
+    m_Address: ToDoList_Data_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 87f06ddab40be9b46b5e918727bd2779
+    m_Address: Talk_Stage06_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 991721180ead6784582e18e579865fc9
+    m_Address: Talk_Stage08_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ae24b9fa5aefc09428772e93f7c5435c
+    m_Address: Talk_Stage05_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cb7046e99c181ac47a61b71782156f85
+    m_Address: Tutorial_Stage01_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb884cf4decad6244a5dd608023bd125
+    m_Address: Speaker_Data_en
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-en
