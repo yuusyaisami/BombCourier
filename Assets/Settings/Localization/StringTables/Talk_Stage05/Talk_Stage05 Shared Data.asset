@@ -1,0 +1,676 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Talk_Stage05 Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Talk_Stage05
+  m_TableCollectionNameGuidString: a028f62b253f9964f9038c81ff161ff6
+  m_Entries:
+  - m_Id: 28673798144
+    m_Key: S05_INTRO_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991696
+  - m_Id: 28711546880
+    m_Key: S05_INTRO_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991697
+  - m_Id: 28711546881
+    m_Key: S05_INTRO_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991698
+  - m_Id: 28711546882
+    m_Key: S05_INTRO_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991699
+  - m_Id: 28711546883
+    m_Key: S05_INTRO_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991700
+  - m_Id: 28711546884
+    m_Key: S05_INTRO_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991701
+  - m_Id: 28711546885
+    m_Key: S05_INTRO_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991702
+  - m_Id: 28711546886
+    m_Key: S05_CHOICE_INTRO_ESCAPE
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991703
+  - m_Id: 28715741184
+    m_Key: S05_CHOICE_INTRO_MEMORY
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991704
+  - m_Id: 28715741185
+    m_Key: S05_BRANCH_ESCAPE_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991705
+  - m_Id: 28715741186
+    m_Key: S05_BRANCH_ESCAPE_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991706
+  - m_Id: 28715741187
+    m_Key: S05_BRANCH_ESCAPE_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991707
+  - m_Id: 28715741188
+    m_Key: S05_BRANCH_ESCAPE_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991708
+  - m_Id: 28715741189
+    m_Key: S05_BRANCH_ESCAPE_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991709
+  - m_Id: 28715741190
+    m_Key: S05_BRANCH_ESCAPE_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991710
+  - m_Id: 28715741191
+    m_Key: S05_BRANCH_ESCAPE_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991711
+  - m_Id: 28715741192
+    m_Key: S05_BRANCH_ESCAPE_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991712
+  - m_Id: 28715741193
+    m_Key: S05_BRANCH_ESCAPE_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991713
+  - m_Id: 28715741194
+    m_Key: S05_BRANCH_ESCAPE_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991714
+  - m_Id: 28715741195
+    m_Key: S05_BRANCH_ESCAPE_YAKUMO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991715
+  - m_Id: 28715741196
+    m_Key: S05_CHOICE_ESCAPE_FAT
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991716
+  - m_Id: 28715741197
+    m_Key: S05_CHOICE_ESCAPE_CAT_EAT
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991717
+  - m_Id: 28715741198
+    m_Key: S05_BRANCH_ESCAPE_FAT_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991718
+  - m_Id: 28715741199
+    m_Key: S05_BRANCH_ESCAPE_FAT_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991719
+  - m_Id: 28715741200
+    m_Key: S05_BRANCH_ESCAPE_CAT_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991720
+  - m_Id: 28715741201
+    m_Key: S05_BRANCH_ESCAPE_CAT_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991721
+  - m_Id: 28715741202
+    m_Key: S05_BRANCH_ESCAPE_CAT_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991722
+  - m_Id: 28715741203
+    m_Key: S05_BRANCH_ESCAPE_CAT_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991723
+  - m_Id: 28715741204
+    m_Key: S05_BRANCH_ESCAPE_CAT_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991724
+  - m_Id: 28715741205
+    m_Key: S05_BRANCH_ESCAPE_CAT_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991725
+  - m_Id: 28715741206
+    m_Key: S05_BRANCH_ESCAPE_CAT_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991726
+  - m_Id: 28715741207
+    m_Key: S05_BRANCH_ESCAPE_COMMON_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991727
+  - m_Id: 28715741208
+    m_Key: S05_BRANCH_ESCAPE_COMMON_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991728
+  - m_Id: 28715741209
+    m_Key: S05_BRANCH_MEMORY_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991729
+  - m_Id: 28715741210
+    m_Key: S05_BRANCH_MEMORY_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991730
+  - m_Id: 28715741211
+    m_Key: S05_CHOICE_MEMORY_PAINTER
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991731
+  - m_Id: 28715741212
+    m_Key: S05_CHOICE_MEMORY_IDIOT
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991732
+  - m_Id: 28715741213
+    m_Key: S05_BRANCH_MEMORY_COMMON_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991733
+  - m_Id: 28715741214
+    m_Key: S05_BRANCH_MEMORY_COMMON_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991734
+  - m_Id: 28715741215
+    m_Key: S05_BRANCH_MEMORY_COMMON_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991735
+  - m_Id: 28715741216
+    m_Key: S05_BRANCH_MEMORY_COMMON_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991736
+  - m_Id: 28715741217
+    m_Key: S05_BRANCH_MEMORY_COMMON_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991737
+  - m_Id: 28715741218
+    m_Key: S05_BRANCH_MEMORY_COMMON_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991738
+  - m_Id: 28715741219
+    m_Key: S05_BRANCH_MEMORY_COMMON_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991739
+  - m_Id: 28715741220
+    m_Key: S05_BRANCH_MEMORY_COMMON_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991740
+  - m_Id: 28715741221
+    m_Key: S05_COMMON_RESEARCH_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991741
+  - m_Id: 28715741222
+    m_Key: S05_COMMON_RESEARCH_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991742
+  - m_Id: 28715741223
+    m_Key: S05_COMMON_RESEARCH_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991743
+  - m_Id: 28715741224
+    m_Key: S05_CHOICE_RESEARCH_ANTI_SCIENCE
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991744
+  - m_Id: 28715741225
+    m_Key: S05_CHOICE_RESEARCH_GUIDANCE
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991745
+  - m_Id: 28715741226
+    m_Key: S05_BRANCH_RESEARCH_ANTI_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991746
+  - m_Id: 28715741227
+    m_Key: S05_BRANCH_RESEARCH_ANTI_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991747
+  - m_Id: 28715741228
+    m_Key: S05_BRANCH_RESEARCH_ANTI_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991748
+  - m_Id: 28715741229
+    m_Key: S05_BRANCH_RESEARCH_ANTI_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991749
+  - m_Id: 28715741230
+    m_Key: S05_BRANCH_RESEARCH_ANTI_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991750
+  - m_Id: 28715741231
+    m_Key: S05_BRANCH_RESEARCH_ANTI_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991751
+  - m_Id: 28715741232
+    m_Key: S05_BRANCH_RESEARCH_ANTI_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991752
+  - m_Id: 28715741233
+    m_Key: S05_BRANCH_RESEARCH_GUIDE_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991753
+  - m_Id: 28715741234
+    m_Key: S05_BRANCH_RESEARCH_GUIDE_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991754
+  - m_Id: 28715741235
+    m_Key: S05_BRANCH_RESEARCH_GUIDE_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991755
+  - m_Id: 28715741236
+    m_Key: S05_BRANCH_RESEARCH_GUIDE_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991756
+  - m_Id: 28715741237
+    m_Key: S05_BRANCH_RESEARCH_GUIDE_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991757
+  - m_Id: 28715741238
+    m_Key: S05_BRANCH_RESEARCH_GUIDE_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991758
+  - m_Id: 28719935488
+    m_Key: S05_BRANCH_RESEARCH_GUIDE_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991759
+  - m_Id: 28719935489
+    m_Key: S05_COMMON_END_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991760
+  - m_Id: 28719935490
+    m_Key: S05_REPEAT_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991761
+  - m_Id: 28719935491
+    m_Key: S05_REPEAT_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991762
+  - m_Id: 28719935492
+    m_Key: S05_REPEAT_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991763
+  - m_Id: 28719935493
+    m_Key: S05_REPEAT_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991764
+  - m_Id: 28719935494
+    m_Key: S05_REPEAT_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991765
+  - m_Id: 28719935495
+    m_Key: S05_REPEAT_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991766
+  - m_Id: 28719935496
+    m_Key: S05_REPEAT_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991767
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523298147991694
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523298147991694
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1780736596525
+    - rid: 1662523298147991696
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523298147991697
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Yakumo
+    - rid: 1662523298147991698
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523298147991699
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Yakumo
+    - rid: 1662523298147991700
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Yakumo
+    - rid: 1662523298147991701
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523298147991702
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Yakumo
+    - rid: 1662523298147991703
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro Choice | Choice | Mouse
+    - rid: 1662523298147991704
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro Choice | Choice | Mouse
+    - rid: 1662523298147991705
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Yakumo'
+    - rid: 1662523298147991706
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Yakumo'
+    - rid: 1662523298147991707
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Mouse'
+    - rid: 1662523298147991708
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Yakumo'
+    - rid: 1662523298147991709
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Mouse'
+    - rid: 1662523298147991710
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Yakumo'
+    - rid: 1662523298147991711
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Yakumo'
+    - rid: 1662523298147991712
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Yakumo'
+    - rid: 1662523298147991713
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Mouse'
+    - rid: 1662523298147991714
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Yakumo'
+    - rid: 1662523298147991715
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape | Line | Yakumo'
+    - rid: 1662523298147991716
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape Choice | Choice | Mouse'
+    - rid: 1662523298147991717
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape Choice | Choice | Mouse'
+    - rid: 1662523298147991718
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Fat | Line | Yakumo'
+    - rid: 1662523298147991719
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Fat | Line | Mouse'
+    - rid: 1662523298147991720
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Cats Eat Mice | Line | Yakumo'
+    - rid: 1662523298147991721
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Cats Eat Mice | Line | Yakumo'
+    - rid: 1662523298147991722
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Cats Eat Mice | Line | Mouse'
+    - rid: 1662523298147991723
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Cats Eat Mice | Line | Yakumo'
+    - rid: 1662523298147991724
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Cats Eat Mice | Line | Mouse'
+    - rid: 1662523298147991725
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Cats Eat Mice | Line | Yakumo'
+    - rid: 1662523298147991726
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape > Cats Eat Mice | Line | Mouse'
+    - rid: 1662523298147991727
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape Common | Line | Yakumo'
+    - rid: 1662523298147991728
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Escape Common | Line | Yakumo'
+    - rid: 1662523298147991729
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory | Line | Yakumo'
+    - rid: 1662523298147991730
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory | Line | Yakumo'
+    - rid: 1662523298147991731
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Choice | Choice | Mouse'
+    - rid: 1662523298147991732
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Choice | Choice | Mouse'
+    - rid: 1662523298147991733
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Common | Line | Yakumo'
+    - rid: 1662523298147991734
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Common | Line | Yakumo'
+    - rid: 1662523298147991735
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Common | Line | Mouse'
+    - rid: 1662523298147991736
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Common | Line | Yakumo'
+    - rid: 1662523298147991737
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Common | Line | Yakumo'
+    - rid: 1662523298147991738
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Common | Line | Yakumo'
+    - rid: 1662523298147991739
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Common | Line | Yakumo'
+    - rid: 1662523298147991740
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Memory Common | Line | Yakumo'
+    - rid: 1662523298147991741
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Common: Research | Line | Yakumo'
+    - rid: 1662523298147991742
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Common: Research | Line | Yakumo'
+    - rid: 1662523298147991743
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Common: Research | Line | Yakumo'
+    - rid: 1662523298147991744
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Research Choice | Choice | Mouse
+    - rid: 1662523298147991745
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Research Choice | Choice | Mouse
+    - rid: 1662523298147991746
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Anti Science | Line | Yakumo'
+    - rid: 1662523298147991747
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Anti Science | Line | Yakumo'
+    - rid: 1662523298147991748
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Anti Science | Line | Mouse'
+    - rid: 1662523298147991749
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Anti Science | Line | Yakumo'
+    - rid: 1662523298147991750
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Anti Science | Line | Yakumo'
+    - rid: 1662523298147991751
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Anti Science | Line | Yakumo'
+    - rid: 1662523298147991752
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Anti Science | Line | Yakumo'
+    - rid: 1662523298147991753
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Guidance | Line | Yakumo'
+    - rid: 1662523298147991754
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Guidance | Line | Yakumo'
+    - rid: 1662523298147991755
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Guidance | Line | Yakumo'
+    - rid: 1662523298147991756
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Guidance | Line | Yakumo'
+    - rid: 1662523298147991757
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Guidance | Line | Yakumo'
+    - rid: 1662523298147991758
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Guidance | Line | Yakumo'
+    - rid: 1662523298147991759
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch: Guidance | Line | Yakumo'
+    - rid: 1662523298147991760
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Common: End | Line | Yakumo'
+    - rid: 1662523298147991761
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat Dialogue | Line | Yakumo
+    - rid: 1662523298147991762
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat Dialogue | Line | Yakumo
+    - rid: 1662523298147991763
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat Dialogue | Line | Yakumo
+    - rid: 1662523298147991764
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat Dialogue | Line | Yakumo
+    - rid: 1662523298147991765
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat Dialogue | Line | Yakumo
+    - rid: 1662523298147991766
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat Dialogue | Line | Mouse
+    - rid: 1662523298147991767
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat Dialogue | Line | Yakumo

@@ -1,0 +1,496 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Tutorial_Stage01 Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Tutorial_Stage01
+  m_TableCollectionNameGuidString: 9e8e649b95611ab4f8923a645fe74ad3
+  m_Entries:
+  - m_Id: 32440283136
+    m_Key: S01_TUTORIAL_OPENING_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367012
+  - m_Id: 32482226176
+    m_Key: S01_TUTORIAL_OPENING_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367013
+  - m_Id: 32482226177
+    m_Key: S01_TUTORIAL_OBJECTIVE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367014
+  - m_Id: 32482226178
+    m_Key: S01_TUTORIAL_OBJECTIVE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367015
+  - m_Id: 32482226179
+    m_Key: S01_TUTORIAL_GATE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367016
+  - m_Id: 32482226180
+    m_Key: S01_TUTORIAL_GATE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367017
+  - m_Id: 32482226181
+    m_Key: S01_TUTORIAL_GATE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367018
+  - m_Id: 32482226182
+    m_Key: S01_TUTORIAL_GATE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367019
+  - m_Id: 32482226183
+    m_Key: S01_TUTORIAL_MOVE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367020
+  - m_Id: 32482226184
+    m_Key: S01_TUTORIAL_MOVE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367021
+  - m_Id: 32482226185
+    m_Key: S01_TUTORIAL_MOVE_SUCCESS_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367022
+  - m_Id: 32482226186
+    m_Key: S01_TUTORIAL_MOVE_SUCCESS_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367023
+  - m_Id: 32482226187
+    m_Key: S01_TUTORIAL_MOVE_SUCCESS_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367024
+  - m_Id: 32482226188
+    m_Key: S01_TUTORIAL_JUMP_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367025
+  - m_Id: 32482226189
+    m_Key: S01_TUTORIAL_JUMP_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367026
+  - m_Id: 32482226190
+    m_Key: S01_TUTORIAL_JUMP_SUCCESS_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367027
+  - m_Id: 32482226191
+    m_Key: S01_TUTORIAL_JUMP_SUCCESS_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367028
+  - m_Id: 32482226192
+    m_Key: S01_TUTORIAL_JUMP_SUCCESS_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367029
+  - m_Id: 32482226193
+    m_Key: S01_TUTORIAL_CUSHION_SETUP_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367030
+  - m_Id: 32482226194
+    m_Key: S01_TUTORIAL_CUSHION_SETUP_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367031
+  - m_Id: 32482226195
+    m_Key: S01_TUTORIAL_CUSHION_SETUP_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367032
+  - m_Id: 32482226196
+    m_Key: S01_TUTORIAL_CUSHION_SETUP_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367033
+  - m_Id: 32482226197
+    m_Key: S01_TUTORIAL_CUSHION_SETUP_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367034
+  - m_Id: 32482226198
+    m_Key: S01_TUTORIAL_CUSHION_SETUP_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367035
+  - m_Id: 32486420480
+    m_Key: S01_TUTORIAL_CUSHION_SETUP_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367036
+  - m_Id: 32486420481
+    m_Key: S01_TUTORIAL_CUSHION_PICKUP_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367037
+  - m_Id: 32486420482
+    m_Key: S01_TUTORIAL_CUSHION_PICKUP_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367038
+  - m_Id: 32486420483
+    m_Key: S01_TUTORIAL_CUSHION_PICKUP_SUCCESS_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367039
+  - m_Id: 32486420484
+    m_Key: S01_TUTORIAL_CUSHION_PLACE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367040
+  - m_Id: 32486420485
+    m_Key: S01_TUTORIAL_CUSHION_PLACE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367041
+  - m_Id: 32486420486
+    m_Key: S01_TUTORIAL_CUSHION_PLACE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367042
+  - m_Id: 32486420487
+    m_Key: S01_TUTORIAL_CUSHION_PLACE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367043
+  - m_Id: 32486420488
+    m_Key: S01_TUTORIAL_CUSHION_PLACE_SUCCESS_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367044
+  - m_Id: 32486420489
+    m_Key: S01_TUTORIAL_CUSHION_PLACE_SUCCESS_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367045
+  - m_Id: 32486420490
+    m_Key: S01_TUTORIAL_CUSHION_PLACE_SUCCESS_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367046
+  - m_Id: 32486420491
+    m_Key: S01_TUTORIAL_RUN_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367047
+  - m_Id: 32486420492
+    m_Key: S01_TUTORIAL_RUN_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367048
+  - m_Id: 32486420493
+    m_Key: S01_TUTORIAL_RUN_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367049
+  - m_Id: 32486420494
+    m_Key: S01_TUTORIAL_RUN_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367050
+  - m_Id: 32486420495
+    m_Key: S01_TUTORIAL_RUN_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367051
+  - m_Id: 32486420496
+    m_Key: S01_TUTORIAL_BOMB_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367052
+  - m_Id: 32486420497
+    m_Key: S01_TUTORIAL_BOMB_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367053
+  - m_Id: 32486420498
+    m_Key: S01_TUTORIAL_BOMB_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367054
+  - m_Id: 32486420499
+    m_Key: S01_TUTORIAL_BOMB_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367055
+  - m_Id: 32486420500
+    m_Key: S01_TUTORIAL_BOMB_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367056
+  - m_Id: 32486420501
+    m_Key: S01_TUTORIAL_BOMB_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367057
+  - m_Id: 32486420502
+    m_Key: S01_TUTORIAL_BOMB_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367058
+  - m_Id: 32486420503
+    m_Key: S01_TUTORIAL_BOMB_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367059
+  - m_Id: 32486420504
+    m_Key: S01_TUTORIAL_RESET_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367060
+  - m_Id: 32486420505
+    m_Key: S01_TUTORIAL_RESET_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367061
+  - m_Id: 32486420506
+    m_Key: S01_TUTORIAL_END_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367062
+  - m_Id: 32486420507
+    m_Key: S01_TUTORIAL_END_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602367063
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523299602367011
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523299602367011
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1780742707776
+    - rid: 1662523299602367012
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Opening | Tutorial
+    - rid: 1662523299602367013
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Opening | Tutorial
+    - rid: 1662523299602367014
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Objective | Tutorial
+    - rid: 1662523299602367015
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Objective | Tutorial
+    - rid: 1662523299602367016
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Gate Explanation | Tutorial
+    - rid: 1662523299602367017
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Gate Explanation | Tutorial
+    - rid: 1662523299602367018
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Gate Explanation | Tutorial
+    - rid: 1662523299602367019
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Gate Explanation | Tutorial
+    - rid: 1662523299602367020
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Movement | Tutorial
+    - rid: 1662523299602367021
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Movement | Tutorial
+    - rid: 1662523299602367022
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Movement Success | Tutorial
+    - rid: 1662523299602367023
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Movement Success | Tutorial
+    - rid: 1662523299602367024
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Movement Success | Tutorial
+    - rid: 1662523299602367025
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Jump | Tutorial
+    - rid: 1662523299602367026
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Jump | Tutorial
+    - rid: 1662523299602367027
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Jump Success | Tutorial
+    - rid: 1662523299602367028
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Jump Success | Tutorial
+    - rid: 1662523299602367029
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Jump Success | Tutorial
+    - rid: 1662523299602367030
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Puzzle | Tutorial
+    - rid: 1662523299602367031
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Puzzle | Tutorial
+    - rid: 1662523299602367032
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Puzzle | Tutorial
+    - rid: 1662523299602367033
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Puzzle | Tutorial
+    - rid: 1662523299602367034
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Puzzle | Tutorial
+    - rid: 1662523299602367035
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Puzzle | Tutorial
+    - rid: 1662523299602367036
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Puzzle | Tutorial
+    - rid: 1662523299602367037
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Pickup | Tutorial
+    - rid: 1662523299602367038
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Pickup | Tutorial
+    - rid: 1662523299602367039
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Pickup Success | Tutorial
+    - rid: 1662523299602367040
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Placement | Tutorial
+    - rid: 1662523299602367041
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Placement | Tutorial
+    - rid: 1662523299602367042
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Placement | Tutorial
+    - rid: 1662523299602367043
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Placement | Tutorial
+    - rid: 1662523299602367044
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Placement Success | Tutorial
+    - rid: 1662523299602367045
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Placement Success | Tutorial
+    - rid: 1662523299602367046
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Cushion Placement Success | Tutorial
+    - rid: 1662523299602367047
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Run | Tutorial
+    - rid: 1662523299602367048
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Run | Tutorial
+    - rid: 1662523299602367049
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Run | Tutorial
+    - rid: 1662523299602367050
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Run | Tutorial
+    - rid: 1662523299602367051
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Run | Tutorial
+    - rid: 1662523299602367052
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Bomb | Tutorial
+    - rid: 1662523299602367053
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Bomb | Tutorial
+    - rid: 1662523299602367054
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Bomb | Tutorial
+    - rid: 1662523299602367055
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Bomb | Tutorial
+    - rid: 1662523299602367056
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Bomb | Tutorial
+    - rid: 1662523299602367057
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Bomb | Tutorial
+    - rid: 1662523299602367058
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Bomb | Tutorial
+    - rid: 1662523299602367059
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Bomb | Tutorial
+    - rid: 1662523299602367060
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Reset | Tutorial
+    - rid: 1662523299602367061
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Reset | Tutorial
+    - rid: 1662523299602367062
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Closing | Tutorial
+    - rid: 1662523299602367063
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Closing | Tutorial

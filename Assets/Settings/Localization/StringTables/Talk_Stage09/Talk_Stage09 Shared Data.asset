@@ -1,0 +1,1072 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Talk_Stage09 Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Talk_Stage09
+  m_TableCollectionNameGuidString: fed8a0e3774e16444a047179eaa30d40
+  m_Entries:
+  - m_Id: 168713220096
+    m_Key: S09_INTRO_MONDO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895198
+  - m_Id: 168755163136
+    m_Key: S09_INTRO_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895199
+  - m_Id: 168755163137
+    m_Key: S09_INTRO_MONDO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895200
+  - m_Id: 168759357440
+    m_Key: S09_INTRO_MONDO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895201
+  - m_Id: 168759357441
+    m_Key: S09_INTRO_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895202
+  - m_Id: 168759357442
+    m_Key: S09_INTRO_MONDO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895203
+  - m_Id: 168759357443
+    m_Key: S09_INTRO_MONDO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895204
+  - m_Id: 168759357444
+    m_Key: S09_INTRO_MONDO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895205
+  - m_Id: 168759357445
+    m_Key: S09_INTRO_MONDO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895206
+  - m_Id: 168759357446
+    m_Key: S09_INTRO_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895207
+  - m_Id: 168759357447
+    m_Key: S09_INTRO_MOUSE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895208
+  - m_Id: 168759357448
+    m_Key: S09_INTRO_MONDO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895209
+  - m_Id: 168759357449
+    m_Key: S09_INTRO_MONDO_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895210
+  - m_Id: 168759357450
+    m_Key: S09_INTRO_MONDO_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895211
+  - m_Id: 168759357451
+    m_Key: S09_INTRO_MOUSE_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895212
+  - m_Id: 168759357452
+    m_Key: S09_INTRO_MOUSE_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895213
+  - m_Id: 168759357453
+    m_Key: S09_INTRO_MOUSE_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895214
+  - m_Id: 168759357454
+    m_Key: S09_INTRO_MONDO_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895215
+  - m_Id: 168759357455
+    m_Key: S09_INTRO_MOUSE_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895216
+  - m_Id: 168759357456
+    m_Key: S09_INTRO_MONDO_012
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895217
+  - m_Id: 168759357457
+    m_Key: S09_INTRO_MOUSE_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895218
+  - m_Id: 168759357458
+    m_Key: S09_INTRO_MONDO_013
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895219
+  - m_Id: 168759357459
+    m_Key: S09_INTRO_MONDO_014
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895220
+  - m_Id: 168759357460
+    m_Key: S09_INTRO_MONDO_015
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895221
+  - m_Id: 168759357461
+    m_Key: S09_INTRO_MONDO_016
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895222
+  - m_Id: 168759357462
+    m_Key: S09_INTRO_MONDO_017
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895223
+  - m_Id: 168759357463
+    m_Key: S09_INTRO_MONDO_018
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895224
+  - m_Id: 168759357464
+    m_Key: S09_INTRO_MONDO_019
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895225
+  - m_Id: 168759357465
+    m_Key: S09_INTRO_MONDO_020
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895226
+  - m_Id: 168759357466
+    m_Key: S09_INTRO_MONDO_021
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895227
+  - m_Id: 168759357467
+    m_Key: S09_INTRO_MONDO_022
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895228
+  - m_Id: 168759357468
+    m_Key: S09_INTRO_MONDO_023
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895229
+  - m_Id: 168759357469
+    m_Key: S09_INTRO_MONDO_024
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895230
+  - m_Id: 168759357470
+    m_Key: S09_INTRO_MONDO_025
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895231
+  - m_Id: 168759357471
+    m_Key: S09_INTRO_MONDO_026
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895232
+  - m_Id: 168759357472
+    m_Key: S09_CHOICE_SAME_EXPERIENCE
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895233
+  - m_Id: 168759357473
+    m_Key: S09_BRANCH_SAME_MONDO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895234
+  - m_Id: 168759357474
+    m_Key: S09_BRANCH_SAME_MONDO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895235
+  - m_Id: 168759357475
+    m_Key: S09_BRANCH_SAME_MONDO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895236
+  - m_Id: 168759357476
+    m_Key: S09_BRANCH_SAME_MONDO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895237
+  - m_Id: 168759357477
+    m_Key: S09_BRANCH_SAME_MONDO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895238
+  - m_Id: 168759357478
+    m_Key: S09_BRANCH_SAME_MONDO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895239
+  - m_Id: 168759357479
+    m_Key: S09_BRANCH_SAME_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895240
+  - m_Id: 168759357480
+    m_Key: S09_BRANCH_SAME_MONDO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895241
+  - m_Id: 168759357481
+    m_Key: S09_BRANCH_SAME_MONDO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895242
+  - m_Id: 168759357482
+    m_Key: S09_BRANCH_SAME_MONDO_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895243
+  - m_Id: 168759357483
+    m_Key: S09_BRANCH_SAME_MONDO_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895244
+  - m_Id: 168759357484
+    m_Key: S09_BRANCH_SAME_MONDO_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895245
+  - m_Id: 168759357485
+    m_Key: S09_BRANCH_SAME_MONDO_012
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895246
+  - m_Id: 168759357486
+    m_Key: S09_BRANCH_SAME_MONDO_013
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895247
+  - m_Id: 168759357487
+    m_Key: S09_BRANCH_SAME_MONDO_014
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895248
+  - m_Id: 168759357488
+    m_Key: S09_BRANCH_SAME_MONDO_015
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895249
+  - m_Id: 168759357489
+    m_Key: S09_BRANCH_SAME_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895250
+  - m_Id: 168759357490
+    m_Key: S09_BRANCH_SAME_MONDO_016
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895251
+  - m_Id: 168759357491
+    m_Key: S09_BRANCH_SAME_MONDO_017
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895252
+  - m_Id: 168759357492
+    m_Key: S09_BRANCH_SAME_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895253
+  - m_Id: 168759357493
+    m_Key: S09_BRANCH_SAME_MONDO_018
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895254
+  - m_Id: 168759357494
+    m_Key: S09_CHOICE_DANGER_ZONE
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895255
+  - m_Id: 168759357495
+    m_Key: S09_BRANCH_DANGER_MONDO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895256
+  - m_Id: 168759357496
+    m_Key: S09_BRANCH_DANGER_MONDO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895257
+  - m_Id: 168759357497
+    m_Key: S09_BRANCH_DANGER_MONDO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895258
+  - m_Id: 168759357498
+    m_Key: S09_BRANCH_DANGER_MONDO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895259
+  - m_Id: 168759357499
+    m_Key: S09_BRANCH_DANGER_MONDO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895260
+  - m_Id: 168759357500
+    m_Key: S09_BRANCH_DANGER_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895261
+  - m_Id: 168759357501
+    m_Key: S09_BRANCH_DANGER_MONDO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895262
+  - m_Id: 168759357502
+    m_Key: S09_BRANCH_DANGER_MONDO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895263
+  - m_Id: 168759357503
+    m_Key: S09_BRANCH_DANGER_MONDO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895264
+  - m_Id: 168759357504
+    m_Key: S09_COMMON_DAUGHTER_MONDO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895265
+  - m_Id: 168767746048
+    m_Key: S09_COMMON_DAUGHTER_MONDO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895266
+  - m_Id: 168767746049
+    m_Key: S09_COMMON_DAUGHTER_MONDO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895267
+  - m_Id: 168767746050
+    m_Key: S09_COMMON_DAUGHTER_MONDO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895268
+  - m_Id: 168767746051
+    m_Key: S09_COMMON_DAUGHTER_MONDO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895269
+  - m_Id: 168767746052
+    m_Key: S09_COMMON_DAUGHTER_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895270
+  - m_Id: 168767746053
+    m_Key: S09_COMMON_DAUGHTER_MONDO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895271
+  - m_Id: 168767746054
+    m_Key: S09_COMMON_DAUGHTER_MONDO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895272
+  - m_Id: 168767746055
+    m_Key: S09_COMMON_DAUGHTER_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895273
+  - m_Id: 168767746056
+    m_Key: S09_COMMON_DAUGHTER_MONDO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895274
+  - m_Id: 168767746057
+    m_Key: S09_CHOICE_REGRET
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895275
+  - m_Id: 168767746058
+    m_Key: S09_BRANCH_REGRET_MONDO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895276
+  - m_Id: 168767746059
+    m_Key: S09_BRANCH_REGRET_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895277
+  - m_Id: 168767746060
+    m_Key: S09_BRANCH_REGRET_MONDO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895278
+  - m_Id: 168767746061
+    m_Key: S09_BRANCH_REGRET_MONDO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895279
+  - m_Id: 168767746062
+    m_Key: S09_BRANCH_REGRET_MONDO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895280
+  - m_Id: 168767746063
+    m_Key: S09_BRANCH_REGRET_MONDO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895281
+  - m_Id: 168767746064
+    m_Key: S09_BRANCH_REGRET_MONDO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895282
+  - m_Id: 168767746065
+    m_Key: S09_BRANCH_REGRET_MONDO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895283
+  - m_Id: 168767746066
+    m_Key: S09_BRANCH_REGRET_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895284
+  - m_Id: 168767746067
+    m_Key: S09_BRANCH_REGRET_MONDO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895285
+  - m_Id: 168767746068
+    m_Key: S09_BRANCH_REGRET_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895286
+  - m_Id: 168767746069
+    m_Key: S09_BRANCH_REGRET_MOUSE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895287
+  - m_Id: 168767746070
+    m_Key: S09_BRANCH_REGRET_MONDO_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895288
+  - m_Id: 168767746071
+    m_Key: S09_BRANCH_REGRET_MONDO_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895289
+  - m_Id: 168767746072
+    m_Key: S09_BRANCH_REGRET_MOUSE_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895290
+  - m_Id: 168767746073
+    m_Key: S09_BRANCH_REGRET_MOUSE_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895291
+  - m_Id: 168767746074
+    m_Key: S09_BRANCH_REGRET_MOUSE_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895292
+  - m_Id: 168767746075
+    m_Key: S09_BRANCH_REGRET_MONDO_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895293
+  - m_Id: 168767746076
+    m_Key: S09_BRANCH_REGRET_MONDO_012
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895294
+  - m_Id: 168767746077
+    m_Key: S09_BRANCH_REGRET_MONDO_013
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895295
+  - m_Id: 168767746078
+    m_Key: S09_CHOICE_AGED_POORLY
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895296
+  - m_Id: 168767746079
+    m_Key: S09_BRANCH_AGE_MONDO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895297
+  - m_Id: 168767746080
+    m_Key: S09_BRANCH_AGE_MONDO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895298
+  - m_Id: 168767746081
+    m_Key: S09_BRANCH_AGE_MONDO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895299
+  - m_Id: 168767746082
+    m_Key: S09_BRANCH_AGE_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895300
+  - m_Id: 168767746083
+    m_Key: S09_BRANCH_AGE_MONDO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895301
+  - m_Id: 168767746084
+    m_Key: S09_COMMON_QUIET_MONDO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895302
+  - m_Id: 168767746085
+    m_Key: S09_COMMON_QUIET_MONDO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895303
+  - m_Id: 168767746086
+    m_Key: S09_COMMON_QUIET_MONDO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895304
+  - m_Id: 168767746087
+    m_Key: S09_COMMON_QUIET_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895305
+  - m_Id: 168767746088
+    m_Key: S09_COMMON_QUIET_MONDO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895306
+  - m_Id: 168767746089
+    m_Key: S09_COMMON_QUIET_MONDO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895307
+  - m_Id: 168767746090
+    m_Key: S09_COMMON_QUIET_MONDO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895308
+  - m_Id: 168767746091
+    m_Key: S09_REPEAT_MONDO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895309
+  - m_Id: 168767746092
+    m_Key: S09_REPEAT_MONDO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895310
+  - m_Id: 168767746093
+    m_Key: S09_REPEAT_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895311
+  - m_Id: 168767746094
+    m_Key: S09_REPEAT_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895312
+  - m_Id: 168767746095
+    m_Key: S09_REPEAT_MONDO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299424895313
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523299424895197
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523299424895197
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1780741378117
+    - rid: 1662523299424895198
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895199
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895200
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895201
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895202
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895203
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895204
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895205
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895206
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895207
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895208
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895209
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895210
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895211
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895212
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895213
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895214
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895215
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895216
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895217
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895218
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299424895219
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895220
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895221
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895222
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895223
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895224
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895225
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895226
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895227
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895228
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895229
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895230
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895231
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895232
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mondo
+    - rid: 1662523299424895233
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Choice 1 | Choice | Mouse
+    - rid: 1662523299424895234
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895235
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895236
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895237
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895238
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895239
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895240
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mouse
+    - rid: 1662523299424895241
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895242
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895243
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895244
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895245
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895246
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895247
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895248
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895249
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895250
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mouse
+    - rid: 1662523299424895251
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895252
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895253
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mouse
+    - rid: 1662523299424895254
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Same Experience | Line | Mondo
+    - rid: 1662523299424895255
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Choice 1 | Choice | Mouse
+    - rid: 1662523299424895256
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mondo
+    - rid: 1662523299424895257
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mondo
+    - rid: 1662523299424895258
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mondo
+    - rid: 1662523299424895259
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mondo
+    - rid: 1662523299424895260
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mondo
+    - rid: 1662523299424895261
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mouse
+    - rid: 1662523299424895262
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mondo
+    - rid: 1662523299424895263
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mondo
+    - rid: 1662523299424895264
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Dangerous Zone | Line | Mondo
+    - rid: 1662523299424895265
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mondo
+    - rid: 1662523299424895266
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mondo
+    - rid: 1662523299424895267
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mondo
+    - rid: 1662523299424895268
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mondo
+    - rid: 1662523299424895269
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mondo
+    - rid: 1662523299424895270
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mouse
+    - rid: 1662523299424895271
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mondo
+    - rid: 1662523299424895272
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mondo
+    - rid: 1662523299424895273
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mouse
+    - rid: 1662523299424895274
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Daughter | Line | Mondo
+    - rid: 1662523299424895275
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Choice 2 | Choice | Mouse
+    - rid: 1662523299424895276
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895277
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mouse
+    - rid: 1662523299424895278
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895279
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895280
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895281
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895282
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895283
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895284
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mouse
+    - rid: 1662523299424895285
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895286
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mouse
+    - rid: 1662523299424895287
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mouse
+    - rid: 1662523299424895288
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895289
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895290
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mouse
+    - rid: 1662523299424895291
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mouse
+    - rid: 1662523299424895292
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mouse
+    - rid: 1662523299424895293
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895294
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895295
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Regret | Line | Mondo
+    - rid: 1662523299424895296
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Choice 2 | Choice | Mouse
+    - rid: 1662523299424895297
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Aged Poorly | Line | Mondo
+    - rid: 1662523299424895298
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Aged Poorly | Line | Mondo
+    - rid: 1662523299424895299
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Aged Poorly | Line | Mondo
+    - rid: 1662523299424895300
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Aged Poorly | Line | Mouse
+    - rid: 1662523299424895301
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Branch Aged Poorly | Line | Mondo
+    - rid: 1662523299424895302
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Quiet Place | Line | Mondo
+    - rid: 1662523299424895303
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Quiet Place | Line | Mondo
+    - rid: 1662523299424895304
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Quiet Place | Line | Mondo
+    - rid: 1662523299424895305
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Quiet Place | Line | Mouse
+    - rid: 1662523299424895306
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Quiet Place | Line | Mondo
+    - rid: 1662523299424895307
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Quiet Place | Line | Mondo
+    - rid: 1662523299424895308
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common Quiet Place | Line | Mondo
+    - rid: 1662523299424895309
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat | Line | Mondo
+    - rid: 1662523299424895310
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat | Line | Mondo
+    - rid: 1662523299424895311
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat | Line | Mouse
+    - rid: 1662523299424895312
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat | Line | Mouse
+    - rid: 1662523299424895313
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat | Line | Mondo

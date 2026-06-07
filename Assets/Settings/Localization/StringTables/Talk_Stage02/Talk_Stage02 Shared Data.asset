@@ -1,0 +1,244 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Talk_Stage02 Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Talk_Stage02
+  m_TableCollectionNameGuidString: 7ea6260e28ce9a84b96efd9508de4ab7
+  m_Entries:
+  - m_Id: 7023507325818222534
+    m_Key: S02_INTRO_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821949
+  - m_Id: 2601454763290002037
+    m_Key: S02_CHOICE_INTRO_WHO
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821950
+  - m_Id: 2718966408865626873
+    m_Key: S02_CHOICE_INTRO_WHERE
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821951
+  - m_Id: 5373019814136094439
+    m_Key: S02_BRANCH_WHO_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821952
+  - m_Id: 909650436601845691
+    m_Key: S02_BRANCH_WHO_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821953
+  - m_Id: 5454960842673800993
+    m_Key: S02_BRANCH_WHO_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821954
+  - m_Id: 5984980547864081358
+    m_Key: S02_BRANCH_WHERE_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821955
+  - m_Id: 5980476459379056637
+    m_Key: S02_BRANCH_WHERE_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821956
+  - m_Id: 2172371201322117035
+    m_Key: S02_COMMON_ART_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821957
+  - m_Id: 8043203444997937572
+    m_Key: S02_COMMON_ART_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821958
+  - m_Id: 1467704674993580532
+    m_Key: S02_COMMON_ART_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821959
+  - m_Id: 2430958611684600880
+    m_Key: S02_COMMON_PROPHECY_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821960
+  - m_Id: 5671947248032641168
+    m_Key: S02_COMMON_PROPHECY_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821961
+  - m_Id: 8435271925346515024
+    m_Key: S02_COMMON_PROPHECY_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821962
+  - m_Id: 3219132831518115693
+    m_Key: S02_COMMON_PROPHECY_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821963
+  - m_Id: 3047065892418175488
+    m_Key: S02_COMMON_ORDER_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821964
+  - m_Id: 53327721388112366
+    m_Key: S02_COMMON_ORDER_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821965
+  - m_Id: 1165803043213401772
+    m_Key: S02_COMMON_ORDER_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821966
+  - m_Id: 4560365996716796641
+    m_Key: S02_COMMON_HINT_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821967
+  - m_Id: 6469717889889887019
+    m_Key: S02_COMMON_HINT_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821968
+  - m_Id: 3468308238743827537
+    m_Key: S02_COMMON_HINT_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821969
+  - m_Id: 4901086709209057190
+    m_Key: S02_COMMON_HINT_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821970
+  - m_Id: 1687582271732652562
+    m_Key: S02_COMMON_HINT_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821971
+  - m_Id: 1486718284932755562
+    m_Key: S02_COMMON_END_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523297361821972
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523297361821946
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523297361821946
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1780734179710
+    - rid: 1662523297361821949
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Intro
+    - rid: 1662523297361821950
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: choice=A; flow=Intro; branch=Who
+    - rid: 1662523297361821951
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: choice=B; flow=Intro; branch=Where
+    - rid: 1662523297361821952
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; branch=A_Who
+    - rid: 1662523297361821953
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Mouse; branch=A_Who
+    - rid: 1662523297361821954
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; branch=A_Who
+    - rid: 1662523297361821955
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; branch=B_Where
+    - rid: 1662523297361821956
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Mouse; branch=B_Where
+    - rid: 1662523297361821957
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Art
+    - rid: 1662523297361821958
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Art
+    - rid: 1662523297361821959
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Mouse; flow=Common_Art
+    - rid: 1662523297361821960
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Prophecy
+    - rid: 1662523297361821961
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Prophecy
+    - rid: 1662523297361821962
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Prophecy
+    - rid: 1662523297361821963
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Mouse; flow=Common_Prophecy
+    - rid: 1662523297361821964
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Order
+    - rid: 1662523297361821965
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Order
+    - rid: 1662523297361821966
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Mouse; flow=Common_Order
+    - rid: 1662523297361821967
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Hint
+    - rid: 1662523297361821968
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Hint
+    - rid: 1662523297361821969
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_Hint
+    - rid: 1662523297361821970
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Mouse; flow=Common_Hint
+    - rid: 1662523297361821971
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Mouse; flow=Common_Hint
+    - rid: 1662523297361821972
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: speaker=Vanilla; flow=Common_End

@@ -1,0 +1,874 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Talk_Stage06 Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Talk_Stage06
+  m_TableCollectionNameGuidString: 34a9c22dd0784a240a717e83dec2de8d
+  m_Entries:
+  - m_Id: 342822973440
+    m_Key: S06_INTRO_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787521
+  - m_Id: 342869110784
+    m_Key: S06_INTRO_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787522
+  - m_Id: 342869110785
+    m_Key: S06_INTRO_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787523
+  - m_Id: 342869110786
+    m_Key: S06_CHOICE_INTRO_ART
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787524
+  - m_Id: 342869110787
+    m_Key: S06_CHOICE_INTRO_YAKUMO
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787525
+  - m_Id: 342869110788
+    m_Key: S06_BRANCH_ART_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787526
+  - m_Id: 342869110789
+    m_Key: S06_BRANCH_ART_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787527
+  - m_Id: 342869110790
+    m_Key: S06_BRANCH_ART_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787528
+  - m_Id: 342869110791
+    m_Key: S06_BRANCH_ART_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787529
+  - m_Id: 342869110792
+    m_Key: S06_BRANCH_ART_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787530
+  - m_Id: 342869110793
+    m_Key: S06_BRANCH_ART_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787531
+  - m_Id: 342869110794
+    m_Key: S06_BRANCH_ART_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787532
+  - m_Id: 342869110795
+    m_Key: S06_BRANCH_ART_VANILLA_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787533
+  - m_Id: 342869110796
+    m_Key: S06_BRANCH_ART_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787534
+  - m_Id: 342869110797
+    m_Key: S06_BRANCH_ART_VANILLA_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787535
+  - m_Id: 342869110798
+    m_Key: S06_BRANCH_ART_VANILLA_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787536
+  - m_Id: 342869110799
+    m_Key: S06_CHOICE_ART_DISLIKED
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787537
+  - m_Id: 342869110800
+    m_Key: S06_CHOICE_ART_WALL
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787538
+  - m_Id: 342869110801
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787539
+  - m_Id: 342869110802
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787540
+  - m_Id: 342869110803
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787541
+  - m_Id: 342869110804
+    m_Key: S06_BRANCH_ART_DISLIKED_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787542
+  - m_Id: 342869110805
+    m_Key: S06_BRANCH_ART_DISLIKED_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787543
+  - m_Id: 342869110806
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787544
+  - m_Id: 342869110807
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787545
+  - m_Id: 342869110808
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787546
+  - m_Id: 342869110809
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787547
+  - m_Id: 342869110810
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787548
+  - m_Id: 342869110811
+    m_Key: S06_BRANCH_ART_DISLIKED_VANILLA_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787549
+  - m_Id: 342873305088
+    m_Key: S06_BRANCH_ART_WALL_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787550
+  - m_Id: 342873305089
+    m_Key: S06_BRANCH_ART_WALL_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787551
+  - m_Id: 342873305090
+    m_Key: S06_BRANCH_ART_WALL_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787552
+  - m_Id: 342873305091
+    m_Key: S06_BRANCH_ART_WALL_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787553
+  - m_Id: 342873305092
+    m_Key: S06_BRANCH_ART_WALL_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787554
+  - m_Id: 342873305093
+    m_Key: S06_BRANCH_ART_WALL_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787555
+  - m_Id: 342873305094
+    m_Key: S06_BRANCH_ART_WALL_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787556
+  - m_Id: 342873305095
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787557
+  - m_Id: 342873305096
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787558
+  - m_Id: 342873305097
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787559
+  - m_Id: 342873305098
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787560
+  - m_Id: 342873305099
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787561
+  - m_Id: 342873305100
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787562
+  - m_Id: 342873305101
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787563
+  - m_Id: 342873305102
+    m_Key: S06_BRANCH_YAKUMO_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787564
+  - m_Id: 342873305103
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787565
+  - m_Id: 342873305104
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787566
+  - m_Id: 342873305105
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787567
+  - m_Id: 342873305106
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787568
+  - m_Id: 342873305107
+    m_Key: S06_BRANCH_YAKUMO_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787569
+  - m_Id: 342873305108
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_012
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787570
+  - m_Id: 342873305109
+    m_Key: S06_BRANCH_YAKUMO_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787571
+  - m_Id: 342873305110
+    m_Key: S06_BRANCH_YAKUMO_VANILLA_013
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787572
+  - m_Id: 342873305111
+    m_Key: S06_CHOICE_YAKUMO_OUTSIDE
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787573
+  - m_Id: 342873305112
+    m_Key: S06_CHOICE_YAKUMO_OFFENDED
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787574
+  - m_Id: 342873305113
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787575
+  - m_Id: 342873305114
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787576
+  - m_Id: 342873305115
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787577
+  - m_Id: 342873305116
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787578
+  - m_Id: 342877499392
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787579
+  - m_Id: 342877499393
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787580
+  - m_Id: 342877499394
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787581
+  - m_Id: 342877499395
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_VANILLA_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787582
+  - m_Id: 342877499396
+    m_Key: S06_BRANCH_YAKUMO_OUTSIDE_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787583
+  - m_Id: 342877499397
+    m_Key: S06_BRANCH_YAKUMO_OFFENDED_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787584
+  - m_Id: 342877499398
+    m_Key: S06_COMMON_ROUTE_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787585
+  - m_Id: 342877499399
+    m_Key: S06_COMMON_ROUTE_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787586
+  - m_Id: 342877499400
+    m_Key: S06_COMMON_ROUTE_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787587
+  - m_Id: 342877499401
+    m_Key: S06_COMMON_ROUTE_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787588
+  - m_Id: 342877499402
+    m_Key: S06_COMMON_ROUTE_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787589
+  - m_Id: 342877499403
+    m_Key: S06_COMMON_ROUTE_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787590
+  - m_Id: 342877499404
+    m_Key: S06_CHOICE_COMMON_FOOD
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787591
+  - m_Id: 342877499405
+    m_Key: S06_CHOICE_COMMON_RABBIT_EYES
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787592
+  - m_Id: 342877499406
+    m_Key: S06_BRANCH_FOOD_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787593
+  - m_Id: 342877499407
+    m_Key: S06_BRANCH_FOOD_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787594
+  - m_Id: 342877499408
+    m_Key: S06_BRANCH_FOOD_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787595
+  - m_Id: 342877499409
+    m_Key: S06_BRANCH_FOOD_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787596
+  - m_Id: 342877499410
+    m_Key: S06_BRANCH_FOOD_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787597
+  - m_Id: 342877499411
+    m_Key: S06_BRANCH_FOOD_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787598
+  - m_Id: 342877499412
+    m_Key: S06_BRANCH_FOOD_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787599
+  - m_Id: 342877499413
+    m_Key: S06_BRANCH_RABBIT_EYES_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787600
+  - m_Id: 342877499414
+    m_Key: S06_BRANCH_RABBIT_EYES_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787601
+  - m_Id: 342877499415
+    m_Key: S06_BRANCH_RABBIT_EYES_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787602
+  - m_Id: 342877499416
+    m_Key: S06_BRANCH_RABBIT_EYES_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787603
+  - m_Id: 342877499417
+    m_Key: S06_BRANCH_RABBIT_EYES_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787604
+  - m_Id: 342877499418
+    m_Key: S06_BRANCH_RABBIT_EYES_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787605
+  - m_Id: 342877499419
+    m_Key: S06_BRANCH_RABBIT_EYES_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787606
+  - m_Id: 342877499420
+    m_Key: S06_COMMON_END_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787607
+  - m_Id: 342877499421
+    m_Key: S06_COMMON_END_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787608
+  - m_Id: 342877499422
+    m_Key: S06_COMMON_END_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787609
+  - m_Id: 342877499423
+    m_Key: S06_REPEAT_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787610
+  - m_Id: 342877499424
+    m_Key: S06_REPEAT_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787611
+  - m_Id: 342877499425
+    m_Key: S06_REPEAT_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787612
+  - m_Id: 342877499426
+    m_Key: S06_REPEAT_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787613
+  - m_Id: 342877499427
+    m_Key: S06_REPEAT_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787614
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523298758787520
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523298758787520
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1780740438214
+    - rid: 1662523298758787521
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: INTRO'
+    - rid: 1662523298758787522
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: INTRO'
+    - rid: 1662523298758787523
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: INTRO'
+    - rid: 1662523298758787524
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice | Section: CHOICE_INTRO'
+    - rid: 1662523298758787525
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice | Section: CHOICE_INTRO'
+    - rid: 1662523298758787526
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART'
+    - rid: 1662523298758787527
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART'
+    - rid: 1662523298758787528
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART'
+    - rid: 1662523298758787529
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART'
+    - rid: 1662523298758787530
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_ART'
+    - rid: 1662523298758787531
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART'
+    - rid: 1662523298758787532
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_ART'
+    - rid: 1662523298758787533
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART'
+    - rid: 1662523298758787534
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_ART'
+    - rid: 1662523298758787535
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART'
+    - rid: 1662523298758787536
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART'
+    - rid: 1662523298758787537
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice | Section: CHOICE_ART'
+    - rid: 1662523298758787538
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice | Section: CHOICE_ART'
+    - rid: 1662523298758787539
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787540
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787541
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787542
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787543
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787544
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787545
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787546
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787547
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787548
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787549
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_DISLIKED'
+    - rid: 1662523298758787550
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_WALL'
+    - rid: 1662523298758787551
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_WALL'
+    - rid: 1662523298758787552
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_ART_WALL'
+    - rid: 1662523298758787553
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_WALL'
+    - rid: 1662523298758787554
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_ART_WALL'
+    - rid: 1662523298758787555
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_WALL'
+    - rid: 1662523298758787556
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_ART_WALL'
+    - rid: 1662523298758787557
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787558
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787559
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787560
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787561
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787562
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787563
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787564
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787565
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787566
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787567
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787568
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787569
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787570
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787571
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787572
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO'
+    - rid: 1662523298758787573
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice | Section: CHOICE_YAKUMO'
+    - rid: 1662523298758787574
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice | Section: CHOICE_YAKUMO'
+    - rid: 1662523298758787575
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787576
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787577
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787578
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787579
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787580
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787581
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787582
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787583
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_YAKUMO_OUTSIDE'
+    - rid: 1662523298758787584
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_YAKUMO_OFFENDED'
+    - rid: 1662523298758787585
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: COMMON_ROUTE'
+    - rid: 1662523298758787586
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: COMMON_ROUTE'
+    - rid: 1662523298758787587
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: COMMON_ROUTE'
+    - rid: 1662523298758787588
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: COMMON_ROUTE'
+    - rid: 1662523298758787589
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: COMMON_ROUTE'
+    - rid: 1662523298758787590
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: COMMON_ROUTE'
+    - rid: 1662523298758787591
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice | Section: CHOICE_COMMON'
+    - rid: 1662523298758787592
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice | Section: CHOICE_COMMON'
+    - rid: 1662523298758787593
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_FOOD'
+    - rid: 1662523298758787594
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_FOOD'
+    - rid: 1662523298758787595
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_FOOD'
+    - rid: 1662523298758787596
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_FOOD'
+    - rid: 1662523298758787597
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_FOOD'
+    - rid: 1662523298758787598
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_FOOD'
+    - rid: 1662523298758787599
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_FOOD'
+    - rid: 1662523298758787600
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_RABBIT_EYES'
+    - rid: 1662523298758787601
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_RABBIT_EYES'
+    - rid: 1662523298758787602
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_RABBIT_EYES'
+    - rid: 1662523298758787603
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_RABBIT_EYES'
+    - rid: 1662523298758787604
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_RABBIT_EYES'
+    - rid: 1662523298758787605
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: BRANCH_RABBIT_EYES'
+    - rid: 1662523298758787606
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: BRANCH_RABBIT_EYES'
+    - rid: 1662523298758787607
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: COMMON_END'
+    - rid: 1662523298758787608
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: COMMON_END'
+    - rid: 1662523298758787609
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: COMMON_END'
+    - rid: 1662523298758787610
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: REPEAT'
+    - rid: 1662523298758787611
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: REPEAT'
+    - rid: 1662523298758787612
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: REPEAT'
+    - rid: 1662523298758787613
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse | Section: REPEAT'
+    - rid: 1662523298758787614
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Vanilla | Section: REPEAT'

@@ -1,0 +1,415 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Talk_Stage12 Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Talk_Stage12
+  m_TableCollectionNameGuidString: e7ebdf2ac4bb2fd41b35975953410b83
+  m_Entries:
+  - m_Id: 136605822976
+    m_Key: S12_INTRO_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366805
+  - m_Id: 136647766016
+    m_Key: S12_INTRO_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366806
+  - m_Id: 136647766017
+    m_Key: S12_INTRO_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366807
+  - m_Id: 136647766018
+    m_Key: S12_INTRO_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366808
+  - m_Id: 136647766019
+    m_Key: S12_INTRO_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366809
+  - m_Id: 136647766020
+    m_Key: S12_INTRO_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366810
+  - m_Id: 136647766021
+    m_Key: S12_INTRO_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366811
+  - m_Id: 136651960320
+    m_Key: S12_INTRO_VANILLA_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366812
+  - m_Id: 136651960321
+    m_Key: S12_INTRO_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366813
+  - m_Id: 136651960322
+    m_Key: S12_INTRO_VANILLA_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366814
+  - m_Id: 136651960323
+    m_Key: S12_INTRO_VANILLA_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366815
+  - m_Id: 136651960324
+    m_Key: S12_CHOICE_VANILLA_AFRAID
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366816
+  - m_Id: 136651960325
+    m_Key: S12_CHOICE_FAREWELL
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366817
+  - m_Id: 136651960326
+    m_Key: S12_BRANCH_AFRAID_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366818
+  - m_Id: 136651960327
+    m_Key: S12_BRANCH_AFRAID_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366819
+  - m_Id: 136651960328
+    m_Key: S12_BRANCH_AFRAID_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366820
+  - m_Id: 136651960329
+    m_Key: S12_BRANCH_AFRAID_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366821
+  - m_Id: 136651960330
+    m_Key: S12_BRANCH_AFRAID_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366822
+  - m_Id: 136651960331
+    m_Key: S12_BRANCH_AFRAID_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366823
+  - m_Id: 136651960332
+    m_Key: S12_BRANCH_AFRAID_VANILLA_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366824
+  - m_Id: 136651960333
+    m_Key: S12_BRANCH_AFRAID_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366825
+  - m_Id: 136651960334
+    m_Key: S12_BRANCH_AFRAID_VANILLA_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366826
+  - m_Id: 136651960335
+    m_Key: S12_BRANCH_AFRAID_VANILLA_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366827
+  - m_Id: 136651960336
+    m_Key: S12_BRANCH_AFRAID_VANILLA_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366828
+  - m_Id: 136651960337
+    m_Key: S12_BRANCH_AFRAID_VANILLA_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366829
+  - m_Id: 136651960338
+    m_Key: S12_BRANCH_AFRAID_VANILLA_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366830
+  - m_Id: 136651960339
+    m_Key: S12_BRANCH_FAREWELL_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366831
+  - m_Id: 136651960340
+    m_Key: S12_BRANCH_FAREWELL_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366832
+  - m_Id: 136651960341
+    m_Key: S12_BRANCH_FAREWELL_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366833
+  - m_Id: 136651960342
+    m_Key: S12_BRANCH_FAREWELL_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366834
+  - m_Id: 136651960343
+    m_Key: S12_COMMON_TOWER_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366835
+  - m_Id: 136651960344
+    m_Key: S12_COMMON_TOWER_VANILLA_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366836
+  - m_Id: 136651960345
+    m_Key: S12_COMMON_TOWER_VANILLA_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366837
+  - m_Id: 136651960346
+    m_Key: S12_COMMON_TOWER_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366838
+  - m_Id: 136651960347
+    m_Key: S12_COMMON_TOWER_VANILLA_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366839
+  - m_Id: 136656154624
+    m_Key: S12_COMMON_TOWER_VANILLA_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366840
+  - m_Id: 136656154625
+    m_Key: S12_COMMON_TOWER_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366841
+  - m_Id: 136656154626
+    m_Key: S12_COMMON_TOWER_VANILLA_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366842
+  - m_Id: 136656154627
+    m_Key: S12_COMMON_TOWER_VANILLA_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366843
+  - m_Id: 136656154628
+    m_Key: S12_COMMON_TOWER_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366844
+  - m_Id: 136656154629
+    m_Key: S12_COMMON_TOWER_VANILLA_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366845
+  - m_Id: 136656154630
+    m_Key: S12_COMMON_TOWER_MOUSE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366846
+  - m_Id: 136656154631
+    m_Key: S12_REPEAT_VANILLA_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523299602366847
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523299602366804
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523299602366804
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1780741822289
+    - rid: 1662523299602366805
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Vanilla
+    - rid: 1662523299602366806
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299602366807
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299602366808
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Vanilla
+    - rid: 1662523299602366809
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Vanilla
+    - rid: 1662523299602366810
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Vanilla
+    - rid: 1662523299602366811
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Vanilla
+    - rid: 1662523299602366812
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Vanilla
+    - rid: 1662523299602366813
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Mouse
+    - rid: 1662523299602366814
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Vanilla
+    - rid: 1662523299602366815
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Intro | Line | Vanilla
+    - rid: 1662523299602366816
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Choice | Branch A
+    - rid: 1662523299602366817
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Choice | Branch B
+    - rid: 1662523299602366818
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366819
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366820
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366821
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366822
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366823
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Mouse'
+    - rid: 1662523299602366824
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366825
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Mouse'
+    - rid: 1662523299602366826
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366827
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366828
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366829
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366830
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch A: Afraid | Line | Vanilla'
+    - rid: 1662523299602366831
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch B: Farewell | Line | Vanilla'
+    - rid: 1662523299602366832
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch B: Farewell | Line | Vanilla'
+    - rid: 1662523299602366833
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch B: Farewell | Line | Vanilla'
+    - rid: 1662523299602366834
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Branch B: Farewell | Line | Mouse'
+    - rid: 1662523299602366835
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Vanilla
+    - rid: 1662523299602366836
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Vanilla
+    - rid: 1662523299602366837
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Vanilla
+    - rid: 1662523299602366838
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Mouse
+    - rid: 1662523299602366839
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Vanilla
+    - rid: 1662523299602366840
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Vanilla
+    - rid: 1662523299602366841
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Mouse
+    - rid: 1662523299602366842
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Vanilla
+    - rid: 1662523299602366843
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Vanilla
+    - rid: 1662523299602366844
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Mouse
+    - rid: 1662523299602366845
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Vanilla
+    - rid: 1662523299602366846
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Common After Branch | Line | Mouse
+    - rid: 1662523299602366847
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Repeat Conversation | Line | Vanilla

@@ -1,0 +1,408 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Talk_Stage06_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 34a9c22dd0784a240a717e83dec2de8d, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 342822973440
+    m_Localized: Oh? You're still alive. Wonderful!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110784
+    m_Localized: After you tried to kill me?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110785
+    m_Localized: That's exactly why I asked if you were still alive.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110786
+    m_Localized: "More of your usual \u201Cart,\u201D huh? lol"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110787
+    m_Localized: I met Yakumo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110788
+    m_Localized: Not you too... You really have a nasty way of putting things.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110789
+    m_Localized: How many times do I have to say it? Watching people fail is fascinating.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110790
+    m_Localized: The masses all want to hear about success stories.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110791
+    m_Localized: But that is not where the real value is!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110792
+    m_Localized: "It\u2019s hard to buy high-minded opinions from someone who hasn't
+      achieved anything."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110793
+    m_Localized: I'm still young! If anything, I'm a golden egg!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110794
+    m_Localized: Gold shell. Ordinary yolk.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110795
+    m_Localized: Hah... At this rate, I'm going to get gray hairs. I'm still so young.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110796
+    m_Localized: (You're literally covered in white fur.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110797
+    m_Localized: It's fine. I don't need the masses to understand me.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110798
+    m_Localized: I just... have to stay true to what I believe in!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110799
+    m_Localized: So everyone hates you, then!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110800
+    m_Localized: You think painting on walls makes you important?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110801
+    m_Localized: Yes. I suppose they do.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110802
+    m_Localized: Even my parents don't approve of what I do.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110803
+    m_Localized: Honestly, a painting only belongs on a wall once someone is there
+      to look at it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110804
+    m_Localized: (Oops. Apparently I hit a nerve.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110805
+    m_Localized: P-parents? You have parents?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110806
+    m_Localized: Of course I do.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110807
+    m_Localized: But whenever my father looks at my paintings,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110808
+    m_Localized: he tells me to paint things that make everyone happier.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110809
+    m_Localized: I'd paint them if I could. Flowers, skies, smiling faces...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110810
+    m_Localized: But we don't have any of those here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342869110811
+    m_Localized: I can't paint what doesn't exist.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305088
+    m_Localized: Artists are supposed to be a little self-important.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305089
+    m_Localized: I preserve what I see.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305090
+    m_Localized: Like what?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305091
+    m_Localized: What I saw. I just said that.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305092
+    m_Localized: And what happens after you preserve it?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305093
+    m_Localized: Who knows?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305094
+    m_Localized: But it is better than an empty wall, isn't it?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305095
+    m_Localized: Yakumo? You really do get around, don't you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305096
+    m_Localized: He has a wonderful sense of purpose. A noble one, even.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305097
+    m_Localized: But honestly, I think he's far too serious.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305098
+    m_Localized: Last time I saw him,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305099
+    m_Localized: "he said, \u201CWhy don't we analyze how much demand there is for
+      your art?\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305100
+    m_Localized: Something about calculating the probability that someone walking
+      past a painting would actually look at it...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305101
+    m_Localized: I couldn't take it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305102
+    m_Localized: But wouldn't that help you make better work?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305103
+    m_Localized: ...W-well, yes! It would, but it is a tiny bit terrifying.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305104
+    m_Localized: He thinks about everyone and takes the initiative to work every
+      day.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305105
+    m_Localized: There are parts of him I don't love, like that, but...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305106
+    m_Localized: I don't dislike him.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305107
+    m_Localized: He's not like you. He actually works!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305108
+    m_Localized: Never mind, I hate him!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305109
+    m_Localized: Yakumo?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305110
+    m_Localized: You!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305111
+    m_Localized: By the way, do you know any way out?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305112
+    m_Localized: Did I say something that bothered you...?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305113
+    m_Localized: Outside...? Ah, right, my parents once...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305114
+    m_Localized: No, never mind! I don't know anything about outside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305115
+    m_Localized: (That reaction couldn't be more obvious.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342873305116
+    m_Localized: Do you go around asking everyone that?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499392
+    m_Localized: Yeah.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499393
+    m_Localized: Then you should stop.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499394
+    m_Localized: Around here, that's an absolute taboo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499395
+    m_Localized: Everyone makes the face people make when they see a painting they
+      wish they hadn't.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499396
+    m_Localized: (Easy enough to imagine.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499397
+    m_Localized: It's fine. Artists are delicate creatures.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499398
+    m_Localized: By the way, which sector did you come from?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499399
+    m_Localized: I've just been heading into whatever sector I can see next.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499400
+    m_Localized: Hmm. Then that's strange.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499401
+    m_Localized: I came from the opposite direction...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499402
+    m_Localized: of the one you just walked in from.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499403
+    m_Localized: (...Maybe because that giant creature's hand grabbed me and carried
+      me here.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499404
+    m_Localized: How does a painter nobody buys from manage to eat?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499405
+    m_Localized: Why do rabbits' eyes look bloodshot?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499406
+    m_Localized: Nobody buys from was uncalled for.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499407
+    m_Localized: There's a place between sectors where food appears.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499408
+    m_Localized: Everyone calls it Paradise.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499409
+    m_Localized: I stop by there now and then.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499410
+    m_Localized: (So that's that mountain past the cardboard...)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499411
+    m_Localized: I thought that was what gave you that round little belly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499412
+    m_Localized: (Says the painter nobody buys from.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499413
+    m_Localized: How should I know? Go ask Yakumo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499414
+    m_Localized: He's a self-proclaimed know-it-all. Right tool for the right job!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499415
+    m_Localized: Your eyes are all red. I feel bad for you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499416
+    m_Localized: That's normal for rabbits!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499417
+    m_Localized: If it's the right tool for the job, shouldn't the right tool for
+      rabbits be a rabbit?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499418
+    m_Localized: I'm not a tool.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499419
+    m_Localized: ...?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499420
+    m_Localized: Well, talking to you has given me a new idea!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499421
+    m_Localized: Glad to hear it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499422
+    m_Localized: The sectors get harder the farther you go, so be careful.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499423
+    m_Localized: Huh? We can't have that conversation again?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499424
+    m_Localized: Hm? Why would we say the exact same things twice?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499425
+    m_Localized: If you want to talk again, press R. R... What's R?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499426
+    m_Localized: No idea.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 342877499427
+    m_Localized: By the way, green objects can be pushed. No exceptions, no matter
+      how big they are!
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

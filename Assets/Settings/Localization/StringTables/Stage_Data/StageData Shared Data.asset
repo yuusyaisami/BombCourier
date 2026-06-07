@@ -1,0 +1,136 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: StageData Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: StageData
+  m_TableCollectionNameGuidString: 2799c0db5ee77e24caa0e676b9453898
+  m_Entries:
+  - m_Id: 2266133655552
+    m_Key: STAGE_START
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915552
+  - m_Id: 2266142044160
+    m_Key: STAGE_ELEVATION
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915553
+  - m_Id: 2266146238464
+    m_Key: STAGE_LIFT
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915554
+  - m_Id: 2266146238465
+    m_Key: STAGE_PREPARATION
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915555
+  - m_Id: 2266146238466
+    m_Key: STAGE_MUSHROOM
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915556
+  - m_Id: 2266146238467
+    m_Key: STAGE_LEVER
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915557
+  - m_Id: 2266146238468
+    m_Key: STAGE_LONG_TOSS
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915558
+  - m_Id: 2266146238469
+    m_Key: STAGE_PITCH_BLACK
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915559
+  - m_Id: 2266146238470
+    m_Key: STAGE_ANTICIPATION
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915560
+  - m_Id: 2266146238471
+    m_Key: STAGE_PRACTICE
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915561
+  - m_Id: 2266146238472
+    m_Key: STAGE_LABYRINTH
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915562
+  - m_Id: 2266146238473
+    m_Key: STAGE_END
+    m_Metadata:
+      m_Items:
+      - rid: 1662523301351915563
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523300554998298
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523300554998298
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1780747750835
+    - rid: 1662523301351915552
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 01
+    - rid: 1662523301351915553
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 02
+    - rid: 1662523301351915554
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 03
+    - rid: 1662523301351915555
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 04
+    - rid: 1662523301351915556
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 05
+    - rid: 1662523301351915557
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 06
+    - rid: 1662523301351915558
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 07
+    - rid: 1662523301351915559
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 08
+    - rid: 1662523301351915560
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 09
+    - rid: 1662523301351915561
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 10
+    - rid: 1662523301351915562
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 11
+    - rid: 1662523301351915563
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Stage | 12

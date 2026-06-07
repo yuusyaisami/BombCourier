@@ -1,0 +1,491 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Talk_Stage08_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 733d26e9e98269d4fb8f528880f9ce9e, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 189563105280
+    m_Localized: I learned something recently.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105281
+    m_Localized: Apparently, there is a section somewhere that has something called
+      seasons.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105282
+    m_Localized: There is a time when white fluff falls from above.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105283
+    m_Localized: They say it feels cold when you touch it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105284
+    m_Localized: And then, apparently,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105285
+    m_Localized: there comes a time when white petals drift through the air.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105286
+    m_Localized: Those short, fleeting dreams people have in that season...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105287
+    m_Localized: I hear they call them spring dreams.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105288
+    m_Localized: Spring dreams?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105289
+    m_Localized: I might have seen something like that before I came here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105290
+    m_Localized: There were red leaves falling everywhere.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189563105291
+    m_Localized: Outside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299584
+    m_Localized: Outside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299585
+    m_Localized: '?'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299586
+    m_Localized: Sigh.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299587
+    m_Localized: I told you before,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299588
+    m_Localized: try not to say that word too much.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299589
+    m_Localized: But if you have actually seen it,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299590
+    m_Localized: then seasons really must exist!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299591
+    m_Localized: Why aren't we supposed to talk about outside?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299592
+    m_Localized: So what do you actually research?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299593
+    m_Localized: I suppose it is a bit like being spirited away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299594
+    m_Localized: But I am still a scientist, technically.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299595
+    m_Localized: I do not believe in spirits snatching people away. Or in gods, for
+      that matter.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299596
+    m_Localized: You know the Paradise section, the place where the food appears?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299597
+    m_Localized: There is a huge opening overhead, right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299598
+    m_Localized: I heard there might be a god beyond it,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299599
+    m_Localized: so I decided to go and see for myself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299600
+    m_Localized: Could you see outside?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299601
+    m_Localized: Not a chance.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299602
+    m_Localized: There was glass in the way,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299603
+    m_Localized: so I could not get out.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299604
+    m_Localized: Some kinds of glass do not show what is on the other side,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299605
+    m_Localized: and some look like paintings that move.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299606
+    m_Localized: I imagine it was something like that.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299607
+    m_Localized: I study patterns. Regularities in how this place behaves.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299608
+    m_Localized: How often the food appears in Paradise.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299609
+    m_Localized: How many beats it takes for a bomb to return after it disappears.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299610
+    m_Localized: That sounds kind of boring.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189567299611
+    m_Localized: What is any of that useful for?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493888
+    m_Localized: The boring things are often the most useful, actually.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493889
+    m_Localized: For example, if you know when the food will appear,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493890
+    m_Localized: you can decide when to line up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493891
+    m_Localized: If you know when a bomb will come back,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493892
+    m_Localized: you can decide when not to go near it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493893
+    m_Localized: Incidentally, the supply timing is fixed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493894
+    m_Localized: It happens right around when we start getting hungry.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493895
+    m_Localized: Huh. Convenient.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493896
+    m_Localized: Do you choose what you research yourself?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493897
+    m_Localized: Most of the time, the topics are assigned from higher up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493898
+    m_Localized: There are those who decide what should be investigated.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493899
+    m_Localized: There are those who investigate it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493900
+    m_Localized: And there are those who use the results.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493901
+    m_Localized: I am the one in the middle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493902
+    m_Localized: I look into things no one else knows,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493903
+    m_Localized: and eventually, someone is grateful for it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493904
+    m_Localized: That makes me feel like I am alive. That is why I enjoy it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493905
+    m_Localized: You talk too much...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493906
+    m_Localized: But enjoying it is a good thing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493907
+    m_Localized: By the way, listening to you talk,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493908
+    m_Localized: I keep feeling that something does not quite add up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493909
+    m_Localized: It sounds as if there was somewhere you were before coming here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493910
+    m_Localized: If that is true, then your very existence
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493911
+    m_Localized: would prove that outside exists, would it not?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493912
+    m_Localized: Which means... wait, in other words...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493913
+    m_Localized: Are you... a god?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493914
+    m_Localized: Yes. And you have been speaking awfully casually to me this whole
+      time!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493915
+    m_Localized: Not even close. I am nothing that impressive.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493916
+    m_Localized: No way! A mouse was a god this whole time!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493917
+    m_Localized: Ahaha! This should do wonders for mousekind's reputation!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493918
+    m_Localized: Hmph. Bow before me.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493919
+    m_Localized: But if a god came down to earth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493920
+    m_Localized: and cannot get back to heaven,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493921
+    m_Localized: does that not make him basically the same as the rest of us?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493922
+    m_Localized: Excuse me?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493923
+    m_Localized: Besides, a god with a belly like that
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493924
+    m_Localized: feels a little... fallen.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493925
+    m_Localized: I am a god, you know. I am at the top.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493926
+    m_Localized: That is what they call going out in disgrace.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493927
+    m_Localized: (Grrr...)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493928
+    m_Localized: Even so, you are a being from an unknown world.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493929
+    m_Localized: What, does that excite you because you are a scientist?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493930
+    m_Localized: Or are you going to catch me and run experiments on me?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493931
+    m_Localized: I told you before!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493932
+    m_Localized: Harming others is against the rules.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493933
+    m_Localized: Our peace is protected under the law.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493934
+    m_Localized: But you do want to study me?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493935
+    m_Localized: Slurp.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493936
+    m_Localized: ?! That is the wrong kind of interested!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493937
+    m_Localized: Chomp.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189571493938
+    m_Localized: Ah!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688192
+    m_Localized: Ahaha, I only said it out loud! I would not actually do it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688193
+    m_Localized: (Taking this guy outside would be dangerous.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688194
+    m_Localized: Fwaaah... sigh. I am no good.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688195
+    m_Localized: Lately it has been one experiment after another, almost no sleep.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688196
+    m_Localized: Even I am getting sleepy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688197
+    m_Localized: There it is. The classic nerd flex.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688198
+    m_Localized: '"I HAVEN''T SLEPT, I''M SO BUSY."'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688199
+    m_Localized: You know, sometimes your personality is a real liability.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688200
+    m_Localized: (Did I make him mad?)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688201
+    m_Localized: Well, never mind. The reason I work myself this hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688202
+    m_Localized: is that there is almost no such thing as entertainment in this world.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688203
+    m_Localized: People may look down on it,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688204
+    m_Localized: but someone doing what Vanilla does
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688205
+    m_Localized: is actually very important, I think.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688206
+    m_Localized: She adds color to days that would otherwise be completely bland.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688207
+    m_Localized: How should I put it...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688208
+    m_Localized: It is the sort of work only she can do, maybe.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688209
+    m_Localized: What you do
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688210
+    m_Localized: makes life better for a lot of people too.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688211
+    m_Localized: Well... yes. Yes, that is true.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688212
+    m_Localized: You say surprisingly decent things sometimes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688213
+    m_Localized: Heh heh.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688214
+    m_Localized: It is dark around here, so be careful.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688215
+    m_Localized: Use a torch and you will be able to see a little farther in dark
+      spaces.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189575688216
+    m_Localized: Make good use of it.
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

@@ -1,0 +1,1089 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Talk_Stage08 Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Talk_Stage08
+  m_TableCollectionNameGuidString: 733d26e9e98269d4fb8f528880f9ce9e
+  m_Entries:
+  - m_Id: 189563105280
+    m_Key: S08_INTRO_SEASONS_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787404
+  - m_Id: 189563105281
+    m_Key: S08_INTRO_SEASONS_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787405
+  - m_Id: 189563105282
+    m_Key: S08_INTRO_SEASONS_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787406
+  - m_Id: 189563105283
+    m_Key: S08_INTRO_SEASONS_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787407
+  - m_Id: 189563105284
+    m_Key: S08_INTRO_SEASONS_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787408
+  - m_Id: 189563105285
+    m_Key: S08_INTRO_SEASONS_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787409
+  - m_Id: 189563105286
+    m_Key: S08_INTRO_SEASONS_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787410
+  - m_Id: 189563105287
+    m_Key: S08_INTRO_SEASONS_YAKUMO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787411
+  - m_Id: 189563105288
+    m_Key: S08_INTRO_SEASONS_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787412
+  - m_Id: 189563105289
+    m_Key: S08_INTRO_SEASONS_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787413
+  - m_Id: 189563105290
+    m_Key: S08_INTRO_SEASONS_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787414
+  - m_Id: 189563105291
+    m_Key: S08_INTRO_SEASONS_MOUSE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787415
+  - m_Id: 189567299584
+    m_Key: S08_INTRO_SEASONS_YAKUMO_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787416
+  - m_Id: 189567299585
+    m_Key: S08_INTRO_SEASONS_MOUSE_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787417
+  - m_Id: 189567299586
+    m_Key: S08_INTRO_SEASONS_YAKUMO_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787418
+  - m_Id: 189567299587
+    m_Key: S08_INTRO_SEASONS_YAKUMO_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787419
+  - m_Id: 189567299588
+    m_Key: S08_INTRO_SEASONS_YAKUMO_012
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787420
+  - m_Id: 189567299589
+    m_Key: S08_INTRO_SEASONS_YAKUMO_013
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787421
+  - m_Id: 189567299590
+    m_Key: S08_INTRO_SEASONS_YAKUMO_014
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787422
+  - m_Id: 189567299591
+    m_Key: S08_CHOICE_OUTSIDE_TABOO
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787423
+  - m_Id: 189567299592
+    m_Key: S08_CHOICE_RESEARCH_TOPIC
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787424
+  - m_Id: 189567299593
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787425
+  - m_Id: 189567299594
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787426
+  - m_Id: 189567299595
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787427
+  - m_Id: 189567299596
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787428
+  - m_Id: 189567299597
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787429
+  - m_Id: 189567299598
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787430
+  - m_Id: 189567299599
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787431
+  - m_Id: 189567299600
+    m_Key: S08_BRANCH_OUTSIDE_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787432
+  - m_Id: 189567299601
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787433
+  - m_Id: 189567299602
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787434
+  - m_Id: 189567299603
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787435
+  - m_Id: 189567299604
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787436
+  - m_Id: 189567299605
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_012
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787437
+  - m_Id: 189567299606
+    m_Key: S08_BRANCH_OUTSIDE_YAKUMO_013
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787438
+  - m_Id: 189567299607
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787439
+  - m_Id: 189567299608
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787440
+  - m_Id: 189567299609
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787441
+  - m_Id: 189567299610
+    m_Key: S08_BRANCH_RESEARCH_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787442
+  - m_Id: 189567299611
+    m_Key: S08_BRANCH_RESEARCH_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787443
+  - m_Id: 189571493888
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787444
+  - m_Id: 189571493889
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787445
+  - m_Id: 189571493890
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787446
+  - m_Id: 189571493891
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787447
+  - m_Id: 189571493892
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787448
+  - m_Id: 189571493893
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787449
+  - m_Id: 189571493894
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787450
+  - m_Id: 189571493895
+    m_Key: S08_BRANCH_RESEARCH_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787451
+  - m_Id: 189571493896
+    m_Key: S08_BRANCH_RESEARCH_MOUSE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787452
+  - m_Id: 189571493897
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787453
+  - m_Id: 189571493898
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_012
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787454
+  - m_Id: 189571493899
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_013
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787455
+  - m_Id: 189571493900
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_014
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787456
+  - m_Id: 189571493901
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_015
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787457
+  - m_Id: 189571493902
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_016
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787458
+  - m_Id: 189571493903
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_017
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787459
+  - m_Id: 189571493904
+    m_Key: S08_BRANCH_RESEARCH_YAKUMO_018
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787460
+  - m_Id: 189571493905
+    m_Key: S08_BRANCH_RESEARCH_MOUSE_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787461
+  - m_Id: 189571493906
+    m_Key: S08_BRANCH_RESEARCH_MOUSE_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787462
+  - m_Id: 189571493907
+    m_Key: S08_COMMON_GOD_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787463
+  - m_Id: 189571493908
+    m_Key: S08_COMMON_GOD_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787464
+  - m_Id: 189571493909
+    m_Key: S08_COMMON_GOD_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787465
+  - m_Id: 189571493910
+    m_Key: S08_COMMON_GOD_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787466
+  - m_Id: 189571493911
+    m_Key: S08_COMMON_GOD_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787467
+  - m_Id: 189571493912
+    m_Key: S08_COMMON_GOD_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787468
+  - m_Id: 189571493913
+    m_Key: S08_COMMON_GOD_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787469
+  - m_Id: 189571493914
+    m_Key: S08_CHOICE_GOD_YES
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787470
+  - m_Id: 189571493915
+    m_Key: S08_CHOICE_GOD_NO
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787471
+  - m_Id: 189571493916
+    m_Key: S08_BRANCH_GOD_YES_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787472
+  - m_Id: 189571493917
+    m_Key: S08_BRANCH_GOD_YES_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787473
+  - m_Id: 189571493918
+    m_Key: S08_BRANCH_GOD_YES_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787474
+  - m_Id: 189571493919
+    m_Key: S08_BRANCH_GOD_YES_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787475
+  - m_Id: 189571493920
+    m_Key: S08_BRANCH_GOD_YES_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787476
+  - m_Id: 189571493921
+    m_Key: S08_BRANCH_GOD_YES_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787477
+  - m_Id: 189571493922
+    m_Key: S08_BRANCH_GOD_YES_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787478
+  - m_Id: 189571493923
+    m_Key: S08_BRANCH_GOD_YES_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787479
+  - m_Id: 189571493924
+    m_Key: S08_BRANCH_GOD_YES_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787480
+  - m_Id: 189571493925
+    m_Key: S08_BRANCH_GOD_YES_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787481
+  - m_Id: 189571493926
+    m_Key: S08_BRANCH_GOD_YES_YAKUMO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787482
+  - m_Id: 189571493927
+    m_Key: S08_BRANCH_GOD_YES_MOUSE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787483
+  - m_Id: 189571493928
+    m_Key: S08_BRANCH_GOD_NO_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787484
+  - m_Id: 189571493929
+    m_Key: S08_BRANCH_GOD_NO_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787485
+  - m_Id: 189571493930
+    m_Key: S08_BRANCH_GOD_NO_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787486
+  - m_Id: 189571493931
+    m_Key: S08_BRANCH_GOD_NO_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787487
+  - m_Id: 189571493932
+    m_Key: S08_BRANCH_GOD_NO_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787488
+  - m_Id: 189571493933
+    m_Key: S08_BRANCH_GOD_NO_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787489
+  - m_Id: 189571493934
+    m_Key: S08_BRANCH_GOD_NO_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787490
+  - m_Id: 189571493935
+    m_Key: S08_BRANCH_GOD_NO_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787491
+  - m_Id: 189571493936
+    m_Key: S08_BRANCH_GOD_NO_MOUSE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787492
+  - m_Id: 189571493937
+    m_Key: S08_BRANCH_GOD_NO_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787493
+  - m_Id: 189571493938
+    m_Key: S08_BRANCH_GOD_NO_MOUSE_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787494
+  - m_Id: 189575688192
+    m_Key: S08_BRANCH_GOD_NO_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787495
+  - m_Id: 189575688193
+    m_Key: S08_BRANCH_GOD_NO_MOUSE_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787496
+  - m_Id: 189575688194
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787497
+  - m_Id: 189575688195
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787498
+  - m_Id: 189575688196
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787499
+  - m_Id: 189575688197
+    m_Key: S08_COMMON_FATIGUE_MOUSE_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787500
+  - m_Id: 189575688198
+    m_Key: S08_COMMON_FATIGUE_MOUSE_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787501
+  - m_Id: 189575688199
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787502
+  - m_Id: 189575688200
+    m_Key: S08_COMMON_FATIGUE_MOUSE_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787503
+  - m_Id: 189575688201
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787504
+  - m_Id: 189575688202
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787505
+  - m_Id: 189575688203
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_007
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787506
+  - m_Id: 189575688204
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_008
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787507
+  - m_Id: 189575688205
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_009
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787508
+  - m_Id: 189575688206
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_010
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787509
+  - m_Id: 189575688207
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_011
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787510
+  - m_Id: 189575688208
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_012
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787511
+  - m_Id: 189575688209
+    m_Key: S08_COMMON_FATIGUE_MOUSE_004
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787512
+  - m_Id: 189575688210
+    m_Key: S08_COMMON_FATIGUE_MOUSE_005
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787513
+  - m_Id: 189575688211
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_013
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787514
+  - m_Id: 189575688212
+    m_Key: S08_COMMON_FATIGUE_YAKUMO_014
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787515
+  - m_Id: 189575688213
+    m_Key: S08_COMMON_FATIGUE_MOUSE_006
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787516
+  - m_Id: 189575688214
+    m_Key: S08_REPEAT_TORCH_YAKUMO_001
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787517
+  - m_Id: 189575688215
+    m_Key: S08_REPEAT_TORCH_YAKUMO_002
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787518
+  - m_Id: 189575688216
+    m_Key: S08_REPEAT_TORCH_YAKUMO_003
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298758787519
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523298758787287
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523298758787287
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1780740294761
+    - rid: 1662523298758787404
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787405
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787406
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787407
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787408
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787409
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787410
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787411
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons; Note: Keep ''spring
+          dreams'' as a poetic term, not a literal mechanic.'
+    - rid: 1662523298758787412
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Intro - Seasons'
+    - rid: 1662523298758787413
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Intro - Seasons'
+    - rid: 1662523298758787414
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Intro - Seasons'
+    - rid: 1662523298758787415
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Intro - Seasons; Note: One-word
+          trigger; keep it abrupt.'
+    - rid: 1662523298758787416
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons; Note: Repetition
+          should feel like Yakumo has reacted to a taboo word.'
+    - rid: 1662523298758787417
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Intro - Seasons'
+    - rid: 1662523298758787418
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787419
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787420
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons; Note: Avoid overexplaining
+          the taboo.'
+    - rid: 1662523298758787421
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787422
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Intro - Seasons'
+    - rid: 1662523298758787423
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice; Section: Choice; Branch: Outside Taboo'
+    - rid: 1662523298758787424
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice; Section: Choice; Branch: Research Topic'
+    - rid: 1662523298758787425
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787426
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787427
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A;
+          Note: Yakumo stays rational, but the world keeps pushing mythic language
+          at him.'
+    - rid: 1662523298758787428
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A;
+          Note: Uses Paradise to match earlier localization of \u6843\u6E90\u90F7."
+    - rid: 1662523298758787429
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787430
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787431
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787432
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787433
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787434
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787435
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787436
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A;
+          Note: Hints at screens/one-way barriers without making the metaphor too
+          explicit.'
+    - rid: 1662523298758787437
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787438
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Outside Taboo Branch; Branch: A'
+    - rid: 1662523298758787439
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787440
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787441
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787442
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787443
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787444
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787445
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787446
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787447
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787448
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787449
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787450
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B; Note:
+          Subtle hint that the world is managed/observed.'
+    - rid: 1662523298758787451
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787452
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787453
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B; Note:
+          ''Higher up'' preserves both hierarchy and the literal vertical mystery.'
+    - rid: 1662523298758787454
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787455
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787456
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787457
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787458
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787459
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787460
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Research Branch; Branch: B; Note:
+          Yakumo''s hidden motivation: usefulness as proof of existence.'
+    - rid: 1662523298758787461
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787462
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Research Branch; Branch: B'
+    - rid: 1662523298758787463
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - God Hypothesis'
+    - rid: 1662523298758787464
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - God Hypothesis'
+    - rid: 1662523298758787465
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - God Hypothesis'
+    - rid: 1662523298758787466
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - God Hypothesis'
+    - rid: 1662523298758787467
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - God Hypothesis'
+    - rid: 1662523298758787468
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - God Hypothesis'
+    - rid: 1662523298758787469
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - God Hypothesis; Note:
+          Use ''a god'' not ''God''; maintains comedic absurdity.'
+    - rid: 1662523298758787470
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice; Section: Choice; Branch: God Yes'
+    - rid: 1662523298758787471
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Choice; Section: Choice; Branch: God No'
+    - rid: 1662523298758787472
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787473
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787474
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787475
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787476
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787477
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787478
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787479
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787480
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God Yes Branch; Branch: A; Note:
+          Preserves ''depraved/fallen god'' without sounding unnatural.'
+    - rid: 1662523298758787481
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787482
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787483
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God Yes Branch; Branch: A'
+    - rid: 1662523298758787484
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787485
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787486
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787487
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787488
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787489
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God No Branch; Branch: B; Note:
+          Dry institutional wording; keeps the uneasy ''civilized cage'' feeling.'
+    - rid: 1662523298758787490
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787491
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787492
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787493
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787494
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787495
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787496
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: God No Branch; Branch: B'
+    - rid: 1662523298758787497
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787498
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787499
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787500
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Common - Fatigue'
+    - rid: 1662523298758787501
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Common - Fatigue; Note: Preserves
+          the mocking spaced-emphasis effect with a natural English meme-like rhythm.'
+    - rid: 1662523298758787502
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787503
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Common - Fatigue'
+    - rid: 1662523298758787504
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787505
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787506
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787507
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787508
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue; Note: Shows Yakumo''s
+          sincere respect for Vanilla, not just polite praise.'
+    - rid: 1662523298758787509
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787510
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787511
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787512
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Common - Fatigue'
+    - rid: 1662523298758787513
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Common - Fatigue'
+    - rid: 1662523298758787514
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787515
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Common - Fatigue'
+    - rid: 1662523298758787516
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Mouse; Section: Common - Fatigue'
+    - rid: 1662523298758787517
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Repeat Dialogue'
+    - rid: 1662523298758787518
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Repeat Dialogue'
+    - rid: 1662523298758787519
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Speaker: Yakumo; Section: Repeat Dialogue'

@@ -1,0 +1,487 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Talk_Stage09_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: fed8a0e3774e16444a047179eaa30d40, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 168713220096
+    m_Localized: Well hello, Mr. Mouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168755163136
+    m_Localized: What are you doing in a place like this?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168755163137
+    m_Localized: I was looking at this painting.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357440
+    m_Localized: It is a painting of a little dog who set off a bomb.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357441
+    m_Localized: I can see that!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357442
+    m_Localized: It happens often here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357443
+    m_Localized: Someone activates a bomb without looking ahead.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357444
+    m_Localized: One small mistake can leave you badly hurt.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357445
+    m_Localized: This place is dangerous.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357446
+    m_Localized: That is why most people
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357447
+    m_Localized: settle down in the safe sections, right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357448
+    m_Localized: Yes. Most of us stay in the safe sections,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357449
+    m_Localized: and live quietly without making waves.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357450
+    m_Localized: Surely you are the same.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357451
+    m_Localized: Not a chance.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357452
+    m_Localized: I am not spending my whole life in a terrarium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357453
+    m_Localized: I am getting outside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357454
+    m_Localized: ...Outside?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357455
+    m_Localized: (Damn it. That was the forbidden word.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357456
+    m_Localized: I used to be outside too, just like you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357457
+    m_Localized: ?! You did?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357458
+    m_Localized: Yes. But
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357459
+    m_Localized: it is not a place of hope.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357460
+    m_Localized: I will never forget it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357461
+    m_Localized: I was inside a cold metal cage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357462
+    m_Localized: Huge eyes peered in at me.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357463
+    m_Localized: And strange-colored food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357464
+    m_Localized: was forced down my throat again and again,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357465
+    m_Localized: until one day I found myself dropped into this world.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357466
+    m_Localized: It was a very long time ago,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357467
+    m_Localized: but that fear is still soaked into my bones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357468
+    m_Localized: For you, outside
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357469
+    m_Localized: may be somewhere to return to.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357470
+    m_Localized: But for me,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357471
+    m_Localized: it is somewhere I never want to go back to.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357472
+    m_Localized: Yes! I went through the exact same thing!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357473
+    m_Localized: What?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357474
+    m_Localized: I see. Then you and I share the same circumstances.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357475
+    m_Localized: I only remember my time in that cage as a blur.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357476
+    m_Localized: Not because it was long ago.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357477
+    m_Localized: I was in a haze the entire time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357478
+    m_Localized: Only the sensations remain.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357479
+    m_Localized: I want to know how to get out.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357480
+    m_Localized: How to get out?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357481
+    m_Localized: Even if we went through the same thing,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357482
+    m_Localized: I cannot share that desire.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357483
+    m_Localized: I am sorry.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357484
+    m_Localized: I cannot help you with that.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357485
+    m_Localized: However, I do find this suspicious.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357486
+    m_Localized: This world has several strange rules.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357487
+    m_Localized: Not only the rules needed to survive,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357488
+    m_Localized: but some very peculiar prohibitions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357489
+    m_Localized: Mentioning outside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357490
+    m_Localized: Exactly. Keeping that in mind,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357491
+    m_Localized: have you ever looked into it?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357492
+    m_Localized: No, I haven't.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357493
+    m_Localized: I see. That is wise.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357494
+    m_Localized: Why would you come to a dangerous section on purpose?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357495
+    m_Localized: Just a little walk.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357496
+    m_Localized: It is dangerous, yes,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357497
+    m_Localized: but the paintings show you what that danger is.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357498
+    m_Localized: And wondering what painting might come next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357499
+    m_Localized: is rather interesting.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357500
+    m_Localized: That sounds morbid to me. Sadistic, even.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357501
+    m_Localized: Ahaha! Yes, one could see it that way.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357502
+    m_Localized: I used to think so myself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357503
+    m_Localized: But now I have come to enjoy looking at the paintings.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168759357504
+    m_Localized: My daughter, you see,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746048
+    m_Localized: was like you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746049
+    m_Localized: She could never be satisfied with only what was already here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746050
+    m_Localized: And I kept denying that part of her...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746051
+    m_Localized: I told her to paint brighter things.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746052
+    m_Localized: And that is how she ended up a wanderer.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746053
+    m_Localized: She was
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746054
+    m_Localized: far more honest than I was.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746055
+    m_Localized: I think you are honest too.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746056
+    m_Localized: Yes. Perhaps I am.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746057
+    m_Localized: Do you regret it?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746058
+    m_Localized: I was afraid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746059
+    m_Localized: Of outside?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746060
+    m_Localized: Of outside, yes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746061
+    m_Localized: And of my daughter learning things I did not know,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746062
+    m_Localized: and even things
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746063
+    m_Localized: I did not want her to know.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746064
+    m_Localized: But there is a saying, is there not?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746065
+    m_Localized: If you love your child, send them out into the world.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746066
+    m_Localized: For you, 'the lion throws its cub off a cliff' feels more fitting.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746067
+    m_Localized: Why? The meaning is the same, is it not?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746068
+    m_Localized: In your case,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746069
+    m_Localized: it sounds more like possessiveness and fear turned inside out.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746070
+    m_Localized: (...!!)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746071
+    m_Localized: Are you trying to... psychoanalyze me?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746072
+    m_Localized: No... that was not really what I meant.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746073
+    m_Localized: ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746074
+    m_Localized: I spoke out of turn. I'm sorry.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746075
+    m_Localized: ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746076
+    m_Localized: No, I was the one who lost his composure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746077
+    m_Localized: I apologize.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746078
+    m_Localized: You have not exactly aged gracefully.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746079
+    m_Localized: You have a talent for saying things that cut deep.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746080
+    m_Localized: But without that much nerve,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746081
+    m_Localized: perhaps one cannot crack this world's shell.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746082
+    m_Localized: Was that a compliment?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746083
+    m_Localized: Half of one.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746084
+    m_Localized: Listen carefully, Mr. Mouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746085
+    m_Localized: There is a place ahead that no one wants to go near.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746086
+    m_Localized: Only the path leading there is always quiet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746087
+    m_Localized: Do you think there is a clue to outside there?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746088
+    m_Localized: I do not know.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746089
+    m_Localized: But if this world has something it wants to hide,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746090
+    m_Localized: I imagine it would be kept somewhere quiet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746091
+    m_Localized: You know, and perhaps I am not one to talk,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746092
+    m_Localized: but do you know how to show any respect to your elders?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746093
+    m_Localized: Sorry. I spent my whole life in a cage,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746094
+    m_Localized: so I never really learned how to talk to other people.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 168767746095
+    m_Localized: I see. So did I.
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

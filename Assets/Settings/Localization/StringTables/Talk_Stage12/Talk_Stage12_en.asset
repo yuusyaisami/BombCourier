@@ -1,0 +1,195 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Talk_Stage12_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: e7ebdf2ac4bb2fd41b35975953410b83, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 136605822976
+    m_Localized: Oh? It is not every day I run into a mouse out here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136647766016
+    m_Localized: Isn't this tower supposed to be
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136647766017
+    m_Localized: off-limits?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136647766018
+    m_Localized: Well, generally speaking,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136647766019
+    m_Localized: people say it is best avoided.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136647766020
+    m_Localized: It is a bit like forbidden fruit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136647766021
+    m_Localized: This place is...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960320
+    m_Localized: they call it God's Watchtower.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960321
+    m_Localized: So the god everyone talks about is up there?!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960322
+    m_Localized: Who knows?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960323
+    m_Localized: But rumor has it they can see us from the other side.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960324
+    m_Localized: Aren't you scared, Vanilla?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960325
+    m_Localized: Then I should probably say my goodbyes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960326
+    m_Localized: Well, I have not exactly lived a spotless life.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960327
+    m_Localized: At this point, whatever I do,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960328
+    m_Localized: divine punishment is probably waiting for me.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960329
+    m_Localized: But I am having fun right now,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960330
+    m_Localized: and I get to do what I want.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960331
+    m_Localized: So that means you are happy?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960332
+    m_Localized: Who knows?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960333
+    m_Localized: You are not sure?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960334
+    m_Localized: Ahaha! It is not that serious.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960335
+    m_Localized: An artist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960336
+    m_Localized: turns even that doubt into a piece of work!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960337
+    m_Localized: Without that kind of nerve,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960338
+    m_Localized: you cannot survive.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960339
+    m_Localized: Huh?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960340
+    m_Localized: I see... then you are more of an artist than I am,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960341
+    m_Localized: and more of a scientist than Yakumo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960342
+    m_Localized: I am me. Nothing more, nothing less.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960343
+    m_Localized: ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960344
+    m_Localized: To be honest,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960345
+    m_Localized: nobody knows what is up there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960346
+    m_Localized: Because no one goes near it, right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136651960347
+    m_Localized: Yes. If you are the one to break that open,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136656154624
+    m_Localized: maybe I will go too.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136656154625
+    m_Localized: I would like Yakumo to come too, if possible.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136656154626
+    m_Localized: What? Him too?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136656154627
+    m_Localized: Ugh. You do realize he is a cat, right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136656154628
+    m_Localized: Oh!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136656154629
+    m_Localized: You really are a mouse with no sense of danger.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136656154630
+    m_Localized: See you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136656154631
+    m_Localized: That goodbye did not exactly put me at ease.
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

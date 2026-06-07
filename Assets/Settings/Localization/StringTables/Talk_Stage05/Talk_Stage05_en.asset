@@ -1,0 +1,319 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Talk_Stage05_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: a028f62b253f9964f9038c81ff161ff6, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 28673798144
+    m_Localized: (A cat! This has bad news written all over it.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28711546880
+    m_Localized: Hello there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28711546881
+    m_Localized: H-hello...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28711546882
+    m_Localized: Relax. I'm not going to eat you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28711546883
+    m_Localized: ...Not right now, at least.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28711546884
+    m_Localized: '!!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28711546885
+    m_Localized: So, what are you doing all the way out here?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28711546886
+    m_Localized: I'm trying to get out of here!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741184
+    m_Localized: I don't know. I woke up here...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741185
+    m_Localized: Get out...?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741186
+    m_Localized: If you mean the next section, it's through that gate. The one blocked
+      by cardboard.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741187
+    m_Localized: No. I mean outside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741188
+    m_Localized: Outside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741189
+    m_Localized: What?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741190
+    m_Localized: Nothing. Just an odd way to put it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741191
+    m_Localized: Either way, you'll need to move that cardboard.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741192
+    m_Localized: I could slip through the gap, but you...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741193
+    m_Localized: What?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741194
+    m_Localized: Never mind.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741195
+    m_Localized: With that belly, it might be a bit tight.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741196
+    m_Localized: Are you calling me fat?! Hey!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741197
+    m_Localized: Cats eat mice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741198
+    m_Localized: ...Ah, sorry. I presented the facts poorly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741199
+    m_Localized: (This guy...!)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741200
+    m_Localized: Ahaha! Correct! But things are different now.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741201
+    m_Localized: Predation of other animals is forbidden.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741202
+    m_Localized: And if it wasn't?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741203
+    m_Localized: Then you should already be running.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741204
+    m_Localized: ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741205
+    m_Localized: Ahaha! I'm joking. Half-joking.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741206
+    m_Localized: (I want out of here.)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741207
+    m_Localized: That said, most residents never try to leave their own section.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741208
+    m_Localized: Someone like you is a little unusual.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741209
+    m_Localized: I'd heard new individuals arrive periodically.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741210
+    m_Localized: From the look of it, I might be the first one you've met...?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741211
+    m_Localized: I met a painter before you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741212
+    m_Localized: I met an idiot before you.
+    m_Metadata:
+      m_Items:
+      - rid: 1662523298147991695
+  - m_Id: 28715741213
+    m_Localized: Ah! You must mean Vanilla.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741214
+    m_Localized: She's not dangerous.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741215
+    m_Localized: (Not dangerous? What is this guy talking about?)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741216
+    m_Localized: She just captures situations exactly as she sees them,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741217
+    m_Localized: and a lot of people don't appreciate that.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741218
+    m_Localized: She's pretty much the only painter around,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741219
+    m_Localized: and she doesn't belong to any community.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741220
+    m_Localized: A true lone wolf. Despite being a rabbit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741221
+    m_Localized: By the way, I'm a scientist. At the moment, I'm investigating this
+      tree stump.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741222
+    m_Localized: A trace of a tree, in a section this barren. Strange, isn't it?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741223
+    m_Localized: And these mushrooms bounce when you step on them. Fascinating, isn't
+      it?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741224
+    m_Localized: I don't trust science.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741225
+    m_Localized: What am I supposed to do now?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741226
+    m_Localized: Um. I did just say I'm a scientist.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741227
+    m_Localized: ...But I suppose that's one way to think.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741228
+    m_Localized: Forget that. Investigate this trapped world.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741229
+    m_Localized: For what it's worth, this world has twelve dangerous sections.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741230
+    m_Localized: Bombs always appear in them,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741231
+    m_Localized: and they explode if they're hit hard enough.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741232
+    m_Localized: That's why everyone stays away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741233
+    m_Localized: Take the path blocked by cardboard.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741234
+    m_Localized: 'You made it this far, so you probably know already:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741235
+    m_Localized: use the mushrooms.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741236
+    m_Localized: Unlike the Shortbread Cushion, mushrooms bounce.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741237
+    m_Localized: They're perfect when you need to reach somewhere high.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28715741238
+    m_Localized: And if you press jump at the same time,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935488
+    m_Localized: you'll perform a high jump and gain extra height.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935489
+    m_Localized: Well then. See you around!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935490
+    m_Localized: One last thing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935491
+    m_Localized: A bomb isn't something you think about after picking it up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935492
+    m_Localized: You scout the route before you pick it up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935493
+    m_Localized: If you jump during the brief moment you're touching a mushroom,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935494
+    m_Localized: it becomes a high jump, and you'll go higher than usual.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935495
+    m_Localized: And if I mess it up?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28719935496
+    m_Localized: Then Vanilla might get one more painting out of it.
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523298147991695
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: Leads to same dialogue as painter choice.

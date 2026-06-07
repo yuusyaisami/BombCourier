@@ -1,0 +1,242 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Tutorial_Stage01_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 9e8e649b95611ab4f8923a645fe74ad3, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 32440283136
+    m_Localized: Congratulations.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226176
+    m_Localized: You have been selected as one of our lucky test subjects.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226177
+    m_Localized: First, allow me to explain your objective.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226178
+    m_Localized: Your first objective is to escape this section.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226179
+    m_Localized: The place blocked by those cardboard boxes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226180
+    m_Localized: is the gate to the next section.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226181
+    m_Localized: Obstacles blocking a gate must be destroyed with bombs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226182
+    m_Localized: For now, move over to the bomb.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226183
+    m_Localized: Use the WASD keys to move.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226184
+    m_Localized: Now, go ahead and try moving around.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226185
+    m_Localized: Excellent!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226186
+    m_Localized: 'A historic first for humankind: the first step of a mouse walking
+      on two legs!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226187
+    m_Localized: Let us aim even higher.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226188
+    m_Localized: Your next goal is to get over that ledge.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226189
+    m_Localized: Press the Space key to jump over it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226190
+    m_Localized: Excellent!!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226191
+    m_Localized: The world's first bipedal jumping mouse has been born! Another achievement
+      to be proud of.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226192
+    m_Localized: Make good use of jumping and proceed farther ahead.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226193
+    m_Localized: Now, let us use a little wisdom.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226194
+    m_Localized: With your current jump height, you can only clear ledges up to 2.5
+      blocks high.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226195
+    m_Localized: However, the ledge in front of you is 3 blocks high.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226196
+    m_Localized: That is a problem... but do not worry.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226197
+    m_Localized: There is a cushion on your right.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32482226198
+    m_Localized: You can carry this cushion and place it wherever you like.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420480
+    m_Localized: Oh! With this, it looks like you can get over the ledge.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420481
+    m_Localized: First, stand in front of the cushion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420482
+    m_Localized: and press the E key to pick it up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420483
+    m_Localized: Excellent!!!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420484
+    m_Localized: Next, while holding the cushion, move in front of the ledge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420485
+    m_Localized: and press the E key again to place it down.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420486
+    m_Localized: 'Note: Holding the E key will throw it. To avoid mistakes here,
+      a quick press is recommended.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420487
+    m_Localized: There is no substitute for practice. Go ahead and try it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420488
+    m_Localized: Excellent!!!!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420489
+    m_Localized: With this, you have evolved into the world's first bipedal jumping
+      intelligent mouse!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420490
+    m_Localized: A feat worthy of history. Thank you for such wonderful experimental
+      results!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420491
+    m_Localized: We would like to head for the bomb now, but it is actually a little
+      far away...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420492
+    m_Localized: Traveling on foot may take some time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420493
+    m_Localized: In situations like that, hold the Shift key to run.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420494
+    m_Localized: Please make good use of it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420495
+    m_Localized: Incidentally, throwing an object while running gives it a little
+      extra distance.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420496
+    m_Localized: At last, you are in front of the bomb. From here on, it is a race
+      against time!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420497
+    m_Localized: However, bombs must be handled with caution.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420498
+    m_Localized: 'As you can see, bombs behave like this:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420499
+    m_Localized: When you pick up a bomb, its timer starts.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420500
+    m_Localized: Hold the E key to charge, then throw.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420501
+    m_Localized: The longer you hold it, the farther it will fly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420502
+    m_Localized: Now, try throwing the bomb into the gate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420503
+    m_Localized: If you have time, touch the star-shaped object while the bomb is
+      lit to aim for a bonus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420504
+    m_Localized: If you fail, hold the R key to try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420505
+    m_Localized: 'Quick press: Reload to the bomb. Long press: Reset from the start
+      of the stage.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420506
+    m_Localized: That concludes the tutorial. I wish you the best of luck!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32486420507
+    m_Localized: May fortune be on your side.
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
