@@ -48,6 +48,7 @@ namespace BC.UI.Components
         private bool initialized;
         private bool focused;
         private bool invokingClick;
+        private bool manualFocusHeld;
 
         public event Action<UIButtonMB> Focused;
         public event Action<UIButtonMB> Deselected;
@@ -64,6 +65,11 @@ namespace BC.UI.Components
         public UIButtonEvent OnClick => onClick;
         public AudioDataSO OverrideClickSound => overrideClickSound;
         public AudioDataSO OverrideFocusSound => overrideFocusSound;
+        public bool AutoSelectOnPointerEnter
+        {
+            get => autoSelectOnPointerEnter;
+            set => autoSelectOnPointerEnter = value;
+        }
 
         public bool Interactable
         {
@@ -80,7 +86,10 @@ namespace BC.UI.Components
 
                 button.interactable = value;
                 if (!value)
+                {
+                    manualFocusHeld = false;
                     SetFocused(false, notify: true);
+                }
             }
         }
 
@@ -108,8 +117,14 @@ namespace BC.UI.Components
         private void OnEnable()
         {
             EnsureInitialized();
-            if (!IsSelectedByEventSystem())
+            if (!IsSelectedByEventSystem() && !manualFocusHeld)
                 SetFocused(false, notify: false);
+        }
+
+        private void OnDisable()
+        {
+            manualFocusHeld = false;
+            SetFocused(false, notify: false);
         }
 
         private void OnDestroy()
@@ -140,6 +155,23 @@ namespace BC.UI.Components
                 EventSystem.current.SetSelectedGameObject(button.gameObject);
         }
 
+        public void AcquireManualFocus()
+        {
+            manualFocusHeld = true;
+            SetFocused(true, notify: true);
+        }
+
+        public void ReleaseManualFocus()
+        {
+            manualFocusHeld = false;
+            SetFocused(false, notify: true);
+        }
+
+        public void Press()
+        {
+            OnUnityButtonClicked();
+        }
+
         public bool IsSelectionTarget(GameObject selectedObject)
         {
             EnsureInitialized();
@@ -161,6 +193,9 @@ namespace BC.UI.Components
 
         public void SetFocusedImmediate(bool isFocused)
         {
+            if (!isFocused)
+                manualFocusHeld = false;
+
             SetFocused(isFocused, notify: false);
         }
 
@@ -174,7 +209,7 @@ namespace BC.UI.Components
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (!IsSelectedByEventSystem())
+            if (!IsSelectedByEventSystem() && !manualFocusHeld)
                 SetFocused(false, notify: true);
         }
 
@@ -185,7 +220,8 @@ namespace BC.UI.Components
 
         public void OnDeselect(BaseEventData eventData)
         {
-            SetFocused(false, notify: true);
+            if (!manualFocusHeld)
+                SetFocused(false, notify: true);
         }
 
         public void OnSubmit(BaseEventData eventData)

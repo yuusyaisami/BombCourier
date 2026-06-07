@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using BC.ActionSystem;
 using BC.Base;
@@ -7,7 +8,6 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Febucci.TextAnimatorForUnity;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -52,6 +52,14 @@ namespace BC.UI
         [SerializeField] private float revealDuration = 0.1f;
         [SerializeField] private float delayShowDuration = 0.5f;
 
+        [Header("Input")]
+        [SerializeField] private InputActionReference submitInputAction;
+        [SerializeField] private InputActionReference navigationInputAction;
+        [SerializeField] private InputActionReference cancelInputAction;
+        [SerializeField, Range(0.1f, 1f)] private float navigationDeadZone = 0.5f;
+        [SerializeField, Min(0.01f)] private float navigationInitialRepeatDelay = 0.22f;
+        [SerializeField, Min(0.01f)] private float navigationRepeatInterval = 0.10f;
+
         [Header("Actions")]
         [SerializeField] private InlineAction onFadeInAction;
         [SerializeField] private InlineAction onClearStarAction;
@@ -66,92 +74,31 @@ namespace BC.UI
 
         private CancellationTokenSource _cts;
         private SceneKernel sceneKernel;
+        private readonly List<UIButtonMB> _navigationButtons = new();
 
-        // ボタンが表示・操作可能な状態かを示すフラグ。
-        // InputAction 直接購読で Submit/Cancel を処理するためのガード。
         private bool _showingButtons;
-        private InputAction _submitAction;
-        private InputAction _cancelAction;
-        private InputAction _navigateAction;
+        private bool _ownsSubmitActionEnable;
+        private bool _ownsNavigationActionEnable;
+        private bool _ownsCancelActionEnable;
+        private int _focusedButtonIndex = -1;
+        private int _lastNavigationDirection;
+        private float _navigationRepeatTimer;
 
         private void OnEnable()
         {
-            InputActionAsset asset = InputSystem.actions;
-            if (asset != null)
-            {
-                asset.FindActionMap("UI", throwIfNotFound: false)?.Enable();
-                _submitAction = asset.FindAction("UI/Submit", throwIfNotFound: false);
-                _cancelAction = asset.FindAction("UI/Cancel", throwIfNotFound: false);
-                _navigateAction = asset.FindAction("UI/Navigate", throwIfNotFound: false);
-            }
-
-            if (_submitAction != null) _submitAction.performed += OnSubmitInputPerformed;
-            if (_cancelAction != null) _cancelAction.performed += OnCancelInputPerformed;
-            if (_navigateAction != null) _navigateAction.performed += OnNavigateInputPerformed;
+            EnableInputAction(submitInputAction, ref _ownsSubmitActionEnable);
+            EnableInputAction(navigationInputAction, ref _ownsNavigationActionEnable);
+            EnableInputAction(cancelInputAction, ref _ownsCancelActionEnable);
         }
 
         private void OnDisable()
         {
-            if (_submitAction != null) _submitAction.performed -= OnSubmitInputPerformed;
-            if (_cancelAction != null) _cancelAction.performed -= OnCancelInputPerformed;
-            if (_navigateAction != null) _navigateAction.performed -= OnNavigateInputPerformed;
+            DisableOwnedInputAction(submitInputAction, ref _ownsSubmitActionEnable);
+            DisableOwnedInputAction(navigationInputAction, ref _ownsNavigationActionEnable);
+            DisableOwnedInputAction(cancelInputAction, ref _ownsCancelActionEnable);
             _showingButtons = false;
-        }
-
-        private void OnSubmitInputPerformed(InputAction.CallbackContext ctx)
-        {
-            if (!_showingButtons) return;
-
-            // EventSystem で選択されているボタンを優先、なければデフォルトボタンをクリック
-            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-            UIButtonMB target = null;
-
-            if (selected != null)
-            {
-                if (nextStageButton != null && nextStageButton.IsSelectionTarget(selected)) target = nextStageButton;
-                else if (replayButton != null && replayButton.IsSelectionTarget(selected)) target = replayButton;
-                else if (returnToTitleButton != null && returnToTitleButton.IsSelectionTarget(selected)) target = returnToTitleButton;
-            }
-
-            if (target == null)
-                target = nextStageButton != null ? nextStageButton : (replayButton != null ? replayButton : returnToTitleButton);
-
-            if (target == null || !target.Interactable) return;
-
-            ExecuteEvents.Execute(
-                target.UnityButton.gameObject,
-                new BaseEventData(EventSystem.current),
-                ExecuteEvents.submitHandler);
-        }
-
-        private void OnCancelInputPerformed(InputAction.CallbackContext ctx)
-        {
-            if (!_showingButtons) return;
-            OnReturnToTitleButtonClicked();
-        }
-
-        private void OnNavigateInputPerformed(InputAction.CallbackContext ctx)
-        {
-            if (!_showingButtons) return;
-            Vector2 dir = ctx.ReadValue<Vector2>();
-            if (Mathf.Abs(dir.x) < 0.5f) return;
-
-            // 表示中の非 null ボタン一覧を順に並べてカーソル移動する
-            var buttons = new System.Collections.Generic.List<UIButtonMB>();
-            if (returnToTitleButton != null) buttons.Add(returnToTitleButton);
-            if (replayButton != null) buttons.Add(replayButton);
-            if (nextStageButton != null) buttons.Add(nextStageButton);
-            if (buttons.Count < 2) return;
-
-            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-            int currentIndex = -1;
-            for (int i = 0; i < buttons.Count; i++)
-            {
-                if (buttons[i].IsSelectionTarget(selected)) { currentIndex = i; break; }
-            }
-
-            int next = (currentIndex + (dir.x > 0 ? 1 : -1) + buttons.Count) % buttons.Count;
-            buttons[next].Select();
+            ResetNavigationRepeatState();
+            ClearFocusedButton();
         }
 
         private void Awake()
@@ -162,6 +109,18 @@ namespace BC.UI
             SetButtonGameObjectActive(returnToTitleButton, false);
             SetButtonGameObjectActive(nextStageButton, false);
             SetButtonGameObjectActive(replayButton, false);
+            ConfigurePointerFocusMode(returnToTitleButton);
+            ConfigurePointerFocusMode(nextStageButton);
+            ConfigurePointerFocusMode(replayButton);
+            DisableUnityNavigation(returnToTitleButton);
+            DisableUnityNavigation(nextStageButton);
+            DisableUnityNavigation(replayButton);
+
+            if (submitInputAction == null)
+                Debug.LogWarning($"{nameof(UIStageClearMB)}: {nameof(submitInputAction)} is not assigned. Submit input will not work.", this);
+
+            if (navigationInputAction == null)
+                Debug.LogWarning($"{nameof(UIStageClearMB)}: {nameof(navigationInputAction)} is not assigned. Navigation input will not work.", this);
         }
 
         private void Start()
@@ -207,6 +166,8 @@ namespace BC.UI
                 replayButton.Focused -= OnReplayButtonFocused;
                 replayButton.Focused += OnReplayButtonFocused;
             }
+
+            RefreshNavigationButtons();
         }
 
         private void OnDestroy()
@@ -271,17 +232,36 @@ namespace BC.UI
 
         private void OnReturnToTitleButtonFocused(UIButtonMB button)
         {
+            HandleButtonFocused(button);
             ExecuteInlineAction(onReturnToTitleFocusAction);
         }
 
         private void OnNextStageButtonFocused(UIButtonMB button)
         {
+            HandleButtonFocused(button);
             ExecuteInlineAction(onNextStageFocusAction);
         }
 
         private void OnReplayButtonFocused(UIButtonMB button)
         {
+            HandleButtonFocused(button);
             ExecuteInlineAction(onReplayFocusAction);
+        }
+
+        private void Update()
+        {
+            if (!_showingButtons)
+                return;
+
+            int navigationStep = ReadNavigationStep();
+            if (navigationStep != 0)
+                MoveFocus(navigationStep);
+
+            if (WasActionPressedThisFrame(submitInputAction))
+                PressFocusedButton();
+
+            if (WasActionPressedThisFrame(cancelInputAction))
+                OnReturnToTitleButtonClicked();
         }
 
         // sceneKernel がある場合は GameLogicManager の EntityRef を actor にして InlineAction を実行する。
@@ -299,6 +279,8 @@ namespace BC.UI
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = new CancellationTokenSource();
+
+            EnsureStageClearInputActionsEnabled();
 
             await UniTask.Delay((int)(delayShowDuration * 1000), cancellationToken: _cts.Token);
             InputManagerMB.EnsureInstance().UnlockCursor();
@@ -420,18 +402,16 @@ namespace BC.UI
             SetButtonInteractable(nextStageButton, true);
             SetButtonInteractable(replayButton, true);
 
-            ConfigureButtonNavigation();
-            UINavigationBootstrap.EnsureConfigured();
-            _showingButtons = true;
-            UIButtonMB defaultButton = nextStageButton != null ? nextStageButton
-                : replayButton != null ? replayButton
-                : returnToTitleButton;
-            if (defaultButton != null)
-                defaultButton.Select();
+            RefreshNavigationButtons();
+            _showingButtons = _navigationButtons.Count > 0;
+            ResetNavigationRepeatState();
+            SetFocusedButton(GetDefaultFocusedButtonIndex());
         }
         private async UniTaskVoid HideAsync()
         {
             _showingButtons = false;
+            ResetNavigationRepeatState();
+            ClearFocusedButton();
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = new CancellationTokenSource();
@@ -472,6 +452,7 @@ namespace BC.UI
             transform.localScale = new Vector3(1f, 0f, 1f);
             SetButtonInteractable(returnToTitleButton, false);
             SetButtonInteractable(nextStageButton, false);
+            SetButtonInteractable(replayButton, false);
 
             // 評価の星をリセット
             ResetStars();
@@ -484,65 +465,6 @@ namespace BC.UI
             bonusItemStarTooltipTarget.TooltipText = "";
             fastClearStar.sprite = TransparentSprite;
             fastClearStarTooltipTarget.TooltipText = "";
-        }
-
-        private void ConfigureButtonNavigation()
-        {
-            if (!TryResolveUnityButton(returnToTitleButton, out Button returnButton) ||
-                !TryResolveUnityButton(nextStageButton, out Button nextButton))
-            {
-                return;
-            }
-
-            bool hasReplay = TryResolveUnityButton(replayButton, out Button replayBtn);
-
-            if (hasReplay)
-            {
-                // 横並び3ボタン循環: [returnToTitle] [replay] [nextStage]
-                Navigation nav;
-
-                nav = returnToTitleButton.Navigation;
-                nav.mode = Navigation.Mode.Explicit;
-                nav.selectOnLeft = nextButton;
-                nav.selectOnRight = replayBtn;
-                nav.selectOnUp = nextButton;
-                nav.selectOnDown = replayBtn;
-                returnToTitleButton.Navigation = nav;
-
-                nav = replayButton.Navigation;
-                nav.mode = Navigation.Mode.Explicit;
-                nav.selectOnLeft = returnButton;
-                nav.selectOnRight = nextButton;
-                nav.selectOnUp = returnButton;
-                nav.selectOnDown = nextButton;
-                replayButton.Navigation = nav;
-
-                nav = nextStageButton.Navigation;
-                nav.mode = Navigation.Mode.Explicit;
-                nav.selectOnLeft = replayBtn;
-                nav.selectOnRight = returnButton;
-                nav.selectOnUp = replayBtn;
-                nav.selectOnDown = returnButton;
-                nextStageButton.Navigation = nav;
-            }
-            else
-            {
-                Navigation returnNavigation = returnToTitleButton.Navigation;
-                returnNavigation.mode = Navigation.Mode.Explicit;
-                returnNavigation.selectOnRight = nextButton;
-                returnNavigation.selectOnLeft = nextButton;
-                returnNavigation.selectOnUp = nextButton;
-                returnNavigation.selectOnDown = nextButton;
-                returnToTitleButton.Navigation = returnNavigation;
-
-                Navigation nextNavigation = nextStageButton.Navigation;
-                nextNavigation.mode = Navigation.Mode.Explicit;
-                nextNavigation.selectOnRight = returnButton;
-                nextNavigation.selectOnLeft = returnButton;
-                nextNavigation.selectOnUp = returnButton;
-                nextNavigation.selectOnDown = returnButton;
-                nextStageButton.Navigation = nextNavigation;
-            }
         }
 
         private async UniTask ShowButtonAsync(UIButtonMB button)
@@ -575,6 +497,228 @@ namespace BC.UI
         {
             unityButton = button != null ? button.UnityButton : null;
             return button != null && unityButton != null;
+        }
+
+        private void HandleButtonFocused(UIButtonMB button)
+        {
+            if (!_showingButtons || button == null)
+                return;
+
+            RefreshNavigationButtons();
+
+            int index = _navigationButtons.IndexOf(button);
+            if (index >= 0)
+                SetFocusedButton(index);
+        }
+
+        private void RefreshNavigationButtons()
+        {
+            _navigationButtons.Clear();
+            AppendNavigableButton(returnToTitleButton);
+            AppendNavigableButton(replayButton);
+            AppendNavigableButton(nextStageButton);
+
+            if (_focusedButtonIndex >= _navigationButtons.Count)
+                _focusedButtonIndex = -1;
+        }
+
+        private void AppendNavigableButton(UIButtonMB button)
+        {
+            if (button == null || !button.Interactable)
+                return;
+
+            GameObject buttonObject = button.UnityButton != null ? button.UnityButton.gameObject : null;
+            if (buttonObject == null || !buttonObject.activeInHierarchy)
+                return;
+
+            _navigationButtons.Add(button);
+        }
+
+        private int GetDefaultFocusedButtonIndex()
+        {
+            for (int i = 0; i < _navigationButtons.Count; i++)
+            {
+                if (_navigationButtons[i] == nextStageButton)
+                    return i;
+            }
+
+            for (int i = 0; i < _navigationButtons.Count; i++)
+            {
+                if (_navigationButtons[i] == replayButton)
+                    return i;
+            }
+
+            return _navigationButtons.Count > 0 ? 0 : -1;
+        }
+
+        private void MoveFocus(int navigationStep)
+        {
+            if (_navigationButtons.Count == 0)
+                return;
+
+            if (_focusedButtonIndex < 0)
+            {
+                SetFocusedButton(GetDefaultFocusedButtonIndex());
+                return;
+            }
+
+            int nextIndex = (_focusedButtonIndex + navigationStep + _navigationButtons.Count) % _navigationButtons.Count;
+            SetFocusedButton(nextIndex);
+        }
+
+        private void SetFocusedButton(int index)
+        {
+            if (index < 0 || index >= _navigationButtons.Count)
+                return;
+
+            UIButtonMB nextButton = _navigationButtons[index];
+            if (nextButton == null)
+                return;
+
+            if (_focusedButtonIndex == index)
+            {
+                nextButton.AcquireManualFocus();
+                return;
+            }
+
+            UIButtonMB previousButton = _focusedButtonIndex >= 0 && _focusedButtonIndex < _navigationButtons.Count
+                ? _navigationButtons[_focusedButtonIndex]
+                : null;
+
+            _focusedButtonIndex = index;
+
+            if (previousButton != null && previousButton != nextButton)
+                previousButton.ReleaseManualFocus();
+
+            nextButton.AcquireManualFocus();
+        }
+
+        private void ClearFocusedButton()
+        {
+            if (_focusedButtonIndex >= 0 && _focusedButtonIndex < _navigationButtons.Count)
+                _navigationButtons[_focusedButtonIndex]?.ReleaseManualFocus();
+
+            _focusedButtonIndex = -1;
+        }
+
+        private void PressFocusedButton()
+        {
+            RefreshNavigationButtons();
+
+            if (_navigationButtons.Count == 0)
+                return;
+
+            if (_focusedButtonIndex < 0)
+                SetFocusedButton(GetDefaultFocusedButtonIndex());
+
+            if (_focusedButtonIndex < 0 || _focusedButtonIndex >= _navigationButtons.Count)
+                return;
+
+            _navigationButtons[_focusedButtonIndex]?.Press();
+        }
+
+        private int ReadNavigationStep()
+        {
+            int direction = ReadNavigationDirection();
+            if (direction == 0)
+            {
+                ResetNavigationRepeatState();
+                return 0;
+            }
+
+            if (direction != _lastNavigationDirection)
+            {
+                _lastNavigationDirection = direction;
+                _navigationRepeatTimer = Mathf.Max(0.01f, navigationInitialRepeatDelay);
+                return direction;
+            }
+
+            _navigationRepeatTimer -= Time.unscaledDeltaTime;
+            if (_navigationRepeatTimer > 0f)
+                return 0;
+
+            _navigationRepeatTimer = Mathf.Max(0.01f, navigationRepeatInterval);
+            return direction;
+        }
+
+        private int ReadNavigationDirection()
+        {
+            InputAction action = navigationInputAction != null ? navigationInputAction.action : null;
+            if (action == null)
+                return 0;
+
+            Vector2 input = action.ReadValue<Vector2>();
+            float horizontalMagnitude = Mathf.Abs(input.x);
+            float verticalMagnitude = Mathf.Abs(input.y);
+
+            if (horizontalMagnitude < navigationDeadZone && verticalMagnitude < navigationDeadZone)
+                return 0;
+
+            if (horizontalMagnitude >= verticalMagnitude)
+                return input.x > 0f ? 1 : -1;
+
+            return input.y > 0f ? -1 : 1;
+        }
+
+        private void ResetNavigationRepeatState()
+        {
+            _lastNavigationDirection = 0;
+            _navigationRepeatTimer = 0f;
+        }
+
+        private static bool WasActionPressedThisFrame(InputActionReference actionReference)
+        {
+            InputAction action = actionReference != null ? actionReference.action : null;
+            return action != null && action.WasPressedThisFrame();
+        }
+
+        private static void EnableInputAction(InputActionReference actionReference, ref bool enabledByThisComponent)
+        {
+            enabledByThisComponent = false;
+
+            InputAction action = actionReference != null ? actionReference.action : null;
+            if (action == null || action.enabled)
+                return;
+
+            action.Enable();
+            enabledByThisComponent = true;
+        }
+
+        private static void DisableOwnedInputAction(InputActionReference actionReference, ref bool enabledByThisComponent)
+        {
+            InputAction action = actionReference != null ? actionReference.action : null;
+            if (!enabledByThisComponent || action == null)
+                return;
+
+            action.Disable();
+            enabledByThisComponent = false;
+        }
+
+        private void EnsureStageClearInputActionsEnabled()
+        {
+            EnableInputAction(submitInputAction, ref _ownsSubmitActionEnable);
+            EnableInputAction(navigationInputAction, ref _ownsNavigationActionEnable);
+            EnableInputAction(cancelInputAction, ref _ownsCancelActionEnable);
+        }
+
+        private static void ConfigurePointerFocusMode(UIButtonMB button)
+        {
+            if (button != null)
+                button.AutoSelectOnPointerEnter = false;
+        }
+
+        private static void DisableUnityNavigation(UIButtonMB button)
+        {
+            if (!TryResolveUnityButton(button, out Button unityButton))
+                return;
+
+            Navigation navigation = unityButton.navigation;
+            navigation.mode = Navigation.Mode.None;
+            navigation.selectOnLeft = null;
+            navigation.selectOnRight = null;
+            navigation.selectOnUp = null;
+            navigation.selectOnDown = null;
+            unityButton.navigation = navigation;
         }
     }
 }

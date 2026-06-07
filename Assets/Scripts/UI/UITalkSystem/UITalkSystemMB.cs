@@ -78,7 +78,8 @@ namespace BC.UI
 
         private void OnEnable()
         {
-            // 会話中だけ入力を受け付ける。
+            // project-wide の UI/Submit を共有しているため、ここでは有効化だけ行い、
+            // OnDisable 側でローカル所有物のように Disable しない。
             nextTalkInputAction?.action.Enable();
 
             // Inspector未設定でも動作が壊れにくいよう、コード側でもイベント購読を貼る。
@@ -98,8 +99,6 @@ namespace BC.UI
                 bodyTypewriter.onTextShowed.RemoveListener(NotifyBodyTextShowed);
                 bodyTypewriter.onCharacterVisible.RemoveListener(OnCharacterVisible);
             }
-
-            nextTalkInputAction?.action.Disable();
         }
 
         private void OnDestroy()
@@ -109,8 +108,6 @@ namespace BC.UI
                 bodyTypewriter.onTextShowed.RemoveListener(NotifyBodyTextShowed);
                 bodyTypewriter.onCharacterVisible.RemoveListener(OnCharacterVisible);
             }
-
-            nextTalkInputAction?.action.Disable();
         }
 
         private void InitializeTalkUI()

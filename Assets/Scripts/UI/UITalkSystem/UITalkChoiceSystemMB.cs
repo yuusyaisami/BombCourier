@@ -44,21 +44,19 @@ namespace BC.UI
 
         private void OnEnable()
         {
+            // project-wide の UI/Navigate と UI/Submit を共有しているため、
+            // この画面は必要時に有効化だけ行い、終了時に共有 action を落とさない。
             moveSelectionInputAction?.action.Enable();
             submitChoiceInputAction?.action.Enable();
         }
 
         private void OnDisable()
         {
-            moveSelectionInputAction?.action.Disable();
-            submitChoiceInputAction?.action.Disable();
             ResetNavigationRepeatState();
         }
 
         private void OnDestroy()
         {
-            moveSelectionInputAction?.action.Disable();
-            submitChoiceInputAction?.action.Disable();
             ClearChoicesImmediate();
             DestroyPooledChoicesImmediate();
         }

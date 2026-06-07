@@ -55,17 +55,8 @@ namespace BC.UI
 
         private void OnEnable()
         {
+            // project-wide の UI/Submit を共有しているため、ここでは有効化だけ行う。
             nextEpilogueInputAction?.action.Enable();
-        }
-
-        private void OnDisable()
-        {
-            nextEpilogueInputAction?.action.Disable();
-        }
-
-        private void OnDestroy()
-        {
-            nextEpilogueInputAction?.action.Disable();
         }
 
         public async UniTask ShowAsync(CancellationToken cancellationToken = default)
