@@ -1,10 +1,13 @@
 // BC/EndingBackground
-// Plane 向けの URP unlit 背景 shader。
+// URP unlit 背景 shader。UI Image の Material としても使えるよう、UI の描画設定と Mask/RectMask2D に対応する。
 // 2 枚のノイズを独立スクロールし、合成結果を 3x3 の近似ガウスでぼかしてから 2 色グラデーション化する。
 Shader "BC/EndingBackground"
 {
     Properties
     {
+        [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+        _Color ("Tint", Color) = (1, 1, 1, 1)
+
         _NoiseTexA ("Noise Texture A", 2D) = "white" {}
         _NoiseTexB ("Noise Texture B", 2D) = "white" {}
 
@@ -23,6 +26,16 @@ Shader "BC/EndingBackground"
 
         _LowColor ("Low Color", Color) = (0.2, 0.25, 0.32, 1)
         _HighColor ("High Color", Color) = (0.92, 0.9, 0.82, 1)
+
+        // ---- Stencil (UI Mask 対応) ----
+        _StencilComp ("Stencil Comparison", Float) = 8
+        _Stencil ("Stencil ID", Float) = 0
+        _StencilOp ("Stencil Operation", Float) = 0
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        _ColorMask ("Color Mask", Float) = 15
+
+        [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
     }
 
     SubShader
@@ -30,41 +43,66 @@ Shader "BC/EndingBackground"
         Tags
         {
             "RenderPipeline" = "UniversalPipeline"
-            "RenderType" = "Opaque"
-            "Queue" = "Geometry"
+            "Queue" = "Transparent"
+            "IgnoreProjector" = "True"
+            "RenderType" = "Transparent"
             "PreviewType" = "Plane"
+            "CanUseSpriteAtlas" = "True"
             "UniversalMaterialType" = "Unlit"
         }
+
+        Stencil
+        {
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }
+
+        Cull Off
+        Lighting Off
+        ZWrite Off
+        ZTest [unity_GUIZTestMode]
+        Blend SrcAlpha OneMinusSrcAlpha
+        ColorMask [_ColorMask]
 
         Pass
         {
             Name "ForwardUnlit"
             Tags { "LightMode" = "UniversalForward" }
 
-            Cull Off
-            ZWrite On
-            ZTest LEqual
-
             HLSLPROGRAM
             #pragma target 2.0
             #pragma vertex Vert
             #pragma fragment Frag
+
+            #pragma multi_compile_local _ UNITY_UI_CLIP_RECT
+            #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
+                half4 color : COLOR;
                 float2 uv : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
+                half4 color : COLOR;
                 float2 uv : TEXCOORD0;
+                float4 worldPosition : TEXCOORD1;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             CBUFFER_START(UnityPerMaterial)
+                float4 _MainTex_ST;
+                float4 _Color;
+                float4 _ClipRect;
                 float4 _NoiseTexA_ST;
                 float4 _NoiseTexB_ST;
                 float4 _NoiseScrollA;
@@ -81,15 +119,28 @@ Shader "BC/EndingBackground"
                 float _ValuePower;
             CBUFFER_END
 
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
             TEXTURE2D(_NoiseTexA);
             SAMPLER(sampler_NoiseTexA);
             TEXTURE2D(_NoiseTexB);
             SAMPLER(sampler_NoiseTexB);
 
+            float Get2DClipping(float2 position, float4 clipRect)
+            {
+                float2 inside = step(clipRect.xy, position) * step(position, clipRect.zw);
+                return inside.x * inside.y;
+            }
+
             Varyings Vert(Attributes input)
             {
                 Varyings output;
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                output.worldPosition = input.positionOS;
+                output.color = input.color * _Color;
                 output.uv = input.uv;
                 return output;
             }
@@ -149,8 +200,17 @@ Shader "BC/EndingBackground"
                 float normalized = smoothstep(lower, upper, saturate(blurredValue));
                 normalized = pow(saturate(normalized), max(0.0001, _ValuePower));
 
-                half3 color = lerp(_LowColor.rgb, _HighColor.rgb, normalized);
-                return half4(color, 1.0h);
+                half4 color = lerp(_LowColor, _HighColor, normalized);
+                color.a *= SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv).a;
+                color *= input.color;
+
+#ifdef UNITY_UI_CLIP_RECT
+                color.a *= Get2DClipping(input.worldPosition.xy, _ClipRect);
+#endif
+#ifdef UNITY_UI_ALPHACLIP
+                clip(color.a - 0.001);
+#endif
+                return color;
             }
             ENDHLSL
         }
