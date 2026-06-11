@@ -46,7 +46,7 @@ namespace BC.Base.Tests
             object watchedFloat = InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 1.25f);
             SetFieldValue(watchedFloat, "evaluationMode", Enum.Parse(GetTypeByFullName("BC.Base.ReactiveEvaluationMode"), "Watched"));
             AssertFailedResult(
-                InvokeResolve(resolver, "ResolveFloat", context, watchedFloat),
+                InvokeResolve(resolver, "ResolveFloatWatch", context, watchedFloat),
                 "UnsupportedEvaluationMode");
 
             AssertFailedResult(

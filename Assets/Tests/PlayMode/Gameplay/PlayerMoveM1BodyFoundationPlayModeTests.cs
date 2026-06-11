@@ -126,6 +126,18 @@ namespace BC.Gameplay.PlayModeTests
         }
 
         [Test]
+        public void PlayerRagdollController_RunsBeforeMoveMotorColliderValidation()
+        {
+            Type ragdollType = FindRuntimeType("BC.Manager.PlayerRagdollControllerMB");
+            Type moveMotorType = FindRuntimeType(EntityMoveMotorTypeName);
+
+            Assert.Less(
+                ResolveDefaultExecutionOrder(ragdollType),
+                ResolveDefaultExecutionOrder(moveMotorType),
+                "Ragdoll colliders must be disabled before EntityMoveMotor validates the movement collider policy.");
+        }
+
+        [Test]
         public void GroundProbeSolver_FindsClosestFlatGround()
         {
             GameObject ground = new GameObject("M1GroundProbeGround");
@@ -187,6 +199,12 @@ namespace BC.Gameplay.PlayModeTests
 
             Assert.Fail($"Expected runtime type to exist: {fullTypeName}");
             return null;
+        }
+
+        private static int ResolveDefaultExecutionOrder(Type type)
+        {
+            DefaultExecutionOrder order = type.GetCustomAttribute<DefaultExecutionOrder>();
+            return order != null ? order.order : 0;
         }
 
         private static object InvokeMethod(object target, string methodName, params object[] arguments)

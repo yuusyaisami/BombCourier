@@ -105,3 +105,25 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# ---------------------------------------------------------------------------
+# Release code review (M1) hardening: keep build output, IDE caches and stale
+# batchmode artifacts out of the public repository. The upstream Unity template
+# ignores /[Bb]uild(s)/ and *.sln/*.csproj/*.log, but NOT the patterns below.
+# ---------------------------------------------------------------------------
+
+# Player build output and archives (written to repo root by build scripts).
+/Windows/
+/*.zip
+
+# IDE / solution caches not covered by the template
+# (*.csproj is ignored but *.csproj.lscache is not; *.sln is ignored but *.slnx is not).
+*.csproj.lscache
+*.slnx
+
+# Batchmode test results and build logs written to the repo root by Tools scripts.
+# Current evidence lives under /Logs/TestRuns/** (already ignored via /[Ll]ogs/).
+/TestResults*.xml
+/build_*.txt
+/detailed_build_output.txt
+/UnityTestLog*.txt

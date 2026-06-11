@@ -12,6 +12,7 @@ namespace BC.Gameplay.PlayModeTests
     {
         private const string PlayerItemHandleStateTypeName = "BC.Player.PlayerItemHandleStateMB";
         private const string CushionTypeName = "BC.Gimmick.Cushion.CushionMB";
+        private const string BombTypeName = "BC.Bomb.BombMB";
 
         private readonly List<UnityEngine.Object> createdObjects = new();
         private readonly List<InputAction> createdActions = new();
@@ -108,6 +109,28 @@ namespace BC.Gameplay.PlayModeTests
             Assert.Greater(carriedBody.linearVelocity.y, 0.1f, "Charged throw should keep the upward compensation arc.");
         }
 
+        [UnityTest]
+        public System.Collections.IEnumerator HeldBombExplosionClearsHandledStateImmediately()
+        {
+            LogAssert.Expect(LogType.Warning, "PlayerItemHandleStateMB: EntityMB is not found or not bound.");
+
+            PlayerHandleFixture fixture = CreateFixture();
+            Component bomb = CreateBomb("HeldBomb", new Vector3(0f, 0.5f, 0f));
+
+            SetInteractionState(fixture.Controller, isInputPressed: false, pressSequence: 0);
+            InvokeMethod(fixture.HandleState, "HandleItem", bomb);
+
+            Assert.IsTrue(GetPropertyValue<bool>(fixture.HandleState, "IsHandlingItem"), "Bomb should be held before the explosion.");
+            Assert.IsNotNull(GetPropertyValue<object>(fixture.HandleState, "CurrentHandledItem"), "Held item reference should be present before the explosion.");
+
+            InvokeMethod(bomb, "Explode");
+
+            Assert.IsFalse(GetPropertyValue<bool>(fixture.HandleState, "IsHandlingItem"), "Held bomb explosion must immediately clear player carry state.");
+            Assert.IsNull(GetPropertyValue<object>(fixture.HandleState, "CurrentHandledItem"), "Destroyed bomb must not remain as the current held item.");
+
+            yield return null;
+        }
+
         private PlayerHandleFixture CreateFixture()
         {
             GameObject root = new GameObject("PlayerItemHandleStateTestRoot");
@@ -170,6 +193,24 @@ namespace BC.Gameplay.PlayModeTests
             rigidbody.isKinematic = false;
 
             return itemObject.AddComponent(FindRuntimeType(CushionTypeName));
+        }
+
+        private Component CreateBomb(string name, Vector3 position)
+        {
+            GameObject itemObject = new GameObject(name);
+            itemObject.transform.position = position;
+            createdObjects.Add(itemObject);
+
+            SphereCollider collider = itemObject.AddComponent<SphereCollider>();
+            collider.radius = 0.5f;
+
+            Rigidbody rigidbody = itemObject.AddComponent<Rigidbody>();
+            rigidbody.useGravity = false;
+            rigidbody.isKinematic = false;
+
+            Component bomb = itemObject.AddComponent(FindRuntimeType(BombTypeName));
+            SetPrivateField(bomb, "startFuseOnHandle", false);
+            return bomb;
         }
 
         private static void SetInteractionState(object controller, bool isInputPressed, int pressSequence)

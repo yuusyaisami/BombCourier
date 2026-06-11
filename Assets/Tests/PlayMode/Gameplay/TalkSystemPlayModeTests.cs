@@ -13,6 +13,7 @@ namespace BC.Gameplay.PlayModeTests
         private const string TalkSystemManagerTypeName = "BC.Managers.TalkSystemManagerMB";
         private const string TalkAdapterTypeName = "BC.Managers.TalkAdapterMB";
         private const string HideTalkRequestDataTypeName = "BC.Managers.HideTalkRequestData";
+        private const string TalkRequestDataTypeName = "BC.Managers.TalkRequestData";
         private const string EntityMBTypeName = "BC.Base.EntityMB";
         private const string EntityRefTypeName = "BC.Base.EntityRef";
 
@@ -73,6 +74,113 @@ namespace BC.Gameplay.PlayModeTests
 
             Assert.IsTrue(GetPrivateField<bool>(ownerAdapter, "isTalkingActivityActive"), "Owner adapter should not be modified when it is not the active presentation adapter.");
             Assert.IsFalse(GetPrivateField<bool>(speakerAdapter, "isTalkingActivityActive"), "Presentation adapter should stop talking activity when typing completes.");
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator ShowTalk_WithExternalCancellation_ClearsActiveTalkState()
+        {
+            Component manager = CreateTalkSystemManager();
+            GameObject talkUiRoot = new GameObject("TalkUIForCanceledShowTalk");
+            createdObjects.Add(talkUiRoot);
+            Component talkUi = talkUiRoot.AddComponent(FindRuntimeType("BC.UI.UITalkSystemMB"));
+            SetPrivateField(manager, "talkSystemUIManagerMB", talkUi);
+
+            Type entityRefType = FindRuntimeType(EntityRefTypeName);
+            Type talkRequestDataType = FindRuntimeType(TalkRequestDataTypeName);
+            object actor = CreateEntityRef(21u, 1);
+            object viewer = CreateEntityRef(22u, 1);
+            object requestData = Activator.CreateInstance(talkRequestDataType);
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            object task = InvokeMethod(
+                manager,
+                "ShowTalk",
+                new[] { entityRefType, entityRefType, talkRequestDataType, typeof(CancellationToken) },
+                actor,
+                viewer,
+                requestData,
+                cancellation.Token);
+            object awaiter = GetUniTaskAwaiter(task);
+            PropertyInfo isCompletedProperty = awaiter.GetType().GetProperty("IsCompleted", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(isCompletedProperty, "Expected UniTask awaiter to expose IsCompleted.");
+
+            while (!(bool)isCompletedProperty.GetValue(awaiter))
+                yield return null;
+
+            Exception exception = null;
+            try
+            {
+                InvokeMethod(awaiter, "GetResult");
+            }
+            catch (TargetInvocationException caught) when (caught.InnerException != null)
+            {
+                exception = caught.InnerException;
+            }
+            catch (Exception caught)
+            {
+                exception = caught;
+            }
+
+            Assert.IsInstanceOf<OperationCanceledException>(exception);
+            Assert.IsFalse(IsValidEntityRef(GetPrivateField(manager, "activeTalkOwnerActor")));
+            Assert.IsFalse(IsValidEntityRef(GetPrivateField(manager, "activeTalkPresentationActor")));
+            Assert.IsNull(GetPrivateField<object>(manager, "activeTalkPresentationAdapter"));
+            Assert.IsNull(GetPrivateField<object>(manager, "cancellationTokenSource"));
+        }
+
+        [UnityTest]
+        public System.Collections.IEnumerator TryShowTalkAsync_WithExternalCancellation_PropagatesThroughTalkAdapter()
+        {
+            Component manager = CreateTalkSystemManager();
+            GameObject talkUiRoot = new GameObject("TalkUIForCanceledAdapterTalk");
+            createdObjects.Add(talkUiRoot);
+            Component talkUi = talkUiRoot.AddComponent(FindRuntimeType("BC.UI.UITalkSystemMB"));
+            SetPrivateField(manager, "talkSystemUIManagerMB", talkUi);
+
+            (_, Component talkAdapter, _) = CreateTalkActor("CanceledTalkOwner", 31u);
+            Type entityRefType = FindRuntimeType(EntityRefTypeName);
+            Type talkRequestDataType = FindRuntimeType(TalkRequestDataTypeName);
+            object viewer = CreateEntityRef(32u, 1);
+            object requestData = Activator.CreateInstance(talkRequestDataType);
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            object task = InvokeMethod(
+                talkAdapter,
+                "TryShowTalkAsync",
+                new[] { entityRefType, talkRequestDataType, typeof(CancellationToken) },
+                viewer,
+                requestData,
+                cancellation.Token);
+            object awaiter = GetUniTaskAwaiter(task);
+            PropertyInfo isCompletedProperty = awaiter.GetType().GetProperty("IsCompleted", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(isCompletedProperty, "Expected UniTask awaiter to expose IsCompleted.");
+
+            while (!(bool)isCompletedProperty.GetValue(awaiter))
+                yield return null;
+
+            Exception exception = null;
+            try
+            {
+                InvokeMethod(awaiter, "GetResult");
+            }
+            catch (TargetInvocationException caught) when (caught.InnerException != null)
+            {
+                exception = caught.InnerException;
+            }
+            catch (Exception caught)
+            {
+                exception = caught;
+            }
+
+            Assert.IsInstanceOf<OperationCanceledException>(exception);
+            Assert.IsFalse(GetPrivateField<bool>(talkAdapter, "hasCurrentTalkStatePresentation"));
+            Assert.IsFalse(GetPrivateField<bool>(talkAdapter, "isTalkingActivityActive"));
+            Assert.IsFalse(IsValidEntityRef(GetPrivateField(manager, "activeTalkOwnerActor")));
+            Assert.IsFalse(IsValidEntityRef(GetPrivateField(manager, "activeTalkPresentationActor")));
+            Assert.IsNull(GetPrivateField<object>(manager, "activeTalkPresentationAdapter"));
+            Assert.IsNull(GetPrivateField<object>(manager, "cancellationTokenSource"));
         }
 
         private Component CreateTalkSystemManager()
@@ -155,9 +263,74 @@ namespace BC.Gameplay.PlayModeTests
 
         private static object InvokeMethod(object target, string methodName, params object[] args)
         {
-            MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            MethodInfo method = ResolveMethod(target.GetType(), methodName, args);
             Assert.IsNotNull(method, $"Expected method on {target.GetType().Name}: {methodName}");
             return method.Invoke(target, args);
+        }
+
+        private static MethodInfo ResolveMethod(Type targetType, string methodName, object[] args)
+        {
+            MethodInfo[] methods = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            for (int i = 0; i < methods.Length; i++)
+            {
+                MethodInfo method = methods[i];
+                if (method.Name != methodName)
+                    continue;
+
+                ParameterInfo[] parameters = method.GetParameters();
+                if (parameters.Length != args.Length)
+                    continue;
+
+                bool matches = true;
+                for (int parameterIndex = 0; parameterIndex < parameters.Length; parameterIndex++)
+                {
+                    object argument = args[parameterIndex];
+                    Type parameterType = parameters[parameterIndex].ParameterType;
+
+                    if (argument == null)
+                    {
+                        if (parameterType.IsValueType && Nullable.GetUnderlyingType(parameterType) == null)
+                        {
+                            matches = false;
+                            break;
+                        }
+
+                        continue;
+                    }
+
+                    if (!parameterType.IsInstanceOfType(argument))
+                    {
+                        matches = false;
+                        break;
+                    }
+                }
+
+                if (matches)
+                    return method;
+            }
+
+            return null;
+        }
+
+        private static object InvokeMethod(object target, string methodName, Type[] parameterTypes, params object[] args)
+        {
+            MethodInfo method = target.GetType().GetMethod(
+                methodName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                parameterTypes,
+                null);
+            Assert.IsNotNull(method, $"Expected method on {target.GetType().Name}: {methodName}");
+            return method.Invoke(target, args);
+        }
+
+        private static object GetUniTaskAwaiter(object uniTask)
+        {
+            Assert.IsNotNull(uniTask, "Expected UniTask result.");
+            MethodInfo getAwaiterMethod = uniTask.GetType().GetMethod("GetAwaiter", BindingFlags.Instance | BindingFlags.Public);
+            Assert.IsNotNull(getAwaiterMethod, "Expected UniTask to expose GetAwaiter.");
+            return getAwaiterMethod.Invoke(uniTask, null);
         }
 
         private static Type FindRuntimeType(string fullTypeName)

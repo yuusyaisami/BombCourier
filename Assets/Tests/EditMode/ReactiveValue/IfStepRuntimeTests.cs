@@ -22,7 +22,8 @@ namespace BC.Base.Tests
                 object localIntKeyReference = ReactiveValueTestUtility.InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), localIntKey);
 
                 ReactiveValueTestUtility.SetPropertyValue(sceneKernel, "KernelValueStore", kernelValueStore);
-                Assert.AreEqual(true, ReactiveValueTestUtility.InvokeGenericMethod(kernelValueStore, "Set", typeof(bool), kernelFlagKey, true));
+                ReactiveValueTestUtility.InvokeGenericMethod(kernelValueStore, "Set", typeof(bool), kernelFlagKey, true);
+                Assert.AreEqual(true, ReactiveValueTestUtility.InvokeGenericMethod(kernelValueStore, "Get", typeof(bool), kernelFlagKey));
 
                 object definition = ReactiveValueTestUtility.CreateInstance(
                     "BC.ActionSystem.IfStepRuntime",
@@ -66,7 +67,8 @@ namespace BC.Base.Tests
                 object localIntKeyReference = ReactiveValueTestUtility.InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), localIntKey);
 
                 ReactiveValueTestUtility.SetPropertyValue(sceneKernel, "KernelValueStore", kernelValueStore);
-                Assert.AreEqual(true, ReactiveValueTestUtility.InvokeGenericMethod(kernelValueStore, "Set", typeof(bool), kernelFlagKey, false));
+                ReactiveValueTestUtility.InvokeGenericMethod(kernelValueStore, "Set", typeof(bool), kernelFlagKey, false);
+                Assert.AreEqual(false, ReactiveValueTestUtility.InvokeGenericMethod(kernelValueStore, "Get", typeof(bool), kernelFlagKey));
 
                 object definition = ReactiveValueTestUtility.CreateInstance(
                     "BC.ActionSystem.IfStepRuntime",
@@ -113,12 +115,13 @@ namespace BC.Base.Tests
                 Enum.Parse(ReactiveValueTestUtility.GetTypeByFullName("BC.ActionSystem.ValueStoreWriteStoreScope"), "Local"),
                 ReactiveValueTestUtility.InvokeStatic("BC.Base.EntityTargetReference", "Self"),
                 Enum.Parse(ReactiveValueTestUtility.GetTypeByFullName("BC.ActionSystem.ValueStoreWriteValueKind"), "Int"),
+                Enum.Parse(ReactiveValueTestUtility.GetTypeByFullName("BC.ActionSystem.ValueStoreNumericOperation"), "Set"),
                 keyReference,
-                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveBool", "LiteralValue", false),
-                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveInt", "LiteralValue", value),
-                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 0f),
-                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveString", "LiteralValue", string.Empty),
-                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
+                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveSnapshotBool", "LiteralValue", false),
+                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveSnapshotInt", "LiteralValue", value),
+                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveSnapshotFloat", "LiteralValue", 0f),
+                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveSnapshotString", "LiteralValue", string.Empty),
+                ReactiveValueTestUtility.InvokeStatic("BC.Base.ReactiveSnapshotEntityRef", "Self"),
                 ReactiveValueTestUtility.InvokeStatic(
                     "BC.Base.ReactiveFaceExpressionId",
                     "LiteralValue",
@@ -126,7 +129,11 @@ namespace BC.Base.Tests
                 ReactiveValueTestUtility.InvokeStatic(
                     "BC.Base.ReactiveEntityMoveState",
                     "LiteralValue",
-                    Enum.Parse(ReactiveValueTestUtility.GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")));
+                    Enum.Parse(ReactiveValueTestUtility.GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")),
+                ReactiveValueTestUtility.InvokeStatic(
+                    "BC.Base.ReactiveShapeExpressionId",
+                    "LiteralValue",
+                    Enum.Parse(ReactiveValueTestUtility.GetTypeByFullName("BC.Base.ShapeExpressionId"), "Neutral")));
         }
     }
 }

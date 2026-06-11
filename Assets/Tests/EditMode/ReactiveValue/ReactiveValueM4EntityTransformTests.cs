@@ -115,7 +115,7 @@ namespace BC.Base.Tests
                 object actor = RegisterEntity(sceneKernel, firstObject, 9301);
                 RegisterEntity(sceneKernel, secondObject, 9301);
                 object context = CreateEvalContext(sceneKernel, actor, CreateDefaultEntityRef());
-                object ambiguousSpec = InvokeStatic("BC.Base.ReactiveEntityRef", "TargetReference", CreateTagSearchTargetReference(9301));
+                object ambiguousSpec = InvokeStatic("BC.Base.ReactiveEntityRef", "TargetReference", CreateTagSearchTargetReference(9301, "All"));
 
                 AssertFailedResult(InvokeResolve(resolver, "ResolveEntity", context, ambiguousSpec), "MultipleTargetsNotAllowed");
 
@@ -125,7 +125,7 @@ namespace BC.Base.Tests
 
                 object watchedDistance = InvokeStatic("BC.Base.ReactiveFloat", "Distance", InvokeStatic("BC.Base.ReactiveEntityRef", "Self"), InvokeStatic("BC.Base.ReactiveEntityRef", "Self"));
                 SetFieldValue(watchedDistance, "evaluationMode", GetReactiveEvaluationMode("Watched"));
-                AssertFailedResult(InvokeResolve(resolver, "ResolveFloat", missingContext, watchedDistance), "UnsupportedEvaluationMode");
+                AssertFailedResult(InvokeResolve(resolver, "ResolveFloatWatch", missingContext, watchedDistance), "UnsupportedEvaluationMode");
             }
             finally
             {
@@ -226,11 +226,11 @@ namespace BC.Base.Tests
             return Activator.CreateInstance(GetTypeByFullName("BC.Base.EntityRef"));
         }
 
-        private static object CreateTagSearchTargetReference(int tagId)
+        private static object CreateTagSearchTargetReference(int tagId, string selection = "First")
         {
             object target = Activator.CreateInstance(GetTypeByFullName("BC.Base.EntityTargetReference"));
             SetFieldValue(target, "mode", Enum.Parse(GetTypeByFullName("BC.Base.EntityTargetResolveMode"), "TagSearch"));
-            SetFieldValue(target, "selection", Enum.Parse(GetTypeByFullName("BC.Base.EntityTargetSelection"), "First"));
+            SetFieldValue(target, "selection", Enum.Parse(GetTypeByFullName("BC.Base.EntityTargetSelection"), selection));
             SetFieldValue(target, "tag", InvokeStatic("BC.Base.EntityTagReference", "From", CreateInstance("BC.Base.EntityTagId", tagId)));
             return target;
         }

@@ -2,6 +2,8 @@ using System;
 using System.Reflection;
 using System.Reflection.Emit;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace BC.Base.Tests
 {
@@ -153,6 +155,7 @@ namespace BC.Base.Tests
                 object binding = InvokeMethod(scope, "Bind", InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 8.5f));
                 AssertSuccessfulResult(InvokeMethod(binding, "Read"), 8.5f);
 
+                LogAssert.Expect(LogType.Exception, "InvalidOperationException: throw from Tick");
                 InvokeMethod(actionService, "Tick", 0f);
 
                 Assert.IsFalse(TryGetExecution(actionService, handle, out _));
@@ -184,6 +187,7 @@ namespace BC.Base.Tests
                 object binding = InvokeMethod(scope, "Bind", InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 9.5f));
                 AssertSuccessfulResult(InvokeMethod(binding, "Read"), 9.5f);
 
+                LogAssert.Expect(LogType.Exception, "InvalidOperationException: throw from Cancel");
                 InvokeMethod(actionService, "Cancel", actor, "test cancel throw");
 
                 Assert.IsFalse(TryGetExecution(actionService, handle, out _));
@@ -216,14 +220,16 @@ namespace BC.Base.Tests
                     Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteStoreScope"), "Entity"),
                     InvokeStatic("BC.Base.EntityTargetReference", "Self"),
                     Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteValueKind"), "Auto"),
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreNumericOperation"), "Set"),
                     faceExpressionKeyReference,
-                    InvokeStatic("BC.Base.ReactiveBool", "LiteralValue", false),
-                    InvokeStatic("BC.Base.ReactiveInt", "LiteralValue", 0),
-                    InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 0f),
-                    InvokeStatic("BC.Base.ReactiveString", "LiteralValue", string.Empty),
-                    InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
+                    InvokeStatic("BC.Base.ReactiveSnapshotBool", "LiteralValue", false),
+                    InvokeStatic("BC.Base.ReactiveSnapshotInt", "LiteralValue", 0),
+                    InvokeStatic("BC.Base.ReactiveSnapshotFloat", "LiteralValue", 0f),
+                    InvokeStatic("BC.Base.ReactiveSnapshotString", "LiteralValue", string.Empty),
+                    InvokeStatic("BC.Base.ReactiveSnapshotEntityRef", "Self"),
                     InvokeStatic("BC.Base.ReactiveFaceExpressionId", "LiteralValue", Enum.Parse(faceExpressionType, "Happy")),
-                    InvokeStatic("BC.Base.ReactiveEntityMoveState", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")));
+                    InvokeStatic("BC.Base.ReactiveEntityMoveState", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")),
+                    InvokeStatic("BC.Base.ReactiveShapeExpressionId", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.ShapeExpressionId"), "Neutral")));
 
                 object runtime = InvokeMethod(definition, "CreateRuntime");
                 object context = CreateInstance("BC.ActionSystem.ActionExecutionContext", sceneKernel, GetPropertyValue(sceneKernel, "Actions"), actor, trigger);
@@ -253,17 +259,19 @@ namespace BC.Base.Tests
                 object kernelIntKeyReference = InvokeGenericStatic("BC.Base.ValueKeyReference", "From", typeof(int), kernelIntKey);
                 object definition = CreateInstance(
                     "BC.ActionSystem.SetValueStoreValueStepRuntime",
-                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteStoreScope"), "Kernel"),
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteStoreScope"), "SceneKernel"),
                     InvokeStatic("BC.Base.EntityTargetReference", "Self"),
                     Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreWriteValueKind"), "Int"),
+                    Enum.Parse(GetTypeByFullName("BC.ActionSystem.ValueStoreNumericOperation"), "Set"),
                     kernelIntKeyReference,
-                    InvokeStatic("BC.Base.ReactiveBool", "LiteralValue", false),
-                    InvokeStatic("BC.Base.ReactiveInt", "LiteralValue", 42),
-                    InvokeStatic("BC.Base.ReactiveFloat", "LiteralValue", 0f),
-                    InvokeStatic("BC.Base.ReactiveString", "LiteralValue", string.Empty),
-                    InvokeStatic("BC.Base.ReactiveEntityRef", "Self"),
+                    InvokeStatic("BC.Base.ReactiveSnapshotBool", "LiteralValue", false),
+                    InvokeStatic("BC.Base.ReactiveSnapshotInt", "LiteralValue", 42),
+                    InvokeStatic("BC.Base.ReactiveSnapshotFloat", "LiteralValue", 0f),
+                    InvokeStatic("BC.Base.ReactiveSnapshotString", "LiteralValue", string.Empty),
+                    InvokeStatic("BC.Base.ReactiveSnapshotEntityRef", "Self"),
                     InvokeStatic("BC.Base.ReactiveFaceExpressionId", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.FaceExpressionId"), "Neutral")),
-                    InvokeStatic("BC.Base.ReactiveEntityMoveState", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")));
+                    InvokeStatic("BC.Base.ReactiveEntityMoveState", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.EntityMoveState"), "Idle")),
+                    InvokeStatic("BC.Base.ReactiveShapeExpressionId", "LiteralValue", Enum.Parse(GetTypeByFullName("BC.Base.ShapeExpressionId"), "Neutral")));
 
                 object runtime = InvokeMethod(definition, "CreateRuntime");
                 object context = CreateInstance("BC.ActionSystem.ActionExecutionContext", sceneKernel, GetPropertyValue(sceneKernel, "Actions"), actor);

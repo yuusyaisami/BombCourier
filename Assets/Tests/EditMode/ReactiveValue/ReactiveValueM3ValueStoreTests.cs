@@ -225,13 +225,11 @@ namespace BC.Base.Tests
         {
             object sceneKernel = CreateConfiguredSceneKernel();
             object resolver = CreateResolver(sceneKernel);
-            object actor = CreateEntityRef(70u, 1);
+            object actor = Activator.CreateInstance(GetTypeByFullName("BC.Base.EntityRef"));
             object context = CreateEvalContext(sceneKernel, actor, CreateEntityRef(80u, 1));
             object floatKey = GetStaticFieldValue("BC.Base.ValueKeys+Move", "BaseSpeed");
             object floatKeyReference = CreateValueKeyReference(typeof(float), floatKey);
             object self = InvokeStatic("BC.Base.ReactiveEntityRef", "Self");
-
-            Assert.AreEqual(true, SetEntityStoreValue(sceneKernel, actor, typeof(float), floatKey, 6.0f));
 
             object invalidModeSpec = InvokeStatic(
                 "BC.Base.ReactiveFloat",
@@ -240,7 +238,7 @@ namespace BC.Base.Tests
                 floatKeyReference,
                 GetReactiveEvaluationMode("Continuous"));
 
-            AssertSuccessfulResult(InvokeResolve(resolver, "ResolveFloat", context, invalidModeSpec), 6.0f);
+            AssertFailedResult(InvokeResolve(resolver, "ResolveFloat", context, invalidModeSpec), "InvalidEntity");
 
             SetFieldValue(invalidModeSpec, "failurePolicy", GetReactiveFailurePolicy("UseFallback"));
             SetFieldValue(invalidModeSpec, "fallbackValue", 3.25f);
@@ -280,7 +278,7 @@ namespace BC.Base.Tests
         {
             object sceneKernel = CreateConfiguredSceneKernel();
             object resolver = CreateResolver(sceneKernel);
-            object actor = CreateEntityRef(90u, 1);
+            object actor = Activator.CreateInstance(GetTypeByFullName("BC.Base.EntityRef"));
             object trigger = CreateEntityRef(91u, 2);
             object context = CreateEvalContext(sceneKernel, actor, trigger);
             object entityKey = GetStaticFieldValue("BC.Base.ValueKeys+Runtime", "FocusEntity");
