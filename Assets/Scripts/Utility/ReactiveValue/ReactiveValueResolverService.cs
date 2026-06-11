@@ -646,11 +646,6 @@ namespace BC.Base
             in ReactiveEvalContext context,
             in ReactiveKernelValueSource source)
         {
-            if (source.StoreScope == ReactiveKernelValueStoreScope.SceneKernel)
-            {
-                return ResolveSceneKernelEntityStoreValue<T>(context, source);
-            }
-
             IKernelValueStoreService kernelValueStore = context.GetKernelValueStore(source.StoreScope);
 
             if (kernelValueStore == null)
@@ -682,11 +677,6 @@ namespace BC.Base
             in ReactiveEvalContext context,
             in ReactiveKernelValueSource source)
         {
-            if (source.StoreScope == ReactiveKernelValueStoreScope.SceneKernel)
-            {
-                return ResolveSceneKernelEntityStoreHandle<T>(context, source);
-            }
-
             IKernelValueStoreService kernelValueStore = context.GetKernelValueStore(source.StoreScope);
 
             if (kernelValueStore == null)

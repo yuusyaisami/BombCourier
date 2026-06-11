@@ -43,10 +43,17 @@ namespace BC.Base
                 return;
 
             var list = (List<Action<TEvent>>)listObject;
+            // Publish 中に handler が購読/解除しても、今回通知する候補は publish 開始時点で固定する。
+            // そのうえで、呼び出し直前に解除済みかを確認し、解除された handler は同じ publish 内でも呼ばない。
+            // この policy により「新規購読は次回から」「解除は即時反映」という挙動を kernel/entity で統一する。
+            Action<TEvent>[] snapshot = list.ToArray();
 
-            for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < snapshot.Length; i++)
             {
-                list[i].Invoke(kernelEvent);
+                Action<TEvent> handler = snapshot[i];
+
+                if (list.Contains(handler))
+                    handler.Invoke(kernelEvent);
             }
         }
 
@@ -106,10 +113,17 @@ namespace BC.Base
                 return;
 
             var list = (List<Action<TEvent>>)listObject;
+            // Kernel event と同じ dispatch policy を使う。
+            // Entity event だけ live list 走査にすると、同じ gameplay event でも
+            // subscribe/unsubscribe のタイミングで通知対象が変わってしまう。
+            Action<TEvent>[] snapshot = list.ToArray();
 
-            for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < snapshot.Length; i++)
             {
-                list[i].Invoke(entityEvent);
+                Action<TEvent> handler = snapshot[i];
+
+                if (list.Contains(handler))
+                    handler.Invoke(entityEvent);
             }
         }
 

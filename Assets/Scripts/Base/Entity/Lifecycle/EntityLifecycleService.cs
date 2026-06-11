@@ -15,7 +15,18 @@ namespace BC.Base
         {
             this.kernel = kernel;
             SceneRegistry = kernel.EntitiesRegistry;
-            ApplicationRegistry = ApplicationKernelMB.Instance.Kernel.ApplicationEntityRegistry;
+            // ApplicationKernel は通常 [DefaultExecutionOrder(-10000)] で先に起動するが、
+            // GameScene を単体起動した場合 (editor 直接再生 / 一部 PlayMode test) では存在しないことがある。
+            // 他の参照箇所 (ScopedEntityResolveUtility, EntityComponentResolverService) と同様に null を許容し、
+            // 欠落時は明示的に診断する。ここで生 NRE を出すと SceneKernel 構築全体が壊れるため避ける。
+            ApplicationRegistry = ApplicationKernelMB.Instance != null
+                ? ApplicationKernelMB.Instance.Kernel?.ApplicationEntityRegistry
+                : null;
+            if (ApplicationRegistry == null)
+            {
+                UnityEngine.Debug.LogWarning(
+                    $"{nameof(EntityLifecycleService)}: ApplicationEntityRegistry is unavailable (ApplicationKernel not initialized). DontDestroyOnLoad entities will fall back to scene registration.");
+            }
             kernelEvents = kernel.KernelEvents;
             entityEvents = kernel.EntityEvents;
         }
@@ -36,12 +47,21 @@ namespace BC.Base
 
             EntityRef entity;
 
-            if (request.Flags.HasFlag(EntityFlags.DontDestroyOnLoad))
+            if (request.Flags.HasFlag(EntityFlags.DontDestroyOnLoad) && ApplicationRegistry != null)
             {
                 entity = ApplicationRegistry.Register(request);
             }
             else
             {
+                // DDOL を要求されたが ApplicationRegistry が無い場合は honor できないため、
+                // 既存の DDOL ダウングレード方針 (上の分岐) と同じく明示エラーの上で scene 登録へ落とす。
+                if (request.Flags.HasFlag(EntityFlags.DontDestroyOnLoad))
+                {
+                    UnityEngine.Debug.LogError(
+                        $"{nameof(EntityLifecycleService)}: cannot honor {nameof(EntityFlags.DontDestroyOnLoad)} for '{request.GameObject.name}' because ApplicationEntityRegistry is unavailable. Registering into scene scope instead.",
+                        request.GameObject);
+                }
+
                 entity = SceneRegistry.Register(request);
             }
 
@@ -60,7 +80,7 @@ namespace BC.Base
 
             bool removed = SceneRegistry.Unregister(entity);
 
-            if (!removed)
+            if (!removed && ApplicationRegistry != null)
             {
                 removed = ApplicationRegistry.Unregister(entity);
             }

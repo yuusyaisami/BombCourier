@@ -141,6 +141,12 @@ namespace BC.Base
 
         private EntityValueStore GetRequiredStore(EntityRef entity)
         {
+            // EntityValueStore は Entity の世代付き参照を契約にしている。
+            // default(EntityRef) を許すと EntityId=0 の store が作られ、target 解決漏れを
+            // 「成功した書き込み」に見せてしまうため、入口で明示的に落とす。
+            if (!entity.IsValid)
+                throw new InvalidOperationException($"Entity value store requires a valid entity. Entity={entity}");
+
             if (!storesByEntityId.TryGetValue(entity.EntityId, out EntityValueStore store))
             {
                 store = new EntityValueStore(entity);
@@ -148,7 +154,7 @@ namespace BC.Base
             }
 
             if (!store.Entity.Equals(entity))
-                throw new System.InvalidOperationException($"Entity version mismatch. Entity={entity}");
+                throw new InvalidOperationException($"Entity version mismatch. Entity={entity}");
 
             return store;
         }

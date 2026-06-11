@@ -17,6 +17,10 @@ namespace BC.Base
 
         // EntityValueStore は個別 Entity の状態を扱う。
         public ValueStoreService EntityValueStore { get; set; }
+        // KernelValueStore は scene 全体で共有する非 Entity 状態を扱う。
+        // Scene 全体のフラグを SceneKernel 自身の EntityValueStore に逃がすと、
+        // invalid EntityRef や SceneKernel entity の世代更新に巻き込まれるため、明示的に分離する。
+        public KernelValueStoreService KernelValueStore { get; set; }
         // scene 内の生成・解決・反応値・action・camera をまとめて持つ。
         public EntitySpawnerService Spawner { get; set; }
         public EntityComponentResolverService EntityComponents { get; set; }
@@ -64,6 +68,7 @@ namespace BC.Base
             Tutorials?.Stop();
             ReactiveValues?.Clear();
             EntityComponents?.Clear();
+            KernelValueStore?.Clear();
             EntityValueStore?.Clear();
             Events?.Clear();
         }

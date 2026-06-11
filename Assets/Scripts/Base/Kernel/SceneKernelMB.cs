@@ -29,17 +29,29 @@ namespace BC.Base
                 return;
             }
 
+            // ValueStoreMB 未配線でも scene 構築を止めないための degraded fallback。
+            // 失敗を隠すためではなく、警告つきで明示的に続行する domain contract として許容する。
+            // 本番配線では ValueStoreMB を必ず置き、この警告が出たら配線漏れとして扱う。
             if (kernel.EntityValueStore == null)
             {
                 kernel.EntityValueStore = new ValueStoreService();
                 Debug.LogWarning($"{nameof(SceneKernelMB)}: {nameof(SceneKernel.EntityValueStore)} was not installed. Auto-created fallback store. Add {nameof(ValueStoreMB)} to targetObjects for explicit wiring.", this);
             }
+
+            if (kernel.KernelValueStore == null)
+            {
+                // Scene scope の ReactiveValue / Action write は KernelValueStore を要求する。
+                // EntityValueStore へ代替しないことで、scope 指定ミスを隠さず警告として残す。
+                kernel.KernelValueStore = new KernelValueStoreService();
+                Debug.LogWarning($"{nameof(SceneKernelMB)}: {nameof(SceneKernel.KernelValueStore)} was not installed. Auto-created fallback store. Add {nameof(ValueStoreMB)} to targetObjects for explicit wiring.", this);
+            }
         }
 
         // SceneKernel はここから毎フレーム tick される。
+        // 破棄処理 (OnDestroy) との競合や構築失敗時に NRE を出さないよう null をガードする。
         private void Update()
         {
-            kernel.Tick(Time.deltaTime);
+            kernel?.Tick(Time.deltaTime);
         }
 
         // シーン終了時は kernel を破棄し、保持している service を順に解放する。

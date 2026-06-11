@@ -45,7 +45,10 @@ namespace BC.Base
         public readonly IKernelValueStoreService ApplicationKernelValueStore;
 
         public ReactiveEvalContext(SceneKernel sceneKernel, EntityRef actorEntity, EntityRef triggerEntity)
-            : this(sceneKernel, actorEntity, triggerEntity, null, ApplicationKernelMB.Instance?.Kernel, ApplicationKernelMB.Instance?.Kernel?.KernelValueStore)
+            // SceneKernel scope は SceneKernel.KernelValueStore を正とする。
+            // 以前のように SceneKernel entity の EntityValueStore へ寄せると、
+            // entity 解決失敗と scene-wide value の区別が消える。
+            : this(sceneKernel, actorEntity, triggerEntity, sceneKernel?.KernelValueStore, ApplicationKernelMB.Instance?.Kernel, ApplicationKernelMB.Instance?.Kernel?.KernelValueStore)
         {
         }
 
@@ -75,7 +78,7 @@ namespace BC.Base
                 actionContext.SceneKernel,
                 actionContext.ActorEntity,
                 actionContext.TriggerEntity,
-                null,
+                actionContext.SceneKernel?.KernelValueStore,
                 ApplicationKernelMB.Instance?.Kernel,
                 ApplicationKernelMB.Instance?.Kernel?.KernelValueStore)
         {
@@ -85,9 +88,11 @@ namespace BC.Base
 
         public IKernelValueStoreService GetKernelValueStore(ReactiveKernelValueStoreScope scope)
         {
+            // ReactiveValue の読み取り側も Action の書き込み側も、scope enum と store を同じ対応に保つ。
+            // ここで null を返した場合は resolver 側が MissingValueStore として扱い、silent fallback しない。
             return scope switch
             {
-                ReactiveKernelValueStoreScope.SceneKernel => null,
+                ReactiveKernelValueStoreScope.SceneKernel => KernelValueStore,
                 ReactiveKernelValueStoreScope.ApplicationKernel => ApplicationKernelValueStore,
                 _ => null,
             };

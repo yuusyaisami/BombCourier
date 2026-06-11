@@ -201,6 +201,16 @@ namespace BC.ActionSystem
                         return ActionNodeStatus.Continue;
                     }
 
+                    if (TryResolveKernelValueStore(context, out KernelValueStoreService kernelValueStore))
+                    {
+                        int current = kernelValueStore.Get(resolvedKey);
+                        if (!TryApplyNumericInt(current, operand, out int next))
+                            return ActionNodeStatus.Failed;
+
+                        kernelValueStore.Set(resolvedKey, next);
+                        return ActionNodeStatus.Continue;
+                    }
+
                     if (context.EntityValueStore == null)
                         return ActionNodeStatus.Failed;
 
@@ -244,6 +254,16 @@ namespace BC.ActionSystem
                             return ActionNodeStatus.Failed;
 
                         context.LocalValueStore.Set(resolvedKey, next);
+                        return ActionNodeStatus.Continue;
+                    }
+
+                    if (TryResolveKernelValueStore(context, out KernelValueStoreService kernelValueStore))
+                    {
+                        float current = kernelValueStore.Get(resolvedKey);
+                        if (!TryApplyNumericFloat(current, operand, out float next))
+                            return ActionNodeStatus.Failed;
+
+                        kernelValueStore.Set(resolvedKey, next);
                         return ActionNodeStatus.Continue;
                     }
 
@@ -398,6 +418,12 @@ namespace BC.ActionSystem
                         return ActionNodeStatus.Continue;
                     }
 
+                    if (TryResolveKernelValueStore(context, out KernelValueStoreService kernelValueStore))
+                    {
+                        kernelValueStore.Set(resolvedKey, value);
+                        return ActionNodeStatus.Continue;
+                    }
+
                     if (context.EntityValueStore == null)
                         return ActionNodeStatus.Failed;
 
@@ -419,6 +445,20 @@ namespace BC.ActionSystem
                     Debug.LogWarning($"{nameof(SetValueStoreValueStepRuntime)} failed to write '{resolvedKey.Path}'. {exception.Message}");
                     return ActionNodeStatus.Failed;
                 }
+            }
+
+            private bool TryResolveKernelValueStore(
+                in ActionExecutionContext context,
+                out KernelValueStoreService kernelValueStore)
+            {
+                kernelValueStore = storeScope switch
+                {
+                    ValueStoreWriteStoreScope.SceneKernel => context.SceneKernel?.KernelValueStore,
+                    ValueStoreWriteStoreScope.ApplicationKernel => context.KernelValueStore,
+                    _ => null,
+                };
+
+                return kernelValueStore != null;
             }
         }
     }
