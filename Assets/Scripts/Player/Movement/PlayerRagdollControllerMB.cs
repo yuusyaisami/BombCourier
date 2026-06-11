@@ -14,6 +14,7 @@ namespace BC.Manager
     {
     }
 
+    [DefaultExecutionOrder(80)]
     public sealed class PlayerRagdollControllerMB : MonoBehaviour, IPlayerRagdollController
     {
         [SerializeField] private Animator animator;

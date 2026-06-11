@@ -142,6 +142,22 @@ namespace BC.Item
             ClearIgnoredHolderCollisions();
             isHandled = checkpoint.IsHandled;
 
+            if (objectCollider != null)
+                objectCollider.enabled = !isHandled;
+
+            if (rb != null)
+            {
+                rb.isKinematic = isHandled;
+                rb.detectCollisions = true;
+                rb.useGravity = !isHandled;
+
+                if (isHandled)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+            }
+
             if (isHandled && transform.parent != null)
                 ConfigureHeldHolderCollisionIgnore(transform.parent);
         }

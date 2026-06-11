@@ -44,6 +44,15 @@ namespace BC.Manager
             Instance = this;
         }
 
+        // scene reload 時に static 参照が破棄済みオブジェクトを指し続けないよう、破棄時に畳む。
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         // 現在の stage instance を保持し、次回 Load 時に安全に破棄する。
         private Transform stageInstance;
         [SerializeField] private StageRegistrySO stageData; // ステージデータのScriptableObject
@@ -53,9 +62,26 @@ namespace BC.Manager
         // index 指定で stage prefab を instantiate し、その場で runtime 参照へ変換する。
         public StageLoadResult LoadStage(int stageIndex)
         {
+            // stageData は [SerializeField]。未配線のまま LoadStage されると stageData.StageData で
+            // NRE になり原因が追いにくいため、明示的に診断して空結果を返す。
+            if (stageData == null)
+            {
+                Debug.LogError($"{nameof(StageManagerMB)}: {nameof(stageData)} ({nameof(StageRegistrySO)}) is not assigned.", this);
+                return CreateEmptyResult();
+            }
+
             if (stageIndex < 0 || stageIndex >= stageData.StageData.Count)
             {
                 Debug.LogError($"StageManagerMB: Invalid stage index {stageIndex}.", this);
+                return CreateEmptyResult();
+            }
+
+            StageData data = stageData.StageData[stageIndex];
+
+            // prefab 未設定だと Instantiate(null) が例外を投げるので、ここでも明示的に診断する。
+            if (data == null || data.stagePrefab == null)
+            {
+                Debug.LogError($"{nameof(StageManagerMB)}: stage prefab for index {stageIndex} is not assigned.", this);
                 return CreateEmptyResult();
             }
 
@@ -65,7 +91,6 @@ namespace BC.Manager
                 Destroy(this.stageInstance.gameObject);
             }
 
-            StageData data = stageData.StageData[stageIndex];
             Transform parent = stageRoot != null && stageRoot.gameObject.scene.name != "DontDestroyOnLoad"
                 ? stageRoot
                 : null;

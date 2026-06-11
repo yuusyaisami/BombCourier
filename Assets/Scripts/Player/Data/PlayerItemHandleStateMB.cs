@@ -129,6 +129,7 @@ namespace BC.Player
         private ValueWatchHandle<bool> canInteractHandle; // Interaction.CanInteract の監視ハンドル。
         private ValueWatchHandle<bool> fatigueInteractHandle; // 疲労インタラクト状態の監視ハンドル。
         private ICarryableItem currentlyHandledItem; // 現在持っているアイテム。
+        private BombMB subscribedHandledBomb; // 現在所持中として Exploded を購読している爆弾。
         private IEntityVelocitySource velocitySource; // 投擲速度の参照元。
         private PlayerInteractionController interactionController; // アイテム操作の入力・候補管理。
         private float emptyHandThrowPreviewTimer; // 手ぶら投擲予測の経過時間。
@@ -239,6 +240,8 @@ namespace BC.Player
 
         private void OnDestroy()
         {
+            UnsubscribeHeldBombExplosion();
+
             if (interactionController != null)
             {
                 interactionController.InteractionEvent -= HandleInteractionEvent;
@@ -314,9 +317,7 @@ namespace BC.Player
         // 所持中のアイテムに対して、ドロップ / チャージ / 投擲を切り替える。
         private void TickThrow()
         {
-            if (currentlyHandledItem == null ||
-                currentlyHandledItem.ItemTransform == null ||
-                !currentlyHandledItem.ItemTransform.gameObject.activeInHierarchy)
+            if (!IsCarryableItemAlive(currentlyHandledItem))
             {
                 ClearHeldState();
                 return;
@@ -839,8 +840,57 @@ namespace BC.Player
             if (EqualityComparer<ICarryableItem>.Default.Equals(currentlyHandledItem, item))
                 return;
 
+            UnsubscribeHeldBombExplosion();
             currentlyHandledItem = item;
+            SubscribeHeldBombExplosion(item);
             CurrentHandledItemChanged?.Invoke(currentlyHandledItem);
+        }
+
+        private void SubscribeHeldBombExplosion(ICarryableItem item)
+        {
+            if (item is not BombMB bomb)
+                return;
+
+            subscribedHandledBomb = bomb;
+            subscribedHandledBomb.Exploded += HandleHeldBombExploded;
+        }
+
+        private void UnsubscribeHeldBombExplosion()
+        {
+            if (ReferenceEquals(subscribedHandledBomb, null))
+                return;
+
+            subscribedHandledBomb.Exploded -= HandleHeldBombExploded;
+            subscribedHandledBomb = null;
+        }
+
+        private void HandleHeldBombExploded(BombMB bomb)
+        {
+            if (!ReferenceEquals(subscribedHandledBomb, bomb))
+                return;
+
+            ClearHeldState();
+        }
+
+        private static bool IsCarryableItemAlive(ICarryableItem item)
+        {
+            if (item == null)
+                return false;
+
+            if (item is UnityEngine.Object unityObject && unityObject == null)
+                return false;
+
+            Transform itemTransform;
+            try
+            {
+                itemTransform = item.ItemTransform;
+            }
+            catch (MissingReferenceException)
+            {
+                return false;
+            }
+
+            return itemTransform != null && itemTransform.gameObject.activeInHierarchy;
         }
 
         // 現在のチャージ量から投擲速度を計算する。

@@ -300,9 +300,13 @@ namespace BC.Managers
         }
 
         // 重複会話が来たら、古い処理を止めて新しい会話へ切り替える。
-        public async UniTask ShowTalk(EntityRef actor, EntityRef viewer, TalkRequestData talkRequestData)
+        public async UniTask ShowTalk(
+            EntityRef actor,
+            EntityRef viewer,
+            TalkRequestData talkRequestData,
+            CancellationToken cancellationToken = default)
         {
-            await ShowTalk(actor, actor, null, viewer, talkRequestData);
+            await ShowTalk(actor, actor, null, viewer, talkRequestData, cancellationToken);
         }
 
         public async UniTask<bool> ShowDialogue(
@@ -390,7 +394,8 @@ namespace BC.Managers
             EntityRef presentationActor,
             TalkAdapterMB presentationAdapter,
             EntityRef viewer,
-            TalkRequestData talkRequestData)
+            TalkRequestData talkRequestData,
+            CancellationToken cancellationToken = default)
         {
             talkRequestData.EnsureInlineActionFlagsInitialized();
             talkRequestData.dialogueText = await ResolveLocalizedTextAsync(
@@ -418,6 +423,15 @@ namespace BC.Managers
 
             cancellationTokenSource = new CancellationTokenSource();
             CancellationTokenSource currentTalkCancellation = cancellationTokenSource;
+            // 会話は「新しい会話開始/HideTalk による内部中断」と
+            // 「Action sequence 側からの外部 cancellation」の2系統で止まる。
+            // linked token に集約して UI/typewriter/start action へ渡し、どの層で待っていても
+            // 同じ中断要求で抜けられるようにする。
+            using CancellationTokenSource linkedCancellation = cancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(currentTalkCancellation.Token, cancellationToken)
+                : CancellationTokenSource.CreateLinkedTokenSource(currentTalkCancellation.Token);
+            CancellationToken effectiveCancellation = linkedCancellation.Token;
+
             activeTalkOwnerActor = ownerActor.IsValid ? ownerActor : presentationActor;
             activeTalkPresentationActor = presentationActor.IsValid ? presentationActor : activeTalkOwnerActor;
             activeTalkPresentationAdapter = presentationAdapter;
@@ -425,16 +439,27 @@ namespace BC.Managers
             EntityRef focusTargetActor = ResolveCameraFocusActor(activeTalkPresentationActor, activeTalkOwnerActor, viewer);
             BeginConversationCameraFocus(focusTargetActor, viewer);
 
-            await ExecuteInlineActionAsync(
-                activeTalkOwnerActor,
-                viewer,
-                talkRequestData.OnStartTalkAction,
-                talkRequestData.isWaitingActionCompleted,
-                currentTalkCancellation.Token,
-                "start");
-
-            if (currentTalkCancellation.IsCancellationRequested)
+            try
             {
+                await ExecuteInlineActionAsync(
+                    activeTalkOwnerActor,
+                    viewer,
+                    talkRequestData.OnStartTalkAction,
+                    talkRequestData.isWaitingActionCompleted,
+                    effectiveCancellation,
+                    "start");
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // 外部 cancellation は HideTalk を経由しないため、ここで UI と会話所有状態を
+                // 明示的に戻す。これをしないと入力ロックや camera focus が残り得る。
+                await CleanupExternallyCanceledTalkAsync(currentTalkCancellation);
+                throw;
+            }
+
+            if (effectiveCancellation.IsCancellationRequested)
+            {
+                await ThrowIfExternalTalkCancellationAsync(currentTalkCancellation, cancellationToken);
                 return;
             }
 
@@ -446,13 +471,23 @@ namespace BC.Managers
                 talkSystemUIManagerMB.SetCharacterSound(characterSound);
             }
 
-            await talkSystemUIManagerMB.ShowTalk(talkRequestData, talkSpeakerName, currentTalkCancellation.Token);
+            try
+            {
+                await talkSystemUIManagerMB.ShowTalk(talkRequestData, talkSpeakerName, effectiveCancellation);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // 表示 tween / typewriter 待機中の cancellation も、start action と同じ cleanup 契約に揃える。
+                await CleanupExternallyCanceledTalkAsync(currentTalkCancellation);
+                throw;
+            }
 
             // Typewriter 側 callback が取りこぼされても、ShowTalk 復帰時点で speaking 表現は必ず落とす。
             NotifyTalkTypingCompleted();
 
-            if (currentTalkCancellation.IsCancellationRequested)
+            if (effectiveCancellation.IsCancellationRequested)
             {
+                await ThrowIfExternalTalkCancellationAsync(currentTalkCancellation, cancellationToken);
                 return;
             }
 
@@ -467,6 +502,50 @@ namespace BC.Managers
                 CancellationToken.None,
                 "complete");
 
+        }
+
+        private async UniTask ThrowIfExternalTalkCancellationAsync(
+            CancellationTokenSource currentTalkCancellation,
+            CancellationToken externalCancellation)
+        {
+            if (!externalCancellation.IsCancellationRequested)
+                return;
+
+            // effectiveCancellation だけを見ると、内部 HideTalk 由来の cancel と区別できない。
+            // 呼び出し元へ OperationCanceledException を返すのは、Action 側が明示的に止めた場合だけにする。
+            await CleanupExternallyCanceledTalkAsync(currentTalkCancellation);
+            externalCancellation.ThrowIfCancellationRequested();
+        }
+
+        private async UniTask CleanupExternallyCanceledTalkAsync(CancellationTokenSource currentTalkCancellation)
+        {
+            // すでに次の会話が開始されている場合、古い cancellation の cleanup で
+            // 新しい会話の UI / camera focus / input lock を壊さない。
+            if (!ReferenceEquals(cancellationTokenSource, currentTalkCancellation))
+                return;
+
+            currentTalkCancellation.Cancel();
+            currentTalkCancellation.Dispose();
+            cancellationTokenSource = null;
+
+            // 外部 cancellation では HideTalk request data が存在しない。
+            // tween を待たず即時に閉じ、Action 側の中断から1フレーム以上 UI が残る事故を避ける。
+            if (talkSystemUIManagerMB != null)
+                await talkSystemUIManagerMB.HideTalk(0f);
+
+            talkChoiceUIManagerMB?.ClearChoicesImmediate();
+
+            // TalkAdapter は「表示中の talk state」を持つため、UIを閉じるだけでは足りない。
+            // HideTalk と同じ通知を送り、animation parameter / presentation state を戻す。
+            HideTalkRequestData cancelHideRequest = HideTalkRequestData.Default;
+            cancelHideRequest.duration = 0f;
+            ResolveActivePresentationAdapter()?.HandleTalkHidden(cancelHideRequest);
+
+            EndConversationCameraFocus();
+            ClearDialogueInputLock();
+            activeTalkOwnerActor = default;
+            activeTalkPresentationActor = default;
+            activeTalkPresentationAdapter = null;
         }
 
         public void RegisterTalkAdapter(CharacterIdReference characterId, EntityRef entity, TalkAdapterMB adapter)

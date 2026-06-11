@@ -45,6 +45,8 @@ namespace BC.Camera
         private ValueStoreService valueStore;
         private EntityRef entityRef;
         private ValueWatchHandle<bool> canLookByInputHandle;
+        private InputAction boundLookInputAction;
+        private InputDevice lastLookInputDevice;
         // ApplicationKernel.KernelValueStore 経由で Setting 画面から書き込まれる感度・反転設定。
         // null の場合は Inspector のフォールバック値を使う。
         private ValueWatchHandle<float> appSensitivityHandle;
@@ -77,7 +79,7 @@ namespace BC.Camera
 
         private void OnEnable()
         {
-            ResolveLookInputAction()?.Enable();
+            BindLookInputAction();
             RegisterCameraTarget();
         }
 
@@ -94,7 +96,7 @@ namespace BC.Camera
 
             Vector2 look = resolvedLookAction.ReadValue<Vector2>();
 
-            bool isMouse = Mouse.current != null && Mouse.current.delta.ReadValue() == look;
+            bool isPointerInput = IsPointerLookDevice(ResolveLookInputDevice(resolvedLookAction));
 
             float deltaYaw;
             float deltaPitch;
@@ -106,7 +108,7 @@ namespace BC.Camera
                 ? appInvertYHandle.CurrentValue
                 : PlayerPrefs.GetInt(KeyInvertYAxis, invertY ? 1 : 0) == 1;
 
-            if (isMouse)
+            if (isPointerInput)
             {
                 deltaYaw = look.x * effectiveSensitivity;
                 deltaPitch = look.y * effectiveSensitivity;
@@ -256,9 +258,59 @@ namespace BC.Camera
 
         private void OnDisable()
         {
-            ResolveLookInputAction()?.Disable();
+            UnbindLookInputAction();
 
             CameraManager.Instance?.UnregisterThirdPersonTarget(cameraTarget);
+        }
+
+        private void BindLookInputAction()
+        {
+            InputAction resolvedAction = ResolveLookInputAction();
+            if (resolvedAction == null)
+                return;
+
+            if (boundLookInputAction == resolvedAction)
+            {
+                boundLookInputAction.Enable();
+                return;
+            }
+
+            UnbindLookInputAction();
+            boundLookInputAction = resolvedAction;
+            boundLookInputAction.performed += HandleLookInputPerformed;
+            boundLookInputAction.started += HandleLookInputPerformed;
+            boundLookInputAction.Enable();
+        }
+
+        private void UnbindLookInputAction()
+        {
+            if (boundLookInputAction == null)
+                return;
+
+            boundLookInputAction.performed -= HandleLookInputPerformed;
+            boundLookInputAction.started -= HandleLookInputPerformed;
+            boundLookInputAction.Disable();
+            boundLookInputAction = null;
+            lastLookInputDevice = null;
+        }
+
+        private void HandleLookInputPerformed(InputAction.CallbackContext context)
+        {
+            InputDevice device = context.control != null ? context.control.device : null;
+            if (device != null)
+                lastLookInputDevice = device;
+        }
+
+        private InputDevice ResolveLookInputDevice(InputAction action)
+        {
+            return action != null && action.activeControl != null
+                ? action.activeControl.device
+                : lastLookInputDevice;
+        }
+
+        private static bool IsPointerLookDevice(InputDevice device)
+        {
+            return device is Pointer;
         }
 
         // 参照が崩れても Look 以外を読まないよう、同じ asset 内から期待アクション名を引き直す。

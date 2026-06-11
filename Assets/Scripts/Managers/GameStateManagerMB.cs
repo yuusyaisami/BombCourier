@@ -50,9 +50,16 @@ namespace BC.Manager
         {
             _stateMachine.ChangeState(newState);
         }
-        private void Update()
-        {
 
+        // 1 シーン 1 インスタンス前提なので、破棄時に static 参照を必ず畳む。
+        // これを怠ると scene reload 直後に Instance が破棄済みオブジェクトを指し続け、
+        // 参照側が Unity の fake-null 挙動に依存する不安定な状態になる。
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
     }
 }

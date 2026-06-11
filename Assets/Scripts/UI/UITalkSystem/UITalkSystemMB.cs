@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using BC.Audio;
 using BC.Base;
@@ -178,7 +179,22 @@ namespace BC.UI
                     canvasGroup.alpha = 1f;
                 }
 
-                await TalkRoot.DOScaleY(1f, 0.3f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
+                // 外部 cancellation や HideTalk が同じ Transform tween を触るため、
+                // 前回の出現 tween を残したまま次の tween を積まない。
+                TalkRoot.DOKill();
+                Tween showTween = TalkRoot.DOScaleY(1f, 0.3f).SetEase(Ease.OutBack);
+
+                try
+                {
+                    await showTween.WithCancellation(cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // DOTween の tween が残ると次の会話表示で scale が遅れて戻る。
+                    // cancellation は呼び出し元へ返しつつ、UI 側の work はここで止め切る。
+                    showTween.Kill();
+                    throw;
+                }
 
                 if (canvasGroup != null)
                 {
@@ -316,7 +332,19 @@ namespace BC.UI
 
             StopNextIndicator();
 
-            await TalkRoot.DOScaleY(0f, duration).SetEase(Ease.InBack).AsyncWaitForCompletion();
+            TalkRoot.DOKill();
+
+            if (duration <= 0f)
+            {
+                Vector3 scale = TalkRoot.localScale;
+                scale.y = 0f;
+                TalkRoot.localScale = scale;
+            }
+            else
+            {
+                await TalkRoot.DOScaleY(0f, duration).SetEase(Ease.InBack).AsyncWaitForCompletion();
+            }
+
             isShowingTalk = false;
             bodyTextCompleted = false;
             currentDialogueText = string.Empty;

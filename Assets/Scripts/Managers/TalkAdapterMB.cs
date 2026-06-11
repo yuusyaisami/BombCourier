@@ -287,7 +287,7 @@ namespace BC.Managers
 
             try
             {
-                await talkSystemManager.ShowTalk(ownerActor, presentationActor, this, viewer, requestData);
+                await talkSystemManager.ShowTalk(ownerActor, presentationActor, this, viewer, requestData, cancellationToken);
                 completed = true;
                 return true;
             }

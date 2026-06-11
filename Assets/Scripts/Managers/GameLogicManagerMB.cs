@@ -414,9 +414,19 @@ namespace BC.Manager
             UINavigationBootstrap.EnsureConfigured();
 
             // scene kernel を起点に、ゲーム進行と state machine の接続を作る。
-            sceneKernel = transform.GetComponentInChildren<SceneKernelMB>().Kernel;
+            // SceneKernelMB が無い構成 (配線ミス) では NRE で全体を止めず、明示的に診断して中断する。
+            SceneKernelMB sceneKernelMB = transform.GetComponentInChildren<SceneKernelMB>();
+            if (sceneKernelMB == null)
+            {
+                Debug.LogError($"{nameof(GameLogicManagerMB)}: {nameof(SceneKernelMB)} not found in children. Game logic cannot start.", this);
+                return;
+            }
+            sceneKernel = sceneKernelMB.Kernel;
+
             GameStateManagerMB stateManager = GameStateManagerMB.Instance;
-            gameLogicManagerRef = GetComponent<EntityMB>() != null ? GetComponent<EntityMB>().Entity : default;
+
+            EntityMB gameLogicEntity = GetComponent<EntityMB>();
+            gameLogicManagerRef = gameLogicEntity != null ? gameLogicEntity.Entity : default;
 
             if (stateManager == null)
             {

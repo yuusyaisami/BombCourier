@@ -147,6 +147,7 @@ namespace BC.Player
 
         private void RefreshCandidates()
         {
+            PruneDestroyedCarryableAdapters();
             candidates.Clear();
             candidateKeys.Clear();
             currentBestInteractable = null;
@@ -365,6 +366,41 @@ namespace BC.Player
             }
 
             return adapter;
+        }
+
+        private void PruneDestroyedCarryableAdapters()
+        {
+            if (carryableAdapters.Count == 0)
+                return;
+
+            bool removedAny = false;
+
+            foreach (KeyValuePair<MonoBehaviour, CarryableItemInteractableAdapter> pair in carryableAdapters)
+            {
+                if (pair.Key == null)
+                {
+                    removedAny = true;
+                    break;
+                }
+            }
+
+            if (!removedAny)
+                return;
+
+            Dictionary<MonoBehaviour, CarryableItemInteractableAdapter> aliveAdapters = new(carryableAdapters.Count);
+
+            foreach (KeyValuePair<MonoBehaviour, CarryableItemInteractableAdapter> pair in carryableAdapters)
+            {
+                if (pair.Key != null)
+                    aliveAdapters.Add(pair.Key, pair.Value);
+            }
+
+            carryableAdapters.Clear();
+
+            foreach (KeyValuePair<MonoBehaviour, CarryableItemInteractableAdapter> pair in aliveAdapters)
+            {
+                carryableAdapters.Add(pair.Key, pair.Value);
+            }
         }
 
         private static UnityEngine.Object GetInteractableKey(IInteractionTarget interactable)

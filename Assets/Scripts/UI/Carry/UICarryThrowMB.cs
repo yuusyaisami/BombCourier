@@ -1,4 +1,3 @@
-using System.Threading;
 using BC.Base;
 using BC.Manager;
 using BC.Player;
@@ -16,7 +15,7 @@ namespace BC.UI
         private PlayerItemHandleStateMB itemHandState;
         private bool isThrowing => itemHandState != null && itemHandState.IsThrowCharging;
         private bool isVisible;
-        private CancellationTokenSource tokenSource;
+        private Tween visibilityTween;
         private void Reset()
         {
             throwPowerSlider = GetComponentInChildren<Slider>();
@@ -45,9 +44,8 @@ namespace BC.UI
                 gameLogic.OnPlayerSpawned -= SetPlayerMB;
 
             UnbindItemHandleState();
-            tokenSource?.Cancel();
-            tokenSource?.Dispose();
-            tokenSource = null;
+            visibilityTween?.Kill();
+            visibilityTween = null;
         }
         private void Update()
         {
@@ -75,29 +73,15 @@ namespace BC.UI
 
             SyncVisibility(isThrowing);
         }
-        private async void UpdateThrowPowerSlider(CancellationToken token)
-        {
-            while (isThrowing && !token.IsCancellationRequested)
-            {
-                throwPowerSlider.value = itemHandState.CurrentThrowChargeRatio;
-                await System.Threading.Tasks.Task.Yield();
-            }
-        }
-
         private void StartThrowCharge()
         {
             throwPowerSlider.value = 0f;
             SyncVisibility(true);
-            tokenSource?.Cancel(); // 既存の更新タスクがあればキャンセル
-            tokenSource = new CancellationTokenSource();
-            UpdateThrowPowerSlider(tokenSource.Token);
         }
         private void EndThrowCharge()
         {
             SyncVisibility(false);
             throwPowerSlider.value = 0f;
-            tokenSource?.Cancel();
-            tokenSource = null;
         }
 
         private void SyncVisibility(bool visible)
@@ -106,7 +90,11 @@ namespace BC.UI
                 return;
 
             isVisible = visible;
-            canvasGroup.DOFade(visible ? 1f : 0f, 0.2f).SetEase(Ease.OutSine);
+            visibilityTween?.Kill();
+            visibilityTween = canvasGroup
+                .DOFade(visible ? 1f : 0f, 0.2f)
+                .SetEase(Ease.OutSine)
+                .OnComplete(() => visibilityTween = null);
         }
 
         private void UnbindItemHandleState()

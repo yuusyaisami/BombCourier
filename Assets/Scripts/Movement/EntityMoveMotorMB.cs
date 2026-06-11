@@ -753,7 +753,7 @@ namespace BC.Base
             if (!correction.HasCorrection || bodyRigidbody == null)
                 return;
 
-            bodyRigidbody.position += correction.Delta;
+            bodyRigidbody.MovePosition(bodyRigidbody.position + correction.Delta);
         }
 
         private Vector3 GetBodyVelocity()
