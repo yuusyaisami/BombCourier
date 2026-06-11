@@ -5,6 +5,8 @@ using NUnit.Framework;
 
 namespace BC.Base.Tests
 {
+    // ValueStoreService の invalid EntityRef contract を固定する regression test。
+    // reflection を使うのは、テスト asmdef の参照関係に依存せず runtime public API の挙動だけを見るため。
     public sealed class ValueStoreServiceContractTests
     {
         private const string EntityRefTypeName = "BC.Base.EntityRef";

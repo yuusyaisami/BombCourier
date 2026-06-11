@@ -646,6 +646,9 @@ namespace BC.Base
             in ReactiveEvalContext context,
             in ReactiveKernelValueSource source)
         {
+            // KernelValueStore は StoreScope で lifetime を選ぶ。
+            // SceneKernel scope を EntityValueStore にフォールバックさせると、scene-wide value の未配線を
+            // entity target 解決の問題として隠してしまうため、ここでは kernel store だけを見る。
             IKernelValueStoreService kernelValueStore = context.GetKernelValueStore(source.StoreScope);
 
             if (kernelValueStore == null)
@@ -677,6 +680,8 @@ namespace BC.Base
             in ReactiveEvalContext context,
             in ReactiveKernelValueSource source)
         {
+            // Watched binding でも snapshot read と同じ store 解決を使う。
+            // 読み取りと購読で別 store を見ないことが、ReactiveValue の一貫性の前提になる。
             IKernelValueStoreService kernelValueStore = context.GetKernelValueStore(source.StoreScope);
 
             if (kernelValueStore == null)

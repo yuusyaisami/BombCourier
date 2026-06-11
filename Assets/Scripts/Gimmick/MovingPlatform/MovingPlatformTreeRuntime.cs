@@ -198,6 +198,10 @@ namespace BC.Gimmick.MovingPlatform
                     return true;
 
                 case MovingPlatformPlaybackMode.PingPong:
+                    // 端に到達したら進行方向を反転し、1つ内側のステップへ折り返す。
+                    // 末尾(StepCount-1)で +1 が範囲外になったら direction=-1 にして currentCursor-1 へ、
+                    // 先頭(0)で -1 が範囲外になったら direction=+1 にして currentCursor+1 へ戻す。
+                    // こうして同じ端ステップを2回連続で再生せず、A→B→C→B→A→… と往復させる。
                     nextCursor = currentCursor + nextDirection;
                     if (nextCursor >= StepCount)
                     {
@@ -212,6 +216,7 @@ namespace BC.Gimmick.MovingPlatform
                         completedCycle = true;
                     }
 
+                    // StepCount==1 のときは折り返し先が範囲外になり、ここで false=「次は無い」を返す。
                     return nextCursor >= 0 && nextCursor < StepCount;
 
                 default:
@@ -1366,6 +1371,11 @@ namespace BC.Gimmick.MovingPlatform
             }
 
             float remainingTime = Mathf.Max(0f, deltaTime);
+            // 1フレーム分の remainingTime を、長さ 0 に近い極短セグメント
+            // (Wait / InlineAction / 同一座標 Move 等) を跨いで複数消費するためのループ。
+            // セグメントが万一前進しない異常時に無限ループへ陥らないよう、
+            // 1フレームあたりの処理セグメント数を 128 で安全打ち切りする
+            // (通常の足場経路でこの上限に達することはない)。
             int guard = 0;
             while (remainingTime > 0f && guard++ < 128)
             {

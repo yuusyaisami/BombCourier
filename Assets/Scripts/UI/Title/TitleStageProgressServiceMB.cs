@@ -38,6 +38,16 @@ namespace BC.UI.Title
             Instance = this;
         }
 
+        private void OnDestroy()
+        {
+            // M2 で確立した singleton 規約に合わせ、破棄時に static 参照を畳む
+            // (title scene 再ロード後に Instance が破棄済みオブジェクトを指し続けないように)。
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         /// <summary>インデックス <paramref name="stageIndex"/> が遊べる状態かどうかを返す。</summary>
         public bool IsUnlocked(int stageIndex)
         {
@@ -113,6 +123,11 @@ namespace BC.UI.Title
             PlayerPrefs.Save();
         }
 
+        // ステージクリア結果を保存する。報酬フラグ(bonus / fastClear)は「一度獲得したら true のまま」の
+        // ベストエバー方式で、再挑戦で未獲得でも消さない（= 既に獲得した星を奪わない）。
+        // そのため false 上書きはせず、true のときだけ立てる。clear フラグも true で確定する。
+        // 注意: PlayerPrefs.Save() は void で失敗を検知できないが、解放判定は IsClearedPersisted(N-1)
+        // からも導けるため、単発の保存失敗は「ロック側」へ縮退する（誤って解放しっぱなしにはならない）。
         public static void SaveStageResultPersisted(int stageIndex, bool isBonusItem, bool isFastClear)
         {
             if (stageIndex < 0)

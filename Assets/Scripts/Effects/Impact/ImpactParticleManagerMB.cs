@@ -133,7 +133,10 @@ namespace BC.Effects.Impact
                     if (particle != null)
                         Destroy(particle.gameObject);
                 },
-                false,
+                // collectionCheck（第5引数）。同一インスタンスの二重 Release を検出して例外化する。
+                // Unity の既定値でもある。Release 経路は releaseWhenStopped を必ず落とすため二重返却は
+                // 起きない想定だが、将来の回帰を「黙ってプール破壊」させず即座に顕在化させるため有効化する。
+                true,
                 defaultCapacity,
                 Mathf.Max(1, maxPoolSize));
         }

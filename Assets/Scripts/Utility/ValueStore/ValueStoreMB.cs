@@ -18,9 +18,12 @@ namespace BC.Base
         {
             if (kernel is SceneKernel sceneKernel)
             {
+                // SceneKernel では Entity scope と Kernel scope を別 store として公開する。
+                // Action/ReactiveValue の scope 名と実保存先を1対1にして、authoring ミスを追いやすくする。
                 entityValueStore = new ValueStoreService();
                 sceneKernel.EntityValueStore = entityValueStore;
-                kernelValueStore = null;
+                kernelValueStore = new KernelValueStoreService();
+                sceneKernel.KernelValueStore = kernelValueStore;
             }
             else if (kernel is ApplicationKernel applicationKernel)
             {

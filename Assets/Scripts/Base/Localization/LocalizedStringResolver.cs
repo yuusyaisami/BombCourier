@@ -23,6 +23,8 @@ namespace BC.Localization
         {
             fallback ??= string.Empty;
 
+            // table / key が未指定なのは「そもそも要求していない」ケース（呼び出し側が fallback を意図）。
+            // これは authoring 漏れではないので、警告は出さず静かに fallback を返す。
             if (table.ReferenceType == TableReference.Type.Empty || string.IsNullOrWhiteSpace(key))
                 return fallback;
 
@@ -30,12 +32,21 @@ namespace BC.Localization
             {
                 var handle = LocalizationSettings.StringDatabase.GetTableAsync(table);
                 StringTable stringTable = handle.IsDone ? handle.Result : await handle.Task;
+
+                // 以降の「table が引けない / key が無い」は authoring/配線の不足を意味する。
+                // fallback で画面は成立してしまい欠落が見えなくなるため、検出可能にする目的で警告する。
                 if (stringTable == null)
+                {
+                    Debug.LogWarning($"{nameof(LocalizedStringResolver)}: string table '{table}' was not found; using fallback (key={key}).");
                     return fallback;
+                }
 
                 StringTableEntry entry = stringTable.GetEntry(key);
                 if (entry == null)
+                {
+                    Debug.LogWarning($"{nameof(LocalizedStringResolver)}: key '{key}' is missing in table '{table}'; using fallback.");
                     return fallback;
+                }
 
                 string localized = entry.GetLocalizedString();
                 return string.IsNullOrEmpty(localized) ? fallback : localized;

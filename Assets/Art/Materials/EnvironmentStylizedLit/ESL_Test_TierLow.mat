@@ -56,11 +56,26 @@ Material:
     - _Cull: 2
     - _Cutoff: 0.5
     - _DebugView: 0
+    - _DstBlend: 0
     - _EdgeSheenPower: 2.5
     - _EdgeSheenStrength: 0
+    - _EdgeWidth: 1
     - _EmissionStrength: 0
+    - _FaceAlpha: 1
     - _IndirectStrength: 0.7
     - _IndirectStylizeStrength: 0.35
+    - _LightBandEmissionAdditionalWeight: 1
+    - _LightBandEmissionBandStepBlend: 1
+    - _LightBandEmissionEnabled: 0
+    - _LightBandEmissionFeather: 0.08
+    - _LightBandEmissionGradientInfluence: 0
+    - _LightBandEmissionIntensity: 2
+    - _LightBandEmissionMax: 1
+    - _LightBandEmissionMin: 0.55
+    - _LightBandEmissionResponse: 2
+    - _LightBandEmissionSpecialMaskInfluence: 0
+    - _LightBandEmissionStepMax: 5
+    - _LightBandEmissionStepMin: 3
     - _LightBandNoiseScale: 0.9
     - _LightBandNoiseStrength: 0
     - _LightStepCount: 3
@@ -74,11 +89,19 @@ Material:
     - _ShadowColorBlend: 0.6
     - _ShadowInfluence: 1
     - _ShadowSoftFill: 0.2
+    - _ShadowStrength: 0.9
+    - _SimpleBoostEmissionEnabled: 0
+    - _SimpleBoostEmissionIntensity: 4
+    - _SimpleBoostFresnelInvert: 0
+    - _SimpleBoostFresnelPower: 2
+    - _SimpleBoostFresnelStrength: 1
     - _Smoothness: 0.35
     - _SpecularMode: 1
     - _SpecularStepCount: 3
     - _SpecularStepSmoothness: 0.1
     - _SpecularStrength: 0.16
+    - _SrcBlend: 1
+    - _SurfaceMode: 0
     - _TriplanarBaseMapEnabled: 0
     - _TriplanarBlendSharpness: 4
     - _TriplanarNoiseEnabled: 0
@@ -97,6 +120,7 @@ Material:
     - _WorldYGradientMin: 0
     - _WorldYGradientStrength: 0
     - _WrapLighting: 0.14
+    - _ZWrite: 1
     m_Colors:
     - _AmbientBottomColor: {r: 0.23, g: 0.2, b: 0.18, a: 1}
     - _AmbientSideColor: {r: 0.36, g: 0.4, b: 0.48, a: 1}
@@ -106,13 +130,16 @@ Material:
     - _BounceDirection: {r: 0, g: 1, b: 0, a: 0}
     - _CavityColor: {r: 0.68, g: 0.73, b: 0.82, a: 1}
     - _DeepShadowColor: {r: 0.33999997, g: 0.39999998, b: 0.56, a: 1}
+    - _EdgeColor: {r: 1, g: 1, b: 1, a: 1}
     - _EdgeSheenColor: {r: 1, g: 0.96999997, b: 0.92, a: 1}
     - _EmissionColor: {r: 0.3, g: 0.75, b: 1, a: 1}
     - _HighlightColor: {r: 1, g: 0.97999996, b: 0.94, a: 1}
     - _IndirectShadowColor: {r: 0.72, g: 0.79, b: 0.9, a: 1}
+    - _LightBandEmissionColor: {r: 1.4, g: 1.2, b: 1, a: 1}
     - _LightColor: {r: 1, g: 0.96, b: 0.9, a: 1}
     - _MidColor: {r: 0.8399999, g: 0.88, b: 0.93, a: 1}
     - _ShadowColor: {r: 0.56, g: 0.63, b: 0.78999996, a: 1}
+    - _SimpleBoostEmissionColor: {r: 1, g: 0.95, b: 0.9, a: 1}
     - _SpecularColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     - _WorldYGradientBottomColor: {r: 1, g: 1, b: 1, a: 1}
     - _WorldYGradientTopColor: {r: 1, g: 1, b: 1, a: 1}

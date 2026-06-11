@@ -5,6 +5,8 @@ using NUnit.Framework;
 
 namespace BC.Base.Tests
 {
+    // この asmdef から runtime assembly を直接参照できない環境でも契約を固定できるよう、
+    // public API は reflection 経由で呼び出す。検証対象は「型名」ではなく publish 中の購読変更 policy。
     public sealed class EventServiceDispatchTests
     {
         private const string KernelEventServiceTypeName = "BC.Base.KernelEventService";

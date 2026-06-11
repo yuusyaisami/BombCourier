@@ -359,6 +359,8 @@ namespace BC.Player
             if (carryableItem is not MonoBehaviour owner)
                 return null;
 
+            // CarryableObject は IInteractionTarget を直接実装していないため adapter を挟む。
+            // adapter は owner MonoBehaviour を key にして再利用し、毎 frame の候補探索で割り当てを増やさない。
             if (!carryableAdapters.TryGetValue(owner, out CarryableItemInteractableAdapter adapter))
             {
                 adapter = new CarryableItemInteractableAdapter(owner, carryableItem);
@@ -373,6 +375,8 @@ namespace BC.Player
             if (carryableAdapters.Count == 0)
                 return;
 
+            // Dictionary は Unity fake-null key を自動では掃除しない。
+            // stage reload / Destroy 後に stale adapter が残ると、candidate 診断が古い owner を指す。
             bool removedAny = false;
 
             foreach (KeyValuePair<MonoBehaviour, CarryableItemInteractableAdapter> pair in carryableAdapters)
@@ -387,6 +391,8 @@ namespace BC.Player
             if (!removedAny)
                 return;
 
+            // foreach 中に Dictionary を変更しないため、alive key だけで再構築する。
+            // destroyed key が混ざった時だけ実行する cold path なので、通常の Update cost は増やさない。
             Dictionary<MonoBehaviour, CarryableItemInteractableAdapter> aliveAdapters = new(carryableAdapters.Count);
 
             foreach (KeyValuePair<MonoBehaviour, CarryableItemInteractableAdapter> pair in carryableAdapters)

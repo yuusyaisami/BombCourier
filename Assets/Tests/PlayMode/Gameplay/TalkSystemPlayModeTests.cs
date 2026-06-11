@@ -79,6 +79,8 @@ namespace BC.Gameplay.PlayModeTests
         [UnityTest]
         public System.Collections.IEnumerator ShowTalk_WithExternalCancellation_ClearsActiveTalkState()
         {
+            // pre-canceled token で ShowTalk に入り、UI 表示待機へ進む前でも
+            // manager の active state と CTS が残らないことを確認する。
             Component manager = CreateTalkSystemManager();
             GameObject talkUiRoot = new GameObject("TalkUIForCanceledShowTalk");
             createdObjects.Add(talkUiRoot);
@@ -132,6 +134,8 @@ namespace BC.Gameplay.PlayModeTests
         [UnityTest]
         public System.Collections.IEnumerator TryShowTalkAsync_WithExternalCancellation_PropagatesThroughTalkAdapter()
         {
+            // TalkAdapter 経由でも同じ外部 cancellation が manager へ届くことを確認する。
+            // ここが途切れると Action 側だけキャンセル済みで、adapter の talk activity が残る。
             Component manager = CreateTalkSystemManager();
             GameObject talkUiRoot = new GameObject("TalkUIForCanceledAdapterTalk");
             createdObjects.Add(talkUiRoot);
@@ -263,6 +267,8 @@ namespace BC.Gameplay.PlayModeTests
 
         private static object InvokeMethod(object target, string methodName, params object[] args)
         {
+            // ShowTalk には overload があり、単純な GetMethod だと AmbiguousMatchException になる。
+            // 引数の実型まで見て、テスト対象の public/internal contract を選び分ける。
             MethodInfo method = ResolveMethod(target.GetType(), methodName, args);
             Assert.IsNotNull(method, $"Expected method on {target.GetType().Name}: {methodName}");
             return method.Invoke(target, args);

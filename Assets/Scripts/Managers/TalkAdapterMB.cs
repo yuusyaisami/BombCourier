@@ -297,6 +297,8 @@ namespace BC.Managers
 
                 // ShowTalk 側で中断された場合は HideTalk が呼ばれないため、
                 // Talk 状態をここで確実に戻して状態リークを防ぐ。
+                // completed=true の通常終了では complete action / HideTalk 側の presentation reset に任せ、
+                // cancellation/例外で抜けたときだけ adapter local の activity を落とす。
                 if (!completed)
                 {
                     ResetAllConfiguredTalkAnimationParameters();

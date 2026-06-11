@@ -146,6 +146,46 @@ namespace BC.Gimmick.PressurePlate
                 SetPressed(false, contactData, triggerEntityMB);
         }
 
+        // 押下中のみ、破棄済みの占有者を掃除するための防御的スイープ。
+        // 占有コライダーが破棄されたとき Unity は通常 OnTriggerExit を送るが、
+        // 同フレーム破棄などで取りこぼすと occupants に死んだエントリが残り、
+        // 感圧板が押されっぱなしで固着してギミック進行が詰む恐れがある。
+        // 一時的な非アクティブを誤って解放しないよう、対象は「Destroy 済み(== null)」が
+        // 確実な占有者のみに限定する。押下していない間は何もしない（常時コストを避ける）。
+        private void Update()
+        {
+            if (!isPressed || occupants.Count == 0)
+                return;
+
+            PruneDestroyedOccupants();
+        }
+
+        private void PruneDestroyedOccupants()
+        {
+            // 列挙中に Dictionary を変更できないため、破棄済みキーを集めてから削除する。
+            // 破棄が無い通常フレームではリストを確保しないようにして alloc を避ける。
+            List<EntityRef> destroyedKeys = null;
+            foreach (KeyValuePair<EntityRef, Occupant> pair in occupants)
+            {
+                if (pair.Value.GameObject == null) // Unity fake-null: GameObject が Destroy 済み
+                {
+                    destroyedKeys ??= new List<EntityRef>();
+                    destroyedKeys.Add(pair.Key);
+                }
+            }
+
+            if (destroyedKeys == null)
+                return;
+
+            for (int i = 0; i < destroyedKeys.Count; i++)
+                occupants.Remove(destroyedKeys[i]);
+
+            // 占有者が全て消えたら解放する。破棄起因のため発火元 entity 情報は既に無く、
+            // default の contact 情報で解放通知を出す（onReleasedActions 側は entity 非依存で動く想定）。
+            if (occupants.Count == 0)
+                SetPressed(false, default, null);
+        }
+
         private bool TryBuildContact(Collider sourceCollider, out PressurePlateContactData contactData, out EntityMB entityMB)
         {
             contactData = default;

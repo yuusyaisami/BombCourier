@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 namespace BC.Gameplay.PlayModeTests
 {
+    // M6 の destroy/restore/UI lifetime 回帰を小さく固定する contract tests。
+    // Scene/prefab に依存させず、runtime component の private state まで確認するため reflection を使う。
     public sealed class CarryInteractionRuntimeContractTests
     {
         private const string CarryableObjectTypeName = "BC.Item.CarryableObjectMB";

@@ -45,6 +45,8 @@ namespace BC.Camera
         private ValueStoreService valueStore;
         private EntityRef entityRef;
         private ValueWatchHandle<bool> canLookByInputHandle;
+        // Look action は Pointer delta と Gamepad stick を同じ Vector2 として返す。
+        // 値だけでは入力元を識別できないため、最後に発火した control.device を保持する。
         private InputAction boundLookInputAction;
         private InputDevice lastLookInputDevice;
         // ApplicationKernel.KernelValueStore 経由で Setting 画面から書き込まれる感度・反転設定。
@@ -96,6 +98,8 @@ namespace BC.Camera
 
             Vector2 look = resolvedLookAction.ReadValue<Vector2>();
 
+            // Pointer delta はすでに「このフレームの移動量」なので Time.deltaTime を掛けない。
+            // Gamepad stick は「傾き」なので、秒単位の速度として deltaTime を掛ける。
             bool isPointerInput = IsPointerLookDevice(ResolveLookInputDevice(resolvedLookAction));
 
             float deltaYaw;
@@ -277,6 +281,8 @@ namespace BC.Camera
 
             UnbindLookInputAction();
             boundLookInputAction = resolvedAction;
+            // activeControl は ReadValue 後に安定して残らない場合がある。
+            // callback 時点の device を保存しておき、Update 側の感度分岐に使う。
             boundLookInputAction.performed += HandleLookInputPerformed;
             boundLookInputAction.started += HandleLookInputPerformed;
             boundLookInputAction.Enable();
@@ -310,6 +316,8 @@ namespace BC.Camera
 
         private static bool IsPointerLookDevice(InputDevice device)
         {
+            // Mouse/Touch/Pen は Pointer 派生として扱う。
+            // Pointer 系は UI/OS の delta 入力で、stick と同じ時間スケールにしない。
             return device is Pointer;
         }
 

@@ -753,6 +753,9 @@ namespace BC.Base
             if (!correction.HasCorrection || bodyRigidbody == null)
                 return;
 
+            // FixedUpdate 中の補正も Rigidbody API 経由に統一する。
+            // position 直接書き換えより interpolation/contact solver の前提を壊しにくく、
+            // step assist や support motion の統合点として意図が明確になる。
             bodyRigidbody.MovePosition(bodyRigidbody.position + correction.Delta);
         }
 

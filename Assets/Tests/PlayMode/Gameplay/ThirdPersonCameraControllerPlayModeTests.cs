@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 
 namespace BC.Gameplay.PlayModeTests
 {
+    // InputAction の値ではなく device 種別で感度分岐する policy を固定する。
+    // 実カメラ rotation ではなく分類関数を直接見ることで、InputSystem device 追加だけで検証できる。
     public sealed class ThirdPersonCameraControllerPlayModeTests
     {
         private const string ThirdPersonCameraControllerTypeName = "BC.Camera.ThirdPersonCameraController";

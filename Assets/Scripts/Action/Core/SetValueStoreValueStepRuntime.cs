@@ -188,6 +188,9 @@ namespace BC.ActionSystem
             {
                 try
                 {
+                    // Write scope は Local -> Kernel -> Entity の順に分けて扱う。
+                    // Kernel scope を Entity target 解決へ流すと、Scene 全体値の authoring が
+                    // 偶然 Self entity へ書けてしまい、失敗が見えなくなる。
                     if (storeScope == ValueStoreWriteStoreScope.Local)
                     {
                         if (context.LocalValueStore == null)
@@ -244,6 +247,8 @@ namespace BC.ActionSystem
             {
                 try
                 {
+                    // int と同じ scope policy を守る。
+                    // 数値演算は現在値を読むため、誤った store から読めるとバグが表面化しにくい。
                     if (storeScope == ValueStoreWriteStoreScope.Local)
                     {
                         if (context.LocalValueStore == null)
@@ -409,6 +414,8 @@ namespace BC.ActionSystem
             {
                 try
                 {
+                    // 非数値型も数値型と同じ保存先 policy を使う。
+                    // 型ごとに分岐順がずれると、同じ key/scope でも値種別で保存先が変わる。
                     if (storeScope == ValueStoreWriteStoreScope.Local)
                     {
                         if (context.LocalValueStore == null)
@@ -451,6 +458,8 @@ namespace BC.ActionSystem
                 in ActionExecutionContext context,
                 out KernelValueStoreService kernelValueStore)
             {
+                // SceneKernel と ApplicationKernel はどちらも kernel value だが lifetime が違う。
+                // scope enum から明示的に store を選び、entity target resolution へ落とさない。
                 kernelValueStore = storeScope switch
                 {
                     ValueStoreWriteStoreScope.SceneKernel => context.SceneKernel?.KernelValueStore,

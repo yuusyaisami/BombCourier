@@ -19,6 +19,12 @@ namespace BC.Gimmick
         [SerializeField] private Vector3 targetPosition; // 移動目標位置 (デフォルト値)
 
         private IGodHandCatchTarget catchTarget; // つかまる対象のEntity契約
+
+        // 進行中の移動 Tween を保持する。scene reload などで本オブジェクトが
+        // 破棄されたとき、await 継続が破棄済み Transform に触れて
+        // MissingReferenceException を出す前に、OnDestroy で確実に止めるための参照。
+        private Tween activeMoveTween;
+
         public Vector3 TargetPosition => targetPosition;
         public Vector3 OriginalPosition => originalPosition;
         public void Catch(IGodHandCatchTarget target)
@@ -59,10 +65,32 @@ namespace BC.Gimmick
         {
             transform.position = targetPosition;
         }
+
+        private void OnDestroy()
+        {
+            // 進行中の移動 Tween を即時停止し、await 継続が破棄済み Transform を触る前に止める。
+            activeMoveTween?.Kill();
+            activeMoveTween = null;
+
+            // GodHand 破棄後に対象が「つかまれた」状態の参照を握ったままにならないよう手放す。
+            // ただし scene teardown では対象側も破棄され得るため、ここでは OnReleasedByGodHand を
+            // 呼ばず参照を切るだけにする（通常の解放は Release() 経路に委ねる）。
+            catchTarget = null;
+        }
         public async UniTask MoveToAsync(Vector3 targetPosition, float duration)
         {
-            Tween moveTween = transform.DOMove(targetPosition, duration).SetEase(Ease.InOutSine);
-            await moveTween.AsyncWaitForCompletion();
+            // 直前の移動 Tween が残っていれば畳んでから始める（同時2本走行で位置が競合するのを防ぐ）。
+            activeMoveTween?.Kill();
+            activeMoveTween = transform.DOMove(targetPosition, duration).SetEase(Ease.InOutSine);
+            await activeMoveTween.AsyncWaitForCompletion();
+            activeMoveTween = null;
+
+            // await 中に GameObject が Destroy された場合（stage reload / シーン遷移）、
+            // 破棄済み Transform へ書き込むと例外になる。Unity の fake-null を見て安全に打ち切る。
+            // 呼び出し側の await 契約を変えないため、ここでは throw せず静かに return する。
+            if (this == null)
+                return;
+
             transform.position = targetPosition;
         }
         public async UniTask MoveToAsync(float duration)

@@ -83,12 +83,16 @@ namespace BC.Managers
 
             if (!ReapplyCurrentTo(controller, out string failureReason))
             {
+                // controller の DefaultMaterialSet が現在の dataset kind を「そもそも持たない」場合は、
+                // この dataset 切替の対象外（オプトアウト）であり、適用しないのが正しい。
+                // これは失敗の握りつぶしではなく、非参加 controller の意図的スキップ。
                 if (controller.DefaultMaterialSet != null &&
                     !controller.DefaultMaterialSet.HasDatasetKind(activeDatasetKind))
                 {
                     return;
                 }
 
+                // ここに来るのは「kind を持つはずなのに適用に失敗した」= 実際の不整合。明示的にエラー化する。
                 Debug.LogError(
                     $"{nameof(EntityMaterialDatasetServiceMB)}: failed to apply dataset '{activeDatasetKind}' to controller '{controller.name}'. {failureReason}",
                     controller);

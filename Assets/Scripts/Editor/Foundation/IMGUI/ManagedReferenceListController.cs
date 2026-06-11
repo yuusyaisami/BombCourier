@@ -67,8 +67,14 @@ namespace BC.Editor.Foundation.IMGUI
 
             Type type = source.GetType();
             object clone = Activator.CreateInstance(type);
-            string json = JsonUtility.ToJson(source);
-            JsonUtility.FromJsonOverwrite(json, clone);
+
+            // JsonUtility は [SerializeReference] フィールドをシリアライズしないため、これで clone すると
+            // If/SubAction/Choice などが内包する nested な InlineAction の枝が黙って欠落する
+            // (Duplicate / Paste / 別リストへの移動で sub-action ツリーが消える)。
+            // EditorJsonUtility は Unity のフルシリアライズ（references ブロック付き）を使い
+            // SerializeReference グラフを保持するため、nested 枝ごと正しく deep copy できる。
+            string json = EditorJsonUtility.ToJson(source);
+            EditorJsonUtility.FromJsonOverwrite(json, clone);
             return clone;
         }
     }

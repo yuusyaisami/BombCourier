@@ -317,6 +317,8 @@ namespace BC.Player
         // 所持中のアイテムに対して、ドロップ / チャージ / 投擲を切り替える。
         private void TickThrow()
         {
+            // ICarryableItem は interface 参照なので、UnityEngine.Object の fake-null が
+            // 通常の null 比較だけでは拾えない。爆発や scene reload 後は先に生存確認する。
             if (!IsCarryableItemAlive(currentlyHandledItem))
             {
                 ClearHeldState();
@@ -840,6 +842,8 @@ namespace BC.Player
             if (EqualityComparer<ICarryableItem>.Default.Equals(currentlyHandledItem, item))
                 return;
 
+            // 手持ち爆弾は item 側から Destroy されるため、Player 側も爆発イベントで
+            // 所持状態を即時解除できるよう、現在の item だけを購読する。
             UnsubscribeHeldBombExplosion();
             currentlyHandledItem = item;
             SubscribeHeldBombExplosion(item);
@@ -866,6 +870,7 @@ namespace BC.Player
 
         private void HandleHeldBombExploded(BombMB bomb)
         {
+            // 古い爆弾の遅延イベントで、すでに持ち替えた item を解除しない。
             if (!ReferenceEquals(subscribedHandledBomb, bomb))
                 return;
 
@@ -877,12 +882,15 @@ namespace BC.Player
             if (item == null)
                 return false;
 
+            // interface 経由だと Unity の destroyed object が C# null として見えない場合がある。
             if (item is UnityEngine.Object unityObject && unityObject == null)
                 return false;
 
             Transform itemTransform;
             try
             {
+                // destroyed MonoBehaviour の property access は MissingReferenceException になる。
+                // 所持処理では例外を投げ続けず、失効済み item として安全に解除する。
                 itemTransform = item.ItemTransform;
             }
             catch (MissingReferenceException)

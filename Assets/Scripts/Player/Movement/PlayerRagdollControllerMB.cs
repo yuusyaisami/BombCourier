@@ -14,6 +14,9 @@ namespace BC.Manager
     {
     }
 
+    // EntityMoveMotorMB の collider policy validation より先に Awake し、
+    // ragdoll 専用 collider を disabled に戻してから movement collider 検証へ渡す。
+    // Prefab 側で ragdoll collider が enabled のまま保存されても、起動時の物理干渉を防ぐための順序固定。
     [DefaultExecutionOrder(80)]
     public sealed class PlayerRagdollControllerMB : MonoBehaviour, IPlayerRagdollController
     {

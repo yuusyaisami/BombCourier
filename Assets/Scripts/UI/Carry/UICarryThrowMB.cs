@@ -15,6 +15,8 @@ namespace BC.UI
         private PlayerItemHandleStateMB itemHandState;
         private bool isThrowing => itemHandState != null && itemHandState.IsThrowCharging;
         private bool isVisible;
+        // 表示/非表示 tween はこの UI が所有する。
+        // Player 差し替えや Destroy 後に DOTween 側の work が残らないよう、必ず kill する。
         private Tween visibilityTween;
         private void Reset()
         {
@@ -55,6 +57,8 @@ namespace BC.UI
                 return;
             }
 
+            // slider 値は毎 frame の状態同期に一本化する。
+            // async ループとイベント更新を併用すると、Player 差し替え時に古い state を読み続けやすい。
             throwPowerSlider.value = itemHandState.CurrentThrowChargeRatio;
             SyncVisibility(isThrowing);
         }
@@ -90,6 +94,7 @@ namespace BC.UI
                 return;
 
             isVisible = visible;
+            // 連続した start/end では前の fade が残るため、最新の表示要求だけを有効にする。
             visibilityTween?.Kill();
             visibilityTween = canvasGroup
                 .DOFade(visible ? 1f : 0f, 0.2f)

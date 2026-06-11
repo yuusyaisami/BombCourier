@@ -19,6 +19,17 @@ namespace BC.EditorTools.Stage
         [MenuItem("Tools/Stage Snapshot/Migrate StageSaveMark -> StageRestorable")]
         public static void Migrate()
         {
+            // 全 prefab と開いている全 scene を直接書き換えて保存する、破壊的かつ Undo 不可の一括処理。
+            // 誤クリックでプロジェクト全体を書き換えないよう、実行前に明示確認を取る。
+            if (!EditorUtility.DisplayDialog(
+                "Stage Snapshot Migration",
+                "プロジェクト内の全 prefab と現在開いている全 scene を走査し、旧 StageSaveMark を新 StageRestorable へ変換して上書き保存します。\nこの操作は Undo できません。続行しますか？",
+                "実行",
+                "キャンセル"))
+            {
+                return;
+            }
+
             int convertedPrefabs = 0;
             int convertedScenes = 0;
 
@@ -38,8 +49,12 @@ namespace BC.EditorTools.Stage
                     bool changed = ConvertHierarchy(root);
                     if (changed)
                     {
-                        PrefabUtility.SaveAsPrefabAsset(root, path);
-                        convertedPrefabs++;
+                        // 保存失敗(ロック/読み取り専用等)を握りつぶさず、エラーとして表面化する。
+                        PrefabUtility.SaveAsPrefabAsset(root, path, out bool saved);
+                        if (saved)
+                            convertedPrefabs++;
+                        else
+                            Debug.LogError($"{nameof(StageSnapshotMigrationTool)}: failed to save prefab '{path}'.");
                     }
 
                     PrefabUtility.UnloadPrefabContents(root);

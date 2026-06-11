@@ -12,6 +12,19 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
         [MenuItem("Tools/BombCourier/MovingPlatform/Migrate Level1 Prefabs")]
         private static void MigrateLevel1Prefabs()
         {
+            // この操作は prefab を直接書き換えて保存し、Undo できない。誤クリックでの
+            // 一括書き換えを防ぐため、実行前に明示的な確認を取る。
+            // (既に migration 済みの platform は TryApplyLegacyMigration 側で上書き拒否されるため、
+            //  再実行しても hand-authored tree は破壊されない。)
+            if (!EditorUtility.DisplayDialog(
+                "MovingPlatform Migration",
+                $"'{Level1PrefabFolder}' 配下の全 prefab を走査し、未 migration の MovingPlatform を tree authoring へ変換して上書き保存します。\nこの操作は Undo できません。続行しますか？",
+                "実行",
+                "キャンセル"))
+            {
+                return;
+            }
+
             string[] prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { Level1PrefabFolder });
             var failures = new List<string>();
             int migratedPrefabCount = 0;
@@ -52,7 +65,14 @@ namespace BC.Editor.Gimmick.MovingPlatformTools
                     if (!prefabChanged)
                         continue;
 
-                    PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
+                    // 保存失敗(ロック/読み取り専用等)を握りつぶさず、失敗として記録する。
+                    PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath, out bool savedSuccessfully);
+                    if (!savedSuccessfully)
+                    {
+                        failures.Add($"{prefabPath}: SaveAsPrefabAsset failed");
+                        continue;
+                    }
+
                     migratedPrefabCount++;
                 }
                 finally

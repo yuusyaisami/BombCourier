@@ -142,12 +142,21 @@ namespace BC.Audio
 
         public void StopAllSE()
         {
-            foreach (AudioObjectMB obj in activeSE)
+            if (activeSE.Count == 0)
+                return;
+
+            // StopImmediate() は ReturnToPool コールバック経由で activeSE から自身を除去するため、
+            // activeSE を直接 foreach すると「列挙中のコレクション変更」で InvalidOperationException になる
+            // (StopAllSE は StopAllSEStepRuntime 等の Action step から呼ばれ、実際に発生し得る)。
+            // 停止対象のスナップショットを取ってから順に止める。
+            AudioObjectMB[] snapshot = new AudioObjectMB[activeSE.Count];
+            activeSE.CopyTo(snapshot);
+            for (int i = 0; i < snapshot.Length; i++)
             {
-                if (obj != null)
-                    obj.StopImmediate();
+                if (snapshot[i] != null)
+                    snapshot[i].StopImmediate();
             }
-            // ReturnToPool コールバックで activeSE から除去される。
+            // 実際の activeSE からの除去は各 obj の ReturnToPool コールバックが行う。
         }
 
         // ─────────────────────────────────────────────────────────────────

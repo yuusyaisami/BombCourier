@@ -142,22 +142,30 @@ namespace BC.Item
             ClearIgnoredHolderCollisions();
             isHandled = checkpoint.IsHandled;
 
+            // Stage snapshot は Transform/Rigidbody を広く扱うが、Collider.enabled は
+            // carryable 固有の「所持中は無効」契約なのでここで必ず復元する。
+            // これを忘れると retry 後に拾えない透明な物体が残る。
             if (objectCollider != null)
                 objectCollider.enabled = !isHandled;
 
             if (rb != null)
             {
+                // 所持中復元では holder の手元に固定される前提なので kinematic にし、
+                // 未所持復元では通常の物理オブジェクトへ戻す。
                 rb.isKinematic = isHandled;
                 rb.detectCollisions = true;
                 rb.useGravity = !isHandled;
 
                 if (isHandled)
                 {
+                    // 親へ付いている item が古い速度を持つと、復元直後に手元から弾ける。
                     rb.linearVelocity = Vector3.zero;
                     rb.angularVelocity = Vector3.zero;
                 }
             }
 
+            // 所持中の snapshot へ戻る場合は、holder 自身との collision ignore も再構築する。
+            // ClearIgnoredHolderCollisions() で前回分を消してから作り直すため、古い holder 参照は残らない。
             if (isHandled && transform.parent != null)
                 ConfigureHeldHolderCollisionIgnore(transform.parent);
         }

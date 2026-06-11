@@ -154,6 +154,15 @@ namespace BC.Character
             }
 
             BlendShapeBindingRuntime binding = runtimeBindings[aliasIndex];
+
+            // bind 後に SkinnedMeshRenderer が破棄される場合がある（顔メッシュだけ差し替え/破棄など）。
+            // 他のアクセサ(ApplyWeight)と同じく、参照が無ければ NRE ではなく Try* 契約どおり false を返す。
+            if (binding.Renderer == null)
+            {
+                weight = 0f;
+                return false;
+            }
+
             weight = binding.Renderer.GetBlendShapeWeight(binding.BlendShapeIndex);
             return true;
         }

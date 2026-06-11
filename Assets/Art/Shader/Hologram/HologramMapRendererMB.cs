@@ -31,6 +31,10 @@ namespace BombCourier.Rendering.Hologram
 
         private MeshFilter _targetMeshFilter;
 
+        // ランタイム生成した hologram mesh を保持する。Mesh は GC されない native リソースなので、
+        // 再生成時とオブジェクト破棄時に明示的に Destroy しないと scene 再ロード等でリークする。
+        private Mesh _generatedMesh;
+
         private void Awake()
         {
             // Ensure the target mesh filter is available on this GameObject
@@ -74,6 +78,11 @@ namespace BombCourier.Rendering.Hologram
                 return;
             }
 
+            // 以前に生成した hologram mesh が残っていれば、差し替え前に破棄してリークを防ぐ。
+            if (_generatedMesh != null && _generatedMesh != holoMesh)
+                DestroyGeneratedMesh();
+
+            _generatedMesh = holoMesh;
             _targetMeshFilter.sharedMesh = holoMesh;
 
             // Apply the hologram material to the target renderer
@@ -95,6 +104,26 @@ namespace BombCourier.Rendering.Hologram
                     srcRenderer.enabled = false;
                 }
             }
+        }
+
+        private void OnDestroy()
+        {
+            // 生成済み hologram mesh を破棄する（native リソースの確実な解放）。
+            DestroyGeneratedMesh();
+        }
+
+        private void DestroyGeneratedMesh()
+        {
+            if (_generatedMesh == null)
+                return;
+
+            // 再生成は edit/play 双方から起こり得るため、文脈に応じた破棄 API を使う。
+            if (Application.isPlaying)
+                Destroy(_generatedMesh);
+            else
+                DestroyImmediate(_generatedMesh);
+
+            _generatedMesh = null;
         }
     }
 }

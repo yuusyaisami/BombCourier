@@ -180,10 +180,16 @@ namespace BC.Character
             }
             finally
             {
-                ClearInteractionFacing(force: true);
-                // 念のため ownership flag も落として、後続 interaction へ状態を持ち越さない。
-                activeInteractionFacingOwnsChannel = false;
-                isInteractionInProgress = false;
+                // await 中に NPC が破棄された場合 (stage reload / despawn)、破棄済みオブジェクト上で
+                // ClearInteractionFacing()(内部で GetComponentInParent を呼ぶ)を実行すると
+                // MissingReferenceException になる。Unity の fake-null を見て、生存時のみ後始末する。
+                if (this != null)
+                {
+                    ClearInteractionFacing(force: true);
+                    // 念のため ownership flag も落として、後続 interaction へ状態を持ち越さない。
+                    activeInteractionFacingOwnsChannel = false;
+                    isInteractionInProgress = false;
+                }
             }
         }
 

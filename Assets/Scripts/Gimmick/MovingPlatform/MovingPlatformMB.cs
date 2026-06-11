@@ -516,6 +516,16 @@ namespace BC.Gimmick.MovingPlatform
 
         public bool TryApplyLegacyMigration(out string failureReason)
         {
+            // 既に tree authoring が存在する場合、legacy フィールド由来データで上書きすると
+            // 手作業で編集した tree を破壊する。legacy フィールド(railNodes/layers)は [HideInInspector] で
+            // 残り続けるため、再 migration は常に上書きになり得る。データ損失を防ぐため明示的に拒否する。
+            // 本当に再 migration したい場合は treeAuthoring を空にしてから実行すること。
+            if (treeAuthoring != null && treeAuthoring.HasAuthoringData)
+            {
+                failureReason = "tree authoring data already exists; migration skipped to avoid overwriting hand-authored data. Clear the tree authoring first if re-migration is intended.";
+                return false;
+            }
+
             MovingPlatformTreeMigrationResult migrationResult = MovingPlatformTreeMigration.TryMigrate(railNodes, railConnections, layers);
             if (!migrationResult.Success || migrationResult.TreeAuthoring == null)
             {
