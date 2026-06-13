@@ -75,6 +75,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Locale-ja
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e0380d127cf57be47bbdac6080d319c7
+    m_Address: Talk_Stage11_ja
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ja
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e2c6a2c104250d548b8dd72561146d26
     m_Address: Talk_Stage09_ja
     m_ReadOnly: 1

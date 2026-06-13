@@ -1,0 +1,160 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Talk_Stage11 Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Talk_Stage11
+  m_TableCollectionNameGuidString: 4a5c93a12bc61c44cb71ddddf110527d
+  m_Entries:
+  - m_Id: 190110000000
+    m_Key: S11_INTRO_TOWER_YAKUMO_001
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000001
+    m_Key: S11_INTRO_TOWER_YAKUMO_002
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000002
+    m_Key: S11_INTRO_TOWER_YAKUMO_003
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000003
+    m_Key: S11_INTRO_TOWER_MOUSE_001
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000004
+    m_Key: S11_INTRO_TOWER_YAKUMO_004
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000005
+    m_Key: S11_INTRO_TOWER_YAKUMO_005
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000006
+    m_Key: S11_INTRO_TOWER_YAKUMO_006
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000007
+    m_Key: S11_INTRO_TOWER_YAKUMO_007
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000008
+    m_Key: S11_INTRO_TOWER_YAKUMO_008
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000009
+    m_Key: S11_CHOICE_TOWER_TABOO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000010
+    m_Key: S11_CHOICE_TOWER_INVESTIGATION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000011
+    m_Key: S11_BRANCH_TOWER_TABOO_YAKUMO_001
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000012
+    m_Key: S11_BRANCH_TOWER_TABOO_YAKUMO_002
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000013
+    m_Key: S11_BRANCH_TOWER_TABOO_MOUSE_001
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000014
+    m_Key: S11_BRANCH_TOWER_TABOO_YAKUMO_003
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000015
+    m_Key: S11_BRANCH_TOWER_TABOO_MOUSE_002
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000016
+    m_Key: S11_BRANCH_TOWER_TABOO_YAKUMO_004
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000017
+    m_Key: S11_BRANCH_TOWER_TABOO_YAKUMO_005
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000018
+    m_Key: S11_BRANCH_INVESTIGATION_YAKUMO_001
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000019
+    m_Key: S11_BRANCH_INVESTIGATION_YAKUMO_002
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000020
+    m_Key: S11_BRANCH_INVESTIGATION_MOUSE_001
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000021
+    m_Key: S11_BRANCH_INVESTIGATION_YAKUMO_003
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000022
+    m_Key: S11_COMMON_WHITE_FLUFF_MOUSE_001
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000023
+    m_Key: S11_COMMON_WHITE_FLUFF_YAKUMO_001
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000024
+    m_Key: S11_COMMON_WHITE_FLUFF_MOUSE_002
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000025
+    m_Key: S11_COMMON_WHITE_FLUFF_YAKUMO_002
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000026
+    m_Key: S11_COMMON_WHITE_FLUFF_YAKUMO_003
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000027
+    m_Key: S11_COMMON_WHITE_FLUFF_YAKUMO_004
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000028
+    m_Key: S11_COMMON_WHITE_FLUFF_MOUSE_003
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000029
+    m_Key: S11_COMMON_WHITE_FLUFF_YAKUMO_005
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000030
+    m_Key: S11_COMMON_WHITE_FLUFF_YAKUMO_006
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000031
+    m_Key: S11_COMMON_WHITE_FLUFF_MOUSE_004
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000032
+    m_Key: S11_COMMON_WHITE_FLUFF_YAKUMO_007
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 1662523455223365851
+  references:
+    version: 2
+    RefIds:
+    - rid: 1662523455223365851
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1781336345625

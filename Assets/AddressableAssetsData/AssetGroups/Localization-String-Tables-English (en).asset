@@ -75,6 +75,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Locale-en
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d726affb3bf793442afa8f956ddbf6bf
+    m_Address: Talk_Stage11_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fb884cf4decad6244a5dd608023bd125
     m_Address: Speaker_Data_en
     m_ReadOnly: 1

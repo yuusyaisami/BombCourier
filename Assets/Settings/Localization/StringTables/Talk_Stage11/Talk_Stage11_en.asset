@@ -1,0 +1,157 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Talk_Stage11_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 4a5c93a12bc61c44cb71ddddf110527d, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 190110000000
+    m_Localized: Thanks to you handling those sticky bombs,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000001
+    m_Localized: we have fewer hazards around here. I appreciate it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000002
+    m_Localized: Still, why are you so fixated on outside?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000003
+    m_Localized: Because I know it exists?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000004
+    m_Localized: I see.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000005
+    m_Localized: Every time you talk about it, I feel drawn to that world too.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000006
+    m_Localized: So I did some digging.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000007
+    m_Localized: Apparently, one sector has a tall tower.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000008
+    m_Localized: And reaching the top is considered the greatest taboo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000009
+    m_Localized: Why is that tower taboo?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000010
+    m_Localized: Then, Yakumo, I hereby assign you to investigate it!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000011
+    m_Localized: Scientifically, I do not know.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000012
+    m_Localized: People treat it like even saying its name is dangerous.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000013
+    m_Localized: Then that is the place. Something has to be there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000014
+    m_Localized: Going there would be like trampling into sacred forbidden ground.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000015
+    m_Localized: You are a scientist. You believe that kind of nonsense?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000016
+    m_Localized: Whether it is nonsense or reality...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000017
+    m_Localized: I honestly cannot tell anymore.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000018
+    m_Localized: Hey, are you trying to get me locked up?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000019
+    m_Localized: If no one finds out, fine. But if they do, I will have nowhere left
+      to go.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000020
+    m_Localized: Then become a wanderer.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000021
+    m_Localized: You make it sound so easy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000022
+    m_Localized: Why are you telling me this?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000023
+    m_Localized: Because I wanted to see the white fluff.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000024
+    m_Localized: Huh?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000025
+    m_Localized: But uncovering what lies beyond it...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000026
+    m_Localized: might put a lot of people in danger.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000027
+    m_Localized: And if there really is a god, we might anger it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000028
+    m_Localized: I do not really get it, but I am going there. It feels like the
+      place with answers.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000029
+    m_Localized: ...Right. Sure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000030
+    m_Localized: I cannot tell if you are brave or just stupid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000031
+    m_Localized: Better than standing still.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190110000032
+    m_Localized: That is true. Still dangerous, though.
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

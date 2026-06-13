@@ -38,6 +38,12 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4a5c93a12bc61c44cb71ddddf110527d
+    m_Address: Assets/Settings/Localization/StringTables/Talk_Stage11/Talk_Stage11
+      Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 733d26e9e98269d4fb8f528880f9ce9e
     m_Address: Assets/Settings/Localization/StringTables/Talk_Stage08/Talk_Stage08
       Shared Data.asset
@@ -47,6 +53,11 @@ MonoBehaviour:
   - m_GUID: 7ea6260e28ce9a84b96efd9508de4ab7
     m_Address: Assets/Settings/Localization/StringTables/Talk_Stage02/Talk_Stage02
       Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b76ba0da28ec2d43ae4d6cc605695ea
+    m_Address: Assets/Settings/Localization/AssetsTables/Tutorial_Sprite Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
