@@ -851,7 +851,7 @@ namespace BC.Gimmick.MovingPlatform
                         return BuildInvalidRoute(selector, anchorRailIndex);
                     }
 
-                    if (!TryBuildRailPath(railNodes, currentRailIndex, targetRailIndex, pathBuffer))
+                    if (!TryBuildStepPath(railNodes, currentRailIndex, targetRailIndex, selector.Rule.PathMode, pathBuffer))
                     {
                         issues.Add(new MovingPlatformTreeValidationIssue(
                             MovingPlatformTreeValidationSeverity.Error,
@@ -1020,7 +1020,7 @@ namespace BC.Gimmick.MovingPlatform
             // 末尾 → anchor への戻りステップを補完して閉ループ化し、A→B→C→A→… と正しく巡回させる。
             if (selector.Rule.PlaybackMode == MovingPlatformPlaybackMode.Loop &&
                 currentRailIndex != anchorRailIndex &&
-                TryBuildRailPath(railNodes, currentRailIndex, anchorRailIndex, pathBuffer) &&
+                TryBuildStepPath(railNodes, currentRailIndex, anchorRailIndex, selector.Rule.PathMode, pathBuffer) &&
                 pathBuffer.Count > 1)
             {
                 for (int pathIndex = 0; pathIndex < pathBuffer.Count - 1; pathIndex++)
@@ -1078,6 +1078,32 @@ namespace BC.Gimmick.MovingPlatform
                 Array.Empty<MovingPlatformSelectorRoute.ResolvedStep>(),
                 new[] { anchorRailIndex },
                 new[] { anchorRailIndex });
+        }
+
+        // Move ステップ / Loop 閉路補完の経路を、移動モードに応じて構築する。
+        // Route: ツリー経路(LCA)に沿って中間ノードを経由する（従来挙動）。
+        // Direct: 中間ノードを無視し、現在ノード→ターゲットの単一エッジ（直線移動）にする。
+        //         兄弟ノード間でも親ハブを経由せず、指定ノード位置へ真っ直ぐ向かう。
+        private static bool TryBuildStepPath(
+            RailNodeRuntime[] railNodes,
+            int fromRailIndex,
+            int toRailIndex,
+            MovingPlatformPathMode pathMode,
+            List<int> pathBuffer)
+        {
+            if (pathMode != MovingPlatformPathMode.Direct)
+                return TryBuildRailPath(railNodes, fromRailIndex, toRailIndex, pathBuffer);
+
+            pathBuffer.Clear();
+            if (fromRailIndex < 0 || toRailIndex < 0 || fromRailIndex >= railNodes.Length || toRailIndex >= railNodes.Length)
+                return false;
+
+            // 同一ノードは 1 点（後段で 0.01f の最小移動に畳まれる）。異なるノードは始点→終点の単一エッジ。
+            pathBuffer.Add(fromRailIndex);
+            if (fromRailIndex != toRailIndex)
+                pathBuffer.Add(toRailIndex);
+
+            return true;
         }
 
         private static bool TryBuildRailPath(RailNodeRuntime[] railNodes, int fromRailIndex, int toRailIndex, List<int> pathBuffer)

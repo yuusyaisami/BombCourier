@@ -101,6 +101,8 @@ namespace BC.Gimmick.MovingPlatform
         [SerializeField] private KernelSignalReference deactivateSignal;
 
         [SerializeField] private MovingPlatformPlaybackMode playbackMode = MovingPlatformPlaybackMode.PingPong;
+        [Tooltip("ノード間の移動経路の解決方法です。Route=ツリー経路に沿って中間ノードを経由（既定）、Direct=中間ノードを無視して指定ノード位置へ直線移動。")]
+        [SerializeField] private MovingPlatformPathMode pathMode = MovingPlatformPathMode.Route;
         [SerializeField] private MovingPlatformTimingControl defaultTimingControl = MovingPlatformTimingControl.Duration;
         [SerializeField, Min(0.01f)] private float defaultDuration = 1.0f;
         [SerializeField, Min(0.01f)] private float defaultSpeed = 1.0f;
@@ -126,6 +128,7 @@ namespace BC.Gimmick.MovingPlatform
         public KernelSignalReference ActivateSignal => activateSignal;
         public KernelSignalReference DeactivateSignal => deactivateSignal;
         public MovingPlatformPlaybackMode PlaybackMode => playbackMode;
+        public MovingPlatformPathMode PathMode => pathMode;
         public MovingPlatformTimingControl DefaultTimingControl => defaultTimingControl;
         public float DefaultDuration => Mathf.Max(0.01f, defaultDuration);
         public float DefaultSpeed => Mathf.Max(0.01f, defaultSpeed);

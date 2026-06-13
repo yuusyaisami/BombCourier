@@ -12,6 +12,18 @@ namespace BC.Gimmick.MovingPlatform
         PingPong = 2,
     }
 
+    // ノード間の移動経路の解決方法。
+    // ※値 0 を従来挙動(Route)にしているため、この設定を持たない既存プレハブは
+    //   デシリアライズ時に自動的に Route(= 現行)へフォールバックする。
+    public enum MovingPlatformPathMode
+    {
+        // ノードのツリー経路に沿って中間ノードを経由しながら移動する（既定・従来挙動）。
+        Route = 0,
+
+        // 中間ノードを無視し、現在ノードから指定ノードの「位置」へ直線的に移動する。
+        Direct = 1,
+    }
+
     public enum MovingPlatformEasingMode
     {
         Linear = 0,

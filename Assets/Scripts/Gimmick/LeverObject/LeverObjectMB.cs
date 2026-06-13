@@ -522,9 +522,11 @@ namespace BC.Gimmick.LeverObject
 
             ResolveReferences();
 
-            if (sceneKernel == null || sceneKernel.EntityValueStore == null)
+            // Kernel scope への書き込みもあるため、ここでは SceneKernel の有無だけを確認する。
+            // 各 store(EntityValueStore / KernelValueStore)の有無は書き込み経路ごとに検証する。
+            if (sceneKernel == null)
             {
-                Debug.LogWarning($"{nameof(LeverObjectMB)}: SceneKernel entity value store is not available. State variables were skipped.", this);
+                Debug.LogWarning($"{nameof(LeverObjectMB)}: SceneKernel is not available. State variables were skipped.", this);
                 return;
             }
 
@@ -580,6 +582,33 @@ namespace BC.Gimmick.LeverObject
                 return;
             }
 
+            ValueKey<bool> key = descriptor.GetKey<bool>();
+
+            // Kernel scope (SceneKernel / ApplicationKernel) は scene/app 共有値なので、対応する
+            // KernelValueStore へ直接書く。EntityValueStore へ流してしまうと、
+            // ConditionDrivenColliderObjectMB 等が watch している KernelValueStore とは別 store になり、
+            // 値変化が一切伝わらない（= レバーを動かしても条件が反応しない原因）。
+            // 読み取り/購読側 (ReactiveValueResolverService.ResolveKernelStore*) と同じ store を指すよう、
+            // SetValueStoreValueStepRuntime と同一の scope routing に揃える。
+            if (ValueStoreWriteScopeUtility.IsKernelEntityScope(scope))
+            {
+                if (!TryResolveKernelValueStore(scope, out KernelValueStoreService kernelValueStore))
+                {
+                    Debug.LogWarning($"{nameof(LeverObjectMB)}: {scope} KernelValueStore is not available. Key '{descriptor.Path}' was skipped.", this);
+                    return;
+                }
+
+                kernelValueStore.Set(key, value);
+                return;
+            }
+
+            // Entity scope: 対象 Entity を解決して EntityValueStore へ書く。
+            if (sceneKernel.EntityValueStore == null)
+            {
+                Debug.LogWarning($"{nameof(LeverObjectMB)}: EntityValueStore is not available. Key '{descriptor.Path}' was skipped.", this);
+                return;
+            }
+
             int resolvedCount = ValueStoreWriteScopeUtility.ResolveTargets(context, scope, entityTarget, entityTargetBuffer);
             if (resolvedCount == 0)
             {
@@ -587,9 +616,25 @@ namespace BC.Gimmick.LeverObject
                 return;
             }
 
-            ValueKey<bool> key = descriptor.GetKey<bool>();
             for (int i = 0; i < resolvedCount; i++)
                 sceneKernel.EntityValueStore.Set(entityTargetBuffer[i], key, value);
+        }
+
+        // SceneKernel / ApplicationKernel scope に対応する KernelValueStore を返す。
+        // ReactiveValue 側の読み取り/購読 (context.GetKernelValueStore) と同じ store を選び、
+        // レバーの書き込みと条件の購読が同一 store を指すことを保証する。
+        private bool TryResolveKernelValueStore(ValueStoreWriteStoreScope scope, out KernelValueStoreService kernelValueStore)
+        {
+            kernelValueStore = scope switch
+            {
+                ValueStoreWriteStoreScope.SceneKernel => sceneKernel != null ? sceneKernel.KernelValueStore : null,
+                ValueStoreWriteStoreScope.ApplicationKernel => ApplicationKernelMB.Instance != null
+                    ? ApplicationKernelMB.Instance.Kernel?.KernelValueStore
+                    : null,
+                _ => null,
+            };
+
+            return kernelValueStore != null;
         }
 
         private static bool IsScopeCompatibleForLeverWrite(ValueStoreWriteStoreScope scope, in ValueKeyDescriptor descriptor)
