@@ -140,6 +140,39 @@ namespace BC.Audio
             return true;
         }
 
+        // 現在の SFX 設定音量。AudioSystemMB のプール外で AudioSource を自前管理する箇所
+        // (爆弾の fuse ループ等) が、設定音量を反映するために参照する。未初期化時は 1。
+        public float CurrentSfxVolume => sfxVolumeHandle != null ? sfxVolumeHandle.CurrentValue : 1f;
+
+        // 3D 位置で SE を単発再生する。SFX 設定音量を反映し、距離減衰 (maxDistance) を持つ。
+        // AudioSource.PlayClipAtPoint は SFX 音量を無視し、既定 maxDistance(=500) で遠くまで
+        // 聞こえてしまうため、衝突音など「位置のある SE」はこちらを使う。
+        public void PlaySEAtPoint(AudioClip clip, Vector3 position, float baseVolume = 1f, float pitch = 1f, float maxDistance = 25f)
+        {
+            if (clip == null)
+                return;
+
+            float gameVolume = sfxVolumeHandle != null ? sfxVolumeHandle.CurrentValue : 1f;
+
+            GameObject oneShot = new GameObject("OneShotSE3D");
+            oneShot.transform.position = position;
+
+            AudioSource source = oneShot.AddComponent<AudioSource>();
+            source.clip = clip;
+            source.volume = Mathf.Max(0f, baseVolume) * gameVolume;
+            source.pitch = pitch;
+            source.spatialBlend = 1f; // 3D 化して距離減衰させる
+            source.rolloffMode = AudioRolloffMode.Linear;
+            source.minDistance = 1f;
+            source.maxDistance = Mathf.Max(1f, maxDistance);
+            source.playOnAwake = false;
+            source.Play();
+
+            // クリップ長 (pitch 補正) 経過後に自動破棄する。
+            float lifetime = clip.length / Mathf.Max(0.01f, Mathf.Abs(pitch));
+            Destroy(oneShot, lifetime + 0.1f);
+        }
+
         public void StopAllSE()
         {
             if (activeSE.Count == 0)

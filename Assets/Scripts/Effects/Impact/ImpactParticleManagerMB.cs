@@ -27,6 +27,9 @@ namespace BC.Effects.Impact
         [SerializeField] private AudioDataSO impactSound;
         // この値以上の NormalizedStrength のときだけサウンドを再生する。
         [SerializeField, Range(0f, 1f)] private float minImpactStrengthForSound = 0.1f;
+        // 衝突音の距離減衰の最大距離。これを超えると聞こえない。
+        // PlayClipAtPoint の既定 (=500) だと遠くでも聞こえてしまうため、明示的に小さめに持つ。
+        [SerializeField, Min(1f)] private float impactSoundMaxDistance = 20f;
 
         private ObjectPool<PooledImpactParticleMB> particlePool;
         private bool isDestroying;
@@ -83,7 +86,13 @@ namespace BC.Effects.Impact
             if (impactSound != null && impactSound.Clip != null && request.NormalizedStrength >= minImpactStrengthForSound)
             {
                 float volumeScale = impactSound.BaseVolume * request.NormalizedStrength;
-                AudioSource.PlayClipAtPoint(impactSound.Clip, request.Point, volumeScale);
+
+                // SFX 設定音量を反映し、かつ距離減衰させるため AudioSystemMB 経由で 3D 再生する。
+                // PlayClipAtPoint は SFX 音量を無視し、既定 maxDistance(=500) で遠くまで聞こえてしまう。
+                if (AudioSystemMB.Instance != null)
+                    AudioSystemMB.Instance.PlaySEAtPoint(impactSound.Clip, request.Point, volumeScale, impactSound.Pitch, impactSoundMaxDistance);
+                else
+                    AudioSource.PlayClipAtPoint(impactSound.Clip, request.Point, volumeScale);
             }
 
             return true;

@@ -302,6 +302,13 @@ namespace BC.Base
                 if (ownerTransform != null && hitCollider.transform.IsChildOf(ownerTransform))
                     continue;
 
+                // 投げた箱/爆弾などの「非kinematicな剛体(loose dynamic body)」は段差として扱わない。
+                // Physics.IgnoreCollision はソルバにのみ効き、この手動 SphereCast には作用しない。
+                // 除外しないと、下を向いて投げたアイテムを「乗り越える段差」と誤認して Player を上へ
+                // スナップ(押し上げ)してしまう。静的段差(RB無し)や moving platform(kinematic)は段差のまま残す。
+                if (IsLooseDynamicBodyCollider(hitCollider))
+                    continue;
+
                 if (hit.distance < closestDistance)
                 {
                     closestDistance = hit.distance;
@@ -311,6 +318,15 @@ namespace BC.Base
             }
 
             return found;
+        }
+
+        // 段差ではなく「押せる loose な動的オブジェクト」かどうかを判定する。
+        // attachedRigidbody が存在し非kinematic（自由落下/投擲中の物体）なら true。
+        // 静的ジオメトリ(RB無し)や moving platform(kinematic RB)は false のまま段差として扱う。
+        private static bool IsLooseDynamicBodyCollider(Collider collider)
+        {
+            Rigidbody attached = collider.attachedRigidbody;
+            return attached != null && !attached.isKinematic;
         }
     }
 }

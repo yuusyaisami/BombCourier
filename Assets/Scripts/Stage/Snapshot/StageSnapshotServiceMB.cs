@@ -127,14 +127,19 @@ namespace BC.Stage.Snapshot
                     if (t.parent != entry.Parent)
                         t.SetParent(entry.Parent, true);
 
+                    // Transform と Rigidbody の両方へ同じ pose を書く。
+                    // rb.position だけだと、Transform への write-back は「次の simulation step で awake な body」
+                    // に限られる。パス2で Sleep へ戻す静止オブジェクト（ConditionDrivenCollider の上に
+                    // 置かれた物など、capture 時に sleeping だったもの）は write-back が走らず、
+                    // 「見た目(Transform)は旧位置のまま・物理 body だけ復元位置」という desync になる。
+                    // この状態で外部が body に触れて wake した瞬間、write-back により見た目が突然
+                    // 復元位置へ飛ぶ（=「触ると元の位置に戻る」怪現象）。両方へ書いて常に一致させる。
+                    t.SetPositionAndRotation(entry.WorldPosition, entry.WorldRotation);
+
                     if (rb != null)
                     {
                         rb.position = entry.WorldPosition;
                         rb.rotation = entry.WorldRotation;
-                    }
-                    else
-                    {
-                        t.SetPositionAndRotation(entry.WorldPosition, entry.WorldRotation);
                     }
 
                     t.localScale = entry.LocalScale;

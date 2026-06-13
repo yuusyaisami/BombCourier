@@ -741,11 +741,10 @@ namespace BC.Manager
             // エンディング BGM をゲームプレイ BGM からクロスフェードで切り替える
             GameSoundDataManagerMB.Instance?.PlayEndingBGM();
 
-            await UniTask.Delay(1000); // ゴール到達後の演出のために少し待つ
             if (uiFadeEffectMB != null)
             {
                 uiFadeEffectMB.EnsureVisibleHierarchy();
-                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 0.5f); // フェードアウトさせる
+                await uiFadeEffectMB.StartFadeAsync(FadeType.TopBottom, 1f, 2f); // フェードアウトさせる
             }
             else
             {
