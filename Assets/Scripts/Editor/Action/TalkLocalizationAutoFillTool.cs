@@ -40,6 +40,7 @@ namespace BC.Editor
             new Target { PrefabName = "MapInstanceLv6",  Collection = "Talk_Stage06" },
             new Target { PrefabName = "MapInstanceLv8",  Collection = "Talk_Stage08" },
             new Target { PrefabName = "MapInstanceLv9",  Collection = "Talk_Stage09" },
+            new Target { PrefabName = "MapInstanceLv11", Collection = "Talk_Stage11" },
             new Target { PrefabName = "MapInstanceLv12", Collection = "Talk_Stage12" },
         };
 
@@ -53,7 +54,7 @@ namespace BC.Editor
         {
             bool ok = EditorUtility.DisplayDialog(
                 "Auto-Fill Talk Localization",
-                "対象7プレハブの ShowTalk / ShowDialogue / Choice に、フォールバック日本語と一致する Table/Key を流し込みます。\n" +
+                "対象8プレハブの ShowTalk / ShowDialogue / Choice に、フォールバック日本語と一致する Table/Key を流し込みます。\n" +
                 "・既に Key が入っているものはスキップ\n" +
                 "・話者名(speakerName)は対象外\n\n実行しますか？（先に Dry Run での確認を推奨）",
                 "実行", "キャンセル");
