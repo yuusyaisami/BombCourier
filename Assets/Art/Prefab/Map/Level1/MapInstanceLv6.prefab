@@ -33714,6 +33714,7 @@ MonoBehaviour:
             id: 0
             path: 
           playbackMode: 1
+          pathMode: 0
           defaultTimingControl: 1
           defaultDuration: 1
           defaultSpeed: 5
@@ -33768,6 +33769,7 @@ MonoBehaviour:
             id: 0
             path: 
           playbackMode: 1
+          pathMode: 0
           defaultTimingControl: 1
           defaultDuration: 1
           defaultSpeed: 5
@@ -37371,7 +37373,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029049926027].talkRequestData.entry
-      value: 
+      value: S06_BRANCH_ART_MOUSE_001
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029049926157].talkRequestData.entry
@@ -37515,7 +37517,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029728616520].talkRequestData.entry
-      value: 
+      value: S06_BRANCH_YAKUMO_VANILLA_002
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029728616607].talkRequestData.entry
@@ -38783,7 +38785,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029049926027].talkRequestData.dialogueText
-      value: "\u6210\u529F\u3057\u3066\u306A\u3044\u4EBA\u306E\u610F\u898B\u306B\n\u8AAC\u5F97\u529B\u306F\u306A\u3044\u3051\u3069\u306D"
+      value: "\u5927\u3057\u305F\u5B9F\u7E3E\u3082\u306A\u3044\u4EBA\u306E\u9AD8\u5C1A\u306A\u610F\u898B\u306A\u3093\u3066\u3001\n\u53D7\u3051\u5165\u308C\u304C\u305F\u3044\u3088\u306D\u3002"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029049926157].talkRequestData.dialogueText
@@ -39035,7 +39037,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029728616520].talkRequestData.dialogueText
-      value: "\u30E4\u30AF\u30E2\u306F\u3001\u7D20\u6674\u3089\u3057\u3044\u5FD7\u3092\u6301\u3063\u3066\u3044\u308B\u308F\u3001\u9AD8\u5C1A\u306A\u306D"
+      value: "\u5F7C\u306F\u3001\u7D20\u6674\u3089\u3057\u3044\u5FD7\u3092\u6301\u3063\u3066\u3044\u308B\u308F\u3001\u9AD8\u5C1A\u306A\u306D"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029728616607].talkRequestData.dialogueText
@@ -39347,7 +39349,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029049926027].talkRequestData.applySetTable
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029049926157].talkRequestData.applySetTable
@@ -47871,7 +47873,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029049926027].talkRequestData.table.m_TableReference.m_TableCollectionName
-      value: 
+      value: GUID:34a9c22dd0784a240a717e83dec2de8d
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029049926157].talkRequestData.table.m_TableReference.m_TableCollectionName
@@ -48155,7 +48157,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029728616520].talkRequestData.table.m_TableReference.m_TableCollectionName
-      value: 
+      value: GUID:34a9c22dd0784a240a717e83dec2de8d
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533029728616607].talkRequestData.table.m_TableReference.m_TableCollectionName

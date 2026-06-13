@@ -13579,7 +13579,6 @@ Transform:
   - {fileID: 2087225691520144980}
   - {fileID: 4077925472510917988}
   - {fileID: 2669262443999126586}
-  - {fileID: 6040350970643798449}
   - {fileID: 7407864856949950537}
   - {fileID: 7015835563289335293}
   - {fileID: 2452401007349286555}
@@ -13746,7 +13745,7 @@ Transform:
   m_GameObject: {fileID: 5388145538727821248}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.5, y: 0, z: -7.5}
+  m_LocalPosition: {x: 6.5, y: -5, z: -7.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -14062,9 +14061,236 @@ MonoBehaviour:
     - rid: 30532849279435718
     - rid: 30532849279435719
   treeAuthoring:
-    railNodes: []
-    rootRailNodeId: 
-    selectors: []
+    railNodes:
+    - stableId: Node1
+      label: Node1
+      parentRailNodeId: 
+      localPosition:
+        sourceKind: 0
+        evaluationMode: 0
+        failurePolicy: 0
+        literal: {x: 0, y: 0, z: 0}
+        transformValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            localValue:
+              storeScope: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addSource:
+          baseValue:
+            sourceKind: 0
+            entity:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                storeScope: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              targetReference:
+                mode: 0
+                selection: 0
+                tag:
+                  id: 0
+                  path: 
+              fallbackKind: 0
+          addend: {x: 0, y: 0, z: 0}
+        directionSource:
+          fromEntity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            localValue:
+              storeScope: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+          toEntity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            localValue:
+              storeScope: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        fallbackValue: {x: 0, y: 0, z: 0}
+      overrideIncomingTiming: 0
+      incomingTimingControl: 0
+      incomingDuration: 1
+      incomingSpeed: 1
+      incomingEasingMode: 1
+    - stableId: Node2
+      label: Node2
+      parentRailNodeId: Node1
+      localPosition:
+        sourceKind: 0
+        evaluationMode: 0
+        failurePolicy: 0
+        literal: {x: 0, y: 14.5, z: 0}
+        transformValue:
+          sourceKind: 0
+          entity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            localValue:
+              storeScope: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        addSource:
+          baseValue:
+            sourceKind: 0
+            entity:
+              sourceKind: 0
+              evaluationMode: 0
+              failurePolicy: 0
+              entityValue:
+                entitySourceKind: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              localValue:
+                storeScope: 0
+                key:
+                  id: 0
+                  path: 
+                  valueTypeName: 
+              targetReference:
+                mode: 0
+                selection: 0
+                tag:
+                  id: 0
+                  path: 
+              fallbackKind: 0
+          addend: {x: 0, y: 0, z: 0}
+        directionSource:
+          fromEntity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            localValue:
+              storeScope: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+          toEntity:
+            sourceKind: 0
+            evaluationMode: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            localValue:
+              storeScope: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            targetReference:
+              mode: 0
+              selection: 0
+              tag:
+                id: 0
+                path: 
+            fallbackKind: 0
+        fallbackValue: {x: 0, y: 14.5, z: 0}
+      overrideIncomingTiming: 0
+      incomingTimingControl: 1
+      incomingDuration: 1
+      incomingSpeed: 1
+      incomingEasingMode: 1
+    rootRailNodeId: Node1
+    selectors:
+    - rid: 1662523453123068117
   motionTargets:
   - {fileID: 4119996340617927072}
   autoCollectChildRigidbodies: 1
@@ -14121,6 +14347,81 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523453123068117
+      type: {class: MovingPlatformSelectorNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: selector.1
+        label: Layer
+        anchorRailNodeId: Node1
+        rule:
+          priority: 0
+          activeOnStart: 1
+          resetWhenSelected: 1
+          visualizationColor: {r: 0.9382466, g: 1, b: 0.08627451, a: 1}
+          overrideRuntimePathEmission: 0
+          useVisualizationColorForRuntimePathEmission: 1
+          runtimePathEmissionColor: {r: 1, g: 1, b: 1, a: 1}
+          runtimePathActiveEmissionStrength: 2
+          runtimePathInactiveEmissionStrength: 0
+          syncRuntimePathSimpleBoost: 1
+          runtimePathActiveSimpleBoostIntensity: 4
+          runtimePathInactiveSimpleBoostIntensity: 0
+          dimRuntimePathWhenInactive: 1
+          runtimePathInactiveAlphaMultiplier: 0.35
+          useReactiveCondition: 0
+          activeCondition:
+            sourceKind: 0
+            failurePolicy: 0
+            entityValue:
+              entitySourceKind: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            localValue:
+              storeScope: 0
+              key:
+                id: 0
+                path: 
+                valueTypeName: 
+            fallbackValue: 0
+          useSignalGate: 0
+          activateSignal:
+            id: 0
+            path: 
+          deactivateSignal:
+            id: 0
+            path: 
+          playbackMode: 2
+          defaultTimingControl: 1
+          defaultDuration: 1
+          defaultSpeed: 1
+          defaultEasingMode: 1
+        orderedChildren:
+        - rid: 1662523453123068118
+        - rid: 1662523453123068119
+    - rid: 1662523453123068118
+      type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.move.1
+        label: Node2
+        targetRailNodeId: Node2
+        overrideTiming: 0
+        timingControl: 0
+        duration: 1
+        speed: 1
+        easingMode: 1
+    - rid: 1662523453123068119
+      type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.move.2
+        label: Node1
+        targetRailNodeId: Node1
+        overrideTiming: 0
+        timingControl: 0
+        duration: 1
+        speed: 1
+        easingMode: 1
 --- !u!1 &5421981198637106723
 GameObject:
   m_ObjectHideFlags: 0
@@ -14156,307 +14457,6 @@ Transform:
   - {fileID: 4561658315946264118}
   m_Father: {fileID: 4342909843559958858}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &5626489711766225915
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6040350970643798449}
-  - component: {fileID: 571203710846624034}
-  - component: {fileID: 7593417488149333301}
-  - component: {fileID: 2410726164966410065}
-  - component: {fileID: 5293524439990328472}
-  - component: {fileID: 755674710078887604}
-  m_Layer: 0
-  m_Name: Cube (13)
-  m_TagString: Ground
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6040350970643798449
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5626489711766225915}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.70710677, y: 0.00000041093176, z: -0.7071068, w: 0.00000041093173}
-  m_LocalPosition: {x: -19, y: 10, z: 4}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 789274547476768100}
-  m_LocalEulerAnglesHint: {x: 0, y: -90, z: -180}
---- !u!114 &571203710846624034
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5626489711766225915}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8233d90336aea43098adf6dbabd606a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.ProBuilder::UnityEngine.ProBuilder.ProBuilderMesh
-  m_MeshFormatVersion: 2
-  m_Faces:
-  - m_Indexes: 000000000100000002000000010000000300000002000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 9
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  - m_Indexes: 040000000500000006000000050000000700000006000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 9
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  - m_Indexes: 08000000090000000a000000090000000b0000000a000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 9
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  - m_Indexes: 0c0000000d0000000e0000000d0000000f0000000e000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 9
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  m_SharedVertices:
-  - m_Vertices: 00000000
-  - m_Vertices: 0100000004000000
-  - m_Vertices: 0200000008000000
-  - m_Vertices: 0300000006000000090000000c000000
-  - m_Vertices: 05000000
-  - m_Vertices: 070000000d000000
-  - m_Vertices: 0a000000
-  - m_Vertices: 0b0000000e000000
-  - m_Vertices: 0f000000
-  m_SharedTextures: []
-  m_Positions:
-  - {x: -1, y: 2.2737368e-13, z: -18}
-  - {x: -1, y: 2.2737368e-13, z: -0.00000023841858}
-  - {x: 4, y: 2.2737368e-13, z: -18}
-  - {x: 4, y: 2.2737368e-13, z: -0.00000023841858}
-  - {x: -1, y: 2.2737368e-13, z: -0.00000023841858}
-  - {x: -1, y: 2.2737368e-13, z: 18}
-  - {x: 4, y: 2.2737368e-13, z: -0.00000023841858}
-  - {x: 4, y: 2.2737368e-13, z: 18}
-  - {x: 4, y: 2.2737368e-13, z: -18}
-  - {x: 4, y: 2.2737368e-13, z: -0.00000023841858}
-  - {x: 9, y: 2.2737368e-13, z: -18}
-  - {x: 9, y: 2.2737368e-13, z: -0.00000023841858}
-  - {x: 4, y: 2.2737368e-13, z: -0.00000023841858}
-  - {x: 4, y: 2.2737368e-13, z: 18}
-  - {x: 9, y: 2.2737368e-13, z: -0.00000023841858}
-  - {x: 9, y: 2.2737368e-13, z: 18}
-  m_Textures0:
-  - {x: -1, y: -18}
-  - {x: -1, y: -0.00000023841858}
-  - {x: 4, y: -18}
-  - {x: 4, y: -0.00000023841858}
-  - {x: -1, y: -0.00000023841858}
-  - {x: -1, y: 18}
-  - {x: 4, y: -0.00000023841858}
-  - {x: 4, y: 18}
-  - {x: 4, y: -18}
-  - {x: 4, y: -0.00000023841858}
-  - {x: 9, y: -18}
-  - {x: 9, y: -0.00000023841858}
-  - {x: 4, y: -0.00000023841858}
-  - {x: 4, y: 18}
-  - {x: 9, y: -0.00000023841858}
-  - {x: 9, y: 18}
-  m_Textures2: []
-  m_Textures3: []
-  m_Tangents:
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  m_Colors: []
-  m_UnwrapParameters:
-    m_HardAngle: 88
-    m_PackMargin: 20
-    m_AngleError: 8
-    m_AreaError: 15
-  m_PreserveMeshAssetOnDestroy: 0
-  assetGuid: 
-  m_Mesh: {fileID: 0}
-  m_VersionIndex: 14644
-  m_IsSelectable: 1
-  m_SelectedFaces: 
-  m_SelectedEdges: []
-  m_SelectedVertices: 
---- !u!114 &7593417488149333301
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5626489711766225915}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ca002da428252441b92f28d83c8a65f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.ProBuilder::UnityEngine.ProBuilder.Shapes.ProBuilderShape
-  m_Shape:
-    rid: 30532514339619050
-  m_ShapeRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_UnmodifiedMeshVersion: 14644
-  m_Size: {x: 10, y: 0, z: 36}
-  m_LocalCenter: {x: 4, y: 2.2737368e-13, z: -0.00000023841858}
-  references:
-    version: 2
-    RefIds:
-    - rid: 30532514339619050
-      type: {class: Plane, ns: UnityEngine.ProBuilder.Shapes, asm: Unity.ProBuilder}
-      data:
-        m_HeightSegments: 1
-        m_WidthSegments: 1
---- !u!23 &2410726164966410065
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5626489711766225915}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 7ef7ebecaa2e1f2468ed65eea73c4eb2, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &5293524439990328472
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5626489711766225915}
-  m_Mesh: {fileID: 0}
---- !u!64 &755674710078887604
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5626489711766225915}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
 --- !u!1 &5777460736826697094
 GameObject:
   m_ObjectHideFlags: 0
@@ -27228,15 +27228,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.75
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3
+      value: 1.36
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -8.96
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalRotation.w

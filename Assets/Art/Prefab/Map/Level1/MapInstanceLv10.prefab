@@ -1742,6 +1742,119 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &197923877285514602
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7880152768219934016}
+  - component: {fileID: 7358343943219496928}
+  - component: {fileID: 3764587502606552777}
+  - component: {fileID: 4936819289189663819}
+  m_Layer: 0
+  m_Name: Quad
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7880152768219934016
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 197923877285514602}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.70710677, y: 0.7071068, z: 0.00000007375697, w: 0.00000007375698}
+  m_LocalPosition: {x: 22.992002, y: 13.407, z: -9.776001}
+  m_LocalScale: {x: 7, y: 5, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 789274547476768100}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 90}
+--- !u!33 &7358343943219496928
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 197923877285514602}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &3764587502606552777
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 197923877285514602}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 3649e50504755884081100c7b4de7629, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &4936819289189663819
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 197923877285514602}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &205636020383615375
 GameObject:
   m_ObjectHideFlags: 0
@@ -3369,7 +3482,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.4
       label: Rail 1
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.3
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -3482,7 +3595,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.5
       label: Rail 4
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.4
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -3690,6 +3803,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454528160437
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -3744,6 +3858,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454528160437
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &431183499594574629
 GameObject:
   m_ObjectHideFlags: 0
@@ -14603,6 +14727,7 @@ GameObject:
   - component: {fileID: 9211330422164193193}
   - component: {fileID: 5555256691315689077}
   - component: {fileID: 5278306685633162949}
+  - component: {fileID: 6795379033901589270}
   m_Layer: 0
   m_Name: GreenObject
   m_TagString: Untagged
@@ -14882,6 +15007,24 @@ MonoBehaviour:
   conditionReadSucceeded: 0
   currentConditionValue: 0
   currentColliderEnabled: 0
+--- !u!114 &6795379033901589270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1417891035628916040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a5ab8fa4c68e945bd1ee9c6453d5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.Snapshot.StageRestorableMB
+  excludeFromSnapshot: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
+  persistAcrossRestore: 0
+  stableId: 4a76073f250f4bf6a7b1de257eff1aa9
 --- !u!1 &1426730238486600855
 GameObject:
   m_ObjectHideFlags: 0
@@ -42468,6 +42611,7 @@ GameObject:
   - component: {fileID: 5236561305361146130}
   - component: {fileID: 3612595139154288464}
   - component: {fileID: 8092507902299165375}
+  - component: {fileID: 3168869771987116935}
   m_Layer: 0
   m_Name: RedObject (2)
   m_TagString: Untagged
@@ -42744,6 +42888,24 @@ MonoBehaviour:
   conditionReadSucceeded: 0
   currentConditionValue: 0
   currentColliderEnabled: 0
+--- !u!114 &3168869771987116935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4248131003639633250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a5ab8fa4c68e945bd1ee9c6453d5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.Snapshot.StageRestorableMB
+  excludeFromSnapshot: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
+  persistAcrossRestore: 0
+  stableId: da23f926f8604eb094fc85c9cc84c866
 --- !u!1 &4298724047234581824
 GameObject:
   m_ObjectHideFlags: 0
@@ -48670,6 +48832,7 @@ Transform:
   - {fileID: 1842184653052930020}
   - {fileID: 683553387245492387}
   - {fileID: 8592387062376214069}
+  - {fileID: 7880152768219934016}
   - {fileID: 3056912482748786925}
   - {fileID: 6933769966709973168}
   - {fileID: 1127274115534723415}
@@ -59761,8 +59924,7 @@ Transform:
   m_LocalPosition: {x: 4, y: 25, z: -3.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 595043325884000043}
+  m_Children: []
   m_Father: {fileID: 789274547476768100}
   m_LocalEulerAnglesHint: {x: -180, y: -90, z: -90}
 --- !u!1 &5524687227905384080
@@ -60417,7 +60579,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.4
       label: Rail 1
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.3
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -60530,7 +60692,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.5
       label: Rail 4
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.4
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -60738,6 +60900,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454800003754
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -60792,6 +60955,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454800003754
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &5542294280702166319
 GameObject:
   m_ObjectHideFlags: 0
@@ -61991,7 +62164,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.4
       label: Rail 1
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.3
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -62104,7 +62277,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.5
       label: Rail 4
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.4
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -62312,6 +62485,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454788207134
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -62366,6 +62540,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454788207134
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &5709120139437470281
 GameObject:
   m_ObjectHideFlags: 0
@@ -64438,6 +64622,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454788206843
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -64492,6 +64677,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454788206843
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &5790541874748910422
 GameObject:
   m_ObjectHideFlags: 0
@@ -76930,362 +77125,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
---- !u!1 &6580819666090893843
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 595043325884000043}
-  - component: {fileID: 6123266742590330398}
-  - component: {fileID: 7598462055809579969}
-  - component: {fileID: 4474965480732248862}
-  - component: {fileID: 5001961729414724783}
-  - component: {fileID: 1261499501222322313}
-  m_Layer: 0
-  m_Name: Cube (61)
-  m_TagString: Ground
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &595043325884000043
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6580819666090893843}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2256900885171252142}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6123266742590330398
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6580819666090893843}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8233d90336aea43098adf6dbabd606a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.ProBuilder::UnityEngine.ProBuilder.ProBuilderMesh
-  m_MeshFormatVersion: 2
-  m_Faces:
-  - m_Indexes: 000000000100000002000000010000000300000002000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 0
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  - m_Indexes: 040000000500000006000000050000000700000006000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 0
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  - m_Indexes: 08000000090000000a000000090000000b0000000a000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 0
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  - m_Indexes: 0c0000000d0000000e0000000d0000000f0000000e000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 0
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  - m_Indexes: 100000001100000012000000110000001300000012000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 0
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  - m_Indexes: 140000001500000016000000150000001700000016000000
-    m_SmoothingGroup: 0
-    m_Uv:
-      m_UseWorldSpace: 0
-      m_FlipU: 0
-      m_FlipV: 0
-      m_SwapUV: 0
-      m_Fill: 1
-      m_Scale: {x: 1, y: 1}
-      m_Offset: {x: 0, y: 0}
-      m_Rotation: 0
-      m_Anchor: 0
-    m_Material: {fileID: 0}
-    m_SubmeshIndex: 0
-    m_ManualUV: 0
-    elementGroup: -1
-    m_TextureGroup: -1
-  m_SharedVertices:
-  - m_Vertices: 000000000d00000016000000
-  - m_Vertices: 010000000400000017000000
-  - m_Vertices: 020000000f00000010000000
-  - m_Vertices: 030000000600000011000000
-  - m_Vertices: 050000000800000015000000
-  - m_Vertices: 070000000a00000013000000
-  - m_Vertices: 090000000c00000014000000
-  - m_Vertices: 0b0000000e00000012000000
-  m_SharedTextures: []
-  m_Positions:
-  - {x: -2.0000014, y: -0.5, z: 1.9999998}
-  - {x: 1.9999986, y: -0.5, z: 1.9999998}
-  - {x: -2.0000014, y: 0.5, z: 1.9999998}
-  - {x: 1.9999986, y: 0.5, z: 1.9999998}
-  - {x: 1.9999986, y: -0.5, z: 1.9999998}
-  - {x: 1.9999986, y: -0.5, z: -2.0000002}
-  - {x: 1.9999986, y: 0.5, z: 1.9999998}
-  - {x: 1.9999986, y: 0.5, z: -2.0000002}
-  - {x: 1.9999986, y: -0.5, z: -2.0000002}
-  - {x: -2.0000014, y: -0.5, z: -2.0000002}
-  - {x: 1.9999986, y: 0.5, z: -2.0000002}
-  - {x: -2.0000014, y: 0.5, z: -2.0000002}
-  - {x: -2.0000014, y: -0.5, z: -2.0000002}
-  - {x: -2.0000014, y: -0.5, z: 1.9999998}
-  - {x: -2.0000014, y: 0.5, z: -2.0000002}
-  - {x: -2.0000014, y: 0.5, z: 1.9999998}
-  - {x: -2.0000014, y: 0.5, z: 1.9999998}
-  - {x: 1.9999986, y: 0.5, z: 1.9999998}
-  - {x: -2.0000014, y: 0.5, z: -2.0000002}
-  - {x: 1.9999986, y: 0.5, z: -2.0000002}
-  - {x: -2.0000014, y: -0.5, z: -2.0000002}
-  - {x: 1.9999986, y: -0.5, z: -2.0000002}
-  - {x: -2.0000014, y: -0.5, z: 1.9999998}
-  - {x: 1.9999986, y: -0.5, z: 1.9999998}
-  m_Textures0:
-  - {x: 4, y: 0}
-  - {x: 0, y: 0}
-  - {x: 4, y: 1}
-  - {x: 0, y: 1}
-  - {x: 4, y: 0}
-  - {x: 0, y: 0}
-  - {x: 4, y: 1}
-  - {x: 0, y: 1}
-  - {x: 4, y: 0}
-  - {x: 0, y: 0}
-  - {x: 4, y: 1}
-  - {x: 0, y: 1}
-  - {x: 4, y: 0}
-  - {x: 0, y: 0}
-  - {x: 4, y: 1}
-  - {x: 0, y: 1}
-  - {x: 0, y: 1}
-  - {x: 4, y: 1}
-  - {x: 0, y: -3}
-  - {x: 4, y: -3}
-  - {x: 4, y: -3}
-  - {x: 0, y: -3}
-  - {x: 4, y: 1}
-  - {x: 0, y: 1}
-  m_Textures2: []
-  m_Textures3: []
-  m_Tangents:
-  - {x: -1, y: 0, z: 0, w: -1}
-  - {x: -1, y: 0, z: 0, w: -1}
-  - {x: -1, y: 0, z: 0, w: -1}
-  - {x: -1, y: 0, z: 0, w: -1}
-  - {x: 0, y: 0, z: 1, w: -1}
-  - {x: 0, y: 0, z: 1, w: -1}
-  - {x: 0, y: 0, z: 1, w: -1}
-  - {x: 0, y: 0, z: 1, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 0, y: 0, z: -1, w: -1}
-  - {x: 0, y: 0, z: -1, w: -1}
-  - {x: 0, y: 0, z: -1, w: -1}
-  - {x: 0, y: 0, z: -1, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: 1, y: 0, z: 0, w: -1}
-  - {x: -1, y: 0, z: 0, w: -1}
-  - {x: -1, y: 0, z: 0, w: -1}
-  - {x: -1, y: 0, z: 0, w: -1}
-  - {x: -1, y: 0, z: 0, w: -1}
-  m_Colors: []
-  m_UnwrapParameters:
-    m_HardAngle: 88
-    m_PackMargin: 20
-    m_AngleError: 8
-    m_AreaError: 15
-  m_PreserveMeshAssetOnDestroy: 0
-  assetGuid: 
-  m_Mesh: {fileID: 0}
-  m_VersionIndex: 22502
-  m_IsSelectable: 1
-  m_SelectedFaces: 
-  m_SelectedEdges: []
-  m_SelectedVertices: 
---- !u!114 &7598462055809579969
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6580819666090893843}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ca002da428252441b92f28d83c8a65f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.ProBuilder::UnityEngine.ProBuilder.Shapes.ProBuilderShape
-  m_Shape:
-    rid: 1662523234347385837
-  m_ShapeRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_UnmodifiedMeshVersion: 22502
-  m_Size: {x: 4, y: 1, z: 4}
-  m_LocalCenter: {x: -0.0000014305116, y: 1.6580178e-12, z: -0.00000023841903}
-  references:
-    version: 2
-    RefIds:
-    - rid: 1662523234347385837
-      type: {class: Cube, ns: UnityEngine.ProBuilder.Shapes, asm: Unity.ProBuilder}
-      data: 
---- !u!23 &4474965480732248862
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6580819666090893843}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 064c811a8c0b65e409dfc15290cd4403, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &5001961729414724783
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6580819666090893843}
-  m_Mesh: {fileID: 0}
---- !u!64 &1261499501222322313
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6580819666090893843}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
 --- !u!1 &6587544053395206412
 GameObject:
   m_ObjectHideFlags: 0
@@ -79379,6 +79218,7 @@ GameObject:
   - component: {fileID: 4215067194306386304}
   - component: {fileID: 5448759558229159117}
   - component: {fileID: 8146042745108625034}
+  - component: {fileID: 6259311282487323512}
   m_Layer: 0
   m_Name: RedObject
   m_TagString: Untagged
@@ -79658,6 +79498,24 @@ MonoBehaviour:
     path: 
   flags: 0
   autoInstallRigidbodySupportRiders: 1
+--- !u!114 &6259311282487323512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6684563866536599217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a5ab8fa4c68e945bd1ee9c6453d5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BC.Stage.Snapshot.StageRestorableMB
+  excludeFromSnapshot: 0
+  saveActiveSelf: 1
+  saveTransform: 1
+  saveRigidbody: 1
+  persistAcrossRestore: 0
+  stableId: f863d0f5b2e146f2aca6252a92084af3
 --- !u!1 &6754549337141857397
 GameObject:
   m_ObjectHideFlags: 0
@@ -99920,7 +99778,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.4
       label: Rail 1
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.3
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -100033,7 +99891,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.5
       label: Rail 4
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.4
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -100241,6 +100099,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454788207425
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -100295,6 +100154,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454788207425
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &8565231167395172915
 GameObject:
   m_ObjectHideFlags: 0
@@ -100591,7 +100460,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.4
       label: Rail 1
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.3
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -100704,7 +100573,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.5
       label: Rail 4
-      parentRailNodeId: rail.3
+      parentRailNodeId: rail.4
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -100912,6 +100781,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454800004045
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -100966,6 +100836,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454800004045
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &8591872766302913233
 GameObject:
   m_ObjectHideFlags: 0
@@ -102541,6 +102421,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454528160728
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -102595,6 +102476,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454528160728
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &8679214860135313152
 GameObject:
   m_ObjectHideFlags: 0
@@ -104998,7 +104889,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.4
       label: Rail 1
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.3
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -105111,7 +105002,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.5
       label: Rail 4
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.4
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -105319,6 +105210,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454800003172
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -105373,6 +105265,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454800003172
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &8861415463276097027
 GameObject:
   m_ObjectHideFlags: 0
@@ -106659,7 +106561,7 @@ Transform:
   m_GameObject: {fileID: 9001367073703065663}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071065, z: -0, w: 0.7071071}
-  m_LocalPosition: {x: 13.500004, y: -1, z: 23.999996}
+  m_LocalPosition: {x: 12.500004, y: -1, z: 23.999996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -106928,7 +106830,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.4
       label: Rail 1
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.3
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -107041,7 +106943,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: rail.5
       label: Rail 4
-      parentRailNodeId: rail.2
+      parentRailNodeId: rail.4
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -107249,6 +107151,7 @@ MonoBehaviour:
         - rid: 1662523270353388134
         - rid: 1662523271651787386
         - rid: 1662523271673544861
+        - rid: 1662523454800003463
     - rid: 1662523270353387864
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
@@ -107303,6 +107206,16 @@ MonoBehaviour:
         duration: 1
         speed: 1
         easingMode: 1
+    - rid: 1662523454800003463
+      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
+      data:
+        stableId: step.wait.6
+        label: Wait
+        waitMode: 0
+        duration: 1
+        signal:
+          id: 0
+          path: 
 --- !u!1 &9069885129874068838
 GameObject:
   m_ObjectHideFlags: 0
@@ -110383,15 +110296,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.7249966
+      value: 22.724997
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.2051392
+      value: 17.79486
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7
+      value: -8
       objectReference: {fileID: 0}
     - target: {fileID: 5895909989594221323, guid: 184f81c88f21b7e419da22c1f5423358, type: 3}
       propertyPath: m_LocalRotation.w
@@ -118225,6 +118138,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6178714537794196283}
     m_Modifications:
+    - target: {fileID: 6078748995431570559, guid: 9a7a189bb75da2a4d861f841972013d7, type: 3}
+      propertyPath: fuseTime
+      value: 35
+      objectReference: {fileID: 0}
     - target: {fileID: 6316178306840961590, guid: 9a7a189bb75da2a4d861f841972013d7, type: 3}
       propertyPath: m_Name
       value: BombEntity

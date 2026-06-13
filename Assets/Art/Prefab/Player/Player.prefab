@@ -346,8 +346,8 @@ Light:
   serializedVersion: 13
   m_Type: 2
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 0.1
-  m_Range: 1.76
+  m_Intensity: 0.02
+  m_Range: 1.7
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -760,11 +760,11 @@ MonoBehaviour:
   throwOwnerCollisionIgnoreDuration: 0.5
   emptyHandThrowPreviewHoldTime: 0.2
   throwUpwardCompensationAngle: 30
-  releasePositionSafetyMargin: 0.06
+  releasePositionSafetyMargin: 0.5
   releasePositionSearchDistance: 0.8
   releasePositionSearchSteps: 12
   releasePositionVerticalBias: 0.02
-  enableReleaseSafetyDebugLog: 0
+  enableReleaseSafetyDebugLog: 1
   pickUpSound: {fileID: 11400000, guid: 96de1b9d4b9d4b04f9dfdfb08b751105, type: 2}
   throwSound: {fileID: 11400000, guid: 73760ba42657d984b9b4ea6e7fc5ab21, type: 2}
   dropSound: {fileID: 11400000, guid: b29c5805522e9494d816d05e01beb786, type: 2}

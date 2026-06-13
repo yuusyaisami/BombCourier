@@ -44,7 +44,7 @@ MonoBehaviour:
   - stageName: "\u30AD\u30CE\u30B3"
     stageNameKey: STAGE_MUSHROOM
     stageDifficulty: 0
-    clearTimeThreshold: 8
+    clearTimeThreshold: 18
     stagePrefab: {fileID: 2650056577534689671, guid: c730ccdafe447b34a96eaefaec09d5ff, type: 3}
     backgroundSprite: {fileID: 21300000, guid: cc0c736c61e2f4d469d4b26c4e41d068, type: 3}
     previewSprite: {fileID: 21300000, guid: cc0c736c61e2f4d469d4b26c4e41d068, type: 3}
@@ -67,33 +67,33 @@ MonoBehaviour:
     stageDifficulty: 0
     clearTimeThreshold: 18
     stagePrefab: {fileID: 2650056577534689671, guid: abeca943bba43e8459581b2f3e0997c2, type: 3}
-    backgroundSprite: {fileID: 21300000, guid: 599dcb3a88daa9a498f1abb7bd118b13, type: 3}
-    previewSprite: {fileID: 21300000, guid: 599dcb3a88daa9a498f1abb7bd118b13, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: 09a74b78539aded4891da6a42f363180, type: 3}
+    previewSprite: {fileID: 21300000, guid: 09a74b78539aded4891da6a42f363180, type: 3}
   - stageName: "\u5148\u8AAD\u307F"
     stageNameKey: STAGE_ANTICIPATION
     stageDifficulty: 0
-    clearTimeThreshold: 12
+    clearTimeThreshold: 29
     stagePrefab: {fileID: 2650056577534689671, guid: 3e34256d2c7a1304b8e842ed6343acf7, type: 3}
     backgroundSprite: {fileID: 21300000, guid: 24d1e355ac889ee448e9f9a4ca007f00, type: 3}
     previewSprite: {fileID: 21300000, guid: 24d1e355ac889ee448e9f9a4ca007f00, type: 3}
   - stageName: "\u5B9F\u8DF5"
     stageNameKey: STAGE_PRACTICE
     stageDifficulty: 0
-    clearTimeThreshold: 12
+    clearTimeThreshold: 28
     stagePrefab: {fileID: 2650056577534689671, guid: 8d558f1e2382cec4c9e671e5bde07a88, type: 3}
-    backgroundSprite: {fileID: 21300000, guid: 836b52b07ad242c4085b77616724c728, type: 3}
-    previewSprite: {fileID: 21300000, guid: 836b52b07ad242c4085b77616724c728, type: 3}
+    backgroundSprite: {fileID: 21300000, guid: 6c884dbbc9e71ff419a8877db7a329a6, type: 3}
+    previewSprite: {fileID: 21300000, guid: 6c884dbbc9e71ff419a8877db7a329a6, type: 3}
   - stageName: "\u30E9\u30D3\u30EA\u30F3\u30B9"
     stageNameKey: STAGE_LABYRINTH
     stageDifficulty: 0
-    clearTimeThreshold: 15
+    clearTimeThreshold: 35
     stagePrefab: {fileID: 2650056577534689671, guid: 93dae7a983659834081db8411c8255df, type: 3}
     backgroundSprite: {fileID: 21300000, guid: 36f50160bd2efc348a102250af0bcf74, type: 3}
     previewSprite: {fileID: 21300000, guid: 36f50160bd2efc348a102250af0bcf74, type: 3}
   - stageName: "\u30EB\u30FC\u30E0101"
     stageNameKey: STAGE_END
     stageDifficulty: 0
-    clearTimeThreshold: 15
+    clearTimeThreshold: 76
     stagePrefab: {fileID: 2650056577534689671, guid: 79b2be2ba680f3246a55b86d5ba4b4c2, type: 3}
     backgroundSprite: {fileID: 21300000, guid: df89dca2776cf764299575dfd9d12f94, type: 3}
     previewSprite: {fileID: 21300000, guid: df89dca2776cf764299575dfd9d12f94, type: 3}

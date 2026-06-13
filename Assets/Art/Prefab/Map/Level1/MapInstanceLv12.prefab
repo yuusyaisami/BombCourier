@@ -8044,7 +8044,7 @@ Transform:
   m_GameObject: {fileID: 1426730238486600855}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 12.4, y: -6.5999985, z: 44.15}
+  m_LocalPosition: {x: 12.4, y: -36.6, z: 44.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8525,7 +8525,7 @@ Transform:
   m_GameObject: {fileID: 1678156464744530827}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.9238791, z: -0, w: -0.38268453}
-  m_LocalPosition: {x: -20.313698, y: -0.5, z: 17.514767}
+  m_LocalPosition: {x: -17.01, y: -1.98, z: 20.82}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11088,7 +11088,7 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
 --- !u!1 &1680331356436524712
@@ -11552,7 +11552,7 @@ Transform:
   m_GameObject: {fileID: 1796409337469150923}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.9238791, z: -0, w: -0.38268453}
-  m_LocalPosition: {x: -11.828397, y: -10, z: 26.000029}
+  m_LocalPosition: {x: -8.999963, y: -10, z: 28.82845}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15829,6 +15829,7 @@ MonoBehaviour:
             id: 0
             path: 
           playbackMode: 1
+          pathMode: 0
           defaultTimingControl: 0
           defaultDuration: 1
           defaultSpeed: 1
@@ -27456,6 +27457,7 @@ MonoBehaviour:
             id: 0
             path: 
           playbackMode: 1
+          pathMode: 0
           defaultTimingControl: 1
           defaultDuration: 1
           defaultSpeed: 5
@@ -48621,9 +48623,10 @@ MonoBehaviour:
             id: 0
             path: 
           playbackMode: 1
+          pathMode: 0
           defaultTimingControl: 1
           defaultDuration: 1
-          defaultSpeed: 4
+          defaultSpeed: 6
           defaultEasingMode: 1
         orderedChildren:
         - rid: 30533050565657542
@@ -57816,7 +57819,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533031543439957].talkRequestData.entry
-      value: 
+      value: S12_INTRO_VANILLA_001
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533031543440238].talkRequestData.entry
@@ -58360,7 +58363,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533031543439957].talkRequestData.dialogueText
-      value: "\u3042\u3089\u3001\u3053\u3093\u306A\u3068\u3053\u308D\u3067\u30CD\u30BA\u30DF\u306B\u5408\u3046\u306A\u3093\u3066\u73CD\u3057\u3044\u308F!"
+      value: "\u3042\u3089\u3001\u3053\u3093\u306A\u3068\u3053\u308D\u3067\u30CD\u30BA\u30DF\u306B\u4F1A\u3046\u306A\u3093\u3066\u73CD\u3057\u3044\u308F!"
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533031543440238].talkRequestData.dialogueText
@@ -58632,7 +58635,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533031543439957].talkRequestData.applySetTable
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533031543440238].talkRequestData.applySetTable
@@ -62220,7 +62223,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533031543439957].talkRequestData.table.m_TableReference.m_TableCollectionName
-      value: 
+      value: GUID:e7ebdf2ac4bb2fd41b35975953410b83
       objectReference: {fileID: 0}
     - target: {fileID: 1302941564186950030, guid: d363be833c43a174582360160d17b393, type: 3}
       propertyPath: managedReferences[30533031543440238].talkRequestData.table.m_TableReference.m_TableCollectionName
@@ -67368,7 +67371,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6078748995431570559, guid: 9a7a189bb75da2a4d861f841972013d7, type: 3}
       propertyPath: fuseTime
-      value: 76
+      value: 82
       objectReference: {fileID: 0}
     - target: {fileID: 6316178306840961590, guid: 9a7a189bb75da2a4d861f841972013d7, type: 3}
       propertyPath: m_Name
@@ -67380,11 +67383,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6894233839140394194, guid: 9a7a189bb75da2a4d861f841972013d7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -7.4000015
+      value: -37.55
       objectReference: {fileID: 0}
     - target: {fileID: 6894233839140394194, guid: 9a7a189bb75da2a4d861f841972013d7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 40.4
+      value: 45.66
       objectReference: {fileID: 0}
     - target: {fileID: 6894233839140394194, guid: 9a7a189bb75da2a4d861f841972013d7, type: 3}
       propertyPath: m_LocalRotation.w

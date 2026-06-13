@@ -50,6 +50,7 @@ MonoBehaviour:
   itemData: {fileID: 0}
   collectEffectPrefab: {fileID: 4989894487266487057, guid: f64a21d7745997f4d90bb31ee0b351d2, type: 3}
   materialController: {fileID: 5612621961586574045}
+  collectSound: {fileID: 11400000, guid: 3749bee9f4174ad489cadd4ce112f527, type: 2}
   requiredPlayerTag:
     id: 1001
     path: Actor.Player
