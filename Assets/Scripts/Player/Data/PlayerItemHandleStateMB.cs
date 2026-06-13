@@ -494,6 +494,18 @@ namespace BC.Player
 
             ICarryableItem releasingItem = currentlyHandledItem;
 
+            // 【順序が重要】先に OnRelease で item の collider を有効化してから安全位置を探索する。
+            // CarryableObjectMB は所持中 collider を無効化しており、無効な collider への
+            // Physics.ComputePenetration は常に「重なりなし」を返す（PhysX shape が存在しないため）。
+            // 従来の「探索 → OnRelease」の順では探索が常に step0=手元位置で成功扱いとなり、
+            // Player と重なったままリリースされていた。下向き投げで Player がアイテムに
+            // めり込み一緒に飛ばされる主因。
+            releasingItem.OnRelease(releaseVelocity);
+
+            // 物理ステップが走る前に、押し合い防止の IgnoreCollision を張る
+            // （同一フレーム内なので、この間に接触が発生することはない）。
+            ApplyThrowOwnerCollisionIgnore(releasingItem, releaseKind, releaseVelocity);
+
             bool hasSafePose = TryResolveSafeReleasePose(
                 releasingItem,
                 releaseKind,
@@ -506,11 +518,15 @@ namespace BC.Player
             if (hasSafePose || fallbackUsed)
                 ApplyReleasePose(releasingItem, resolvedReleasePosition);
 
+            // どの候補位置でも Player と重なる場合（大型アイテムの下向き投げ等）は、下向き速度のまま
+            // 出すと Player の足元へ潜り込み、接地/支持系がアイテムを足場と誤認して一緒に飛ぶ。
+            // 違和感より安全を優先し（仕様判断済み）、速度を水平へ起こして前方へ逃がす。
+            if (!hasSafePose && releaseKind == HeldItemReleaseKind.Throw)
+                FlattenUnsafeDownwardThrow(releasingItem, releaseVelocity);
+
             LogReleaseSafetyDebug(
                 $"Release kind={releaseKind} hasSafePose={hasSafePose} fallbackUsed={fallbackUsed} step={resolvedStep} overlapCount={overlapCount} resolvedPosition={resolvedReleasePosition} releaseVelocity={releaseVelocity}",
                 this);
-
-            releasingItem.OnRelease(releaseVelocity);
 
             {
                 AudioDataSO releaseSound = releaseKind == HeldItemReleaseKind.Throw ? throwSound : dropSound;
@@ -520,8 +536,6 @@ namespace BC.Player
                     AudioSource.PlayClipAtPoint(releaseSound.Clip, releasePos, releaseSound.BaseVolume);
                 }
             }
-
-            ApplyThrowOwnerCollisionIgnore(releasingItem, releaseKind, releaseVelocity);
 
             if (releaseKind == HeldItemReleaseKind.Throw)
                 throwSequence++;
@@ -545,6 +559,11 @@ namespace BC.Player
             // 投擲トリガーを増やすと着地アニメーションと競合するため、throwSequence は進めない。
             ICarryableItem releasingItem = currentlyHandledItem;
 
+            // ReleaseCurrentItem と同じ理由で「OnRelease(collider 有効化) → 探索」の順にする。
+            // 所持中は collider が無効で ComputePenetration が機能しないため、先に有効化が必要。
+            releasingItem.OnRelease(releaseVelocity);
+            ApplyThrowOwnerCollisionIgnore(releasingItem, HeldItemReleaseKind.Throw, releaseVelocity);
+
             bool hasSafePose = TryResolveSafeReleasePose(
                 releasingItem,
                 HeldItemReleaseKind.Throw,
@@ -557,12 +576,13 @@ namespace BC.Player
             if (hasSafePose || fallbackUsed)
                 ApplyReleasePose(releasingItem, resolvedReleasePosition);
 
+            if (!hasSafePose)
+                FlattenUnsafeDownwardThrow(releasingItem, releaseVelocity);
+
             LogReleaseSafetyDebug(
                 $"ForceRelease hasSafePose={hasSafePose} fallbackUsed={fallbackUsed} step={resolvedStep} overlapCount={overlapCount} resolvedPosition={resolvedReleasePosition} releaseVelocity={releaseVelocity}",
                 this);
 
-            releasingItem.OnRelease(releaseVelocity);
-            ApplyThrowOwnerCollisionIgnore(releasingItem, HeldItemReleaseKind.Throw, releaseVelocity);
             ClearHeldState();
             return true;
         }
@@ -600,21 +620,46 @@ namespace BC.Player
 
             Vector3 searchDirection = ResolveReleaseSearchDirection(releaseKind, releaseVelocity);
             float startOffset = Mathf.Max(0.0f, releasePositionSafetyMargin);
-            float maxDistance = Mathf.Max(startOffset, releasePositionSearchDistance);
+
+            // 探索距離は固定値ではなく、アイテムと所有者の実寸（水平 extents の和）を下限に取る。
+            // Player と同等サイズの大型アイテムは固定 0.8m ではどの候補も重なったままになり、
+            // fallback（重なったままリリース）へ落ちて押し合いの原因になるため。
+            // ※この時点で collider は OnRelease により有効化済みで、bounds が実寸を返す。
+            float requiredClearance = MaxHorizontalExtent(itemColliders) + MaxHorizontalExtent(ownerColliders) + startOffset;
+            float maxDistance = Mathf.Max(Mathf.Max(startOffset, releasePositionSearchDistance), requiredClearance);
             int steps = Mathf.Max(1, releasePositionSearchSteps);
 
             Vector3 startPosition = (handleItemPoint != null ? handleItemPoint.position : itemRoot.position) +
                                     (Vector3.up * releasePositionVerticalBias);
 
+            // 壁・地形など「貫通禁止」コライダーを探索範囲ぶん一度だけ収集する。
+            // item 自身と所有者(Player)は除外する（Player との重なりは別制約として後段で扱う）。
+            // これが無いと「Player と重ならない＝安全」と誤判定し、壁の内部/裏へ設置して
+            // アイテムが裏世界へ抜ける進行不能バグを起こす。
+            Collider[] blockingColliders = GatherReleaseBlockingColliders(
+                itemColliders, ownerColliders, startPosition, searchDirection, maxDistance);
+
             int bestOverlapCount = int.MaxValue;
             Vector3 bestPosition = startPosition;
             int bestStep = 0;
+            bool anyWallClearCandidate = false;
 
             for (int i = 0; i <= steps; i++)
             {
                 float t = steps > 0 ? (i / (float)steps) : 1.0f;
                 float distance = Mathf.Lerp(startOffset, maxDistance, t);
                 Vector3 candidate = startPosition + (searchDirection * distance);
+
+                // 【最優先のハード制約】壁などにめり込む候補は絶対に採用しない。
+                // しかも探索方向の外側ほど壁の内部/裏側へ進むため、ここで探索自体を打ち切る。
+                // これが「壁の裏（裏世界）へ設置してしまう致命的バグ」の直接の防止策。
+                if (blockingColliders.Length > 0 &&
+                    CountOwnerOverlapsAtPose(itemRoot, itemColliders, blockingColliders, candidate, itemRoot.rotation) > 0)
+                {
+                    break;
+                }
+
+                anyWallClearCandidate = true;
 
                 int candidateOverlapCount = CountOwnerOverlapsAtPose(itemRoot, itemColliders, ownerColliders, candidate, itemRoot.rotation);
 
@@ -627,6 +672,7 @@ namespace BC.Player
 
                 if (candidateOverlapCount == 0)
                 {
+                    // Player・壁の両方をクリアした理想位置。
                     resolvedPosition = candidate;
                     resolvedStep = i;
                     overlapCount = 0;
@@ -634,11 +680,75 @@ namespace BC.Player
                 }
             }
 
-            resolvedPosition = bestPosition;
-            resolvedStep = bestStep;
-            overlapCount = bestOverlapCount;
-            fallbackUsed = bestOverlapCount < int.MaxValue;
+            // Player はクリアできなかったが壁はクリアした候補があれば、それを使う。
+            // Player との重なりは IgnoreCollision と FlattenUnsafeDownwardThrow が処理できる
+            // 「まずいが復帰可能」な状態であり、壁の裏へ抜ける致命傷より遥かに軽い。
+            if (anyWallClearCandidate && bestOverlapCount < int.MaxValue)
+            {
+                resolvedPosition = bestPosition;
+                resolvedStep = bestStep;
+                overlapCount = bestOverlapCount;
+                fallbackUsed = true;
+                return false;
+            }
+
+            // 壁をクリアできる候補が一つも無い＝手元が既に壁の中（Player が壁に密着）。
+            // 外側へ押し出すと壁の奥へ入ってしまうので、Player の中心 XZ・手元の高さへ退避させる。
+            // Player は壁にめり込めないため、この位置は必ず壁の外側であることが保証される。
+            resolvedPosition = new Vector3(ownerRoot.position.x, startPosition.y, ownerRoot.position.z);
+            resolvedStep = 0;
+            overlapCount = bestOverlapCount == int.MaxValue ? 0 : bestOverlapCount;
+            fallbackUsed = true;
             return false;
+        }
+
+        // リリース位置探索で「貫通禁止」とみなすコライダー（壁・地形・他オブジェクト等）を、
+        // 探索線分を内包する球で一度だけ収集する。トリガーは無視し、item 自身と所有者(Player)は除外する。
+        // ここで集めた集合に対し候補ごとに ComputePenetration を行い、壁裏への設置を防ぐ。
+        // ※マスクはあえて全レイヤー(~0)固定。新規 SerializeField はプレハブ既存インスタンスで
+        //   既定 0(Nothing) として読み込まれ「安全判定が無効化」される事故が起きるため、設定不要にしている。
+        private Collider[] GatherReleaseBlockingColliders(
+            Collider[] itemColliders,
+            Collider[] ownerColliders,
+            Vector3 startPosition,
+            Vector3 searchDirection,
+            float maxDistance)
+        {
+            float itemExtent = MaxHorizontalExtent(itemColliders);
+            Vector3 regionCenter = startPosition + (searchDirection * (maxDistance * 0.5f));
+            float regionRadius = (maxDistance * 0.5f) + itemExtent + 0.5f;
+
+            Collider[] hits = Physics.OverlapSphere(
+                regionCenter, regionRadius, ~0, QueryTriggerInteraction.Ignore);
+
+            if (hits == null || hits.Length == 0)
+                return Array.Empty<Collider>();
+
+            // item 自身と所有者(Player)のコライダーは「壁」ではないので除外する。
+            var excluded = new HashSet<Collider>();
+            for (int i = 0; i < itemColliders.Length; i++)
+            {
+                if (itemColliders[i] != null)
+                    excluded.Add(itemColliders[i]);
+            }
+
+            for (int i = 0; i < ownerColliders.Length; i++)
+            {
+                if (ownerColliders[i] != null)
+                    excluded.Add(ownerColliders[i]);
+            }
+
+            var result = new List<Collider>(hits.Length);
+            for (int i = 0; i < hits.Length; i++)
+            {
+                Collider hit = hits[i];
+                if (hit == null || excluded.Contains(hit))
+                    continue;
+
+                result.Add(hit);
+            }
+
+            return result.ToArray();
         }
 
         private static void ApplyReleasePose(ICarryableItem releasingItem, Vector3 resolvedPosition)
@@ -647,6 +757,60 @@ namespace BC.Player
                 return;
 
             releasingItem.ItemTransform.position = resolvedPosition;
+        }
+
+        // どの候補位置でも Player と重なったままの投擲（大型アイテムの下向き投げ等）への最終手段。
+        // 下向き速度のまま出すと Player の足元へ潜り込み、接地/支持(SupportMotion)系がアイテムを
+        // 足場と誤認して Player ごと持ち上げてしまう。速度の大きさは保ったまま向きを水平へ起こし、
+        // アイテムを Player の外側へ逃がす。
+        // 仕様判断: 「視線どおりに投げられない」違和感より「Player が一緒に飛ばない」安全を優先する
+        // （安全位置が見つかった通常の投擲では発動しない）。
+        private void FlattenUnsafeDownwardThrow(ICarryableItem releasingItem, Vector3 releaseVelocity)
+        {
+            if (releasingItem?.ItemTransform == null)
+                return;
+
+            // 下向き成分が無い投擲は潜り込みの懸念が無く、補正不要。
+            if (releaseVelocity.y >= 0f)
+                return;
+
+            Rigidbody itemRigidbody = releasingItem.ItemTransform.GetComponent<Rigidbody>();
+            if (itemRigidbody == null || itemRigidbody.isKinematic)
+                return;
+
+            Vector3 horizontal = new Vector3(releaseVelocity.x, 0f, releaseVelocity.z);
+
+            // 真下投げで水平成分がほぼ無い場合は、Player の向いている方向へ逃がす。
+            if (horizontal.sqrMagnitude <= 0.0001f)
+                horizontal = BuildDropDirection();
+
+            itemRigidbody.linearVelocity = horizontal.normalized * releaseVelocity.magnitude;
+
+            LogReleaseSafetyDebug(
+                $"FlattenUnsafeDownwardThrow applied originalVelocity={releaseVelocity} speed={releaseVelocity.magnitude:F2}",
+                this);
+        }
+
+        // collider 群の水平方向 (XZ) の最大 extent を返す。
+        // 無効/非アクティブな collider は bounds が実寸を返さないため除外する。
+        private static float MaxHorizontalExtent(Collider[] colliders)
+        {
+            float maxExtent = 0f;
+
+            if (colliders == null)
+                return maxExtent;
+
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider candidate = colliders[i];
+                if (candidate == null || !candidate.enabled || !candidate.gameObject.activeInHierarchy)
+                    continue;
+
+                Bounds bounds = candidate.bounds;
+                maxExtent = Mathf.Max(maxExtent, Mathf.Max(bounds.extents.x, bounds.extents.z));
+            }
+
+            return maxExtent;
         }
 
         private static int CountOwnerOverlapsAtPose(
@@ -831,8 +995,17 @@ namespace BC.Player
         // Retry 復帰時は所持状態だけを安全に初期化する。
         public void RestoreRetryCheckpointState()
         {
-            // Retry 復帰では item 側の transform / rigidbody を checkpoint restore に任せる。
-            // Player 側は所持状態と throw 入力状態だけを安全に初期化する。
+            // 所持中アイテムは「持っている間は collider を無効化する」契約を持つ。
+            // collider の復元は本来 checkpoint restore（StageRestorable 参加者）側に任せられるが、
+            // 参加者として捕捉されない経路で復元されたアイテムは collider が無効のまま残り、
+            // リロード後に「当たり判定の無い透明な物体」になってしまう（拾えない・すり抜ける）。
+            // それを防ぐため、所持解除の前に held item 自身を release して collider と所持フラグを必ず戻す。
+            // 速度ゼロ＝その場手放しで、transform / rigidbody はこの直後の checkpoint restore が正しく上書きする。
+            ICarryableItem heldItem = currentlyHandledItem;
+            if (heldItem != null && IsCarryableItemAlive(heldItem))
+                heldItem.OnRelease(Vector3.zero);
+
+            // Player 側は所持状態と throw 入力状態を安全に初期化する。
             ClearHeldState();
         }
 

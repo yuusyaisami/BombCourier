@@ -367,6 +367,11 @@ namespace BC.Bomb
                 else
                     startFuseEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             }
+
+            // BeginFuse で自前生成した fuse ループ音は、fuseStarted を false に戻しても自動では止まらない。
+            // 点火中の爆弾を Reload で未起爆へ巻き戻す際にここで止めないと、点火音が鳴りっぱなしになる。
+            if (fuseAudioSource != null && !fuseStarted && fuseAudioSource.isPlaying)
+                fuseAudioSource.Stop();
         }
 
         private void Awake()
@@ -390,6 +395,10 @@ namespace BC.Bomb
             ignoreOwnerCollisionUntilTime = 0f;
             ClearIgnoredPlayerCollisions();
             hasPreviousHeldPosition = false;
+
+            // 無効化（Reload / Despawn 等）の際に点火ループ音が取り残されて鳴り続けないよう確実に止める。
+            if (fuseAudioSource != null && fuseAudioSource.isPlaying)
+                fuseAudioSource.Stop();
         }
 
         private void Update()
@@ -409,6 +418,11 @@ namespace BC.Bomb
 
         private void TickFuse(float dt)
         {
+            // fuse は自前管理の AudioSource なので AudioSystemMB の音量同期に乗らない。
+            // SFX 設定音量を毎フレーム反映し、設定変更を即時追従させる。
+            if (fuseAudioSource != null && fuseAudioSource.isPlaying)
+                fuseAudioSource.volume = ResolveFuseVolume();
+
             // 将来ヒューズ停止ギミックを入れる時は、この入口で停止条件を差し込める。
             remainingFuseTime -= dt;
 
@@ -416,6 +430,16 @@ namespace BC.Bomb
             {
                 Explode();
             }
+        }
+
+        // fuse ループの実効音量 = 基準音量 × 現在の SFX 設定音量。
+        // 0.05 下限は「SO の base が 0 でも完全無音にしない」保険として base 側に残しつつ、
+        // SFX 音量を掛けるので、SE 音量を下げれば fuse も小さくなる。
+        private float ResolveFuseVolume()
+        {
+            float baseVolume = fuseLoopSound != null ? Mathf.Max(0.05f, fuseLoopSound.BaseVolume) : 0.05f;
+            float sfxVolume = BC.Audio.AudioSystemMB.Instance != null ? BC.Audio.AudioSystemMB.Instance.CurrentSfxVolume : 1f;
+            return Mathf.Max(0f, baseVolume * sfxVolume);
         }
 
         private void TickImpactForce(float dt)
@@ -560,7 +584,7 @@ namespace BC.Bomb
                     fuseAudioSource.playOnAwake = false;
                 }
                 fuseAudioSource.clip = fuseLoopSound.Clip;
-                fuseAudioSource.volume = Mathf.Max(0.05f, fuseLoopSound.BaseVolume);
+                fuseAudioSource.volume = ResolveFuseVolume();
                 fuseAudioSource.pitch = fuseLoopSound.Pitch;
                 fuseAudioSource.loop = true;
                 fuseAudioSource.Play();

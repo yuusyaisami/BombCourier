@@ -4,6 +4,7 @@
 using System;
 using BC.Base;
 using BC.Bomb;
+using BC.Audio;
 using BC.Manager;
 using BC.Utility;
 using Cysharp.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace BC.Item
         [SerializeField] private BonusItemData itemData;
         [SerializeField] private ParticleSystem collectEffectPrefab; // アイテム取得時に再生するエフェクト
         [SerializeField] private MeshMaterialControllerMB materialController; // アイテムのマテリアルを制御するためのコンポーネント
+        [SerializeField] private AudioDataSO collectSound; // アイテム取得時に再生する音
 
         [EntityTagDropdown]
         [SerializeField] private EntityTagReference requiredPlayerTag = new EntityTagReference(); // このタグを持つEntityMBに触れたときのみアイテムを取得できるようにするためのフィールド
@@ -153,6 +155,12 @@ namespace BC.Item
             {
                 var collectEffect = Instantiate(collectEffectPrefab, transform.position, Quaternion.identity);
                 collectEffect.Play();
+            }
+
+            // sound再生
+            if (collectSound != null)
+            {
+                AudioSystemMB.Instance.PlaySE(collectSound);
             }
 
             // 取得演出は 1 本の Sequence にまとめる。リロードで中断された際に
