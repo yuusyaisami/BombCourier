@@ -65,7 +65,7 @@ MonoBehaviour:
   - stageName: "\u771F\u3063\u6697"
     stageNameKey: STAGE_PITCH_BLACK
     stageDifficulty: 0
-    clearTimeThreshold: 18
+    clearTimeThreshold: 27
     stagePrefab: {fileID: 2650056577534689671, guid: abeca943bba43e8459581b2f3e0997c2, type: 3}
     backgroundSprite: {fileID: 21300000, guid: 09a74b78539aded4891da6a42f363180, type: 3}
     previewSprite: {fileID: 21300000, guid: 09a74b78539aded4891da6a42f363180, type: 3}

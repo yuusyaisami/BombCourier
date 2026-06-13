@@ -35,6 +35,7 @@ namespace BC.UI
 
         [Header("Open/Close Input")]
         [SerializeField] private InputActionReference openSettingAction;
+        [Tooltip("このフラグがオンのとき、openSettingAction で設定画面のトグルを有効化します。")]
         [SerializeField] private bool applyOpenSettingActionEnabled = true;
 
         [Header("General")]
@@ -72,6 +73,12 @@ namespace BC.UI
         [Header("Language Settings")]
         [Tooltip("言語選択ドロップダウン。LanguageManagerMB 経由で Unity Localization を切り替えます。")]
         [SerializeField] private TMP_Dropdown languageDropdown;
+
+        [Header("Save Data")]
+        [Tooltip("セーブデータ（ステージ進捗）削除ボタン。押すと二段階確認ダイアログを経て削除する。")]
+        [SerializeField] private UIButtonMB deleteSaveDataButton;
+        [Tooltip("削除の最終確認を行う二段階確認ダイアログ。設定パネルの上に重ねて表示する。")]
+        [SerializeField] private UIConfirmDialogMB deleteSaveDataConfirmDialog;
 
         private bool isShowing = false;
         private bool isInitializing = false;
@@ -113,6 +120,7 @@ namespace BC.UI
 
             RegisterListeners();
             RegisterCloseButton();
+            RegisterDeleteSaveDataButton();
             ApplyOpenSettingActionEnabled();
         }
 
@@ -124,7 +132,14 @@ namespace BC.UI
                 return;
             }
 
-            if (openSettingAction?.action?.WasPressedThisFrame() == true)
+            // applyOpenSettingActionEnabled=false のときはトグル入力を一切処理しない。
+            // action.Disable() だけに頼らないのは、UINavigationBootstrap が「UI」アクションマップごと
+            // 再有効化して openSettingAction（プロジェクト共通の Cancel 等）が復活し得るため。
+            // 併せて、確認ダイアログ表示中もトグルを無視する（ダイアログ外への遷移漏れ・不整合状態を防ぐ）。
+            if (applyOpenSettingActionEnabled
+                && openSettingAction != null && openSettingAction.action != null
+                && openSettingAction.action.WasPressedThisFrame()
+                && (deleteSaveDataConfirmDialog == null || !deleteSaveDataConfirmDialog.IsOpen))
                 ToggleSettingAsync().Forget();
 
         }
@@ -133,6 +148,7 @@ namespace BC.UI
         {
             UnregisterListeners();
             UnregisterCloseButton();
+            UnregisterDeleteSaveDataButton();
             toggleCts?.Cancel();
             toggleCts?.Dispose();
             toggleCts = null;
@@ -285,18 +301,25 @@ namespace BC.UI
 
         public void ClosePanel()
         {
+            // [SettingsDiag] 戻るボタンのクリックが C# に届いているかの確認用（WebGL 切り分け、後で削除可）。
+            Debug.Log("[SettingsDiag] ClosePanel() invoked (back button click reached C#).", this);
             ClosePanelAndReturnAsync().Forget();
         }
 
         private async UniTaskVoid ClosePanelAndReturnAsync()
         {
             await HidePanelAsync();
+            Debug.Log("[SettingsDiag] HidePanelAsync completed.", this);
 
             TitleSceneManagerMB titleSceneManager = TitleSceneManagerMB.Instance;
             if (titleSceneManager == null)
+            {
+                Debug.LogWarning("[SettingsDiag] TitleSceneManagerMB.Instance is null; cannot return to title.", this);
                 return;
+            }
 
             await titleSceneManager.ReturnToTitleMainFromSettingsAsync(destroyCancellationToken);
+            Debug.Log("[SettingsDiag] ReturnToTitleMainFromSettingsAsync completed.", this);
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -400,8 +423,14 @@ namespace BC.UI
                 closeButton = FindNamedButtonInChildren("BackBtn");
 
             if (closeButton == null)
+            {
+                // [SettingsDiag] 戻るボタンの参照解決失敗（後で削除可）。
+                Debug.LogWarning("[SettingsDiag] closeButton (BackBtn) not found; back button will do nothing.", this);
                 return;
+            }
 
+            // [SettingsDiag] 戻るボタンが見つかり、クリックリスナを登録したことの確認用（後で削除可）。
+            Debug.Log($"[SettingsDiag] closeButton registered: {closeButton.name} (interactable={closeButton.Interactable})", this);
             closeButton.RemoveClickListener(ClosePanel);
             closeButton.AddClickListener(ClosePanel);
         }
@@ -410,6 +439,60 @@ namespace BC.UI
         {
             if (closeButton != null)
                 closeButton.RemoveClickListener(ClosePanel);
+        }
+
+        private void RegisterDeleteSaveDataButton()
+        {
+            if (deleteSaveDataButton == null)
+                return;
+
+            deleteSaveDataButton.RemoveClickListener(OnDeleteSaveDataClicked);
+            deleteSaveDataButton.AddClickListener(OnDeleteSaveDataClicked);
+        }
+
+        private void UnregisterDeleteSaveDataButton()
+        {
+            if (deleteSaveDataButton != null)
+                deleteSaveDataButton.RemoveClickListener(OnDeleteSaveDataClicked);
+        }
+
+        private void OnDeleteSaveDataClicked()
+        {
+            ConfirmAndDeleteSaveDataAsync().Forget();
+        }
+
+        // セーブデータ（ステージ進捗）の削除を二段階確認してから実行する。
+        // 確認中は設定パネル本体を一時的に非 interactable にして、ダイアログ外への操作漏れを防ぐ
+        // （ダイアログは ignoreParentGroups=true なので、その間も独立して操作できる）。
+        private async UniTaskVoid ConfirmAndDeleteSaveDataAsync()
+        {
+            if (deleteSaveDataConfirmDialog == null)
+            {
+                Debug.LogWarning($"{nameof(UISettingMB)}: deleteSaveDataConfirmDialog is not assigned.", this);
+                return;
+            }
+
+            if (canvasGroup != null)
+                canvasGroup.interactable = false;
+
+            try
+            {
+                bool confirmed = await deleteSaveDataConfirmDialog.ShowConfirmAsync(destroyCancellationToken);
+                if (confirmed)
+                {
+                    // 進捗のみ削除（設定系キーは保持）。シーン再読込はせず、タイトル/ステージ選択の
+                    // 次回表示時に星リセット・特典ボタン非表示が反映される。
+                    TitleStageProgressServiceMB.DeleteAllProgress();
+                }
+            }
+            finally
+            {
+                // パネルがまだ表示中なら操作を復帰し、フォーカスを削除ボタンへ戻す。
+                if (canvasGroup != null)
+                    canvasGroup.interactable = isShowing;
+                if (isShowing && deleteSaveDataButton != null)
+                    deleteSaveDataButton.Select();
+            }
         }
 
         private void ApplyOpenSettingActionEnabled()
@@ -505,6 +588,15 @@ namespace BC.UI
             resolutionDropdown.ClearOptions();
 
             Resolution[] all = Screen.resolutions;
+
+            // WebGL ではブラウザが解像度を管理し、Screen.resolutions は空・Screen.SetResolution も実質無視される。
+            // 解像度候補が無い環境では選択肢を作れないため、空ドロップダウンを出さず解像度設定 UI ごと隠す。
+            if (all == null || all.Length == 0)
+            {
+                resolutionDropdown.gameObject.SetActive(false);
+                return;
+            }
+
             var options = new List<string>();
 
             foreach (Resolution res in all)
@@ -540,6 +632,12 @@ namespace BC.UI
             if (manager == null)
                 return;
 
+            // ローカライズ初期化前に AvailableLocales へ同期アクセスすると、WebGL では Localization が
+            // 同期 WaitForCompletion を呼んで例外（WebGL は同期 Addressable 不可）を投げ、初期化自体を壊す。
+            // 準備完了まで触らない。完了時に LanguageChanged → OnLanguageManagerChanged 経由で再構築される。
+            if (!manager.IsReady)
+                return;
+
             IReadOnlyList<Locale> locales = manager.AvailableLocales;
             var options = new List<string>(locales.Count);
             for (int i = 0; i < locales.Count; i++)
@@ -556,6 +654,10 @@ namespace BC.UI
 
             LanguageManagerMB manager = LanguageManagerMB.Instance;
             if (manager == null)
+                return;
+
+            // 初期化前の SelectedLocale / AvailableLocales 同期アクセスを避ける（WebGL の WaitForCompletion 対策）。
+            if (!manager.IsReady)
                 return;
 
             int index = manager.CurrentLocaleIndex;
@@ -639,6 +741,7 @@ namespace BC.UI
             AppendSelectable(orderedSelectables, vSyncToggle);
             AppendSelectable(orderedSelectables, qualityLevelDropdown);
             AppendSelectable(orderedSelectables, languageDropdown);
+            AppendSelectable(orderedSelectables, deleteSaveDataButton != null ? deleteSaveDataButton.UnityButton : null);
             AppendSelectable(orderedSelectables, closeButton != null ? closeButton.UnityButton : null);
             AppendSelectable(orderedSelectables, returnToTitleButton != null ? returnToTitleButton.UnityButton : null);
 
@@ -781,7 +884,9 @@ namespace BC.UI
 
         private static void AppendSelectable(List<Selectable> selectables, Selectable selectable)
         {
-            if (selectable == null || selectables.Contains(selectable))
+            // 非アクティブな選択肢（例: WebGL で隠した解像度ドロップダウン）はナビ経路に含めない。
+            // 含めると上下ナビが「選択できない要素」で詰まってしまう。
+            if (selectable == null || !selectable.gameObject.activeInHierarchy || selectables.Contains(selectable))
                 return;
 
             selectables.Add(selectable);

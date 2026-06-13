@@ -270,7 +270,16 @@ namespace BC.UI.Components
                 PlayClickSound();
 
                 if (playFlashBeforeClick && buttonFlash != null)
-                    await buttonFlash.PlayFlashAsync(ct);
+                {
+                    // WebGL では毎フレームの未捕捉例外（例: Localization 初期化失敗）が PlayerLoop を
+                    // 途中で打ち切り（_JS_CallAsLongAsNoExceptionsSeen）、await の継続（下の onClick）が
+                    // 再開されず「クリックは届くのに動かない（音だけ鳴る）」事象が起きる。
+                    // そのため WebGL ではフラッシュを待たず（fire-and-forget）、onClick を同期で確実に実行する。
+                    if (Application.platform == RuntimePlatform.WebGLPlayer)
+                        buttonFlash.PlayFlashAsync(ct).Forget();
+                    else
+                        await buttonFlash.PlayFlashAsync(ct);
+                }
 
                 onClick.Invoke();
             }

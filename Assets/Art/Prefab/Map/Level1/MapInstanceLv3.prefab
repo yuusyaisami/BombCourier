@@ -18165,7 +18165,7 @@ MonoBehaviour:
       incomingEasingMode: 1
     - stableId: Node2
       label: Node2
-      parentRailNodeId: Node1
+      parentRailNodeId: rail.3
       localPosition:
         sourceKind: 0
         evaluationMode: 0
@@ -18509,10 +18509,11 @@ MonoBehaviour:
           deactivateSignal:
             id: 0
             path: 
-          playbackMode: 1
+          playbackMode: 2
+          pathMode: 0
           defaultTimingControl: 1
           defaultDuration: 1
-          defaultSpeed: 3
+          defaultSpeed: 3.5
           defaultEasingMode: 1
         orderedChildren:
         - rid: 1662523279176893211
@@ -18521,14 +18522,12 @@ MonoBehaviour:
         - rid: 1662523279370355037
         - rid: 1662523279176893213
         - rid: 1662523279176893214
-        - rid: 1662523279345189820
-        - rid: 1662523279370354851
     - rid: 1662523279176893211
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
         stableId: step.move.1
-        label: Node2
-        targetRailNodeId: Node2
+        label: Node1
+        targetRailNodeId: Node1
         overrideTiming: 0
         timingControl: 0
         duration: 1
@@ -18548,8 +18547,8 @@ MonoBehaviour:
       type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
       data:
         stableId: step.move.3
-        label: Node1
-        targetRailNodeId: Node1
+        label: Node2
+        targetRailNodeId: Node2
         overrideTiming: 0
         timingControl: 0
         duration: 1
@@ -18561,28 +18560,7 @@ MonoBehaviour:
         stableId: step.wait.4
         label: Wait
         waitMode: 0
-        duration: 0.7
-        signal:
-          id: 0
-          path: 
-    - rid: 1662523279345189820
-      type: {class: MovingPlatformMoveNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
-      data:
-        stableId: step.move.5
-        label: Move
-        targetRailNodeId: rail.3
-        overrideTiming: 0
-        timingControl: 0
-        duration: 1
-        speed: 1
-        easingMode: 1
-    - rid: 1662523279370354851
-      type: {class: MovingPlatformWaitNodeAuthoring, ns: BC.Gimmick.MovingPlatform, asm: Assembly-CSharp}
-      data:
-        stableId: step.wait.6
-        label: Wait
-        waitMode: 0
-        duration: 0.7
+        duration: 0.3
         signal:
           id: 0
           path: 

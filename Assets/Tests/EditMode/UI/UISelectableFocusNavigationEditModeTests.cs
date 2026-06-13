@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Reflection;
 using BC.UI;
@@ -173,3 +174,4 @@ namespace BC.Editor.Tests
         }
     }
 }
+#endif

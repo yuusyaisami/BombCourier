@@ -14393,9 +14393,10 @@ MonoBehaviour:
             id: 0
             path: 
           playbackMode: 2
+          pathMode: 0
           defaultTimingControl: 1
           defaultDuration: 1
-          defaultSpeed: 1
+          defaultSpeed: 4
           defaultEasingMode: 1
         orderedChildren:
         - rid: 1662523453123068118

@@ -28,7 +28,7 @@ RectTransform:
   m_GameObject: {fileID: 5283638375518360785}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -94,8 +94,8 @@ MonoBehaviour:
     MoveSetting:
       ValueSource: 20
       ScrollVelocity: {x: 0, y: 0, z: 0}
-      ScrollVelocityMin: {x: -30, y: -70, z: 0}
-      ScrollVelocityMax: {x: 30, y: -50, z: 0}
+      ScrollVelocityMin: {x: -30, y: -140, z: 0}
+      ScrollVelocityMax: {x: 30, y: -100, z: 0}
       Damping: 1
       ApplyShakeEffect: 0
       ShakeMagnitude: 5

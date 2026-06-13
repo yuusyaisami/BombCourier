@@ -25,6 +25,10 @@ namespace BC.UI.Title
         [Tooltip("タイトルシーン用の UISettingMB インスタンス。")]
         [SerializeField] private UISettingMB settingPanel;
 
+        [Header("All Clear Reward Overlay")]
+        [Tooltip("全ステージ星3コンプ達成者向けの特典パネル。")]
+        [SerializeField] private UIAllClearPageMB allClearPage;
+
         private bool isTransitioning;
 
         private void Awake()
@@ -163,6 +167,57 @@ namespace BC.UI.Title
 
                 if (stageSelectPage != null && stageSelectPage.IsShowing)
                     await stageSelectPage.HideAsync(ct);
+
+                if (titleMainPage != null)
+                    await titleMainPage.RestoreFromSettingsAsync(ct);
+            }
+            finally
+            {
+                UnlockTransition();
+            }
+        }
+
+        /// <summary>全ステージ星3コンプ特典パネルを開く。TitleMain は閉じてから表示する。</summary>
+        public async UniTask OpenAllClearAsync(CancellationToken ct)
+        {
+            if (!TryLockTransition()) return;
+
+            try
+            {
+                // null チェックは try 内に置き、未アサインでも finally で必ずロックを解除する。
+                if (allClearPage == null)
+                {
+                    Debug.LogWarning($"[{nameof(TitleSceneManagerMB)}] allClearPage is not assigned.", this);
+                    return;
+                }
+
+                InputManagerMB.EnsureInstance().UnlockCursor();
+
+                if (titleMainPage != null && titleMainPage.IsShowing)
+                    await titleMainPage.HideAsync(ct);
+
+                allClearPage.gameObject.SetActive(true);
+                await allClearPage.ShowPanelAsync().AttachExternalCancellation(ct).SuppressCancellationThrow();
+            }
+            finally
+            {
+                UnlockTransition();
+            }
+        }
+
+        /// <summary>
+        /// 特典パネルを閉じたあとに TitleMain を復帰させる。
+        /// titleMainPage.RestoreFromSettingsAsync は実質「タイトルメイン復帰」処理（命名は設定起点の名残）なので
+        /// 特典パネルからの復帰でもそのまま流用する。復帰時に特典ボタン/バッジの表示状態も再評価される。
+        /// 特典パネルは TitleMain からのみ開くため、gameRoot / stageSelect の再非表示は不要。
+        /// </summary>
+        public async UniTask ReturnToTitleMainFromAllClearAsync(CancellationToken ct)
+        {
+            if (!TryLockTransition()) return;
+
+            try
+            {
+                InputManagerMB.EnsureInstance().UnlockCursor();
 
                 if (titleMainPage != null)
                     await titleMainPage.RestoreFromSettingsAsync(ct);

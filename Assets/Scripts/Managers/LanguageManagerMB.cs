@@ -27,12 +27,20 @@ namespace BC.Managers
         {
             get
             {
+                // 初期化未完了で provider.Locales に触れると、WebGL では Localization が内部で同期
+                // WaitForCompletion を呼んで例外（WebGL は同期 Addressable 不可）を投げ、初期化自体を壊す。
+                // 完了前は空を返し、同期アクセスを発生源で断つ（呼び出し側に依存しない安全策）。
+                if (!LocalizationSettings.InitializationOperation.IsDone)
+                    return Array.Empty<Locale>();
+
                 ILocalesProvider provider = LocalizationSettings.AvailableLocales;
                 return provider != null ? provider.Locales : (IReadOnlyList<Locale>)Array.Empty<Locale>();
             }
         }
 
-        public Locale CurrentLocale => LocalizationSettings.SelectedLocale;
+        // 初期化未完了の SelectedLocale 取得も同期ロードを誘発し得るため、完了前は null を返す。
+        public Locale CurrentLocale =>
+            LocalizationSettings.InitializationOperation.IsDone ? LocalizationSettings.SelectedLocale : null;
 
         public int CurrentLocaleIndex
         {

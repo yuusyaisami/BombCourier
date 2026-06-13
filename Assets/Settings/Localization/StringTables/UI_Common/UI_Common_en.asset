@@ -54,6 +54,19 @@ MonoBehaviour:
     m_Localized: If you're wondering, "What is this game?", I recommend "Yes"!
     m_Metadata:
       m_Items: []
+  - m_Id: 2919657750622208
+    m_Localized: "Thank you so much for clearing all 12 stages! I\u2019m deeply moved
+      that you fully completed my game.\n\nSince this was just a short project, it
+      might not have been perfect, but playing it to the end means the world to me.\n\nYou
+      might be wondering what happened to the mouse... rest assured, I\u2019m sure
+      it\u2019s out there somewhere, looking up at a silver star.\n\nSee you in the
+      next game!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2919613395857408
+    m_Localized: Congrats on beating all 12 stages!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

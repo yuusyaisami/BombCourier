@@ -86,8 +86,17 @@ namespace BC.Manager
 
         public void ApplyDefaultCursorState()
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            // WebGL のポインタロックはユーザー操作（ジェスチャ）起点でしか成立せず、起動時の自動ロックは
+            // "Pointer lock cannot be acquired immediately after the user has exited the lock" などの
+            // SecurityError を誘発するだけで効かない。WebGL では常に解除状態で開始する
+            // （ゲームプレイ開始時の明示 LockCursor は従来どおり呼ばれる）。
+            SetCursorLocked(false);
+#else
             SetCursorLocked(lockCursorOnStart);
+#endif
         }
+
 
         public void SetCursorLocked(bool locked)
         {

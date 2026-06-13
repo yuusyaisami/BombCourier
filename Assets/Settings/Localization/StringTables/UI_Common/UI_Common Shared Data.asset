@@ -51,6 +51,14 @@ MonoBehaviour:
     m_Key: TUTORIAL_CONFIRM_RECOMMENDED
     m_Metadata:
       m_Items: []
+  - m_Id: 2919613395857408
+    m_Key: TUTORIAL_ALLCLEAR_TITLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2919657750622208
+    m_Key: TUTORIAL_ALLCLEAR_DISCRIPTION
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
