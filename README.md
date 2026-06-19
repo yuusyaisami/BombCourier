@@ -26,7 +26,7 @@
 4. 爆弾を拾い、制限時間内に運ぶ
 5. 爆弾をゲートへ投げて破壊する
 
-爆弾を持っている間はジャンプ力が低下します。通常時に通れる場所でも通れなくなるため、爆弾を拾る前の準備が重要です。
+爆弾を持っている間はジャンプ力が低下します。通常時に通れる場所でも通れなくなるため、爆弾を拾う前の準備が重要です。
 
 ダッシュ、ジャンプ、移動床などの運動量を利用すると、爆弾を通常より遠くへ投げられる場合があります。
 
@@ -288,7 +288,7 @@ Unity Test Runnerから実行できるほか、Windowsでは付属のPowerShell 
 ```powershell
 .\Tools\Run-UnityTests.ps1 `
   -Platform PlayMode `
-  -TestFilter "BombCarryCollisionPlayModeTests"
+  -TestFilter "BC.Gameplay.PlayModeTests.BombCarryCollisionPlayModeTests"
 ```
 
 PlayModeでは `-RunSynchronously` を使用できません。実行結果、Unity Log、NUnit XML、Summaryは `Logs/TestRuns/` 以下へ出力されます。
