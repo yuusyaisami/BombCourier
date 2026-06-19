@@ -24,6 +24,7 @@ namespace BC.UI.Title
         [SerializeField] private CanvasGroup buttonsCanvasGroup;
         [SerializeField] private UIButtonMB playButton;
         [SerializeField] private UIButtonMB settingsButton;
+        [SerializeField] private UIButtonMB killGameButton;
         [SerializeField, Min(0f)] private float buttonsFadeDuration = 0.4f;
 
         [Header("Right Panel")]
@@ -55,7 +56,8 @@ namespace BC.UI.Title
 
         private void Awake()
         {
-            EnsureReferences();
+            pageCanvasGroup = GetComponent<CanvasGroup>();
+            InitializeRightPanelProfile();
             ApplyHiddenCanvasState();
             ResetLogoTransform();
 
@@ -63,19 +65,17 @@ namespace BC.UI.Title
             if (playButton != null) playButton.AddClickListener(OnPlayButtonClicked);
             if (settingsButton != null) settingsButton.AddClickListener(OnSettingsButtonClicked);
             if (allClearButton != null) allClearButton.AddClickListener(OnAllClearButtonClicked);
+            if (killGameButton != null) killGameButton.AddClickListener(() => Application.Quit());
 
             if (settingsButton != null)
             {
-                settingsButton.Focused -= OnSettingsButtonFocused;
                 settingsButton.Focused += OnSettingsButtonFocused;
-                settingsButton.Deselected -= OnSettingsButtonDeselected;
                 settingsButton.Deselected += OnSettingsButtonDeselected;
             }
         }
 
         public void PrewarmInitialVisuals()
         {
-            EnsureReferences();
             ApplyHiddenCanvasState();
             ResetLogoTransform();
 
@@ -92,56 +92,17 @@ namespace BC.UI.Title
 
         public override async UniTask ShowAsync(CancellationToken ct)
         {
-            EnsureReferences();
-            IsShowing = true;
-            gameObject.SetActive(true);
-            ApplyHiddenCanvasState();
             ResetLogoTransform();
-
-            // 特典ボタン/バッジの状態を、ページが見え始める前に確定する。
-            // （イントロ演出のフェードイン中に、未解放のボタンが一瞬見えてしまう問題の対策）
-            RefreshAllClearButtonState();
-
-            await pageCanvasGroup
-                .DOFade(1f, pageInDuration)
-                .SetEase(Ease.OutQuad)
-                .SetUpdate(true)
-                .WithCancellation(ct);
-
-            // 右パネルの初期画像を設定
-            SetInitialRightPanelSprite();
-
-            // ロゴアニメーション ("ぐるぐるバン！")
-            await PlayLogoIntroAsync(ct);
-            if (logoSpinSound != null)
-                AudioSystemMB.Instance?.PlaySE(logoSpinSound);
-
-            // ボタンをフェードイン
-            if (buttonsCanvasGroup != null)
-            {
-                await buttonsCanvasGroup
-                    .DOFade(1f, buttonsFadeDuration)
-                    .SetEase(Ease.OutQuad)
-                    .SetUpdate(true)
-                    .WithCancellation(ct);
-
-                buttonsCanvasGroup.interactable = true;
-                buttonsCanvasGroup.blocksRaycasts = true;
-            }
-
-            pageCanvasGroup.interactable = true;
-            pageCanvasGroup.blocksRaycasts = true;
-
-            // ゲームプレイボタンに初期フォーカスを当てる
+            // ナビゲーション設定はフェードイン開始前（ボタンが見える前）に済ませる
             UINavigationBootstrap.EnsureConfigured();
-            if (playButton != null)
-                playButton.Select();
-
+            await FadeInPageAsync(playLogoIntro: true, ct);
         }
 
         public override async UniTask HideAsync(CancellationToken ct)
         {
-            EnsureReferences();
+            // 非表示時にフォーカス状態をリセット。残存すると復帰後の右パネルと内部状態がズレる
+            settingsFocused = false;
+
             pageCanvasGroup.interactable = false;
             pageCanvasGroup.blocksRaycasts = false;
             if (buttonsCanvasGroup != null)
@@ -162,15 +123,20 @@ namespace BC.UI.Title
 
         public async UniTask RestoreFromSettingsAsync(CancellationToken ct)
         {
-            EnsureReferences();
+            await FadeInPageAsync(playLogoIntro: false, ct);
+        }
+
+        // ShowAsync と RestoreFromSettingsAsync の共通フェードイン処理。
+        // playLogoIntro=true のときだけロゴアニメーションと SE を再生する。
+        private async UniTask FadeInPageAsync(bool playLogoIntro, CancellationToken ct)
+        {
             IsShowing = true;
             gameObject.SetActive(true);
-            pageCanvasGroup.alpha = 0f;
-            pageCanvasGroup.interactable = false;
-            pageCanvasGroup.blocksRaycasts = false;
+            // フェード前に両グループを非表示状態にリセット（HideAsync でボタンが alpha=1 のまま残る場合に対応）
+            ApplyHiddenCanvasState();
 
-            // ページが見え始める前に特典ボタン/バッジを確定する。
-            // （特に「削除直後の復帰」でボタンが一瞬残らないよう、フェードイン前に隠す）
+            // ページが見え始める前に特典ボタン/バッジの状態を確定する。
+            // （イントロ演出のフェードイン中に、未解放のボタンが一瞬見えてしまう問題の対策）
             RefreshAllClearButtonState();
 
             await pageCanvasGroup
@@ -179,13 +145,22 @@ namespace BC.UI.Title
                 .SetUpdate(true)
                 .WithCancellation(ct);
 
+            // 右パネルの初期画像を設定
             SetInitialRightPanelSprite();
 
+            if (playLogoIntro)
+            {
+                // SE はアニメーション開始と同時に再生する（完了後ではない）
+                if (logoSpinSound != null && AudioSystemMB.Instance != null)
+                    AudioSystemMB.Instance.PlaySE(logoSpinSound);
+
+                // ロゴアニメーション 
+                await PlayLogoIntroAsync(ct);
+            }
+
+            // ボタンをフェードイン
             if (buttonsCanvasGroup != null)
             {
-                buttonsCanvasGroup.alpha = 0f;
-                buttonsCanvasGroup.interactable = false;
-                buttonsCanvasGroup.blocksRaycasts = false;
                 await buttonsCanvasGroup
                     .DOFade(1f, buttonsFadeDuration)
                     .SetEase(Ease.OutQuad)
@@ -199,9 +174,9 @@ namespace BC.UI.Title
             pageCanvasGroup.interactable = true;
             pageCanvasGroup.blocksRaycasts = true;
 
+            // ゲームプレイボタンに初期フォーカスを当てる
             if (playButton != null)
                 playButton.Select();
-
         }
 
         private async UniTask PlayLogoIntroAsync(CancellationToken ct)
@@ -321,10 +296,10 @@ namespace BC.UI.Title
             SetSettingsFocus(false);
         }
 
-        private void EnsureReferences()
+        // rightPanelTransitionProfile を rightPanelTransitionImage に登録する。
+        // Awake 時に一度だけ呼べばよい（[RequireComponent] でフィールドの存在は保証済み）。
+        private void InitializeRightPanelProfile()
         {
-            pageCanvasGroup ??= GetComponent<CanvasGroup>();
-
             if (rightPanelTransitionImage != null)
                 rightPanelTransitionImage.SetDefaultProfile(rightPanelTransitionProfile);
         }
